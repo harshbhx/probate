@@ -11,18 +11,29 @@ import { LivePill } from "../components/ui/LivePill";
 import { Lineage } from "../components/ui/Lineage";
 import { LearningCurve } from "../components/ui/LearningCurve";
 import { Page, SimBanner } from "../components/ui/Shell";
-import { PageSkeleton, SectionHead } from "../components/ui/States";
+import { Empty, PageSkeleton, SectionHead } from "../components/ui/States";
+import { useTitle } from "../lib/hooks";
 
 export function Home({ summary }: { summary: Summary | null }) {
+  useTitle(null);
   return (
     <>
       <Hero summary={summary} />
       <Page flush>
         {!summary ? (
           <PageSkeleton />
+        ) : summary.generations.length === 0 ? (
+          <Empty title="The family hasn't started yet">
+            The first generation is born when the Courthouse starts. Its trial will appear here the moment it dies.
+          </Empty>
         ) : (
           <>
             <SimBanner mode={summary.mode} />
+            {summary.paused && (
+              <p className="mb-8 rounded-xl border border-line px-4 py-3 text-[14px] text-mist">
+                The family is resting. The next generation will be born when the Courthouse resumes.
+              </p>
+            )}
             <section aria-labelledby="family" className="scroll-mt-28">
               <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <SectionHead title="The family register" className="mb-0">

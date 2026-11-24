@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { MotionConfig } from "motion/react";
 import type { Summary } from "./lib/api";
-import { useApi } from "./lib/hooks";
+import { useApi, useTitle } from "./lib/hooks";
 import { Footer, MobileTabs, Nav, Page } from "./components/ui/Shell";
 import { Empty } from "./components/ui/States";
 import { Home } from "./pages/Home";
@@ -14,6 +14,11 @@ import { Evidence } from "./pages/Evidence";
 function ScrollTop() {
   const { pathname } = useLocation();
   useEffect(() => window.scrollTo(0, 0), [pathname]);
+  return null;
+}
+
+function NotFoundTitle() {
+  useTitle("Not in the register");
   return null;
 }
 
@@ -38,6 +43,7 @@ export default function App() {
           path="*"
           element={
             <Page>
+              <NotFoundTitle />
               <Empty title="Not in the register" action={{ to: "/", label: "Go to the family" }}>
                 There's no generation, trial or page at this address.
               </Empty>
