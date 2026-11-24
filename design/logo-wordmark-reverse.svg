@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" role="img" aria-label="Probate">
+<g>
+  
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#A88A3D" stroke-width="2.5"/>
+  <circle cx="32" cy="32" r="24.5" fill="none" stroke="#A88A3D" stroke-width="1"/>
+  <g fill="none" stroke="#E3E8E5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 18.5 V24 H22.5 V30"/>
+    <path d="M32 24 H41.5 V30"/>
+    <path d="M22.5 36 V43"/>
+    <path d="M41.5 36 V38.5"/>
+  </g>
+  <g fill="#E3E8E5">
+    <circle cx="32" cy="16" r="3.2"/>
+    <circle cx="22.5" cy="33" r="3.2"/>
+    <circle cx="41.5" cy="33" r="3.2"/>
+    <circle cx="22.5" cy="46" r="3.2"/>
+  </g>
+  <path d="M37.5 44.5 L45.5 40.5" stroke="#7A1F2B" stroke-width="2.6" stroke-linecap="round"/>
+</g>
+<text x="78" y="44" font-family="'Libre Caslon Condensed', 'Libre Caslon Text', Georgia, serif" font-weight="600" font-size="38" fill="#E3E8E5" letter-spacing="0.5">Probate</text></svg>
