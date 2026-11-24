@@ -18,6 +18,12 @@ die() { printf '\n\033[31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 
 command -v gh >/dev/null || die "Install the GitHub CLI first: https://cli.github.com"
 gh auth status >/dev/null 2>&1 || die "Run 'gh auth login' once, then re-run this."
+# Pushing .github/workflows needs the `workflow` scope, which gh doesn't grant by default.
+if ! gh auth status 2>&1 | grep -q "workflow"; then
+  say "Asking GitHub for the 'workflow' scope (needed to push the CI file)"
+  gh auth refresh -h github.com -s workflow
+fi
+gh auth setup-git >/dev/null 2>&1 || true
 [ -x "$PY" ] || die "Python env missing. Run 'make setup' first."
 
 say "Checking for secrets"
