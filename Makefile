@@ -28,7 +28,7 @@ test: ## Python tests
 	cd services/core && PROBATE_DATA_DIR=$$(mktemp -d) .venv/bin/python -m pytest -q
 
 lint: ## Ruff and TypeScript
-	cd services/core && .venv/bin/ruff check probate tests
+	cd services/core && .venv/bin/ruff check probate tests ../../scripts
 	npm run lint
 
 build: ## Build the website into apps/web/dist
