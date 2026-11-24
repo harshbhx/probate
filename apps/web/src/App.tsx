@@ -3,7 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { MotionConfig } from "motion/react";
 import type { Summary } from "./lib/api";
 import { useApi } from "./lib/hooks";
-import { Footer, Nav, Page } from "./components/ui/Shell";
+import { Footer, MobileTabs, Nav, Page } from "./components/ui/Shell";
 import { Empty } from "./components/ui/States";
 import { Home } from "./pages/Home";
 import { Trial, TrialIndex } from "./pages/Trial";
@@ -46,6 +46,7 @@ export default function App() {
         />
       </Routes>
       <Footer />
+      <MobileTabs />
     </MotionConfig>
   );
 }

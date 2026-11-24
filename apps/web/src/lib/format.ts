@@ -41,3 +41,8 @@ export function plural(n: number, one: string, many = one + "s") {
 export function humanize(name: string) {
   return name.replace(/_/g, " ");
 }
+
+export function sentence(name: string) {
+  const h = humanize(name);
+  return h.charAt(0).toUpperCase() + h.slice(1);
+}

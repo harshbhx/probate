@@ -8,7 +8,8 @@ export function BlurText({ text, className, delay = 0, step = 0.07, as = "span" 
   const Tag = motion[as];
   const words = text.split(" ");
   return (
-    <Tag className={className} aria-label={text}>
+    <Tag className={className}>
+      <span className="sr-only">{text}</span>
       {words.map((w, i) => (
         <motion.span
           key={i}

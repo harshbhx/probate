@@ -7,7 +7,7 @@ export function TracingBeam({ children }: { children: ReactNode }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 70%", "end 60%"] });
   const fill = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1]), { stiffness: 120, damping: 30 });
   return (
-    <div ref={ref} className="relative pl-10 md:pl-14">
+    <div ref={ref} className="relative min-w-0 pl-10 md:pl-14">
       <div aria-hidden className="absolute left-3 top-2 bottom-2 w-px bg-line md:left-5" />
       <motion.div
         aria-hidden

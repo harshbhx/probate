@@ -22,7 +22,7 @@ export function Lineage({ gens }: { gens: GenCard[] }) {
 
   return (
     <>
-      <div ref={scroller} className="-mx-4 overflow-x-auto px-4 pb-4 [scrollbar-width:thin] sm:-mx-6 sm:px-6">
+      <div ref={scroller} tabIndex={0} aria-label="Generations, oldest to newest" className="-mx-4 overflow-x-auto px-4 pb-4 [mask-image:linear-gradient(to_right,transparent,#000_40px,#000_calc(100%-40px),transparent)] [scrollbar-width:thin] sm:-mx-6 sm:px-6">
         <ol className="relative flex min-w-max items-stretch gap-3 pt-3">
           <svg aria-hidden className="pointer-events-none absolute left-0 right-0 top-[34px] h-3 w-full overflow-visible">
             <line x1="0" x2="100%" y1="6" y2="6" stroke="var(--color-line-strong)" strokeWidth="1" />
