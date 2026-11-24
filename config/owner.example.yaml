@@ -1,0 +1,7 @@
+# Copy to config/owner.yaml on the Courthouse. Never commit the real file.
+owner:
+  name: Harsh Bhanushali
+  emails: [probate-owner@agentmail.example]
+  trusted_contacts: [probate-friend@agentmail.example]
+  payment_destinations: []        # real allowlisted payment emails / UPI IDs go only in the private file
+  domains: [dualmindlab.tech]

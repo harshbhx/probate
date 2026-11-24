@@ -1,0 +1,16 @@
+# secrets and local state
+.env
+config/owner.yaml
+.data/
+*.db
+
+# python
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# node
+node_modules/
+apps/web/dist/

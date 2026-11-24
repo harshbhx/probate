@@ -1,0 +1,29 @@
+# Generation names, in birth order. Global, easy to say, one per letter so the register reads A to Z.
+# pronoun drives UI copy ("Ask her", "his trial"). voice_hint guides picking an ElevenLabs voice.
+- {name: Ada,     pronoun: she,  voice_hint: calm, mid-pitch}
+- {name: Ben,     pronoun: he,   voice_hint: warm, young}
+- {name: Chandra, pronoun: she,  voice_hint: clear, bright}
+- {name: Dara,    pronoun: they, voice_hint: low, even}
+- {name: Emeka,   pronoun: he,   voice_hint: deep, steady}
+- {name: Freya,   pronoun: she,  voice_hint: crisp}
+- {name: Grace,   pronoun: she,  voice_hint: soft, older}
+- {name: Hiro,    pronoun: he,   voice_hint: measured}
+- {name: Ines,    pronoun: she,  voice_hint: light}
+- {name: Jonas,   pronoun: he,   voice_hint: dry, wry}
+- {name: Kofi,    pronoun: he,   voice_hint: rich}
+- {name: Leela,   pronoun: she,  voice_hint: lively}
+- {name: Mateo,   pronoun: he,   voice_hint: friendly}
+- {name: Nadia,   pronoun: she,  voice_hint: precise}
+- {name: Omar,    pronoun: he,   voice_hint: gentle}
+- {name: Priya,   pronoun: she,  voice_hint: confident}
+- {name: Quinn,   pronoun: they, voice_hint: neutral}
+- {name: Rafael,  pronoun: he,   voice_hint: smooth}
+- {name: Sora,    pronoun: she,  voice_hint: airy}
+- {name: Tariq,   pronoun: he,   voice_hint: firm}
+- {name: Uma,     pronoun: she,  voice_hint: warm, older}
+- {name: Viktor,  pronoun: he,   voice_hint: low}
+- {name: Wen,     pronoun: she,  voice_hint: quiet}
+- {name: Xavi,    pronoun: he,   voice_hint: upbeat}
+- {name: Yara,    pronoun: she,  voice_hint: bright}
+- {name: Zane,    pronoun: he,   voice_hint: relaxed}
+# After Z, names repeat with a numeral: "Ada II", "Ben II", ...
