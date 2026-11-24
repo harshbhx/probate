@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import type { Instinct } from "../lib/api";
 import { cx, sentence } from "../lib/format";
-import { useApi } from "../lib/hooks";
+import { useApi, useTitle } from "../lib/hooks";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
 
 export function Instincts({ mode }: { mode?: string }) {
   const { data, error, loading } = useApi<{ instincts: Instinct[] }>("/api/genome");
+  useTitle("Instincts");
   if (loading && !data) return <Page><PageSkeleton /></Page>;
   if (error || !data) return <Page><ErrorState /></Page>;
   const list = data.instincts;

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Gavel, MessageCircleQuestion, Send, Volume2 } from "lucide-react";
 import { api, type ApiError, type GenerationDetail } from "../lib/api";
 import { clock, countdown, cx, day, humanize } from "../lib/format";
-import { useApi, useNow } from "../lib/hooks";
+import { useApi, useNow, useTitle } from "../lib/hooks";
 import { BorderBeam } from "../components/fx/BorderBeam";
 import { TextGenerate } from "../components/fx/TextGenerate";
 import { Seal } from "../components/ui/Seal";
@@ -22,6 +22,7 @@ const KIND_DOT: Record<string, string> = {
 export function Generation({ mode }: { mode?: string }) {
   const { gen } = useParams();
   const { data: g, error, loading, reload } = useApi<GenerationDetail>(`/api/generations/${gen}`, 30000);
+  useTitle(g ? g.name : "Generation");
   const now = useNow();
 
   if (loading && !g) return <Page><PageSkeleton /></Page>;

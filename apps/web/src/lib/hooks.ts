@@ -55,3 +55,9 @@ export function useInView<T extends Element>(options?: IntersectionObserverInit)
   }, [options]);
   return { ref, inView };
 }
+
+export function useTitle(title: string | null) {
+  useEffect(() => {
+    document.title = title ? `${title} · Probate` : "Probate · My agent dies every night";
+  }, [title]);
+}

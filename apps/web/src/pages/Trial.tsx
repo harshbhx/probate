@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import * as Tabs from "@radix-ui/react-tabs";
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Baby, HardDrive, Sparkles } from "lucide-react";
 import type { ApiError, Summary, Trial as TrialT } from "../lib/api";
 import { cx, day, humanize } from "../lib/format";
-import { useApi } from "../lib/hooks";
+import { useApi, useTitle } from "../lib/hooks";
 import { CaseFile } from "../components/ui/CaseFile";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
@@ -32,7 +32,10 @@ const FILTERS = [
 
 export function Trial({ mode }: { mode?: string }) {
   const { gen } = useParams();
-  const { data: t, error, loading } = useApi<TrialT>(`/api/trials/${gen}`);
+  const [running, setRunning] = useState(false);
+  const { data: t, error, loading } = useApi<TrialT>(`/api/trials/${gen}`, running ? 10000 : undefined);
+  useEffect(() => setRunning(!!t && ["dying", "dead"].includes(t.generation.state)), [t]);
+  useTitle(t ? `Trial of ${t.generation.name}` : "Trial");
   const [filter, setFilter] = useState<string>("all");
   const cases = useMemo(() => (t ? t.cases.filter((c) => filter === "all" || c.verdict === filter) : []), [t, filter]);
 
@@ -96,6 +99,11 @@ export function Trial({ mode }: { mode?: string }) {
             </Tabs.Trigger>
           ))}
         </Tabs.List>
+        {running && (
+          <p className="mt-4 text-[14px] text-amber">
+            The court is still reading {g.name}'s will. This page updates on its own.
+          </p>
+        )}
         <p className="mt-4 text-[14px] text-mist">
           {g.name}'s will had {t.cases.length} items. Convicted items are destroyed and never reach {t.child?.name ?? "the child"}.
         </p>

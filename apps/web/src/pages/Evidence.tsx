@@ -1,6 +1,6 @@
 import type { Evidence as EvidenceT, Summary } from "../lib/api";
 import { pct } from "../lib/format";
-import { useApi } from "../lib/hooks";
+import { useApi, useTitle } from "../lib/hooks";
 import { NumberTicker } from "../components/fx/NumberTicker";
 import { Heatmap } from "../components/ui/Heatmap";
 import { LearningCurve } from "../components/ui/LearningCurve";
@@ -9,6 +9,7 @@ import { Empty, ErrorState, PageSkeleton, SectionHead } from "../components/ui/S
 
 export function Evidence({ summary }: { summary: Summary | null }) {
   const { data: ev, error, loading } = useApi<EvidenceT>("/api/evidence");
+  useTitle("Evidence");
   if ((loading && !ev) || !summary) return <Page><PageSkeleton /></Page>;
   if (error || !ev) return <Page><ErrorState /></Page>;
   const n = ev.numbers;
