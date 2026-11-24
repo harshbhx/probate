@@ -97,7 +97,11 @@ def main() -> None:
 
     step("starting the courthouse service")
     api.put_service(args.name, "courthouse", "bash", ["-lc", SERVE], http_port=8080)
-    api.service_action(args.name, "courthouse", "restart")
+    try:
+        api.service_action(args.name, "courthouse", "restart")
+    except httpx.HTTPStatusError:
+        # First deploy: nothing to restart yet.
+        api.service_action(args.name, "courthouse", "start")
 
     info = api.make_public(args.name)
     url = (info.get("url") or (api.get(args.name) or {}).get("url") or "").rstrip("/")
