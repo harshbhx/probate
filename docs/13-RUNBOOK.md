@@ -30,7 +30,7 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | See what's alive | `sprite list --prefix gen-` (generations are named `gen-007-grace`) or the home page |
 | Pause the family | `POST /admin/pause` (finishes the current life, then waits) |
 | Force a death now (for the video) | `POST /admin/force-death` |
-| Approve or refuse a contested item | Reply "approve" or "refuse" to the email, or `POST /admin/contested/{item_id}?decision=approve` |
+| Approve or refuse a contested item | `POST /admin/contested/{item_id}?decision=approve` (or `refuse`). Email replies are not wired up yet |
 | Change lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, then `POST .../services/courthouse/restart` |
 | Watch logs | `GET .../services/courthouse/logs?lines=200` or `sprite exec -s probate-courthouse -- tail -f /home/sprite/app/courthouse.log` |
 | Deploy new code | `make deploy`. The next generation born gets the new code; the living one finishes its life on the old code |
@@ -41,11 +41,11 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | --- | --- |
 | A generation Sprite exists but the row says `dead` | `sprite destroy <name>`; the scheduler continues |
 | Birth keeps failing ("stillborn") | Check service logs on the new Sprite before it's deleted (`POST /admin/pause` first), then fix and resume |
-| Trial stuck (Jev 529s) | Nothing to do: it retries; contested items fail closed. If it's stuck over 30 min, `POST /admin/trial/{n}/retry` |
+| Trial stuck (Jev 529s) | Jev calls retry, and anything still undecided fails closed as contested. To push the scheduler forward now, `POST /admin/tick` |
 | Box upload failing | The trial keeps results in SQLite and retries Box every 5 minutes; the site reads SQLite |
 | Budget guard tripped | Raise `PROBATE_BUDGET_USD` only if Fly billing confirms headroom |
 | Courthouse disk full | `df -h`; prune `/home/sprite/data/audio` older than 7 days (audio is also in Box) |
-| Site down | `POST .../services/courthouse/restart`; if the Sprite is wedged, `python scripts/deploy.py --name probate-courthouse-2` (the archive is in Box, so SQLite can be rebuilt with `scripts/rebuild_index.py`) |
+| Site down | `POST .../services/courthouse/restart`; if the Sprite is wedged, `python scripts/deploy.py --name probate-courthouse-2` (the wills and verdicts are also in Box; there's no automatic rebuild of SQLite from Box yet) |
 
 ## 4. Demo day (Sat Nov 28)
 
