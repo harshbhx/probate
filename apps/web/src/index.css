@@ -1,0 +1,95 @@
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "tailwindcss";
+
+/* Night Court design tokens. Source of truth: docs/04-DESIGN.md */
+@theme {
+  --color-night: #0a0e17;
+  --color-night-2: #0f1422;
+  --color-night-3: #151b2c;
+  --color-night-4: #1c2338;
+  --color-moon: #e8ecf4;
+  --color-mist: #8c95ab;
+  --color-dim: #5b6480;
+  --color-life: #5be3a9;
+  --color-gilt: #e2be6a;
+  --color-verdict: #ff5d63;
+  --color-amber: #f5a524;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pulse-life: pulse-life 2.4s ease-in-out infinite;
+  --animate-border-beam: border-beam 6s linear infinite;
+  --animate-shine: shine 4s linear infinite;
+  --animate-beam-flow: beam-flow 3.2s linear infinite;
+}
+
+@keyframes pulse-life {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(91 227 169 / 0.5); }
+  50% { box-shadow: 0 0 0 6px rgb(91 227 169 / 0); }
+}
+@keyframes border-beam {
+  to { offset-distance: 100%; }
+}
+@keyframes shine {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+@keyframes beam-flow {
+  from { stroke-dashoffset: 240; }
+  to { stroke-dashoffset: 0; }
+}
+
+@layer base {
+  html { background: var(--color-night); color-scheme: dark; }
+  body {
+    @apply bg-night font-sans text-moon antialiased;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: rgb(91 227 169 / 0.25); }
+  :focus-visible { outline: 2px solid var(--color-life); outline-offset: 3px; border-radius: 6px; }
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(180deg, rgb(21 27 44 / 0.72), rgb(15 20 34 / 0.6));
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--color-line);
+  }
+  .card {
+    background: linear-gradient(180deg, rgb(28 35 56 / 0.55), rgb(15 20 34 / 0.55));
+    border: 1px solid var(--color-line);
+    border-radius: 20px;
+  }
+  .hairline { border-color: var(--color-line); }
+  .shiny-text {
+    background: linear-gradient(110deg, var(--color-mist) 35%, var(--color-moon) 50%, var(--color-mist) 65%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: var(--animate-shine);
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
