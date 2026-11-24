@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "probate"
+version = "0.1.0"
+description = "A personal agent family on Fly.io Sprites: each generation dies at midnight and a court decides what its child inherits."
+authors = [{ name = "Harsh Bhanushali", email = "bhanushaliharsh434@gmail.com" }]
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "httpx>=0.27",
+  "pydantic>=2.8",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+vendors = ["typesafe-sdk", "agentmail", "pinecone", "anthropic"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+include = ["probate*"]
+
+[tool.setuptools.package-data]
+probate = ["courthouse/schema.sql", "suite/*.json", "prompts/*.md"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["contract: calls real connectors", "sprites: creates real Sprites"]
