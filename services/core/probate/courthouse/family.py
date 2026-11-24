@@ -225,7 +225,13 @@ class Family:
                 f"A new instinct was born: {inst.question} ({inst.lore})",
                 self._after_death(g),
             )
-        self._archive_trial(g, items, judgements)
+        try:
+            self._archive_trial(g, items, judgements)
+        except Exception:
+            # Box is the archive, not the record the site reads. An outage must not stall the
+            # family: the verdicts stay in SQLite and the next trial rewrites GENOME and FAMILY.
+            log.warning("gen %s: archiving the trial failed", g.gen, exc_info=True)
+            self.store.set_setting(f"archive_missing:{g.gen}", "1")
         self._score(g, items, judgements, stats, evidence)
         approved = [it for it, j in zip(items, judgements) if j.verdict == Verdict.APPROVED]
         try:
@@ -430,10 +436,16 @@ class Family:
             path = f"gen-{g.gen:03d}-eulogy.mp3"
             (self.cfg.data_dir / "audio").mkdir(parents=True, exist_ok=True)
             (self.cfg.data_dir / "audio" / path).write_bytes(audio)
-            self.w.archive.put_bytes(f"voices/{path}", audio)
-        self.w.archive.put_text(
-            f"obituaries/OBITUARY-gen-{g.gen:03d}.md", f"# {g.name}\n\n{obit}\n\n*{epitaph}*\n"
-        )
+        try:
+            if audio:
+                self.w.archive.put_bytes(f"voices/{path}", audio)
+            self.w.archive.put_text(
+                f"obituaries/OBITUARY-gen-{g.gen:03d}.md",
+                f"# {g.name}\n\n{obit}\n\n*{epitaph}*\n",
+            )
+        except Exception:
+            log.warning("gen %s: archiving the obituary failed", g.gen, exc_info=True)
+            self.store.set_setting(f"archive_missing:{g.gen}", "1")
         self.store.x(
             "UPDATE generations SET obituary=?, epitaph=?, eulogy_path=? WHERE gen=?",
             obit,
