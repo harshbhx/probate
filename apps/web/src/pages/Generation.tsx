@@ -45,7 +45,7 @@ export function Generation({ mode }: { mode?: string }) {
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-        <aside className="lg:sticky lg:top-32 lg:self-start">
+        <aside className="min-w-0 lg:sticky lg:top-32 lg:self-start">
           <div className={cx("card relative overflow-hidden p-7", g.alive && "border-life/30")}>
             {g.alive && <BorderBeam size={120} />}
             <div className="flex items-center justify-between">
@@ -92,7 +92,7 @@ export function Generation({ mode }: { mode?: string }) {
           )}
         </aside>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {g.obituary && (
             <section className="card p-7 sm:p-9" aria-labelledby="eulogy">
               <div className="flex items-center justify-between gap-4">
@@ -109,6 +109,37 @@ export function Generation({ mode }: { mode?: string }) {
 
           {!g.alive && <AskAncestor g={g} onAsked={reload} />}
 
+          {g.alive && (
+            <section className="card relative overflow-hidden p-7 sm:p-9" aria-labelledby="next">
+              <h2 id="next" className="font-display text-[34px] leading-none">What happens next</h2>
+              <ol className="mt-6 space-y-5 text-[16px] leading-relaxed text-moon/90">
+                <li className="grid grid-cols-[28px_1fr] gap-3">
+                  <span className="mt-1 size-2.5 rounded-full bg-life" />
+                  <span>
+                    {g.name} is reading Harsh's email on {g.pronouns.poss} own Sprite. Every message passes the{" "}
+                    {g.genome_size_at_birth} inherited instincts before {g.pronouns.subj} reads a word of it.
+                  </span>
+                </li>
+                <li className="grid grid-cols-[28px_1fr] gap-3">
+                  <span className="mt-1 size-2.5 rounded-full border-2 border-mist" />
+                  <span>
+                    {g.dies_at ? `At ${clock(g.dies_at)} UTC` : "At the end of the day"} {g.pronouns.subj} writes a will of everything{" "}
+                    {g.pronouns.subj} wants {g.pronouns.poss} child to know. Then the Sprite is deleted.
+                  </span>
+                </li>
+                <li className="grid grid-cols-[28px_1fr] gap-3">
+                  <span className="mt-1 size-2.5 rotate-45 bg-gilt" />
+                  <span>A minute later the court tries the will in public, on this site.</span>
+                </li>
+              </ol>
+              {g.parent && (
+                <Link to={`/trial/${g.parent.gen}`} className="mt-8 inline-flex items-center gap-2 text-[15px] text-life hover:underline">
+                  See what {g.parent.name} passed down <ArrowRight size={15} />
+                </Link>
+              )}
+            </section>
+          )}
+
           {g.events.length > 0 && (
             <section className="card p-7" aria-labelledby="day">
               <h2 id="day" className="font-display text-[34px] leading-none">{g.alive ? "Today so far" : "The day"}</h2>
@@ -117,7 +148,7 @@ export function Generation({ mode }: { mode?: string }) {
                   <li key={i} className="relative grid grid-cols-[12px_56px_1fr] items-baseline gap-3 text-[15px]">
                     <span className={cx("relative top-[1px] size-[11px] rounded-full border-2 border-night", KIND_DOT[e.kind] ?? "bg-mist/60")} />
                     <time className="font-mono text-[12.5px] text-dim">{clock(e.ts)}</time>
-                    <span className="text-moon/90">{e.text}</span>
+                    <span className="min-w-0 text-moon/90 [overflow-wrap:anywhere]">{e.text}</span>
                   </li>
                 ))}
               </ol>

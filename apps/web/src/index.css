@@ -12,7 +12,7 @@
   --color-night-4: #1c2338;
   --color-moon: #e8ecf4;
   --color-mist: #8c95ab;
-  --color-dim: #5b6480;
+  --color-dim: #7d86a0;
   --color-life: #5be3a9;
   --color-gilt: #e2be6a;
   --color-verdict: #ff5d63;
@@ -54,6 +54,7 @@
     font-feature-settings: "ss01", "cv11";
     text-rendering: optimizeLegibility;
   }
+  p, li, dd, blockquote { overflow-wrap: break-word; }
   ::selection { background: rgb(91 227 169 / 0.25); }
   :focus-visible { outline: 2px solid var(--color-life); outline-offset: 3px; border-radius: 6px; }
   .tabular { font-variant-numeric: tabular-nums; }
@@ -61,7 +62,7 @@
 
 @layer components {
   .glass {
-    background: linear-gradient(180deg, rgb(21 27 44 / 0.72), rgb(15 20 34 / 0.6));
+    background: linear-gradient(180deg, rgb(21 27 44 / 0.94), rgb(15 20 34 / 0.92));
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     border: 1px solid var(--color-line);

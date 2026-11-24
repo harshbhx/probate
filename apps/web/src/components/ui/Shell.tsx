@@ -66,32 +66,38 @@ export function Nav({ summary }: { summary: Summary | null }) {
         </ul>
         {summary?.living && <LivePill gen={summary.living} compact />}
       </nav>
-      <MobileTabs />
     </header>
   );
 }
 
-function MobileTabs() {
+export function MobileTabs() {
   const loc = useLocation();
   return (
-    <ul className="glass mx-auto mt-2 flex max-w-5xl justify-between rounded-xl p-1 md:hidden">
-      {LINKS.map((l) => {
-        const active = l.end ? loc.pathname === l.to : loc.pathname.startsWith(l.to);
-        return (
-          <li key={l.to} className="flex-1">
-            <Link
-              to={l.to}
-              className={cx(
-                "block rounded-lg py-2 text-center text-[13px]",
-                active ? "bg-white/[0.07] text-moon" : "text-mist",
+    <nav aria-label="Sections" className="fixed inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-50 md:hidden">
+      <ul className="glass flex justify-between rounded-2xl p-1.5 shadow-[0_12px_40px_-12px_rgb(0_0_0/0.8)]">
+        {LINKS.map((l) => {
+          const active = l.end ? loc.pathname === l.to : loc.pathname.startsWith(l.to);
+          return (
+            <li key={l.to} className="relative flex-1">
+              {active && (
+                <motion.span
+                  layoutId="mobile-tab"
+                  className="absolute inset-0 rounded-xl bg-white/[0.08]"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
               )}
-            >
-              {l.label}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+              <Link
+                to={l.to}
+                aria-current={active ? "page" : undefined}
+                className={cx("relative block rounded-xl py-2.5 text-center text-[13.5px]", active ? "text-moon" : "text-mist")}
+              >
+                {l.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 
@@ -115,7 +121,7 @@ export function Page({ children, className, flush = false }: { children: ReactNo
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className={cx("mx-auto max-w-6xl px-4 pb-24 sm:px-6", flush ? "pt-0" : "pt-32 md:pt-36", className)}
+      className={cx("mx-auto max-w-6xl px-4 pb-24 sm:px-6", flush ? "pt-0" : "pt-24 md:pt-36", className)}
     >
       {children}
     </motion.main>
@@ -124,7 +130,7 @@ export function Page({ children, className, flush = false }: { children: ReactNo
 
 export function Footer() {
   return (
-    <footer className="border-t border-line">
+    <footer className="border-t border-line pb-20 md:pb-0">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 text-[14px] text-mist sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Seal size={22} />

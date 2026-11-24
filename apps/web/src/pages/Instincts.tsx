@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Instinct } from "../lib/api";
-import { cx, humanize } from "../lib/format";
+import { cx, sentence } from "../lib/format";
 import { useApi } from "../lib/hooks";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
 import { Page, SimBanner } from "../components/ui/Shell";
@@ -32,7 +32,7 @@ export function Instincts({ mode }: { mode?: string }) {
       ) : (
         <ul className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {list.map((i, k) => (
-            <li key={i.name} className={cx(k === 0 && list.length > 2 && "md:col-span-2")}>
+            <li key={i.name} className={cx("min-w-0", k === 0 && (list.length + 1) % 3 === 0 && "lg:col-span-2")}>
               <SpotlightCard className="flex h-full flex-col p-6" color="rgb(226 190 106 / 0.10)">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-2 text-[13px] text-gilt">
@@ -44,11 +44,11 @@ export function Instincts({ mode }: { mode?: string }) {
                     </Link>
                   )}
                 </div>
-                <h2 className="mt-5 font-display text-[32px] leading-[1.05]">{humanize(i.name)}</h2>
+                <h2 className="mt-5 font-display text-[32px] leading-[1.05]">{sentence(i.name)}</h2>
                 <p className="mt-3 text-[15.5px] leading-relaxed text-moon/85">{i.question}</p>
                 {i.lore && <p className="mt-3 text-[14px] italic text-mist">{i.lore}</p>}
                 {i.example && (
-                  <blockquote className="mt-auto border-l-2 border-verdict/50 pl-3 pt-6 text-[14px] text-mist">
+                  <blockquote className="mt-auto break-words border-l-2 border-verdict/50 pl-3 pt-6 text-[14px] text-mist [overflow-wrap:anywhere]">
                     “{i.example}”
                   </blockquote>
                 )}

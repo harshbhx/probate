@@ -86,7 +86,7 @@ function Stat({ value, label, tone }: { value: number; label: string; tone: stri
 function Hero({ summary }: { summary: Summary | null }) {
   const c = summary?.counts;
   return (
-    <section className="grain relative isolate overflow-hidden pb-20 pt-40 md:pb-24 md:pt-48">
+    <section className="grain relative isolate overflow-hidden pb-20 pt-28 md:pb-24 md:pt-48">
       <Starfield />
       <div
         aria-hidden
@@ -202,7 +202,7 @@ function HowItWorks({ summary }: { summary: Summary }) {
   return (
     <section id="how" className="mt-32 scroll-mt-28" aria-labelledby="how-title">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr]">
-        <div className="lg:sticky lg:top-32 lg:self-start">
+        <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">
           <h2 id="how-title" className="font-display text-[40px] leading-[1.05] tracking-tight sm:text-5xl">
             One day, one life, one trial
           </h2>

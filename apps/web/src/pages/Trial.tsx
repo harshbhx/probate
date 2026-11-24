@@ -99,20 +99,22 @@ export function Trial({ mode }: { mode?: string }) {
         <p className="mt-4 text-[14px] text-mist">
           {g.name}'s will had {t.cases.length} items. Convicted items are destroyed and never reach {t.child?.name ?? "the child"}.
         </p>
-        <div className="mt-8 space-y-4">
-          {cases.map((c) => (
-            <CaseFile key={c.id} c={c} live />
-          ))}
-          {!cases.length && <p className="text-mist">Nothing in this group.</p>}
-        </div>
+        {FILTERS.map((f) => (
+          <Tabs.Content key={f.v} value={f.v} className="mt-8 space-y-4 focus-visible:outline-none">
+            {cases.map((c) => (
+              <CaseFile key={c.id} c={c} live />
+            ))}
+            {!cases.length && <p className="text-mist">Nothing in this group.</p>}
+          </Tabs.Content>
+        ))}
       </Tabs.Root>
 
       <section className="mt-16 grid gap-4 lg:grid-cols-2" aria-label="Evidence and outcome">
-        <div className="card overflow-hidden">
+        <div className="card min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 border-b border-line px-5 py-3 text-[14px] text-mist">
             <HardDrive size={15} /> Found on the body
           </div>
-          <pre className="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed">
+          <pre tabIndex={0} aria-label="Disk evidence" className="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed">
             {t.body.lines.length ? (
               t.body.lines.map((l, i) => (
                 <div key={i} className={t.body.clean ? "text-mist" : "text-verdict/90"}>

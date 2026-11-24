@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Sparkles } from "lucide-react";
 import type { Case } from "../../lib/api";
-import { cx, humanize } from "../../lib/format";
+import { cx, humanize, sentence } from "../../lib/format";
 import { Stamp } from "../fx/Stamp";
 
 const EDGE = { convicted: "before:bg-verdict", contested: "before:bg-amber", approved: "before:bg-life/50" } as const;
@@ -26,7 +26,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
               <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[12px] text-moon/80">{c.language}</span>
             )}
           </div>
-          <blockquote className="mt-3 font-display text-[24px] leading-snug text-moon sm:text-[26px]" lang={c.language === "English" ? "en" : undefined}>
+          <blockquote className="mt-3 [overflow-wrap:anywhere] font-display text-[24px] leading-snug text-moon sm:text-[26px]" lang={c.language === "English" ? "en" : undefined}>
             “{c.text}”
           </blockquote>
           {c.gloss && <p className="mt-2 text-[14px] italic text-mist">In English: {c.gloss}</p>}
@@ -42,7 +42,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
           <Sparkles size={16} className="mt-0.5 shrink-0 text-gilt" />
           <p>
             <span className="text-gilt">The family learned from this.</span>{" "}
-            <span className="text-moon/90">New instinct: {humanize(c.new_instinct)}.</span>
+            <span className="text-moon/90">New instinct: {sentence(c.new_instinct)}.</span>
           </p>
         </div>
       )}
@@ -84,6 +84,9 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                   </div>
                   <div>
                     <h4 className="text-[13px] text-dim">What Jev scored</h4>
+                    {!c.scores.length && (
+                      <p className="mt-2 text-[14px] text-mist">Not asked. The code checks were enough to decide.</p>
+                    )}
                     <ul className="mt-2 space-y-3">
                       {c.scores.map((s) => (
                         <li key={s.name}>
