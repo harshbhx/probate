@@ -4,21 +4,30 @@ For Harsh and any agent operating the live family. Commands use the `sprite` CLI
 
 ## 1. First deploy of the Courthouse
 
-1. `sprite create courthouse`
-2. `sprite exec -s courthouse -- git clone https://github.com/<owner>/probate /home/sprite/app`
-3. `sprite exec -s courthouse -- pip install -e /home/sprite/app`
-4. Put the environment in `/home/sprite/app/.env` with `PUT /fs/write` or `sprite exec ... tee` (values from `docs/01-TECH-SPEC.md` section 11). `.env` is in `.gitignore`.
-5. Copy `config/owner.example.yaml` to `config/owner.yaml` on the Courthouse and fill in real allowlists.
-6. Create the service: `sprite-env services create courthouse --cmd uvicorn --args "probate.courthouse.app:app --host 0.0.0.0 --port 8080"` (or `PUT /v1/sprites/courthouse/services/courthouse` with `http_port: 8080`).
-7. Make it public: `sprite config update --url-auth public` (on the courthouse Sprite). Get the URL with `sprite info`.
-8. Check `GET https://<courthouse-url>/healthz` returns `{"ok": true}`.
-9. Admin: `POST /admin/resume` to start the family.
+One-time, on Harsh's laptop:
+
+1. `gh auth login` (GitHub) and get a Sprites API token from the Sprites dashboard.
+2. In the Sprites dashboard, connect each provider under Connectors (Jev/TypeSafe, Box, Pinecone, AgentMail, ElevenLabs, Ollama, Anthropic) and note each connection ID.
+3. Create four AgentMail inboxes: the family's, plus owner, friend and stranger test senders.
+4. `cp services/core/.env.example services/core/.env` and fill it in. `cp config/owner.example.yaml config/owner.yaml` and fill in the real allowlists. Both files are gitignored.
+5. `make deploy-check` validates the config and builds the bundle without touching anything.
+6. `make ship` runs tests and lint, builds the site, creates the public GitHub repo, pushes `main`, then runs `scripts/deploy.py`, which:
+   - creates the `probate-courthouse` Sprite (or reuses it),
+   - uploads the code bundle (Python service, config, built site) and installs it,
+   - writes `.env` with `PROBATE_FAKE=0`, `PROBATE_RUN_CLOCK=1`, `PROBATE_DATA_DIR=/home/sprite/data`,
+   - registers the `courthouse` service on port 8080 and starts it,
+   - makes the URL public and waits for `/healthz`.
+7. Open the printed URL. If the family was paused, `POST /admin/resume` with header `X-Probate-Admin`.
+
+Generations don't clone from GitHub. The Courthouse ships each child its own code bundle (`probate/common/bundle.py`), so every child runs exactly the Courthouse's version. Redeploying is `make deploy`; the database in `/home/sprite/data` is never touched.
+
+**Unverified until the first real run** (see `# VERIFY:` in `probate/adapters/sprites.py`): the exec response shape (we accept JSON `{exit_code, stdout, stderr}` or raw stdout) and whether `restart` works on a service that never ran (the script falls back to `start`). If install fails silently, run `sprite exec -s probate-courthouse -- python3 -c "import probate"` to check.
 
 ## 2. Daily operations
 
 | Task | How |
 | --- | --- |
-| See what's alive | `sprite list --prefix gen-` or the home page |
+| See what's alive | `sprite list --prefix gen-` (generations are named `gen-007-grace`) or the home page |
 | Pause the family | `POST /admin/pause` (finishes the current life, then waits) |
 | Force a death now (for the video) | `POST /admin/force-death` |
 | Approve or refuse a contested item | Reply "approve" or "refuse" to the email, or `POST /admin/contested/{item_id}?decision=approve` |
