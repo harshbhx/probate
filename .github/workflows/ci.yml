@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e '.[dev]'
+      - run: ruff check probate tests
+      - run: PROBATE_DATA_DIR=$RUNNER_TEMP/probate python -m pytest -q
+      - name: Simulate a family
+        run: PROBATE_FAKE=1 PROBATE_DATA_DIR=$RUNNER_TEMP/sim python -m probate.courthouse.simulate --generations 6
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
