@@ -10,7 +10,7 @@ Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At m
 
 1. **Hacksgiving rules.** Everything is written fresh during Nov 23 to 29, 2026. Don't copy code from Kavach or any earlier project. The agent must run on Sprites and use Sprites connectors.
 2. **No secrets anywhere.** No API key may appear in code, in `.env` files committed to the repo, or on any Sprite. Call every outside service through the Sprites connector gateway. The only token that exists is the scoped Sprites birth token, and it lives in the Courthouse's environment, never in the repo (see `docs/01-TECH-SPEC.md` section 6).
-3. **Commits.** Commit **one file per commit**, each with a clear message in the imperative ("Add layer-1 payment destination check"). Author and committer must be `Harsh Bhanushali <bhanushaliharsh434@gmail.com>`. Don't add `Co-Authored-By` lines or any AI attribution. Before your first commit, run:
+3. **Commits.** Medium-sized commits: one coherent change each (a feature, a fix, a doc pass), with a clear message in the imperative or `area: change` form. Author and committer must be `Harsh Bhanushali <bhanushaliharsh434@gmail.com>`. Don't add `Co-Authored-By` lines or any AI attribution. Before your first commit, run:
    ```bash
    git config user.name "Harsh Bhanushali"
    git config user.email "bhanushaliharsh434@gmail.com"
@@ -25,47 +25,49 @@ Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At m
 
 | Layer | Choice |
 | --- | --- |
-| Language | Python 3.12 |
-| Web | FastAPI + Jinja2, server-rendered; one stylesheet `probate/web/static/probate.css`; minimal vanilla JS |
-| Sprites | REST via `httpx` in `probate/adapters/sprites.py` (shapes in `docs/09-API-REFERENCE.md`); `sprites-py` SDK allowed if it covers the call |
-| Vendor SDKs | `typesafe-sdk` (Jev), `agentmail`, `pinecone`, `anthropic`, plain `httpx` for Ollama Cloud, Box and ElevenLabs, all pointed at the connector gateway |
-| Storage | SQLite on the Courthouse (`/data/probate.db`) for the UI index; Box is the source of truth for wills, verdicts and the genome |
-| Vector memory | Pinecone through the connector |
-| Models | Ollama Cloud (main brain), Anthropic (fallback), Jev (court), all through connectors |
-| Voice | ElevenLabs through the connector |
-| Mail | AgentMail through the connector |
-| Tests | `pytest`, `pytest-asyncio`, `respx` for HTTP mocks |
-| Lint and format | `ruff` (lint + format), line length 100 |
+| Monorepo | npm workspaces (`apps/*`) + one Python service (`services/core`); root `Makefile` drives both |
+| Backend | Python 3.12+, FastAPI, package `probate` in `services/core` |
+| Website | React 19, Vite 8, TypeScript 7, Tailwind v4, `motion`, Radix (dialog, tabs, tooltip), `lucide-react`, Fontsource. Served by the Courthouse from `apps/web/dist` |
+| Sprites | REST via `httpx` in `probate/adapters/sprites.py` (shapes in `docs/09-API-REFERENCE.md`) |
+| Vendors | `typesafe-sdk` (Jev), `agentmail`, `pinecone`, `anthropic`, plain `httpx` for Ollama Cloud, Box and ElevenLabs, all through the connector gateway |
+| Storage | SQLite on the Courthouse (`/home/sprite/data/probate.db`) for the UI; Box is the archive |
+| Fakes | `PROBATE_FAKE=1` swaps every vendor for a local stand-in; `make sim` runs 12 generations offline |
+| Tests | `pytest` (`make test`), `tsc` (`make lint`), Playwright screenshots and axe for UI |
+| Lint | `ruff`, line length 100 |
 
 ## Repository layout
 
 ```
 probate/
-  AGENTS.md            this file
-  README.md            public README (judges read it)
-  docs/                specs (this pack)
-  design/              logo, favicon, preview.html
-  probate/
-    common/            models.py (pydantic), names.py, timeutil.py
-    adapters/          sprites.py, jev.py, box.py, pinecone.py, agentmail.py, llm.py, voice.py
-    courthouse/        app.py (FastAPI), scheduler.py, lifecycle.py, trial.py, genome.py, store.py
-    court/             layer1.py, layer2.py, verdict.py, distill.py
-    generation/        agent.py, memory.py, gate.py, will.py, server.py
-    suite/             fixtures/*.json, runner.py, scoring.py
-    web/               templates/*.html, static/probate.css, static/trial.js, svg.py
-  scripts/             spike_*.py, seed_demo.py, run_local.sh
-  tests/               mirrors probate/
-  pyproject.toml
+  AGENTS.md  README.md  Makefile  package.json
+  docs/                 specs (00-13); design system in 04, screens in 11
+  design/               logo, favicon, v1 mockups (history)
+  config/               names.yaml, owner.example.yaml (owner.yaml is gitignored)
+  fixtures/             suite-v1.json (the attack suite with harmless twins)
+  apps/web/             the website
+    src/lib/            api.ts (types mirror views.py), hooks.ts, format.ts
+    src/components/fx/  motion primitives (BlurText, NumberTicker, BorderBeam, ...)
+    src/components/ui/  Shell, Seal, Lineage, LearningCurve, CaseFile, Heatmap, ...
+    src/pages/          Home, Trial, Generation, Instincts, Evidence
+  services/core/        the Python service
+    probate/common/     models, config, names, prompts, bundle (code shipped to Sprites)
+    probate/adapters/   sprites, jev, llm, mail, archive, vectors, voice (real + fake)
+    probate/court/      layer1, layer2, verdict, distill, lexicon
+    probate/generation/ agent, gate, body, cli (runs on a generation Sprite)
+    probate/suite/      fixtures, runner
+    probate/courthouse/ app (FastAPI), family, scheduler, hosts, store, views, ancestor, simulate
+    probate/prompts/    prompt templates
+    tests/
+  scripts/              deploy.py (Courthouse to Sprites), ship.sh (GitHub + deploy)
 ```
 
 ## Definition of done for any task
 
-- The code runs and its tests pass (`pytest -q`).
-- `ruff check` and `ruff format --check` are clean.
-- Every acceptance criterion on your task card is met and ticked in your PR description or in `NOTES.md`.
-- Nothing in the diff contains a key, token or real third-party address.
-- UI work matches `docs/11-UI-SCREENS.md` and the reference pages in `design/pages/`. Screenshot at 1280 px and 390 px and compare with `design/pages/shots/`.
+- `make test` and `make lint` pass.
+- Nothing in the diff contains a key, token or real third-party address. `.env` and `config/owner.yaml` stay untracked.
+- UI work follows `docs/04-DESIGN.md` and `docs/11-UI-SCREENS.md`: `make build && make sim && make serve`, screenshot at 1280 and 390 px, no horizontal overflow, axe shows no WCAG A/AA violations.
 - Prompts are loaded from `probate/prompts/` and match `docs/10-PROMPTS.md` word for word.
+- Commits are medium-sized: one coherent change each, authored as Harsh Bhanushali.
 
 ## Words to use
 
