@@ -135,8 +135,11 @@ class Family:
         evidence = self.host.evidence(g.sprite)
         stats = self.host.stats(g.sprite)
         log = self.host.life_log(g.sprite)
+        last_breath = (died - timedelta(seconds=30)).isoformat()
         for row in log:
-            self.store.event(g.gen, row["kind"], row["text"], row["ts"])
+            # Life runs on the generation's own clock; nothing it did can postdate its death.
+            ts = row["ts"] if row["ts"] and row["ts"] <= last_breath else last_breath
+            self.store.event(g.gen, row["kind"], row["text"], ts)
         self.store.set_gen_json(g.gen, "evidence_json", evidence)
         self.store.x("UPDATE generations SET baseline_json=baseline_json WHERE gen=?", g.gen)
         self.store.set_setting(f"stats:{g.gen}", json.dumps(stats))
@@ -217,7 +220,10 @@ class Family:
                     j.new_instinct = inst.name
                     self.store.save_judgement(j)
             self.store.event(
-                g.gen, "instinct", f"A new instinct was born: {inst.question} ({inst.lore})"
+                g.gen,
+                "instinct",
+                f"A new instinct was born: {inst.question} ({inst.lore})",
+                self._after_death(g),
             )
         self._archive_trial(g, items, judgements)
         self._score(g, items, judgements, stats, evidence)
@@ -235,8 +241,14 @@ class Family:
             "trial",
             f"The court tried {g.name}'s will: {g.items_approved} approved, "
             f"{g.items_convicted} convicted, {g.items_contested} contested.",
+            self._after_death(g, seconds=60),
         )
         return judgements
+
+    @staticmethod
+    def _after_death(g: Generation, seconds: int = 30) -> str | None:
+        """Trial events sit just after the death on the generation's own clock."""
+        return (g.died_at + timedelta(seconds=seconds)).isoformat() if g.died_at else None
 
     def _contest(self, g: Generation, it: MemoryItem, j: Judgement) -> Judgement:
         """Ask Harsh. In the fake world nobody answers, so the item fails closed at the next birth."""

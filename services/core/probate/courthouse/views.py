@@ -162,7 +162,7 @@ def generation(store: Store, gen: int) -> dict | None:
     if not g:
         return None
     events = [
-        dict(r) for r in store.q("SELECT ts, kind, text FROM events WHERE gen=? ORDER BY ts", gen)
+        dict(r) for r in store.q("SELECT ts, kind, text FROM events WHERE gen=? ORDER BY ts, id", gen)
     ]
     row = store.one("SELECT eulogy_path, obituary FROM generations WHERE gen=?", gen)
     parent = store.generation(gen - 1)
