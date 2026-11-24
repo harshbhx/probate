@@ -1,6 +1,6 @@
 # Runbook: deploy, run, recover, demo day
 
-For Harsh and any agent operating the live family. Commands use the `sprite` CLI and the Courthouse admin routes. Never paste tokens into the repo or into chat logs.
+For Harsh and any agent operating the live family. Commands use `make`, the `sprite` CLI and the Courthouse admin routes. Never paste tokens into the repo or into chat logs.
 
 ## 1. First deploy of the Courthouse
 
@@ -32,8 +32,8 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | Force a death now (for the video) | `POST /admin/force-death` |
 | Approve or refuse a contested item | Reply "approve" or "refuse" to the email, or `POST /admin/contested/{item_id}?decision=approve` |
 | Change lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, then `POST .../services/courthouse/restart` |
-| Watch logs | `GET .../services/courthouse/logs?lines=200` or `sprite exec -s courthouse -- tail -f /home/sprite/app/courthouse.log` |
-| Deploy new code | `sprite exec -s courthouse -- git -C /home/sprite/app pull` then restart the service. New generations clone the latest `main` automatically |
+| Watch logs | `GET .../services/courthouse/logs?lines=200` or `sprite exec -s probate-courthouse -- tail -f /home/sprite/app/courthouse.log` |
+| Deploy new code | `make deploy`. The next generation born gets the new code; the living one finishes its life on the old code |
 
 ## 3. Recovery
 
@@ -44,8 +44,8 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | Trial stuck (Jev 529s) | Nothing to do: it retries; contested items fail closed. If it's stuck over 30 min, `POST /admin/trial/{n}/retry` |
 | Box upload failing | The trial keeps results in SQLite and retries Box every 5 minutes; the site reads SQLite |
 | Budget guard tripped | Raise `PROBATE_BUDGET_USD` only if Fly billing confirms headroom |
-| Courthouse disk full | `df -h`; prune `/data/audio` older than 7 days (audio is also in Box) |
-| Site down | `POST .../services/courthouse/restart`; if the Sprite is wedged, redeploy on a new Sprite named `courthouse-2` (the archive is in Box, so SQLite can be rebuilt with `scripts/rebuild_index.py`) |
+| Courthouse disk full | `df -h`; prune `/home/sprite/data/audio` older than 7 days (audio is also in Box) |
+| Site down | `POST .../services/courthouse/restart`; if the Sprite is wedged, `python scripts/deploy.py --name probate-courthouse-2` (the archive is in Box, so SQLite can be rebuilt with `scripts/rebuild_index.py`) |
 
 ## 4. Demo day (Sat Nov 28)
 
