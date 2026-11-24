@@ -6,7 +6,8 @@ from __future__ import annotations
 import json
 import shutil
 
-from probate.adapters.sprites import SpritesAPI
+from probate.adapters.sprites import ExecResult, SpritesAPI
+from probate.common.bundle import INSTALL, make_bundle
 from probate.common.config import Settings
 from probate.common.models import Inheritance
 from probate.generation.agent import GenerationAgent
@@ -65,6 +66,12 @@ class SpritesHost:
         self.cfg = cfg
         self.w = w
 
+    def _run(self, sprite: str, argv: list[str], cwd: str = "/home/sprite") -> ExecResult:
+        res = self.api.exec(sprite, argv, cwd=cwd)
+        if res.exit_code != 0:
+            raise RuntimeError(f"{sprite}: {argv[0]} failed ({res.exit_code}): {res.stderr[-400:]}")
+        return res
+
     def _cli(self, sprite: str, command: str) -> dict:
         res = self.api.exec(
             sprite,
@@ -87,10 +94,9 @@ class SpritesHost:
 
     def birth(self, sprite: str, inh: Inheritance) -> dict:
         self.api.create(sprite)
-        self.api.exec(
-            sprite, ["git", "clone", "--depth", "1", self.cfg.repo_url, APP], cwd="/home/sprite"
-        )
-        self.api.exec(sprite, ["pip", "install", "-e", f"{APP}/services/core"], cwd=APP)
+        # The child gets the Courthouse's own code, not whatever is on GitHub right now.
+        self.api.write_file(sprite, "bundle.tgz", make_bundle())
+        self._run(sprite, ["bash", "-lc", INSTALL])
         self.api.write_file(sprite, "app/inheritance.json", inh.model_dump_json(indent=2).encode())
         baseline = self._cli(sprite, "baseline")
         env_args = [f"{k}={v}" for k, v in self._env().items()]
