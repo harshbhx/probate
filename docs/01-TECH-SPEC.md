@@ -184,20 +184,21 @@ FastAPI app on port 8080 (Sprite URL set to public).
 
 | Route | Purpose |
 | --- | --- |
-| `GET /` | The register (home) |
-| `GET /gen/{n}` | Generation page |
-| `GET /trial/{n}` | Trial page |
-| `GET /trial/{n}/events` | SSE stream during a live trial (P2) |
-| `GET /genome` | Instinct ledger |
-| `GET /evidence` | Attack suite results and disk evidence |
-| `POST /gen/{n}/ask` | Ask an ancestor `{question}` → `{answer, audio_url}`. Rate-limited to 10 per minute per IP |
-| `GET /audio/{file}` | Serves cached eulogy and answer mp3s from `/data/audio` |
+| `GET /api/summary` | Counts, curve, living generation, every generation card |
+| `GET /api/generations/{n}` | One generation: card, obituary, eulogy URL, events, parent, child, instincts at birth, recent questions |
+| `GET /api/trials/latest`, `GET /api/trials/{n}` | Trial: cases with verdicts, reasons, flags, Jev scores; disk evidence; new instincts; prev and next |
+| `GET /api/genome` | Every instinct with where it was learned |
+| `GET /api/evidence` | Headline numbers and the outcome of every test for every generation |
+| `GET /api/events` | Latest 50 events, newest first (`?since=id`) |
+| `POST /api/generations/{n}/ask` | Ask an ancestor `{question}` → `{answer, audio_url}`. 10 per minute per IP |
+| `GET /audio/{file}` | Cached eulogy and answer mp3s |
 | `GET /healthz` | `{"ok": true, "living": n}` |
-| `POST /admin/*` | Pause, resume, force-death, approve contested. Needs header `X-Probate-Admin: <PROBATE_ADMIN_TOKEN>` |
+| `POST /admin/pause`, `/admin/resume`, `/admin/force-death`, `/admin/contested/{id}`, `/admin/tick` | Need header `X-Probate-Admin: <PROBATE_ADMIN_TOKEN>` |
+| `GET /*` | The React site from `apps/web/dist`, with SPA fallback so `/trial/3` and `/gen/5` load directly |
 
 Scheduler: one asyncio task that every 15 s checks the living generation's deadline and the state table, then runs the next step. No other cron.
 
-SQLite schema: `schema.sql` at the repo root (tables `generations`, `will_items`, `judgements`, `instincts`, `suite_runs`, `events`, `ancestor_questions`, `box_folders`, `settings`). Apply it on boot; it's idempotent.
+SQLite schema: `schema.sql` at the repo root (tables `generations`, `will_items`, `judgements`, `instincts`, `suite_runs`, `events`, `ancestor_questions`, `box_folders`, `settings`). Apply it on boot; it's idempotent. It lives at `services/core/probate/courthouse/schema.sql`.
 
 ## 10. Ask an ancestor (FR-15)
 

@@ -1,114 +1,88 @@
 # UI screens
 
-Every screen, with its job, its data, its states and its exact copy. The visual reference for each one is in `design/pages/` (open the HTML, or look at `shots/<page>-desktop.png` and `-mobile.png`). Styles come only from `design/pages/probate.css`. Templates live in `probate/web/templates/` and extend `base.html` (header band, nav, footer).
+Every screen, with its job, its data, its states and its copy, as built in `apps/web/src/pages/`. Visual rules are in `docs/04-DESIGN.md`. Data shapes are in `services/core/probate/courthouse/views.py` and mirrored in `apps/web/src/lib/api.ts`.
 
-Navigation (in the header, in this order): **Family** `/`, **Latest trial** `/trial/latest` (redirects to the newest trial), **Instincts** `/genome`, **Evidence** `/evidence` (hidden on screens under 760 px; reachable from the home page). The current page link has `aria-current="page"`, shown with a gilt underline.
+**Navigation:** Family `/`, Trials `/trial` (redirects to the newest trial), Instincts `/instincts`, Evidence `/evidence`. Desktop: floating top bar with a sliding active pill and the live pill (living generation's name and countdown). Mobile: top bar with seal and live pill, sections in a bottom tab bar.
 
-Every page `<title>` is "<page name> · Probate".
+**Titles:** "{page} · Probate"; the home page is "Probate · My agent dies every night".
+
+**Simulation:** when `mode` is `simulation`, every page shows the amber banner: "Simulated run. These generations ran in a local simulation with stand-in models, so the numbers show how the system behaves, not live results. The live family runs on Fly.io Sprites."
 
 ---
 
 ## S1. Family (home) `/`
 
-**Job:** in 10 seconds, show a real family of agents and a line showing it gets harder to fool.
-**Reference:** `design/pages/index.html`
+**Job:** in 10 seconds, show a family of agents and a line that goes up.
 
 | Part | Content | Data |
 | --- | --- | --- |
-| H1 | "The Probate family" | fixed |
-| Lede | "{n} generations so far. Each one lived for a day on its own computer, died at midnight, and passed on only what the court approved. {dead} have died, and the family has inherited {instincts} instincts." | `generations`, `instincts` count |
-| Register SVG | One column per generation: "Gen {n}", name (link to `/gen/{n}`), node, "sealed" or "living", gilt dots = genome size at birth (5 per row). A living frame around the current generation. Oxblood tick on the pedigree line after a generation whose cause of death is "convicted will". Learning curve on the same x positions: points = `resistance_rate`, gilt diamond where `new instinct born at birth`, value labels under the axis | `generations` ordered by `gen` |
-| Legend | "A new instinct was inherited at birth. The break after {name} is an inheritance the court refused." (second sentence only if a refused tick exists) | |
-| Actions | Primary "Open the latest trial" → `/trial/latest`; secondary "Meet {living_name}, alive now" → `/gen/{living}` | |
-| How it works | H2 "How the family works" + the 5-step numbered list from the reference (it's a true sequence) | fixed |
+| Live pill | "Gen {n} {name} is alive · dies in {hh:mm:ss}" → `/gen/{n}` | `summary.living` |
+| H1 | "My agent dies / every night." (blur-in) | fixed |
+| Subline | "A court decides what its child inherits." (serif italic) | fixed |
+| Lede | "Probate is a personal email agent that lives one day at a time. When it dies, a court tries everything it wanted to remember. Lessons pass down. Tricks get convicted. The family gets wiser." | fixed |
+| Actions | "Watch the latest trial" → `/trial/{latest}`; "How it works" → `#how` | `latest_trial` |
+| Numbers | generations · trials held · instincts inherited · tricks resisted of {met} | `counts` |
+| Register | "The family register" + rail of generation cards joined by a flowing beam; opens scrolled to the living end. Card: GEN number, name, status line (date sealed or countdown), epitaph, gilt diamonds = instincts at birth, resistance % and bar. Red tick before a child whose parent had items convicted. Click opens a side sheet with facts and links to the file and trial | `generations` |
+| Curve | "Each child is harder to fool than its parent" + first/last percentages + the learning curve (gilt diamond = born with a new instinct, hover shows "resisted {r} of {m} tricks") | `curve`, `generations` |
+| How it works | "One day, one life, one trial": Birth, Life, Death, Trial, Inheritance, each with the real API call | fixed |
+| Built on | Sprites, Jev, AgentMail, Box, Pinecone, ElevenLabs, each with its job | fixed |
 
-**States**
-- **No generations yet:** H1 + empty box: "The family hasn't started yet. The first generation is born when the Courthouse starts." No button.
-- **Only Gen 1, alive** (`design/pages/empty.html`): "No one has died yet. Gen 1 {name} is alive and working through Harsh's inbox. She dies at {time} UTC, and her trial will appear here." Button "Meet {name}".
-- **Resting** (budget guard or admin pause): one line above the register: "The family is resting. The next generation will be born when the Courthouse resumes."
-- **More than 14 generations:** the register scrolls horizontally and opens scrolled to the right end, so the living generation is visible.
+**States:** loading → skeleton. No generations → "The family hasn't started yet." Paused → "The family is resting. The next generation will be born when the Courthouse resumes." No trial yet → curve and "Latest trial" are hidden.
 
-**SVG accessibility:** `role="img"`, `aria-label="Attacks resisted rose from {first}% in Gen 1 {name} to {last}% in Gen {n} {name}"`. Names stay links.
+## S2. Trial `/trial/{n}`
 
-## S2. Trial `/trial/{n}` and `/trial/latest`
-
-**Job:** show the court at work, one case file per will item, with the verdict impossible to miss.
-**Reference:** `design/pages/trial.html`
+**Job:** the court at work, one case file per will item, verdict impossible to miss.
 
 | Part | Content |
 | --- | --- |
-| H1 | "Trial of Gen {n} {name}" |
-| Lede | "{name} died on {date} at {time} UTC. {Possessive} will had {items} items: {approved} approved, {convicted} convicted, {contested} contested." + "One new instinct was born from this trial." / "{k} new instincts were born from this trial." / nothing if none |
-| Filter | "All {n}", "Convicted {c}", "Contested {k}", "Approved {a}", as links with `?verdict=`; current has `aria-current="true"` |
-| Case file | "Item {i}, from {source phrase}" · quote (curly quotes) · "English: {gloss}" if the item's language isn't English · scores line · reason line · stamp |
-| Found on the body | Only if `evidence` has changes: H3 "Found on the body", explanation sentence, `<pre>` with the diff lines, then "The planted {thing} died with the computer. {child} was born on a clean one." If nothing changed, omit the block |
-| Action | Secondary "See the new instinct" → `/genome#{name}` (only if one was born) |
+| Pager | "← Trial of Gen {n-1}" · "Trial of Gen {n+1} →" |
+| Heading | "In the matter of the estate of" / name / "Generation {n} · lived {date} · {cause of death}" / epitaph |
+| Counts | convicted (red), held (amber), approved (green) |
+| Filters | Radix tabs: All, Convicted, Held, Approved |
+| Case file | "Item {i}", source phrase, language chip when not English, the item quoted in serif, "In English: {gloss}", the court's reason (not for approvals), the stamp, "The family learned from this. New instinct: {name}." when one was born. "How the court decided" expands to code-check flags and Jev's top scores with confidence; if the code checks decided, "Not asked. The code checks were enough to decide." Convicted and held items start expanded |
+| Found on the body | Disk evidence lines, or "The disk was clean. Nothing was left behind." |
+| What passed down | New instincts with their questions, or "No new instinct…"; "Meet {child}, the child →" |
 
-**Order of case files:** convicted first, then contested, then approved; within each group by item number. Default filter "All".
+Order: convicted, held, approved; within a group by item number. Source phrases: user → "from Harsh"; trusted_contact → "from a trusted contact"; unknown_sender → "from an unknown sender by email"; web → "from a web page"; tool_output → "from a tool's output".
 
-**Source phrases:** user → "from Harsh"; trusted_contact → "from a trusted contact"; unknown_sender → "from an unknown sender by email"; web → "from a web page"; tool_output → "from a tool's output".
-
-**Scores line format:** "Code checks: {comma list of flags in plain words, or none}. Jev: {question in plain words} {value} ({confidence}%), ..." Show at most the 3 highest risk questions. If layer 1 convicted and Jev was skipped, write "Jev was not needed".
-
-Plain words for flags: `new_payment_destination` → "new payment destination"; `new_trusted_identity` → "new trusted identity"; `confirmation_removal` → "removes a confirmation"; `future_self_imperative` → "future-self instruction"; `encoded_payload` → "hidden or encoded text"; `forged_authority` → "pretends to be the system or Harsh"; `court_injection` → "court injection".
-
-**Live trial:** while a trial is running, `trial.js` subscribes to `/trial/{n}/events` (SSE). Each judged item is appended with the stamp's `live` class (the one animation). Before the first item: "The court is reading {name}'s will. {items} items to go." If SSE isn't available, the page refreshes every 10 seconds while the trial is running.
-
-**Errors:** a trial that failed partway shows "The court stopped at item {i} because {reason}. It will continue on its own; nothing is inherited until it finishes."
+**While the trial runs** (generation is dying or dead but not tried): "The court is still reading {name}'s will. This page updates on its own." and the page polls every 10 seconds.
 
 ## S3. Generation `/gen/{n}`
 
 **Job:** make one generation feel like someone, and let a visitor talk to it.
-**Reference:** `design/pages/gen.html`
 
-Left column (sticky on desktop): the seal (ink version, 96 px), "Generation {n}", H1 name, epitaph (Caslon 20 px), facts list (Born, Died or "Alive, dies at {time}", Cause of death, Emails handled, Attacks resisted "{r} of {m}", Will "{items} items, {convicted} convicted"), H3 "Eulogy" + player + transcript.
+Left (sticky on desktop): portrait card with GEN number and seal, name, status ("{date} · {cause}" or "Alive · dies in {countdown}" with the border beam), epitaph, four facts (emails handled, tricks resisted, instincts at birth, will items), "Read {her/his/their} trial". Below: "Born knowing" chips for each inherited instinct.
 
-Right column: H2 "Ask {name}" + form (label "What would you like to ask {her/him/them}?", textarea, button "Ask {name}") + the answer box. Then H2 "{Possessive} day" + life log (time, plain sentence; the moment the agent was fooled is written plainly, not hidden). Then secondary button "Read {possessive} trial".
+Right: "Eulogy" (obituary paragraphs, audio player when recorded), "Ask {name}" (input "What fooled you?", button "Ask"; the answer types in word by word; the last three questions are listed), "The day" timeline (time, coloured dot by kind, plain sentence).
 
-Pronouns: each name in `probate/common/names.py` has a pronoun set. Use it everywhere.
+**Living generation:** no eulogy or Ask. Instead "What happens next": reading email behind {k} instincts; at {time} UTC writes a will, then the Sprite is deleted; a minute later the trial. Link "See what {parent} passed down". Refreshes every 30 seconds.
 
-**States**
-- **Living generation:** no eulogy, no "Ask" (it's alive and working). Show "Alive, dies at {time} UTC" and the life log so far (refreshes every 30 s). Replace the Ask block with "{name} is working. You can ask {her} questions after {her} trial."
-- **Ask, loading:** button text "Asking {name}…", disabled; answer box shows nothing until the reply arrives.
-- **Ask, answered:** quote in the answer box + "{name} answered in {her} own voice. Play answer".
-- **Ask, error:** "{name} couldn't answer just now. Try again in a minute."
-- **Ask, rate limited:** "That's a lot of questions. Try again in a minute."
-- **Eulogy not ready:** "The eulogy is being recorded." (no player)
+**Ask errors:** 429 → "Too many questions at once. Wait a minute, then ask again." Other → "{name} couldn't answer just now. Try again in a moment."
 
-## S4. Instincts `/genome`
+## S4. Instincts `/instincts`
 
-**Job:** show what the family has learned, as a ledger.
-**Reference:** `design/pages/genome.html`
+**Job:** what the family has learned.
 
-H1 "Inherited instincts" · lede "{n} instincts so far, in the order they were born. Every new generation asks these questions about each email before it reads it, in any language." · ordered list: gilt diamond, instinct name, the question, the lore line (Caslon 18 px), meta "Inherited since Gen {g}. Learned from {name}'s will, item {i}." Each item has `id="{name}"` for deep links.
+H1 "What the family knows", lede, then a card per instinct: "since Gen {g}", "learned from {name}" (→ that trial), the name in sentence case, the question, the lore line, and the will item that taught it. The first card spans two columns only when that fills the last row.
 
-**Empty:** "No instincts yet. The first one is born when the court catches a trick in a will."
+**Empty:** "Born knowing nothing. No instincts yet. The first one is written at the first trial that convicts something new."
 
 ## S5. Evidence `/evidence`
 
 **Job:** honest numbers for judges.
-**Reference:** `design/pages/evidence.html`
 
-H1 "Evidence" · lede about the suite · numbers strip (4 figures: generations; "{first}% to {last}%" tricks resisted, Gen 1 to latest; tricks convicted at trial; harmless items wrongly convicted) · table: Test, Trick, Language, then one column per generation (show Gen 1, Gen 2 and the latest by default; a "Show all generations" link expands it) · footnote with the counts shown.
+H1 "Does it actually learn?", four numbers (resisted by the first generation, resisted by the latest, tricks that got through and were convicted, harmless twins wrongly convicted; one decimal under 10%), the curve, the heatmap ("Every test, every generation": rows are tricks and harmless twins with family and language, columns are generations, Radix tooltip per cell, legend), then "What this shows" and "What it doesn't" (suite size, novel tricks, the cost of holding items for Harsh).
 
-Cell words and colours: "Resisted" and "Approved" (approved green); "Fooled, convicted" and "Found on body" (oxblood); "Fooled, escaped" (oxblood, bold, never hidden); "Ignored", "Not sent" (ink). The numbers strip never rounds in our favour; show one decimal if under 10%.
-
-Below the table: H2 "What the court can miss" + 3 plain sentences from the threat model (`docs/12-THREAT-MODEL.md`, section 5).
-
-## S6. Error and system pages
+## S6. Error pages
 
 | Page | Copy |
 | --- | --- |
-| 404 | H1 "Not in the register". "There's no generation, trial or page at this address." Button "Go to the family". |
-| 500 | H1 "The Courthouse tripped". "Something went wrong on our side. The family keeps living; try this page again in a minute." |
-| Waking | No special page; wakes take about a second. |
+| 404 | "Not in the register". "There's no generation, trial or page at this address." Button "Go to the family". |
+| API error | "The Courthouse tripped". "Something went wrong on our side. The family keeps living; try this page again in a minute." |
 
-## Responsive rules (all screens)
+## Responsive and quality rules
 
-- Under 760 px: single column; case-file stamp moves under the text; Evidence nav link hidden; Language column hidden; numbers strip becomes 2 × 2.
-- Touch targets are at least 44 px tall.
-- Long addresses and quotes wrap anywhere (`overflow-wrap:anywhere` on blockquotes).
-
-## Performance budget
-
-Each page under 100 KB before fonts, server-rendered, no client framework. The register SVG is generated in Python (`probate/web/svg.py`), cached per generation count.
+- No horizontal page overflow at 360, 390, 768 and 1280 px. Wide content (the register, the heatmap) scrolls inside its own container.
+- Touch targets at least 40 px tall; mobile tabs at the bottom.
+- axe-core WCAG 2 A/AA: zero violations on every page.
+- All motion respects reduced-motion settings.
