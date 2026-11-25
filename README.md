@@ -124,7 +124,7 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 
 ## Run it yourself
 
-You need Python 3.12+, Node 20+ and `make`. No keys are needed for the simulation.
+You need Python 3.12+, Node 22 and `make` (on Windows, use WSL). No keys are needed for the simulation.
 
 ```bash
 git clone https://github.com/harshbhx/probate && cd probate
