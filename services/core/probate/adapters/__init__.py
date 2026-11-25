@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from probate.adapters.archive import BoxArchive, LocalArchive
 from probate.adapters.jev import FakeJev, RealJev
 from probate.adapters.llm import FakeLLM, RealLLM
-from probate.adapters.mail import FakeMailbox, RealMailbox
+from probate.adapters.mail import CloudflareSender, FakeMailbox, RealMailbox, RoutedMailbox
 from probate.adapters.vectors import FakeVectors, PineconeVectors
 from probate.adapters.voice import ElevenLabsVoice, FakeVoice
 from probate.common.config import Settings, settings
@@ -46,7 +46,10 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
         _WORLD = World(
             jev=RealJev(cfg.gateway("typesafe")),
             llm=RealLLM(cfg.brain, cfg.gateway("ollama"), cfg.gateway("anthropic")),
-            mail=RealMailbox(cfg.gateway("agentmail")),
+            mail=RoutedMailbox(
+                RealMailbox(cfg.gateway("agentmail")),
+                {cfg.owner_sender: CloudflareSender(cfg.gateway("cloudflare"), cfg.cf_account_id)},
+            ),
             archive=BoxArchive(cfg.gateway("box")),
             vectors=PineconeVectors(cfg.gateway("pinecone")),
             voice=ElevenLabsVoice(cfg.gateway("elevenlabs")),
