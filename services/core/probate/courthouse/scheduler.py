@@ -29,6 +29,8 @@ class Scheduler:
             gap = (now - self.last_tick).total_seconds()
             self.family.budget.charge_courthouse(min(max(gap, 0), 4 * TICK_SECONDS))
         self.last_tick = now
+        if self.family.hooks is not None:
+            self.family.hooks.kick()  # due retries go out while we are awake anyway
         try:
             self.family.read_court_replies()
         except Exception:

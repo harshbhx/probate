@@ -22,6 +22,7 @@ from probate.courthouse.budget import Budget
 from probate.courthouse.store import Store
 from probate.suite import runner
 from probate.suite.fixtures import load as load_fixtures
+from probate.webhooks import events as wh_events
 
 MAX_INHERITED = 200
 log = logging.getLogger("probate.family")
@@ -35,8 +36,9 @@ def _human_span(seconds: float) -> str:
 
 
 class Family:
-    def __init__(self, cfg: Settings, store: Store, w, host) -> None:
+    def __init__(self, cfg: Settings, store: Store, w, host, hooks=None) -> None:
         self.cfg = cfg
+        self.hooks = hooks  # outgoing webhooks (optional; emitting only queues rows)
         self.store = store
         self.w = w
         self.host = host
@@ -48,6 +50,11 @@ class Family:
         self.owner_email = self.owner.emails[0] if self.owner.emails else cfg.owner_sender
         self.owner.emails = list(dict.fromkeys([*self.owner.emails, cfg.owner_sender]))
         self.owner.trusted_contacts = list({*self.owner.trusted_contacts, cfg.friend_inbox})
+
+    def emit(self, type_: str, data: dict, dedupe: str | None = None) -> None:
+        """Queue a webhook event. Never raises and never waits on the network."""
+        if self.hooks is not None:
+            self.hooks.emit(type_, data, dedupe=dedupe)
 
     # ------------------------------------------------------------------ inheritance
     def inheritance_items(self) -> list[MemoryItem]:
@@ -127,6 +134,11 @@ class Family:
             f"memories and {len(genome)} instincts.",
             born.isoformat(),
         )
+        self.emit(
+            "life.started",
+            wh_events.life_started(g, len(genome), self.cfg.public_url),
+            f"gen:{g.gen}",
+        )
         return g
 
     # ------------------------------------------------------------------ death
@@ -166,6 +178,7 @@ class Family:
             f"{g.name} died. {self._p(g)['Poss']} computer was deleted.",
             died.isoformat(),
         )
+        self.emit("life.died", wh_events.life_died(g, self.cfg.public_url), f"gen:{g.gen}")
         return g
 
     # ------------------------------------------------------------------ trial
@@ -233,6 +246,13 @@ class Family:
                 f"A new instinct was born: {inst.question} ({inst.lore})",
                 self._after_death(g),
             )
+            self.emit(
+                "instinct.learned",
+                wh_events.instinct_learned(
+                    g.gen, inst, len(self.store.genome()), self.cfg.public_url
+                ),
+                f"instinct:{inst.name}",
+            )
         try:
             self._archive_trial(g, items, judgements)
         except Exception:
@@ -256,6 +276,11 @@ class Family:
             f"The court tried {g.name}'s will: {g.items_approved} approved, "
             f"{g.items_convicted} convicted, {g.items_contested} contested.",
             self._after_death(g, seconds=60),
+        )
+        self.emit(
+            "trial.finished",
+            wh_events.trial_finished(g, [i.name for i in new], self.cfg.public_url),
+            f"gen:{g.gen}",
         )
         return judgements
 
