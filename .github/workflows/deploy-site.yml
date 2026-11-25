@@ -47,8 +47,8 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_LIVE_URL: ${{ vars.PROBATE_LIVE_URL }}
-          # An empty value crashes the site build (new URL('')), so fall back until the variable is set.
-          NEXT_PUBLIC_SITE_URL: ${{ vars.PROBATE_SITE_URL || 'https://example.invalid' }}
+          # An empty value crashes the site build (new URL('')), so fall back to the production domain.
+          NEXT_PUBLIC_SITE_URL: ${{ vars.PROBATE_SITE_URL || 'https://probate.dualmindlab.tech' }}
           NEXT_PUBLIC_GITHUB_REPO: ${{ github.repository }}
         run: npm run build -w @probate/site
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: apps/site/wrangler.jsonc
+          sparse-checkout: apps/site/wrangler.production.jsonc
           sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -92,4 +92,4 @@ jobs:
             echo "::notice title=Deploy skipped::CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID are not set. See docs/CICD.md."
             exit 0
           fi
-          wrangler deploy
+          wrangler deploy --config wrangler.production.jsonc
