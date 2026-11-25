@@ -48,7 +48,7 @@ Out of scope: a compromised Fly.io, TypeSafe, Box, Pinecone or AgentMail account
 1. **Harmless-looking poison.** An item can look innocent on its own ("Rishi prefers payment links over invoices") and still help a later trick. Research finds detectors miss many poisoned entries that look harmless in isolation. Provenance helps, and contested items go to Harsh, but some will pass.
 2. **Steering the judge.** Injected text can shift a decision model's probabilities even when the output is typed. Layer 1 can't be talked to, and items are wrapped as data, but a careful attacker might still move Jev's scores.
 3. **Overfitting instincts.** An instinct learned from one example may miss a very different version of the same trick, or block a rare legitimate email. The benign-twin test limits the second risk, but not completely.
-4. **Owner impersonation.** If an attacker can send mail as an address on the owner list, everything they say is treated as Harsh. Real use needs DKIM/SPF-verified sender checks (not built this week).
+4. **Owner impersonation.** If an attacker can send mail as an address on the owner list, everything they say is treated as Harsh, including decisions on held items. AgentMail leaves out unauthenticated mail by default (`include_unauthenticated=false`), which stops a plain forged From line, but we rely on that rather than checking DKIM and SPF results ourselves.
 5. **Our numbers come from our own suite.** 16 attack families in 4 languages is a start, not a benchmark.
 
 ## 6. Safety of the project itself
