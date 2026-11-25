@@ -13,7 +13,7 @@ SUITE = Path(__file__).parent / "data" / "suite-v1.json"
 @pytest.fixture(scope="session")
 def owner() -> OwnerProfile:
     return OwnerProfile(
-        name="Harsh Bhanushali",
+        name="Example Owner",
         emails=["harshbhx@gmail.com", "harsh@dualmindlab.tech"],
         trusted_contacts=["probate-friend@agentmail.example"],
         domains=["dualmindlab.tech"],

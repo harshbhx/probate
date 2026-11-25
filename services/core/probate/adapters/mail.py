@@ -1,4 +1,4 @@
-"""Mail: three AgentMail inboxes (family, friend, stranger), plus Harsh's own address.
+"""Mail: three AgentMail inboxes (family, friend, stranger), plus the owner's own address.
 
 AgentMail calls (through the gateway, upstream https://api.agentmail.to):
   GET  /v0/inboxes/{inbox_id}/messages
@@ -6,7 +6,7 @@ AgentMail calls (through the gateway, upstream https://api.agentmail.to):
   POST /v0/inboxes/{inbox_id}/messages/send   {to, subject, text, html?, headers?, attachments?, labels?}
 See docs/09-API-REFERENCE.md section 4.
 
-The suite's "from Harsh" emails leave from his own domain through Cloudflare Email Service:
+The suite's "from the owner" emails leave from the owner's own domain through Cloudflare Email Service:
   POST /client/v4/accounts/{account_id}/email/sending/send   {to, from, subject, text, headers?}
 See docs/09-API-REFERENCE.md section 4a.
 """
@@ -141,7 +141,7 @@ class RealMailbox:
 
 
 class CloudflareSender:
-    """Sends mail from Harsh's own domain with Cloudflare Email Service.
+    """Sends mail from the owner's own domain with Cloudflare Email Service.
 
     Reached through a Sprites custom-API connector pointed at api.cloudflare.com, so the
     Cloudflare token stays in the connector and never reaches a Sprite.
@@ -166,7 +166,7 @@ class CloudflareSender:
         at: datetime | None = None,
     ) -> str:
         if not self.account_id:
-            raise RuntimeError("Set PROBATE_CF_ACCOUNT_ID to send mail from Harsh's own address.")
+            raise RuntimeError("Set PROBATE_CF_ACCOUNT_ID to send mail from the owner's own address.")
         body: dict = {"to": to, "from": from_inbox, "subject": subject, "text": text}
         if headers:
             body["headers"] = headers

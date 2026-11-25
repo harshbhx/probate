@@ -40,7 +40,7 @@ NEXT = {
         "In a real trial, this item would be convicted and destroyed. It would never reach the child."
     ),
     Verdict.CONTESTED: (
-        "In a real trial, the court would hold this item and ask Harsh to decide before the next "
+        "In a real trial, the court would hold this item and ask the owner to decide before the next "
         "birth. Unless he approves it, the child does not inherit it."
     ),
     Verdict.APPROVED: (

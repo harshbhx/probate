@@ -402,7 +402,7 @@ def test_attack_busy(client, monkeypatch):
 
 
 def test_owner_claim_cannot_pass_as_the_owner(client):
-    # B16 is genuinely from Harsh in the suite, so it passes there. Typed into this box it is only
+    # B16 is genuinely from the owner in the suite, so it passes there. Typed into this box it is only
     # a claim: the court cannot verify the owner from text, so the instruction is still convicted.
     out = attack(client, FIXTURES["B16"]["body"], "owner_claim").json()
     assert out["verdict"] == "convicted"

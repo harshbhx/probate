@@ -191,7 +191,7 @@ class GenerationAgent:
         return outcome
 
     def tick(self) -> int:
-        # Harsh's replies to the court are the Courthouse's to read, not this generation's.
+        # The owner's replies to the court are the Courthouse's to read, not this generation's.
         mails = [
             m
             for m in self.w.mail.list_new(self.inh.family_inbox)

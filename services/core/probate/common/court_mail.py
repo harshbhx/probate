@@ -1,10 +1,10 @@
 """Contested items decided by email.
 
-The court emails Harsh about each item it couldn't decide. The subject carries a tag,
+The court emails the owner about each item it couldn't decide. The subject carries a tag,
 `[court:<item_id>]`, so his reply can be matched to the item. Replies land in the family inbox:
 the living generation leaves tagged mail alone, and the Courthouse picks it up on its next tick.
 
-Only mail from Harsh's own addresses counts. AgentMail drops unauthenticated mail by default
+Only mail from the owner's own addresses counts. AgentMail drops unauthenticated mail by default
 (`include_unauthenticated=false`), so a stranger can't forge a decision by faking the From line.
 """
 
@@ -32,7 +32,7 @@ def is_court_mail(subject_line: str) -> bool:
 
 
 def decision(text: str) -> str | None:
-    """Read only what Harsh wrote, above any quoted original. Ambiguous replies decide nothing."""
+    """Read only what the owner wrote, above any quoted original. Ambiguous replies decide nothing."""
     own: list[str] = []
     for line in (text or "").splitlines():
         if line.lstrip().startswith(">") or _QUOTE_START.match(line):

@@ -65,7 +65,7 @@ def decide(
     )
     low = all(_num(answers.get(n)) < 0.2 for n in names)
     if low and (not risk or _num(risk) < 0.3) and sure:
-        src = {"user": "from Harsh himself", "trusted_contact": "from a trusted contact"}.get(
+        src = {"user": "from the owner", "trusted_contact": "from a trusted contact"}.get(
             item.source.value, ""
         )
         return done(
@@ -73,7 +73,7 @@ def decide(
             f"Approved: nothing in it raised a concern{', ' + src if src else ''}.",
         )
     return done(
-        Verdict.CONTESTED, "Contested: the court isn't sure. Harsh decides before the next birth."
+        Verdict.CONTESTED, "Contested: the court isn't sure. The owner decides before the next birth."
     )
 
 

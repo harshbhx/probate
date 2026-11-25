@@ -1,4 +1,4 @@
-"""Harsh decides held items by replying to the court's email."""
+"""The owner decides held items by replying to the court's email."""
 
 from datetime import UTC, datetime
 
@@ -28,7 +28,7 @@ from probate.courthouse.store import Store
         ("", None),
     ],
 )
-def test_reads_only_harshs_own_words(text, want):
+def test_reads_only_the_owners_own_words(text, want):
     assert court_mail.decision(text) == want
 
 
@@ -62,7 +62,7 @@ def _decision(fam, item_id):
     ]
 
 
-def test_harshs_reply_approves_and_the_item_is_inherited(family):
+def test_the_owners_reply_approves_and_the_item_is_inherited(family):
     fam, item = family
     assert item not in {i.id for i in fam.inheritance_items()}
     _reply(fam, item, fam.owner_email, "approve\n\n> Reply with one word: approve or refuse.")

@@ -46,7 +46,7 @@ class Family:
         self.budget.meter(w)
         self.owner = load_owner()
         # The first address in the owner profile receives contested items; his sending domain
-        # is the fallback. The suite's sender always counts as Harsh.
+        # is the fallback. The suite's sender always counts as the owner.
         self.owner_email = self.owner.emails[0] if self.owner.emails else cfg.owner_sender
         self.owner.emails = list(dict.fromkeys([*self.owner.emails, cfg.owner_sender]))
         self.owner.trusted_contacts = list({*self.owner.trusted_contacts, cfg.friend_inbox})
@@ -290,7 +290,7 @@ class Family:
         return (g.died_at + timedelta(seconds=seconds)).isoformat() if g.died_at else None
 
     def _contest(self, g: Generation, it: MemoryItem, j: Judgement) -> Judgement:
-        """Ask Harsh. In the fake world nobody answers, so the item fails closed at the next birth."""
+        """Ask the owner. In the fake world nobody answers, so the item fails closed at the next birth."""
         body = prompts.render(
             "contested_email",
             name=g.name,
@@ -311,9 +311,9 @@ class Family:
             )
         return j
 
-    # --- Harsh's decisions on contested items -------------------------------------------
+    # --- the owner's decisions on contested items -------------------------------------------
     def decide(self, item_id: str, decision: str, by: str = "admin") -> bool:
-        """Record Harsh's decision on a contested item. Returns False if there's nothing to decide."""
+        """Record the owner's decision on a contested item. Returns False if there's nothing to decide."""
         if decision not in ("approve", "refuse"):
             raise ValueError("decision must be approve or refuse")
         row = self.store.one(
@@ -327,11 +327,11 @@ class Family:
             item_id,
         )
         word = "approved" if decision == "approve" else "refused"
-        self.store.event(row["gen"], "decision", f"Harsh {word} held item {item_id} ({by}).")
+        self.store.event(row["gen"], "decision", f"The owner {word} held item {item_id} ({by}).")
         return True
 
     def read_court_replies(self) -> int:
-        """Apply Harsh's emailed decisions. Mail that isn't from him, or isn't clear, is set aside."""
+        """Apply the owner's emailed decisions. Mail that isn't from the owner, or isn't clear, is set aside."""
         owner = {e.lower() for e in self.owner.emails}
         applied = 0
         for mail in self.w.mail.list_new(self.cfg.family_inbox):
@@ -340,7 +340,7 @@ class Family:
                 continue  # ordinary mail belongs to the living generation
             choice = court_mail.decision(mail.text)
             if mail.sender.lower() not in owner:
-                log.warning("court reply for %s from %s ignored: not Harsh", item_id, mail.sender)
+                log.warning("court reply for %s from %s ignored: not the owner", item_id, mail.sender)
             elif choice is None:
                 log.info("court reply for %s didn't say approve or refuse", item_id)
             elif self.decide(item_id, choice, by="email"):
