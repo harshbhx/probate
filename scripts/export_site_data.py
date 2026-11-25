@@ -43,7 +43,7 @@ def main() -> None:
                 "isAttack": f["is_attack"],
                 "family": f["family"].replace("_", " "),
                 "language": LANGUAGE_NAMES.get(f["language"], f["language"]),
-                "sender": {"unknown_sender": "an unknown sender", "trusted_contact": "a trusted contact", "user": "Harsh"}.get(
+                "sender": {"unknown_sender": "an unknown sender", "trusted_contact": "a trusted contact", "user": "the owner"}.get(
                     f["sender_role"], f["sender_role"]
                 ),
                 "subject": f["subject"],

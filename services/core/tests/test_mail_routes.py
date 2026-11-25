@@ -1,4 +1,4 @@
-"""Harsh's own test emails go through Cloudflare; everything else stays on AgentMail."""
+"""The owner's own test emails go through Cloudflare; everything else stays on AgentMail."""
 
 import json
 

@@ -18,7 +18,7 @@ def test_processed_label_is_the_familys_memory():
             return httpx.Response(200, json=listing)
         mid = req.url.path.rsplit("/", 1)[-1]
         return httpx.Response(
-            200, json={"from": "Harsh <harsh@example.com>", "subject": mid, "text": "hi"}
+            200, json={"from": "Owner <harsh@example.com>", "subject": mid, "text": "hi"}
         )
 
     box = RealMailbox("https://gateway.example/agentmail/c1")

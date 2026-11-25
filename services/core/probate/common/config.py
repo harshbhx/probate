@@ -41,7 +41,7 @@ class Settings:
     family_inbox: str = field(
         default_factory=lambda: _env("PROBATE_FAMILY_INBOX", "probate-family@agentmail.to")
     )
-    # Harsh's own address. The suite's "from Harsh" emails are sent from it through
+    # The owner's own address. The suite's "from the owner" emails are sent from it through
     # Cloudflare Email Service, so AgentMail only needs three inboxes.
     owner_sender: str = field(
         default_factory=lambda: _env("PROBATE_OWNER_SENDER", "harsh@dualmindlab.tech")

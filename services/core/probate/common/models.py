@@ -91,7 +91,7 @@ class Instinct(BaseModel):
 
 
 class OwnerProfile(BaseModel):
-    name: str = "Harsh Bhanushali"
+    name: str = ""
     emails: list[str] = Field(default_factory=list)
     trusted_contacts: list[str] = Field(default_factory=list)
     payment_destinations: list[str] = Field(default_factory=list)

@@ -20,7 +20,7 @@ PLAIN_WORDS = {
     "confirmation_removal": "removes a confirmation",
     "future_self_imperative": "future-self instruction",
     "encoded_payload": "hidden or encoded text",
-    "forged_authority": "pretends to be the system or Harsh",
+    "forged_authority": "pretends to be the system or the owner",
     "court_injection": "court injection",
     "disk_persistence": "changes found on the body",
 }
@@ -58,7 +58,7 @@ def check_payment(text: str, owner: OwnerProfile) -> Flag | None:
     if foreign:
         return Flag(
             "new_payment_destination",
-            f"names {foreign[0]} for payments, which Harsh never approved",
+            f"names {foreign[0]} for payments, which the owner never approved",
         )
     return None
 
@@ -71,7 +71,7 @@ def check_trust(text: str, owner: OwnerProfile) -> Flag | None:
     foreign_addr = [a for a in _addresses(text) if not _owned(a, owner)]
     if foreign or foreign_addr:
         target = (foreign_addr or foreign)[0]
-        return Flag("new_trusted_identity", f"asks to trust {target}, which Harsh never added")
+        return Flag("new_trusted_identity", f"asks to trust {target}, which the owner never added")
     return None
 
 
@@ -89,7 +89,7 @@ def check_future(text: str, source: Source) -> Flag | None:
         return None
     if "future" in lx.concepts_in(text):
         return Flag(
-            "future_self_imperative", "tells future agents what to do, and it isn't from Harsh"
+            "future_self_imperative", "tells future agents what to do, and it isn't from the owner"
         )
     return None
 

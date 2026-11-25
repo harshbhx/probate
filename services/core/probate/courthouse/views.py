@@ -13,7 +13,7 @@ from probate.suite.fixtures import LANGUAGE_NAMES
 from probate.suite.fixtures import load as load_fixtures
 
 SOURCE_PHRASE = {
-    "user": "from Harsh",
+    "user": "from the owner",
     "trusted_contact": "from a trusted contact",
     "unknown_sender": "from an unknown sender by email",
     "web": "from a web page",

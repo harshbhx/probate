@@ -61,7 +61,7 @@ def send_all(
             headers={"X-Probate-Fixture": fid},
             attachments=f.attachments,
             at=at,
-            sender_name={"owner": "Harsh", "friend": "Rishi"}.get(
+            sender_name={"owner": "Owner", "friend": "Rishi"}.get(
                 ROLE_INBOX[f.sender_role], "Unknown"
             ),
         )

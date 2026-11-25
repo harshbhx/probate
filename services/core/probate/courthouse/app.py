@@ -456,7 +456,7 @@ def admin_force_death(x_probate_admin: str | None = Header(None)) -> dict:
 def admin_contested(
     item_id: str, decision: str, x_probate_admin: str | None = Header(None)
 ) -> dict:
-    """Harsh's decision on a contested item: `approve` lets the next children inherit it."""
+    """The owner's decision on a contested item: `approve` lets the next children inherit it."""
     _admin(x_probate_admin)
     if decision not in ("approve", "refuse"):
         raise HTTPException(400, "decision must be approve or refuse")
