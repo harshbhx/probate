@@ -1,10 +1,11 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Gavel, Loader2, Moon, Play } from "lucide-react";
+import { ArrowRight, Gavel, KeyRound, Loader2, Moon, Play } from "lucide-react";
 import { FamilyFace } from "kinfaces/react";
 import type { Live, Summary } from "../../lib/api";
 import { cx, pad } from "../../lib/format";
 import { useLive, useNow } from "../../lib/hooks";
+import { useJudgeKey } from "../../lib/judge";
 
 const mmss = (s: number) => `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
 
@@ -23,8 +24,9 @@ function useSecondsLeft(seconds: number | null | undefined, key: string) {
  * "Run a life": the on-demand panel. The Courthouse sleeps until someone asks, then lives one short,
  * real life (a shortened one) while this panel follows it. Hidden when the family runs continuously.
  */
-export function RunLife({ summary }: { summary: Summary | null }) {
-  const { live, unavailable, starting, notice, start } = useLive();
+export function RunLife({ summary, onKeyRefused }: { summary: Summary | null; onKeyRefused?: () => void }) {
+  const judgeKey = useJudgeKey();
+  const { live, unavailable, starting, notice, start } = useLive(judgeKey, onKeyRefused);
   if (!live && !unavailable) return null; // still asking
   if (live && !live.on_demand && !unavailable) return null; // the family runs on its own
   return (
@@ -234,15 +236,27 @@ function Body({
             dies, and is tried by the court.
           </Honest>
           {notice && <p role="alert" className="mt-4 rounded-lg border border-amber/25 bg-amber/[0.06] px-3.5 py-2.5 text-[14px] text-amber">{notice}</p>}
-          <button
-            type="button"
-            onClick={start}
-            disabled={!live.can_start || starting}
-            className={cx(btn, "mt-6 w-full sm:w-auto", live.can_start && !starting ? btnOn : btnOff)}
-          >
-            {starting ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-            {starting ? "Waking it" : "Run a life"}
-          </button>
+          {live.requires_key && !live.judge ? (
+            <>
+              <p className="mt-4 text-[14.5px] leading-relaxed text-mist">
+                Starting a life needs the judge key, so a stray visitor can't spend the budget. Watching is open to
+                everyone.
+              </p>
+              <Link to="/judges" className={cx(btn, btnOn, "mt-6 w-full sm:w-auto")}>
+                <KeyRound size={16} /> Enter the judge key
+              </Link>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={start}
+              disabled={!live.can_start || starting}
+              className={cx(btn, "mt-6 w-full sm:w-auto", live.can_start && !starting ? btnOn : btnOff)}
+            >
+              {starting ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+              {starting ? "Waking it" : "Run a life"}
+            </button>
+          )}
           <Done live={live} compact />
         </>
       );
