@@ -208,7 +208,9 @@ def load_owner() -> OwnerProfile:
 def load_names() -> list[dict]:
     path = CONFIG_DIR / "names.yaml"
     return (
-        yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else [{"name": "Ada", "pronoun": "she"}]
+        yaml.safe_load(path.read_text(encoding="utf-8"))
+        if path.exists()
+        else [{"name": "Ada", "pronoun": "she"}]
     )
 
 
