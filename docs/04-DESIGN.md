@@ -44,11 +44,11 @@ Rules: red never decorates. If something is red, the court convicted it. Every v
 
 | Role | Face | Use |
 | --- | --- | --- |
-| Display | Instrument Serif (400, italic) | Names, headlines, quotes of will items, eulogies, big numbers |
+| Display | Newsreader (variable, optical sizes, italic) | Names, headlines, quotes of will items, eulogies, big numbers |
 | UI | Geist (variable) | Body, controls, labels |
 | Data | Geist Mono (variable) | Generation numbers, countdowns, scores, code snippets, disk evidence |
 
-- The serif is the personality: generation names are set huge (76 to 104 px) like names in a register. Will items are quoted in the serif because they are the dead generation's own words.
+- The serif is the personality: generation names are set huge (76 to 104 px) like names in a register. Will items are quoted in the serif because they are the dead generation's own words. Newsreader replaced Instrument Serif on Nov 25: its optical sizes keep big headlines crisp and its italic is a true italic, which reads more like a court record and less like a poster.
 - Body is 15 to 17 px with 1.5 to 1.6 line height; serif paragraphs get 1.55.
 - Lines stay under about 75 characters (`max-w-xl` / `max-w-2xl`).
 - Sentence case everywhere. No all-caps eyebrow labels; the only caps are the verdict stamp and `GEN 07` style register numbers, which are data.
@@ -87,6 +87,17 @@ All components are written in-house with `motion`, Radix primitives and Tailwind
 
 Libraries surveyed for patterns: React Bits, Aceternity UI, Magic UI, Animate UI, Motion Primitives and shadcn/ui. We kept the effects that carry meaning and dropped the rest (no meteors, no 3D cards, no marquee).
 
+## 6a. Family faces (the signature)
+
+Every generation has a portrait, drawn by `packages/faces` and shared by both sites, so a generation looks the same everywhere.
+
+- **Inheritance you can see.** Gen 1's face is fixed. Each child copies its parent and changes exactly one trait (head shape, eyes, smile, crown, cheeks, colour or eye spacing). Colour, head and crown change most often, so the family drifts while staying recognisable. The model is pure and tested: every child differs from its parent in exactly one trait.
+- **State.** Alive: lit, a green outline and halo, breathing, blinking, eyes that can follow the pointer. Sealed: eyes closed, colour quieted. Unborn: a faint outline.
+- **Moods** (passing): happy, alert (an instinct fired, gold "!"), fooled (dizzy eyes, amber "?"), sleepy (dying).
+- **Gold diamonds** under the chin count the instincts it was born with.
+- **Where:** the landing hero (Grace greets the visitor), the lineage film, the one-day life story, instinct cards, the docs, and on the live site the register cards, the side sheet, generation portraits ("Ben's face, with wider-set eyes"), trial headers and the home hero.
+- **Rules:** faces are drawn, never photos; red is never used on a face; motion stops under reduced motion.
+
 ## 7. Motion
 
 - **One orchestrated moment:** the hero. Headline words blur in, then the subline, the buttons and the numbers.
@@ -110,13 +121,21 @@ Files in `design/`: `logo-mark.svg`, `logo-mark-reverse.svg`, `logo-wordmark*.sv
 
 **Concept:** a court seal (double gilt ring) around a three-generation family tree. The root branches to two children; one line continues to a grandchild, the other is cut by a short red tick, an inheritance the court refused. Family tree, seal and verdict in one mark.
 
-**Rules:** on night, lines are moon and the ring is gilt; the tick is always verdict red. Minimum 20 px. Don't recolour, add a gradient, rotate or put it in a rounded square. The wordmark is "Probate" in Instrument Serif next to the mark.
+**Rules:** on night, lines are moon and the ring is gilt; the tick is always verdict red. Minimum 20 px. Don't recolour, add a gradient, rotate or put it in a rounded square. The wordmark is "Probate" in Newsreader next to the mark. The favicon is `design/logo-mark-night.svg`.
 
 ## 10. Quality floor (checked, not hoped)
 
 - **Accessibility:** axe-core WCAG 2 A/AA reports zero violations on every page. Keyboard reachable everywhere, visible 2 px life-coloured focus ring, skip link, real tab panels, labelled scroll regions, the curve has `role="img"` with the finding in its label plus a screen-reader list of every point.
 - **Responsive:** no horizontal overflow at 360, 390, 768 or 1280 px (checked with Playwright). Grid children are `min-w-0` and long tokens (emails, base64) wrap anywhere.
 - **Performance:** one JS bundle (~180 KB gzipped) and one CSS file (~10 KB gzipped); fonts self-hosted; the starfield pauses when the tab is hidden.
+
+## 10a. The landing page and docs (`apps/site`)
+
+Same tokens and type, built with Fumadocs (Next.js, static export) and served from Cloudflare.
+
+- **Landing:** hero with Grace, the lineage film (faces being born, sealed, a red tick on a refused inheritance, a gold instinct travelling to the child, the curve climbing); a marquee of the same trick in four languages, quoted word for word from the suite; a sticky one-day life story where the portrait lives the day as you scroll; "Try the court", built from the real layer-1 output (`make site-data`); instinct cards with the ancestor who taught each one; a bento of why it has to be Sprites.
+- **Docs:** 17 pages; Fumadocs' docs layout recoloured to Night Court, dark only; headings in Newsreader; MDX components `Verdict`, `Face`, `FamilyStrip`.
+- **Checked:** axe-core WCAG 2 A/AA reports zero violations on every page at 360 and 1280 px; no horizontal overflow; routes tested under Wrangler's local Cloudflare runtime.
 
 ## 11. Implementation notes for agents
 

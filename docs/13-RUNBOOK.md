@@ -6,7 +6,7 @@ For Harsh and any agent operating the live family. Commands use `make`, the `spr
 
 One-time, on Harsh's laptop:
 
-1. `gh auth login` (GitHub) and get a Sprites API token from the Sprites dashboard.
+1. `gh auth login` (GitHub), `npx wrangler login` (Cloudflare, for the landing page and docs), and get a Sprites API token from the Sprites dashboard.
 2. In the Sprites dashboard, connect each provider under Connectors (Jev/TypeSafe, Box, Pinecone, AgentMail, ElevenLabs, Ollama, Anthropic) and note each connection ID.
 3. Create four AgentMail inboxes: the family's, plus owner, friend and stranger test senders.
 4. `cp services/core/.env.example services/core/.env` and fill it in. `cp config/owner.example.yaml config/owner.yaml` and fill in the real allowlists. Both files are gitignored.
@@ -17,7 +17,9 @@ One-time, on Harsh's laptop:
    - writes `.env` with `PROBATE_FAKE=0`, `PROBATE_RUN_CLOCK=1`, `PROBATE_DATA_DIR=/home/sprite/data`,
    - registers the `courthouse` service on port 8080 and starts it,
    - makes the URL public and waits for `/healthz`.
-7. Open the printed URL. If the family was paused, `POST /admin/resume` with header `X-Probate-Admin`.
+
+   Then it builds `apps/site` with the live URL and repo filled in and deploys it to Cloudflare with `wrangler deploy` (static assets on Workers). The first time, once the site's `*.workers.dev` address is known, it rebuilds both sites so each links to the other.
+7. Open the printed URLs. If the family was paused, `POST /admin/resume` with header `X-Probate-Admin`.
 
 Generations don't clone from GitHub. The Courthouse ships each child its own code bundle (`probate/common/bundle.py`), so every child runs exactly the Courthouse's version. Redeploying is `make deploy`; the database in `/home/sprite/data` is never touched.
 
@@ -34,6 +36,7 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | Change lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, then `POST .../services/courthouse/restart` |
 | Watch logs | `GET .../services/courthouse/logs?lines=200` |
 | Deploy new code | `make deploy`. The next generation born gets the new code; the living one finishes its life on the old code |
+| Update the landing page or docs | `make site-deploy` (run `make site-data` first if the court's checks changed) |
 
 ## 3. Recovery
 

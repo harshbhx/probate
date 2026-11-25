@@ -12,12 +12,13 @@ description: Make targets, scripts and the generation's own command line.
 | `make dev` | API on `:8080` and the live site on `:5173`, with hot reload |
 | `make api` / `make web` | One of the two |
 | `make site` | This docs site on `:3001` |
-| `make test` | Python tests |
+| `make test` | Python tests and the family-face model |
 | `make lint` | Ruff and TypeScript for every app |
 | `make build` | Build the live site and this site |
 | `make serve` | The built live site and API on `:8080` |
 | `make deploy-check` | Validate `.env` and the bundle, change nothing |
 | `make deploy` | Deploy or update the Courthouse on Sprites |
+| `make site-data` | Re-export the court examples on the landing page from the real layer-1 code |
 | `make site-deploy` | Build and deploy this site to Cloudflare |
 | `make ship` | Everything: checks, GitHub, Sprites, Cloudflare |
 | `make clean` | Remove local data and build output |
@@ -28,6 +29,7 @@ description: Make targets, scripts and the generation's own command line.
 | --- | --- |
 | `scripts/deploy.py [--name NAME] [--check]` | Deploy the Courthouse to a Sprite |
 | `scripts/ship.sh [repo-name]` | What `make ship` runs |
+| `scripts/export_site_data.py` | What `make site-data` runs |
 | `python -m probate.courthouse.simulate --generations N` | The simulator behind `make sim` |
 
 ## On a generation

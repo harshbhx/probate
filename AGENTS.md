@@ -27,7 +27,9 @@ Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At m
 | --- | --- |
 | Monorepo | npm workspaces (`apps/*`) + one Python service (`services/core`); root `Makefile` drives both |
 | Backend | Python 3.12+, FastAPI, package `probate` in `services/core` |
-| Website | React 19, Vite 8, TypeScript 7, Tailwind v4, `motion`, Radix (dialog, tabs, tooltip), `lucide-react`, Fontsource. Served by the Courthouse from `apps/web/dist` |
+| Live site | React 19, Vite 8, TypeScript 7, Tailwind v4, `motion`, Radix (dialog, tabs, tooltip), `lucide-react`, Fontsource (Newsreader, Geist). Served by the Courthouse from `apps/web/dist` |
+| Landing + docs | Fumadocs 16 on Next.js 16 (static export), same tokens, deployed to Cloudflare with Wrangler (`apps/site/wrangler.jsonc`) |
+| Faces | `packages/faces`: the family portrait model and component, shared by both sites |
 | Sprites | REST via `httpx` in `probate/adapters/sprites.py` (shapes in `docs/09-API-REFERENCE.md`) |
 | Vendors | `typesafe-sdk` (Jev), `agentmail`, `pinecone`, `anthropic`, plain `httpx` for Ollama Cloud, Box and ElevenLabs, all through the connector gateway |
 | Storage | SQLite on the Courthouse (`/home/sprite/data/probate.db`) for the UI; Box is the archive |
@@ -44,7 +46,9 @@ probate/
   design/               logo, favicon, v1 mockups (history)
   config/               names.yaml, owner.example.yaml (owner.yaml is gitignored)
   fixtures/             suite-v1.json (the attack suite with harmless twins)
-  apps/web/             the website
+  packages/faces/       family faces: model.ts (inheritance, tested), face.tsx, faces.css
+  apps/site/            landing page and docs (Fumadocs); content/docs/*.mdx, components/landing/*
+  apps/web/             the live-family site
     src/lib/            api.ts (types mirror views.py), hooks.ts, format.ts
     src/components/fx/  motion primitives (BlurText, NumberTicker, BorderBeam, ...)
     src/components/ui/  Shell, Seal, Lineage, LearningCurve, CaseFile, Heatmap, ...
@@ -58,14 +62,16 @@ probate/
     probate/courthouse/ app (FastAPI), family, scheduler, hosts, store, views, ancestor, simulate
     probate/prompts/    prompt templates
     tests/
-  scripts/              deploy.py (Courthouse to Sprites), ship.sh (GitHub + deploy)
+  scripts/              deploy.py (Courthouse to Sprites), ship.sh (GitHub + Sprites + Cloudflare),
+                        export_site_data.py (real court output for the landing page)
 ```
 
 ## Definition of done for any task
 
 - `make test` and `make lint` pass.
 - Nothing in the diff contains a key, token or real third-party address. `.env` and `config/owner.yaml` stay untracked.
-- UI work follows `docs/04-DESIGN.md` and `docs/11-UI-SCREENS.md`: `make build && make sim && make serve`, screenshot at 1280 and 390 px, no horizontal overflow, axe shows no WCAG A/AA violations.
+- UI work follows `docs/04-DESIGN.md` and `docs/11-UI-SCREENS.md`: `make build && make sim && make serve` (live site) or `make site` (landing + docs), screenshot at 1280 and 390 px, no horizontal overflow, axe shows no WCAG A/AA violations.
+- If the court's checks change, run `make site-data` so the landing page shows the new real output.
 - Prompts are loaded from `probate/prompts/` and match `docs/10-PROMPTS.md` word for word.
 - Commits are medium-sized: one coherent change each, authored as Harsh Bhanushali.
 

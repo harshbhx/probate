@@ -4,9 +4,15 @@
 
 Probate is a personal email agent that lives one day at a time, each life on its own Fly.io Sprite. When it dies, a court tries everything it wanted to remember. Lessons pass down. Tricks get convicted. The family gets harder to fool with every generation.
 
-Live family: `https://<courthouse>.sprites.app` · Video: `<link>` · Built for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/)
+Live family: `https://<courthouse>.sprites.app` · Landing and docs: `https://probate-site.<you>.workers.dev` · Video: `<link>` · Built for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/)
 
-![The Probate home page: "My agent dies every night."](docs/images/home.jpg)
+![The landing page: "My agent dies every night", with Grace, a living generation, beside it](docs/images/landing.jpg)
+
+## A family you can see
+
+Every generation has a face. Gen 1's is fixed, and each child copies its parent's face and changes exactly one thing, so the family resembles itself down the line. A living face glows and follows your pointer; a sealed one has its eyes closed; gold diamonds under the chin are the instincts it was born with. The same faces appear on the live site, the landing page and the docs (`packages/faces`).
+
+![The live family site: the living generation's face above "My agent dies every night."](docs/images/home.jpg)
 
 ## Why this needs Sprites
 
@@ -66,19 +72,22 @@ Full model: `docs/12-THREAT-MODEL.md`.
 ```bash
 make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
-make dev       # API on :8080 and the site on :5173
-make test      # 63 Python tests
+make dev       # API on :8080 and the live site on :5173
+make site      # landing page and docs on :3001
+make test      # 64 Python tests and the face model
 make help      # everything else
 ```
 
-To go live: copy `services/core/.env.example` to `services/core/.env`, fill in the Sprites token and connector IDs (`docs/06-SETUP-AND-SPIKES.md`), then `make deploy`. `make ship` runs the checks, creates the GitHub repo, pushes and deploys in one go.
+To go live: copy `services/core/.env.example` to `services/core/.env`, fill in the Sprites token and connector IDs (`docs/06-SETUP-AND-SPIKES.md`), and sign in once with `gh auth login` and `npx wrangler login`. Then `make ship` runs the checks, creates the GitHub repo, pushes, deploys the Courthouse to Sprites and the landing page and docs to Cloudflare, and links the two sites to each other.
 
 ## Repository
 
 ```
-apps/web/        the site (React 19, Vite, Tailwind v4, motion, Radix)
+apps/web/        the live-family site (React 19, Vite, Tailwind v4, motion, Radix), served by the Courthouse
+apps/site/       landing page and docs (Fumadocs on Next.js, static), on Cloudflare
+packages/faces/  family faces, shared by both sites
 services/core/   the Courthouse, the court and the generation agent (Python, FastAPI)
-scripts/         deploy.py and ship.sh
+scripts/         deploy.py, ship.sh, export_site_data.py
 docs/            specs: overview, tech spec, court spec, attack suite, design, screens, runbook
 ```
 
