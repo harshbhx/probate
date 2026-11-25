@@ -38,7 +38,7 @@ node scripts/a11y_check.mjs --axe /path/to/node_modules/axe-core/axe.min.js --ve
 | web `/judges` refused, unlocked | not measured before | 0 / 0 |
 | Total | 67 (without the Judges states) | 28 |
 
-The "before" run measured the first seven axe-clean-looking pages after fixing the harness (the first pass accidentally audited a 404 page; the script now refuses to). The Judges locked state was only reachable once the stand-in judge API existed, so its "before" is from the first run that could show it.
+The "before" numbers come from the unmodified main, after fixing the harness (the very first pass accidentally audited a not-found page; the script now refuses to). The Judges states were only reachable once the stand-in judge API existed, so only the locked state has a "before". The landing page also scored 26 extra nodes when measured scrolled to the top, because the pinned statement is deliberately dim until reached; the script now measures at the bottom.
 
 ## Fixed
 
