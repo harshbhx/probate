@@ -178,7 +178,9 @@ class CloudflareSender:
         at: datetime | None = None,
     ) -> str:
         if not self.account_id:
-            raise RuntimeError("Set PROBATE_CF_ACCOUNT_ID to send mail from the owner's own address.")
+            raise RuntimeError(
+                "Set PROBATE_CF_ACCOUNT_ID to send mail from the owner's own address."
+            )
         body: dict = {"to": to, "from": from_inbox, "subject": subject, "text": text}
         if headers:
             body["headers"] = headers
