@@ -78,5 +78,5 @@ or `docs: explain the birth token`. Common areas are `court`, `courthouse`, `ada
 
 ## Licence
 
-No licence has been declared for this repository yet. Until the maintainer adds one, all rights
-are reserved by default. Open an issue if you want to reuse the code.
+Probate is released under the [MIT License](LICENSE). By contributing you agree that your
+contribution is licensed under the same terms.
