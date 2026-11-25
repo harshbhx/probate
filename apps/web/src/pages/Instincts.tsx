@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import type { Instinct } from "../lib/api";
 import { cx, sentence } from "../lib/format";
-import { useApi, useTitle } from "../lib/hooks";
+import { useApi, useInView, useTitle } from "../lib/hooks";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
 import { FamilyFace } from "@probate/faces";
+import { PixelMoment } from "@probate/moments";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
 
@@ -13,6 +14,7 @@ export function Instincts({ mode }: { mode?: string }) {
   if (loading && !data) return <Page><PageSkeleton /></Page>;
   if (error || !data) return <Page><ErrorState /></Page>;
   const list = data.instincts;
+  const newest = list.reduce((best, i, k) => (i.added_in_gen >= list[best].added_in_gen ? k : best), 0);
 
   return (
     <Page>
@@ -38,7 +40,7 @@ export function Instincts({ mode }: { mode?: string }) {
               <SpotlightCard className="flex h-full flex-col p-6" color="rgb(226 190 106 / 0.10)">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-2 text-[13px] text-gilt">
-                    <span className="size-2 rotate-45 bg-gilt" /> since Gen {i.added_in_gen}
+                    <DiamondMark play={k === newest} /> since Gen {i.added_in_gen}
                   </span>
                   {i.learned_from && (
                     <Link to={`/trial/${i.learned_from.gen}`} className="flex items-center gap-2 text-[13px] text-mist hover:text-moon">
@@ -61,5 +63,17 @@ export function Instincts({ mode }: { mode?: string }) {
         </ul>
       )}
     </Page>
+  );
+}
+
+// The instinct's diamond. On the newest instinct a gold pixel burst (pixelfx, @probate/moments) plays once
+// when the card scrolls into view: the most recent thing the family learned. Nothing plays under reduced motion.
+function DiamondMark({ play }: { play: boolean }) {
+  const { ref, inView } = useInView<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="relative inline-flex">
+      <span className="size-2 rotate-45 bg-gilt" />
+      {play && inView && <PixelMoment kind="instinct" scale={1} delay={250} />}
+    </span>
   );
 }
