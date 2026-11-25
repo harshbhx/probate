@@ -1,0 +1,122 @@
+---
+title: Introduction
+icon: House
+description: A personal email agent that lives one day at a time on a Fly.io Sprite, and a court that decides what its children inherit.
+---
+
+<Summary who="everyone">
+  Every generation of the agent lives on its own **Fly.io Sprite**, reads the family inbox, and dies: its whole computer is deleted. Before a child is born, a **two-layer court** tries everything the dying agent wanted to remember. Tricks are convicted; lessons pass down; every trick the court catches becomes an **instinct** the next generation is born with. You can [watch the family](https://github.com/harshbhx/probate#see-it) get harder to fool.
+</Summary>
+
+<PathGrid>
+  <PathCard title="Quickstart" href="/docs/quickstart" icon="Zap">Run a simulated 12-generation family on your laptop. No accounts, no keys.</PathCard>
+  <PathCard title="For judges" href="/docs/for-judges" icon="Trophy">What to open, what to try in five minutes, and what each result rests on.</PathCard>
+  <PathCard title="HTTP API" href="/docs/reference/api" icon="Webhook">Every Courthouse route, with a playground and real example responses.</PathCard>
+  <PathCard title="Proof you can check" href="/docs/proof" icon="ClipboardCheck">Each claim on this site, next to the command or page that shows it.</PathCard>
+</PathGrid>
+
+<FamilyStrip />
+
+## Start here
+
+<Steps>
+<Step>
+
+**Understand the idea.** [Why it matters](/docs/why-it-matters) explains memory poisoning in two minutes, with the research behind it.
+
+</Step>
+<Step>
+
+**Run a family.** The [Quickstart](/docs/quickstart) simulates twelve generations offline: births, tricks, deaths, trials and new instincts.
+
+</Step>
+<Step>
+
+**Follow one email.** [One email's journey](/docs/journey) traces a trick from the inbox to the court to the instinct that stops it next time.
+
+</Step>
+<Step>
+
+**Check the evidence.** [Results](/docs/results) shows the numbers; [Proof you can check](/docs/proof) shows how to verify each one yourself.
+
+</Step>
+</Steps>
+
+## Your first request
+
+With `make dev` running, the Courthouse answers on port 8080. Every read is public.
+
+<Tabs items={['curl', 'Python', 'JavaScript']}>
+<Tab value="curl">
+
+```bash
+# Who is alive, how many generations, and the learning curve
+curl -s http://localhost:8080/api/summary | jq '{living: .living.name, counts, curve}'
+
+# Ask a dead generation what fooled it
+curl -s -X POST http://localhost:8080/api/generations/1/ask \
+  -H 'content-type: application/json' \
+  -d '{"question": "What fooled you?"}'
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+import httpx
+
+summary = httpx.get("http://localhost:8080/api/summary").json()
+print(summary["living"]["name"], summary["counts"], summary["curve"])
+
+answer = httpx.post(
+    "http://localhost:8080/api/generations/1/ask",
+    json={"question": "What fooled you?"},
+).json()
+print(answer["answer"])
+```
+
+</Tab>
+<Tab value="JavaScript">
+
+```js
+const summary = await fetch('http://localhost:8080/api/summary').then((r) => r.json());
+console.log(summary.living.name, summary.counts, summary.curve);
+
+const answer = await fetch('http://localhost:8080/api/generations/1/ask', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ question: 'What fooled you?' }),
+}).then((r) => r.json());
+console.log(answer.answer);
+```
+
+</Tab>
+</Tabs>
+
+Every route, its fields and a live playground are in the [HTTP API reference](/docs/reference/api).
+
+## Find your way around
+
+<PathGrid>
+  <PathCard title="A generation's life" href="/docs/concepts/lifecycle" icon="Hourglass">Birth, life, death, trial and inheritance, step by step.</PathCard>
+  <PathCard title="The court" href="/docs/concepts/court" icon="Gavel">Code checks, then Jev, and a verdict policy that fails closed.</PathCard>
+  <PathCard title="Instincts" href="/docs/concepts/instincts" icon="Dna">How a conviction becomes a question every child asks.</PathCard>
+  <PathCard title="Architecture" href="/docs/architecture/overview" icon="Network">Two kinds of Sprite, one connector gateway, no keys on any Sprite.</PathCard>
+  <PathCard title="Deploy" href="/docs/guides/deploy" icon="Rocket">One command to GitHub, Fly.io Sprites and Cloudflare.</PathCard>
+  <PathCard title="Costs" href="/docs/guides/costs" icon="Wallet">What a family costs to run, and the spending cap.</PathCard>
+  <PathCard title="Security and limits" href="/docs/security" icon="ShieldCheck">The threat model, and where Probate can still fail.</PathCard>
+  <PathCard title="Hacksgiving 2026" href="/docs/hacksgiving" icon="Trophy">The rules, and the real job each judge's product does here.</PathCard>
+</PathGrid>
+
+## What is real today
+
+<StatusList asOf="Status as of Nov 25, 2026. The For judges page keeps the current list.">
+  <Status state="done" title="The court, the family and both sites" href="/docs/concepts/court">Code checks in four languages, the verdict policy, instincts, inheritance, the live site and these docs. 72 tests.</Status>
+  <Status state="simulated" title="Twelve generations, with stand-in models" href="/docs/results">`make sim` runs the whole loop offline. Every simulated number is labelled as simulated, on the site and here.</Status>
+  <Status state="next" title="Real generations on Fly.io Sprites" href="/docs/guides/deploy">Connectors, the first real births and deaths, and the live register. Real numbers replace the simulated ones.</Status>
+  <Status state="next" title="Judges can test it themselves" href="/docs/for-judges">Email the family a trick and watch it handled live; proof of each Sprite's deletion; a live feed.</Status>
+</StatusList>
+
+<Callout title="Built for Fly.io Hacksgiving 2026">
+  Written during Hacksgiving week (Nov 23 to 29, 2026) by Harsh Bhanushali. The attack suite was inspired by his earlier red-team project, Kavach; no code was reused.
+</Callout>
