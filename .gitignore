@@ -14,3 +14,4 @@ __pycache__/
 # node
 node_modules/
 apps/web/dist/
+packages/mcp/dist/
