@@ -7,7 +7,7 @@ import type { ApiError, Summary, Trial as TrialT } from "../lib/api";
 import { cx, day, humanize } from "../lib/format";
 import { useApi, useTitle } from "../lib/hooks";
 import { CaseFile } from "../components/ui/CaseFile";
-import { FamilyFace } from "@probate/faces";
+import { FamilyFace } from "kinfaces/react";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
 

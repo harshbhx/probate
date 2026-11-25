@@ -35,7 +35,7 @@ dev: ## API and website together
 
 test: ## Python tests and the family-face model
 	cd services/core && PROBATE_DATA_DIR=$$(mktemp -d) .venv/bin/python -m pytest -q
-	npm test -w @probate/faces --silent
+	npm test -w kinfaces --silent
 
 lint: ## Ruff and TypeScript for every app
 	cd services/core && .venv/bin/ruff check probate tests ../../scripts

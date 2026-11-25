@@ -3,7 +3,7 @@ import type { Instinct } from "../lib/api";
 import { cx, sentence } from "../lib/format";
 import { useApi, useTitle } from "../lib/hooks";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
-import { FamilyFace } from "@probate/faces";
+import { FamilyFace } from "kinfaces/react";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
 

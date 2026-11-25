@@ -1,5 +1,6 @@
 // Family faces for the docs: a single face, or a strip of the family with the living child last.
-import { FamilyFace, inheritedChange, type Life, type Mood } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
+import { inheritedChange, type Life, type Mood } from 'kinfaces';
 
 export function Face({ gen = 1, life = 'alive', mood = 'idle', instincts = 0, size = 72, label }: {
   gen?: number;

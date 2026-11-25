@@ -46,7 +46,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Family faces
-        run: npm test -w @probate/faces
+        run: npm test -w kinfaces
       - name: Type checks
         run: npm run lint
       - name: Build the live site and the landing + docs

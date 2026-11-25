@@ -11,7 +11,7 @@ import { Lineage } from "../components/ui/Lineage";
 import { LearningCurve } from "../components/ui/LearningCurve";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, PageSkeleton, SectionHead } from "../components/ui/States";
-import { FamilyFace } from "@probate/faces";
+import { FamilyFace } from "kinfaces/react";
 import { useTitle } from "../lib/hooks";
 
 export function Home({ summary }: { summary: Summary | null }) {

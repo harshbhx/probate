@@ -1,6 +1,6 @@
 // The site footer: brand and promise, three link columns, live status, and the fine print.
 import Link from 'next/link';
-import { FamilyFace } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
 import { Seal } from '@/components/seal';
 import { FOOTER } from './nav-links';
 import { LiveStatus } from './live-status';

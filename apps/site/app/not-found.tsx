@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FamilyFace } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
 import { SiteFooter } from '@/components/chrome/site-footer';
 import { SiteHeader } from '@/components/chrome/site-header';
 
