@@ -15,3 +15,17 @@ wholesale; each file is a small re-implementation with `motion` and Tailwind and
 
 Also surveyed and not used: React Bits Aurora, Particles and Splash Cursor (ambient, looping), Aceternity Lamp and
 Background Beams (loud), Magic UI Marquee and Animated Beam on the landing (looping, against docs/04-DESIGN.md).
+
+## Round 2 additions
+
+| File | Pattern | Library |
+| --- | --- | --- |
+| `ScrollProgress.tsx` | Scroll Progress | Magic UI |
+| `SpotlightCard.tsx` | Spotlight Card, Card Hover Effect | React Bits, Aceternity UI |
+| `TextReveal.tsx` | Text Reveal | Magic UI |
+| `Magnet.tsx` | Magnet | React Bits |
+| `BigWord.tsx` | Edge-to-edge wordmark | Our own |
+| `../landing/verdict-stack.tsx` | Scroll Stack | React Bits |
+| `../landing/quotes.tsx` | Quote cards on spotlight cards | Aceternity UI "Card Hover Effect" |
+
+The Scroll Stack, Text Reveal and Magnet implementations follow the same patterns already adapted in the Tarang FM and Ratchet projects by the same author.
