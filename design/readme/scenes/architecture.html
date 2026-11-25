@@ -1,9 +1,9 @@
 <!doctype html><html><head><meta charset="utf-8">{{BASE}}
 <style>
-.stage { position: relative; width: 1200px; height: 640px; }
+.stage { position: relative; width: 1200px; height: 760px; }
 h1 { position: absolute; left: 64px; top: 42px; font-size: 38px; opacity: 0; }
 .sub { position: absolute; left: 64px; top: 92px; font-size: 16px; color: var(--mist); opacity: 0; }
-.frame { position: absolute; left: 318px; top: 168px; width: 452px; height: 430px; border: 1px solid var(--line2); border-radius: 18px; opacity: 0; }
+.frame { position: absolute; left: 318px; top: 168px; width: 452px; height: 470px; border: 1px solid var(--line2); border-radius: 18px; opacity: 0; }
 .frame p { position: absolute; left: 20px; top: -10px; padding: 0 8px; background: var(--night); font: 12px 'Geist Mono', monospace; color: var(--gilt); }
 .zone { position: absolute; font: 12px 'Geist Mono', monospace; color: var(--dim); opacity: 0; }
 .node { position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 1px solid var(--line2); background: var(--night2);
@@ -12,14 +12,19 @@ h1 { position: absolute; left: 64px; top: 42px; font-size: 38px; opacity: 0; }
 .node.seal { border: 0; background: none; } .node.seal svg { width: 56px; height: 56px; }
 .node.gen { border: 0; background: none; } .node.gen > div { position: absolute; inset: 0; opacity: 0; } .node.gen svg { width: 56px; height: 56px; }
 .node.key { color: var(--gilt); border-color: rgb(217 180 106 / .5); }
-.lbl { position: absolute; width: 220px; margin-left: -110px; text-align: center; opacity: 0; }
+.lbl { position: absolute; width: 240px; margin-left: -120px; text-align: center; opacity: 0; }
 .lbl b { display: block; font: 400 19px 'Newsreader', serif; color: var(--moon); }
 .lbl span { display: block; margin-top: 3px; font-size: 12.5px; color: var(--mist); line-height: 1.35; }
 .lbl .dk { position: relative; display: inline-block; font: 12.5px 'Geist Mono', monospace; color: var(--silver); }
 .lbl .dk i { position: absolute; left: -2px; right: -2px; top: 52%; height: 1.5px; background: var(--verdict); transform: scaleX(0); transform-origin: left; }
 .lbl .dl { color: var(--verdict); font: 12px 'Geist Mono', monospace; }
-.svc { position: absolute; left: 872px; width: 290px; display: flex; align-items: center; gap: 12px; opacity: 0; }
-.svc .ic { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--night2); display: flex; align-items: center; justify-content: center; color: var(--mist); position: relative; }
+.state { position: relative; height: 22px; margin-top: 6px; }
+.state > div { position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 6px; font: 12px 'Geist Mono', monospace; opacity: 0; }
+.state svg { width: 14px; height: 14px; }
+.st-sleep { color: var(--dim); }
+.st-awake { color: var(--life); }
+.svc { position: absolute; left: 872px; width: 300px; display: flex; align-items: center; gap: 12px; opacity: 0; }
+.svc .ic { width: 36px; height: 36px; flex: none; border-radius: 10px; border: 1px solid var(--line); background: var(--night2); display: flex; align-items: center; justify-content: center; color: var(--mist); position: relative; }
 .svc .ic svg { width: 18px; height: 18px; }
 .svc .hl { position: absolute; inset: -1px; border-radius: 10px; border: 1px solid var(--gilt); opacity: 0; }
 .svc b { font-weight: 500; font-size: 15px; color: var(--moon); }
@@ -27,10 +32,15 @@ h1 { position: absolute; left: 64px; top: 42px; font-size: 38px; opacity: 0; }
 svg.wires { position: absolute; left: 0; top: 0; }
 .w { fill: none; stroke: var(--line2); stroke-width: 1.25; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .tag { position: absolute; font: 11.5px 'Geist Mono', monospace; color: var(--dim); opacity: 0; }
+.tag.red { color: var(--verdict); }
+.tag.green { color: var(--life); }
 .dot { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; opacity: 0; offset-rotate: 0deg; }
 .grey { background: var(--silver); }
 .gold { background: var(--gilt); box-shadow: 0 0 0 3px rgb(217 180 106 / .18); }
-.foot { position: absolute; left: 64px; top: 606px; font-size: 13px; color: var(--dim); opacity: 0; }
+.cap { position: absolute; left: 64px; top: 694px; width: 1072px; display: flex; gap: 14px; align-items: baseline; opacity: 0; }
+.cap i { font: normal 13px 'Geist Mono', monospace; color: var(--gilt); flex: none; width: 26px; }
+.cap span { font-size: 17px; color: var(--silver); }
+.rule { position: absolute; left: 64px; top: 672px; width: 1072px; height: 1px; background: var(--line); opacity: 0; }
 </style></head><body>
 <div class="stage">
   <h1 class="serif">Where everything runs</h1>
@@ -38,86 +48,128 @@ svg.wires { position: absolute; left: 0; top: 0; }
 
   <p class="zone z1" style="left:64px;top:176px">outside</p>
   <div class="frame"><p>Fly.io Sprites</p></div>
-  <p class="zone z3" style="left:872px;top:176px">reached only through the gateway</p>
+  <p class="zone z3" style="left:872px;top:166px">reached only through the gateway</p>
 
-  <svg class="wires" width="1200" height="640">
-    <path class="w w1" pathLength="1" d="M178 290 H 300 V 270 H 420"/>
-    <path class="w w2" pathLength="1" d="M450 302 V 452"/>
-    <path class="w w3" pathLength="1" d="M480 480 H 600 V 390 H 652"/>
-    <path class="w w4" pathLength="1" d="M480 270 H 600 V 360 H 652"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 226 H 868"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 282 H 868"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 338 H 868"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 394 H 868"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 450 H 868"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 506 H 868"/>
-    <path class="w w5" pathLength="1" d="M708 375 H 812 V 562 H 868"/>
-    <path class="w w6" pathLength="1" d="M150 552 V 620 H 842 V 450 H 868"/>
+  <svg class="wires" width="1200" height="760">
+    <path class="w w1" pathLength="1" d="M178 300 H 300 V 270 H 420"/>
+    <path class="w w2" pathLength="1" d="M450 302 V 472"/>
+    <path class="w w3" pathLength="1" d="M480 500 H 580 V 415 H 652"/>
+    <path class="w w4" pathLength="1" d="M480 270 H 600 V 385 H 652"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 218 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 272 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 326 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 380 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 434 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 488 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 542 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 400 H 812 V 596 H 868"/>
+    <path class="w w6" pathLength="1" d="M150 600 V 656 H 842 V 596 H 868"/>
   </svg>
 
-  <div class="node n-vis" style="left:150px;top:290px">{{ICON:Globe}}</div>
-  <div class="lbl l-vis" style="left:150px;top:328px"><b>Visitors</b><span>open the live family site</span></div>
-  <div class="node n-har" style="left:150px;top:474px">{{ICON:User}}</div>
-  <div class="lbl l-har" style="left:150px;top:512px"><b>Harsh</b><span>decides held items by email</span></div>
+  <div class="node n-vis" style="left:150px;top:300px">{{ICON:Globe}}</div>
+  <div class="lbl l-vis" style="left:150px;top:338px"><b>Visitors</b><span>open the live family site</span></div>
+  <div class="node n-har" style="left:150px;top:520px">{{ICON:User}}</div>
+  <div class="lbl l-har" style="left:150px;top:558px"><b>Harsh</b><span>decides held items by email</span></div>
 
   <div class="node seal n-ct" style="left:450px;top:270px">{{SEAL}}</div>
-  <div class="lbl l-ct" style="left:450px;top:204px"><b>Courthouse</b><span>never dies</span></div>
-  <div class="node gen n-gen" style="left:450px;top:480px"><div class="ga">{{FACE:7-alive-idle}}</div><div class="gs">{{FACE:7-sealed-idle}}</div><div class="gb">{{FACE:8-alive-idle}}</div></div>
-  <div class="lbl l-gen" style="left:450px;top:518px"><span class="dk">gen-007-grace<i></i></span> <span class="dl">deleted</span><span>one Sprite per life</span></div>
-  <div class="lbl l-gen2" style="left:450px;top:518px"><span class="dk">gen-008-hiro</span><span>born with 5 instincts</span></div>
-  <div class="node key n-key" style="left:680px;top:375px">{{ICON:KeyRound}}</div>
-  <div class="lbl l-key" style="left:680px;top:414px"><b>Connector gateway</b><span>adds the key on the way out</span></div>
+  <div class="lbl l-ct" style="left:450px;top:184px"><b>Courthouse</b><div class="state"><div class="st-sleep">{{ICON:Moon}}asleep</div><div class="st-awake">{{ICON:Sun}}awake</div></div></div>
+  <div class="node gen n-gen" style="left:450px;top:500px"><div class="ga">{{FACE:7-alive-idle}}</div><div class="gs">{{FACE:7-sealed-idle}}</div><div class="gb">{{FACE:8-alive-idle}}</div></div>
+  <div class="lbl l-gen" style="left:450px;top:538px"><span class="dk">gen-007-grace<i></i></span> <span class="dl">deleted</span><span>one Sprite per life</span></div>
+  <div class="lbl l-gen2" style="left:450px;top:538px"><span class="dk">gen-008-hiro</span><span>born with 5 instincts</span></div>
+  <div class="node key n-key" style="left:680px;top:400px">{{ICON:KeyRound}}</div>
+  <div class="lbl l-key" style="left:680px;top:439px"><b>Connector gateway</b><span>adds the key on the way out</span></div>
 
-  <p class="tag t-https" style="left:226px;top:270px">HTTPS</p>
-  <p class="tag t-api" style="left:462px;top:368px">Sprites API</p>
-  <p class="tag t-nokey" style="left:508px;top:494px">no keys</p>
+  <p class="tag t-https" style="left:226px;top:280px">HTTPS</p>
+  <p class="tag t-api" style="left:462px;top:378px">Sprites API</p>
+  <p class="tag t-nokey" style="left:508px;top:480px">no keys</p>
+  <p class="tag red t-busy" style="left:1062px;top:262px">no answer</p>
+  <p class="tag green t-ok" style="left:190px;top:504px">replies “approve”</p>
 
-  <div class="svc s1" style="top:208px"><span class="ic">{{ICON:Gavel}}<i class="hl h1"></i></span><div><b>TypeSafe Jev</b><span>the judge</span></div></div>
-  <div class="svc s2" style="top:264px"><span class="ic">{{ICON:Brain}}<i class="hl h2"></i></span><div><b>Ollama Cloud</b><span>the brain</span></div></div>
-  <div class="svc s3" style="top:320px"><span class="ic">{{ICON:Archive}}<i class="hl h3"></i></span><div><b>Box</b><span>the family archive</span></div></div>
-  <div class="svc s4" style="top:376px"><span class="ic">{{ICON:Search}}<i class="hl h4"></i></span><div><b>Pinecone</b><span>ancestral memory</span></div></div>
-  <div class="svc s5" style="top:432px"><span class="ic">{{ICON:Inbox}}<i class="hl h5"></i></span><div><b>AgentMail</b><span>the inboxes</span></div></div>
-  <div class="svc s6" style="top:488px"><span class="ic">{{ICON:AudioLines}}<i class="hl h6"></i></span><div><b>ElevenLabs</b><span>the voices</span></div></div>
-  <div class="svc s7" style="top:544px"><span class="ic">{{ICON:Cloud}}<i class="hl h7"></i></span><div><b>Cloudflare</b><span>Harsh&rsquo;s own test emails</span></div></div>
+  <div class="svc s1" style="top:200px"><span class="ic">{{ICON:Gavel}}<i class="hl h1"></i></span><div><b>TypeSafe Jev</b><span>the judge</span></div></div>
+  <div class="svc s2" style="top:254px"><span class="ic">{{ICON:Brain}}<i class="hl h2"></i></span><div><b>Ollama Cloud</b><span>the brain</span></div></div>
+  <div class="svc s3" style="top:308px"><span class="ic">{{ICON:RefreshCw}}<i class="hl h3"></i></span><div><b>Groq, then Claude</b><span>backup brains</span></div></div>
+  <div class="svc s4" style="top:362px"><span class="ic">{{ICON:Archive}}<i class="hl h4"></i></span><div><b>Box</b><span>the family archive</span></div></div>
+  <div class="svc s5" style="top:416px"><span class="ic">{{ICON:Search}}<i class="hl h5"></i></span><div><b>Pinecone</b><span>ancestral memory</span></div></div>
+  <div class="svc s6" style="top:578px"><span class="ic">{{ICON:Inbox}}<i class="hl h6"></i></span><div><b>AgentMail</b><span>the family&rsquo;s inbox, and mail to Harsh</span></div></div>
+  <div class="svc s7" style="top:470px"><span class="ic">{{ICON:AudioLines}}<i class="hl h7"></i></span><div><b>ElevenLabs</b><span>the voices</span></div></div>
+  <div class="svc s8" style="top:524px"><span class="ic">{{ICON:Cloud}}<i class="hl h8"></i></span><div><b>Cloudflare</b><span>Harsh&rsquo;s own test emails</span></div></div>
 
-  <div class="dot grey d1" style="offset-path: path('M178 290 H 300 V 270 H 420')"></div>
-  <div class="dot grey d2" style="offset-path: path('M450 302 V 452')"></div>
-  <div class="dot grey d3" style="offset-path: path('M480 480 H 600 V 390 H 652')"></div>
-  <div class="dot gold d4" style="offset-path: path('M708 375 H 812 V 282 H 868')"></div>
-  <div class="dot grey d5" style="offset-path: path('M480 270 H 600 V 360 H 652')"></div>
-  <div class="dot gold d6" style="offset-path: path('M708 375 H 812 V 226 H 868')"></div>
+  <div class="dot grey d-vis" style="offset-path: path('M178 300 H 300 V 270 H 420')"></div>
+  <div class="dot grey d-birth" style="offset-path: path('M450 302 V 472')"></div>
+  <div class="dot gold d-mail1" style="offset-path: path('M868 596 H 812 V 400 H 708')"></div>
+  <div class="dot grey d-mail2" style="offset-path: path('M652 415 H 580 V 500 H 480')"></div>
+  <div class="dot grey d-ask" style="offset-path: path('M480 500 H 580 V 415 H 652')"></div>
+  <div class="dot gold d-brain" style="offset-path: path('M708 400 H 812 V 272 H 868')"></div>
+  <div class="dot gold d-backup" style="offset-path: path('M708 400 H 812 V 326 H 868')"></div>
+  <div class="dot grey d-trial" style="offset-path: path('M480 270 H 600 V 385 H 652')"></div>
+  <div class="dot gold d-jev" style="offset-path: path('M708 400 H 812 V 218 H 868')"></div>
+  <div class="dot gold d-box" style="offset-path: path('M708 400 H 812 V 380 H 868')"></div>
+  <div class="dot gold d-pc" style="offset-path: path('M708 400 H 812 V 434 H 868')"></div>
+  <div class="dot gold d-held" style="offset-path: path('M868 596 H 842 V 656 H 150 V 600')"></div>
+
+  <div class="rule"></div>
+  <p class="cap c1"><i>1</i><span>A visitor opens the live family site, and the Courthouse wakes up.</span></p>
+  <p class="cap c2"><i>2</i><span>The Courthouse gives birth: a fresh Sprite for Grace, generation 7.</span></p>
+  <p class="cap c3"><i>3</i><span>Mail reaches Grace through the gateway. Her instincts screen it before she reads it.</span></p>
+  <p class="cap c4"><i>4</i><span>Grace asks her brain. No key leaves her Sprite: the gateway adds it on the way out.</span></p>
+  <p class="cap c5"><i>5</i><span>If Ollama doesn&rsquo;t answer, a backup brain does. The family never stalls.</span></p>
+  <p class="cap c6"><i>6</i><span>At death, Grace&rsquo;s Sprite is deleted. A deleted Sprite can&rsquo;t be restored.</span></p>
+  <p class="cap c7"><i>7</i><span>The trial: the Courthouse asks Jev, through the same gateway.</span></p>
+  <p class="cap c8"><i>8</i><span>Verdicts are filed in Box. Approved memories go to Pinecone.</span></p>
+  <p class="cap c9"><i>9</i><span>Anything the court is unsure of is emailed to Harsh. It passes down only if he approves.</span></p>
+  <p class="cap c10"><i>10</i><span>Hiro is born on a new Sprite with every instinct the family has earned.</span></p>
+  <p class="cap c11"><i>11</i><span>With no one watching, the Courthouse sleeps and pays only for storage.</span></p>
 </div>
 <script>
 rise('h1', 100, 700, 10); rise('.sub', 350, 700, 8);
 fadeIn('.z1, .z3', 600, 500); fadeIn('.frame', 650, 600);
 pop('.n-vis', 800); fadeIn('.l-vis', 900); pop('.n-har', 950); fadeIn('.l-har', 1050);
-pop('.n-ct', 1000); fadeIn('.l-ct', 1100); pop('.n-key', 1200); fadeIn('.l-key', 1300);
-for (let i = 1; i <= 7; i++) rise(`.s${i}`, 1100 + i * 90, 400, 6);
+pop('.n-ct', 1000); fadeIn('.l-ct', 1100); fadeIn('.st-sleep', 1100, 400); pop('.n-key', 1200); fadeIn('.l-key', 1300);
+for (let i = 1; i <= 8; i++) rise(`.s${i}`, 1050 + i * 80, 400, 6);
 draw('.w1, .w4, .w5, .w6', 1500, 900); draw('.w2, .w3', 1700, 700);
+fadeIn('.rule', 1900, 500);
 
-// A visitor opens the site.
+// Captions: each holds until the next one starts.
+const caps = [2300, 3700, 5100, 7200, 9000, 10700, 12000, 14000, 15500, 17600, 19000];
+caps.forEach((t, i) => { fadeIn(`.c${i + 1}`, t, 300); if (i < caps.length - 1) fadeTo(`.c${i + 1}`, caps[i + 1] - 250, 0, 220); });
+fadeTo('.c11', 21300, 0, 400);
+const pulse = (at) => A('.n-key', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], at, 360, 'ease-out');
+const hit = (sel, at) => { fadeIn(sel, at, 200); fadeTo(sel, at + 900, 0, 500); };
+const travel = (sel, at, dur) => { fadeIn(sel, at, 100); along(sel, at, dur); fadeTo(sel, at + dur, 0, 120); };
+
+// 1. A visitor wakes the Courthouse.
 fadeIn('.t-https', 2300, 300);
-fadeIn('.d1', 2500, 100); along('.d1', 2500, 800); fadeTo('.d1', 3300, 0, 120);
-// The Courthouse gives birth: a fresh Sprite for Grace.
-fadeIn('.t-api', 3400, 300);
-fadeIn('.d2', 3500, 100); along('.d2', 3500, 650); fadeTo('.d2', 4150, 0, 100);
-A('.n-gen', [{ opacity: 1 }], 4100, 10); pop('.ga', 4150, 400); fadeIn('.l-gen', 4250, 400);
+travel('.d-vis', 2400, 800);
+fadeTo('.st-sleep', 3150, 0, 250); fadeIn('.st-awake', 3250, 300);
+// 2. Birth.
+fadeIn('.t-api', 3700, 300);
+travel('.d-birth', 3800, 650);
+A('.n-gen', [{ opacity: 1 }], 4400, 10); pop('.ga', 4450, 400); fadeIn('.l-gen', 4550, 400);
 A('.l-gen .dl', [{ opacity: 0 }], 0, 1);
-// Grace calls her brain: no key leaves the Sprite; the gateway adds it.
-fadeIn('.t-nokey', 4900, 300);
-fadeIn('.d3', 5000, 100); along('.d3', 5000, 800);
-A('.n-key', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 5780, 360, 'ease-out');
-fadeTo('.d3', 5800, 0, 100); fadeIn('.d4', 5850, 100); along('.d4', 5850, 750); fadeTo('.d4', 6600, 0, 120);
-fadeIn('.h2', 6550, 200); fadeTo('.h2', 7400, 0, 500);
-// After a death, the Courthouse asks the judge.
-fadeIn('.d5', 7100, 100); along('.d5', 7100, 800); fadeTo('.d5', 7900, 0, 100);
-A('.n-key', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 7880, 360, 'ease-out');
-fadeIn('.d6', 7950, 100); along('.d6', 7950, 750); fadeTo('.d6', 8700, 0, 120);
-fadeIn('.h1', 8650, 200); fadeTo('.h1', 9500, 0, 500);
-// Grace dies; her Sprite is deleted. Hiro is born.
-fadeTo('.ga', 8900, 0, 300); fadeIn('.gs', 8900, 300);
-A('.l-gen .dk i', [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 9100, 300, 'ease-in-out');
-A('.l-gen .dl', [{ opacity: 0 }, { opacity: 1 }], 9300, 300);
-fadeTo('.l-gen', 9900, 0, 300); fadeTo('.gs', 9900, 0, 300);
-pop('.gb', 10050, 400); fadeIn('.l-gen2', 10150, 400);
+// 3. Mail arrives.
+hit('.h6', 5150); travel('.d-mail1', 5200, 750); pulse(5930); travel('.d-mail2', 6000, 750);
+// 4. The brain, with no key on the Sprite.
+fadeIn('.t-nokey', 7200, 300);
+travel('.d-ask', 7300, 750); pulse(8030); travel('.d-brain', 8100, 700);
+// 5. Ollama doesn't answer; a backup does.
+A('.s2 .ic', [{ borderColor: 'var(--line)' }, { borderColor: 'var(--verdict)' }], 8800, 200);
+fadeIn('.t-busy', 8850, 250);
+pulse(9150); travel('.d-backup', 9200, 700); hit('.h3', 9850);
+A('.s2 .ic', [{ borderColor: 'var(--line)' }], 10400, 400); fadeTo('.t-busy', 10400, 0, 400);
+// 6. Death.
+fadeTo('.ga', 10800, 0, 300); fadeIn('.gs', 10800, 300);
+A('.l-gen .dk i', [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 11000, 300, 'ease-in-out');
+A('.l-gen .dl', [{ opacity: 0 }, { opacity: 1 }], 11200, 300);
+// 7. The trial.
+travel('.d-trial', 12100, 800); pulse(12880); travel('.d-jev', 12950, 750); hit('.h1', 13650);
+// 8. Filing.
+travel('.d-box', 14100, 750); travel('.d-pc', 14100, 800); hit('.h4', 14800); hit('.h5', 14850);
+// 9. Held items go to Harsh.
+hit('.h6', 15550); travel('.d-held', 15600, 1300);
+A('.n-har', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 16900, 360, 'ease-out'); fadeIn('.t-ok', 17000, 300); fadeTo('.t-ok', 18600, 0, 400);
+// 10. The next child.
+fadeTo('.l-gen', 17600, 0, 300); fadeTo('.gs', 17600, 0, 300);
+pop('.gb', 17800, 400); fadeIn('.l-gen2', 17900, 400);
+// 11. The Courthouse sleeps.
+fadeTo('.st-awake', 19300, 0, 300); fadeIn('.st-sleep', 19450, 400);
 </script></body></html>
