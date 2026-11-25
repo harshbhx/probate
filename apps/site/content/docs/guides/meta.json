@@ -1,1 +1,9 @@
-{ "title": "Guides", "pages": ["deploy", "operate", "configuration"] }
+{
+  "title": "Guides",
+  "pages": [
+    "deploy",
+    "operate",
+    "configuration",
+    "diagrams"
+  ]
+}

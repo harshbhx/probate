@@ -1,0 +1,84 @@
+---
+title: Architecture diagrams
+description: How the diagrams in these docs are drawn with stack-diagram, and how to redraw them when the system changes.
+---
+
+The diagrams on [Overview](/docs/architecture/overview) and [Deploy](/docs/guides/deploy) are drawn with [stack-diagram](https://github.com/caru-ini/stack-diagram), a skill for Claude Code and other agents that turns a description of a stack into an engineering-style diagram with real logos. Its sources live in `design/diagrams/`; the docs show pre-rendered images from `apps/site/public/diagrams/`.
+
+| File | What it is |
+| --- | --- |
+| `design/diagrams/make.py` | Writes both drafts from one description of nodes, groups and edges, with Probate's colours |
+| `design/diagrams/overview.html`, `deploy.html` | The drafts, with `%%ICON_name%%` placeholders |
+| `design/diagrams/*.built.html` | The built, self-contained diagrams (logos and fonts inlined) |
+| `apps/site/public/diagrams/*.webp` | The dark renders the docs show |
+
+## Redraw a diagram
+
+<Steps>
+<Step>
+
+**Get the skill.** Clone it next to the repo, or install it for your agent:
+
+```bash
+git clone https://github.com/caru-ini/stack-diagram
+pip install playwright && python3 -m playwright install chromium
+```
+
+</Step>
+<Step>
+
+**Fetch the logos.** Official marks only, never recoloured. Things with no brand get a Lucide line icon:
+
+```bash
+S=stack-diagram/skills/stack-diagram
+python3 $S/scripts/fetch_icons.py /tmp/probate-icons \
+  "flyio:fly" fastapi python cloudflare nextjs github pinecone elevenlabs box ollama \
+  "agentmail:lucide/mail" "jev:lucide/scale" "gateway:lucide/key-round" \
+  "harsh:lucide/user" "browser:lucide/globe" "laptop:lucide/laptop"
+cp design/logo-mark.svg /tmp/probate-icons/probate.svg
+```
+
+</Step>
+<Step>
+
+**Change the picture in `make.py`.** Each node is one call, `node(centerX, top, icon, name, role)`. Keep the skill's geometry: nodes at least 140 px apart, rows 140 px apart, groups 90 px outside their outer nodes, and vertical arrows that start below a node's label, never through it.
+
+```bash
+python3 design/diagrams/make.py $S
+```
+
+</Step>
+<Step>
+
+**Build and render.** The build inlines every logo and font into one HTML file; the render screenshots it in both themes at 2x:
+
+```bash
+for d in overview deploy; do
+  python3 $S/scripts/build.py design/diagrams/$d.html /tmp/probate-icons \
+    design/diagrams/$d.built.html --fonts $S/assets/fonts
+  python3 $S/scripts/render_png.py design/diagrams/$d.built.html /tmp/$d.png --selector .canvas --scale 2
+done
+```
+
+</Step>
+<Step>
+
+**Look at it before you ship it.** Open `/tmp/overview-dark.png` and check that no arrow crosses a label, every logo is visible on its tile, group labels sit in their corners, and nothing pokes out of a group.
+
+</Step>
+<Step>
+
+**Export for the docs.** The site is dark only, so it uses the dark render:
+
+```bash
+python3 -c "from PIL import Image; Image.open('/tmp/overview-dark.png').convert('RGB').save('apps/site/public/diagrams/overview.webp', quality=90)"
+```
+
+Then update the `width`, `height` and `alt` on the `<Diagram>` in the page if the picture changed.
+
+</Step>
+</Steps>
+
+## The colours
+
+The drafts override the template's dark tokens with Probate's: the canvas is surface 1 (`#0E1014`), primary-flow arrows are gilt, Fly.io's group is violet and Cloudflare's is orange. Gold lines always mean a generation's work or a request; grey lines mean control. Brand logos stay on white tiles, as their owners drew them, and remain their owners' trademarks.
