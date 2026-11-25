@@ -2,7 +2,7 @@
 // in a side sheet (Radix Dialog, shadcn "Sheet" pattern).
 import { useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, Skull, X } from "lucide-react";
 import type { GenCard } from "../../lib/api";
@@ -49,7 +49,7 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
         "card group relative flex h-full w-full flex-col items-start p-4 pt-3 text-left transition-colors duration-200",
         g.alive ? "border-life/30 bg-life/[0.03]" : "hover:border-line-strong hover:bg-night-3",
       )}
-      aria-label={`Open Gen ${g.gen} ${g.name}`}
+      aria-haspopup="dialog"
     >
       {g.alive && <BorderBeam />}
       <div className="flex w-full items-start justify-between">
@@ -95,6 +95,7 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
 }
 
 function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
+  const reduce = useReducedMotion();
   return (
     <Dialog.Root open={!!g} onOpenChange={(o) => !o && onClose()}>
       <AnimatePresence>
@@ -106,6 +107,7 @@ function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={reduce ? { duration: 0 } : undefined}
               />
             </Dialog.Overlay>
             <Dialog.Content asChild>
@@ -114,7 +116,7 @@ function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
-                transition={{ type: "spring", stiffness: 380, damping: 40 }}
+                transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 40 }}
               >
                 <div className="flex items-start justify-between">
                   <div>

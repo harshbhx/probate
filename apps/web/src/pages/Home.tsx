@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Gavel } from "lucide-react";
 import type { Summary } from "../lib/api";
 import { NumberTicker } from "../components/fx/NumberTicker";
@@ -19,9 +19,9 @@ import { countdown } from "../lib/format";
 export function Home({ summary }: { summary: Summary | null }) {
   useTitle(null);
   return (
-    <>
+    <main id="main">
       <Hero summary={summary} />
-      <Page flush className="pt-10 md:pt-14">
+      <Page as="div" flush className="pt-10 md:pt-14">
         <p className="mx-auto mb-6 flex max-w-3xl flex-wrap items-center gap-x-2 text-[14px] text-mist">
           Judging Probate?
           <Link to="/judges" className="inline-flex items-center gap-1.5 text-moon underline-offset-4 hover:underline">
@@ -93,7 +93,7 @@ export function Home({ summary }: { summary: Summary | null }) {
           </>
         )}
       </Page>
-    </>
+    </main>
   );
 }
 
@@ -108,12 +108,13 @@ function Stat({ value, label, tone }: { value: number; label: string; tone: stri
 
 function Hero({ summary }: { summary: Summary | null }) {
   const c = summary?.counts;
+  const reduce = useReducedMotion();
   return (
     <section className="border-b border-line">
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 md:pb-20 md:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={reduce ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >

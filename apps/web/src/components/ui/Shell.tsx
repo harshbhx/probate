@@ -2,7 +2,7 @@
 // Rules: docs/04-DESIGN.md, Night Court v3.
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { BookOpen } from "lucide-react";
 import { cx } from "../../lib/format";
 import type { Summary } from "../../lib/api";
@@ -133,17 +133,30 @@ export function SimBanner({ mode }: { mode?: string }) {
   );
 }
 
-export function Page({ children, className, flush = false }: { children: ReactNode; className?: string; flush?: boolean }) {
+export function Page({
+  children,
+  className,
+  flush = false,
+  as = "main",
+}: {
+  children: ReactNode;
+  className?: string;
+  flush?: boolean;
+  /** "div" when the page already sits inside a <main> (the home page puts its hero there). */
+  as?: "main" | "div";
+}) {
+  const reduce = useReducedMotion();
+  const Tag = as === "div" ? motion.div : motion.main;
   return (
-    <motion.main
-      id="main"
-      initial={{ opacity: 0, y: 8 }}
+    <Tag
+      id={as === "main" ? "main" : undefined}
+      initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cx("mx-auto max-w-6xl px-4 pb-24 sm:px-6", flush ? "pt-0" : "pt-10 md:pt-16", className)}
     >
       {children}
-    </motion.main>
+    </Tag>
   );
 }
 

@@ -106,6 +106,7 @@ export function Trial({ mode }: { mode?: string }) {
             The court is still reading {g.name}'s will. This page updates on its own.
           </p>
         )}
+        <h2 className="sr-only">The will, item by item</h2>
         <p className="mt-4 text-[14px] text-mist">
           {g.name}'s will had {t.cases.length} items. Convicted items are destroyed and never reach {t.child?.name ?? "the child"}.
         </p>
