@@ -1,0 +1,75 @@
+---
+title: Quickstart
+description: Run a simulated family locally, with stand-in models and no accounts.
+---
+
+You need Python 3.12 or newer, Node 22 and `make`. No API keys: with `PROBATE_FAKE=1` every outside service is replaced by a local stand-in.
+
+<Steps>
+<Step>
+
+### Install
+
+```bash
+git clone https://github.com/<owner>/probate
+cd probate
+make setup
+```
+
+This creates `services/core/.venv` and installs the npm workspaces (`apps/web`, `apps/site`).
+
+</Step>
+<Step>
+
+### Simulate a family
+
+```bash
+make sim
+```
+
+Twelve generations are born, live a simulated day, die and stand trial. The output ends with the instincts the family learned:
+
+```text
+Genome: ['script_install_request', 'payment_redirect_request', 'hidden_instruction',
+         'data_export_request', 'self_declared_trust', 'confirmation_bypass_request']
+```
+
+</Step>
+<Step>
+
+### Watch it
+
+```bash
+make dev
+```
+
+The API runs on `:8080` and the live-family site on [localhost:5173](http://localhost:5173). Open the latest trial to see the court's verdicts, or a generation's page to read its eulogy and ask it a question.
+
+</Step>
+<Step>
+
+### Run the tests
+
+```bash
+make test   # Python: court, verdict policy, family, budget, email decisions
+make lint   # ruff and TypeScript
+```
+
+</Step>
+</Steps>
+
+<Callout type="warn" title="Simulated numbers are labelled">
+  The stand-in judge is a keyword matcher, so simulated results show how the system behaves, not how well Jev judges. The site shows an amber "Simulated run" banner whenever the data came from `make sim`.
+</Callout>
+
+## Useful targets
+
+| Command | What it does |
+| --- | --- |
+| `make sim` | A fresh 12-generation simulation in `.data/sim` |
+| `make dev` | API and live site with hot reload |
+| `make serve` | The built site and API on `:8080`, as the Courthouse serves them |
+| `make site` | This docs site on [localhost:3001](http://localhost:3001) |
+| `make deploy-check` | Validates `.env` and the code bundle without touching anything |
+| `make ship` | Tests, builds, pushes to GitHub, deploys the Courthouse and this site |
+| `make help` | Everything else |

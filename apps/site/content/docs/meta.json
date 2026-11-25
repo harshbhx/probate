@@ -1,0 +1,18 @@
+{
+  "title": "Probate",
+  "pages": [
+    "index",
+    "quickstart",
+    "---Concepts---",
+    "...concepts",
+    "---Architecture---",
+    "...architecture",
+    "---Guides---",
+    "...guides",
+    "---Reference---",
+    "...reference",
+    "---More---",
+    "security",
+    "faq"
+  ]
+}

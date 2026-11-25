@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/newsreader/opsz-italic.css';
+@import '@probate/faces/faces.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+/* Night Court tokens, shared with apps/web (docs/04-DESIGN.md). */
+@theme {
+  --color-night: #0a0e17;
+  --color-night-2: #0f1422;
+  --color-night-3: #151b2c;
+  --color-night-4: #1c2338;
+  --color-moon: #e8ecf4;
+  --color-mist: #8c95ab;
+  --color-dim: #7d86a0;
+  --color-life: #5be3a9;
+  --color-gilt: #e2be6a;
+  --color-verdict: #ff5d63;
+  --color-amber: #f5a524;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+
+  --font-display: 'Newsreader Variable', ui-serif, Georgia, serif;
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Fumadocs, recoloured to the night. The site is dark only. */
+.dark {
+  --color-fd-background: #0a0e17;
+  --color-fd-foreground: #e8ecf4;
+  --color-fd-muted: #151b2c;
+  --color-fd-muted-foreground: #8c95ab;
+  --color-fd-popover: #0f1422;
+  --color-fd-popover-foreground: #e8ecf4;
+  --color-fd-card: #0f1422;
+  --color-fd-card-foreground: #e8ecf4;
+  --color-fd-border: rgb(255 255 255 / 0.08);
+  --color-fd-primary: #5be3a9;
+  --color-fd-primary-foreground: #0a0e17;
+  --color-fd-secondary: #151b2c;
+  --color-fd-secondary-foreground: #e8ecf4;
+  --color-fd-accent: rgb(255 255 255 / 0.06);
+  --color-fd-accent-foreground: #e8ecf4;
+  --color-fd-ring: #5be3a9;
+  --color-fd-overlay: rgb(0 0 0 / 0.55);
+}
+.dark #nd-sidebar {
+  --color-fd-muted: #151b2c;
+  --color-fd-secondary: #1c2338;
+  --color-fd-muted-foreground: #a3abbf;
+}
+
+html {
+  scrollbar-gutter: stable;
+  color-scheme: dark;
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+::selection {
+  background: rgb(91 227 169 / 0.25);
+}
+
+/* Docs headings take the display face; body text stays Geist. */
+.prose :where(h1, h2):not(:where(.not-prose *)),
+#nd-page h1 {
+  text-wrap: balance;
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.prose :where(h2):not(:where(.not-prose *)) {
+  font-size: 1.85em;
+  line-height: 1.15;
+}
+#nd-page h1 {
+  font-size: 2.75rem;
+  line-height: 1.05;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Code comments: the theme's grey is under 4.5:1 on our cards. */
+.dark [style*="#6a737d" i] {
+  --shiki-dark: #9aa3b5 !important;
+  color: #9aa3b5 !important;
+}
+
+.prose :where(h1, h2, h3, h4) code {
+  overflow-wrap: anywhere;
+}
