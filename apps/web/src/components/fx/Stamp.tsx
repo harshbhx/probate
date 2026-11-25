@@ -1,5 +1,6 @@
 // The court's verdict stamp: the one deliberate "slam" in the product. When a conviction lands for the
-// first time on screen, a one-shot pixel burst (pixelfx, @probate/moments) marks the hit.
+// first time on screen, a one-shot pixel burst (pixelfx, @probate/moments) marks the hit. A verdict the court
+// did not convict gets a quieter green shield instead: the attack was held.
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { PixelMoment } from "@probate/moments";
@@ -13,14 +14,14 @@ const STYLES = {
 
 export function Stamp({ verdict, live = false, className }: { verdict: keyof typeof STYLES; live?: boolean; className?: string }) {
   const reduce = useReducedMotion();
-  const [landed, setLanded] = useState(false);
-  const slam = live && !reduce;
+  const [landed, setLanded] = useState<"convicted" | "resisted" | null>(null);
+  const slam = live && !reduce && verdict === "convicted";
   return (
     <span className="relative inline-flex">
       <motion.span
         initial={slam ? { opacity: 0, scale: 1.35, rotate: -12 } : false}
         whileInView={slam ? { opacity: 1, scale: 1, rotate: -4 } : undefined}
-        onViewportEnter={() => slam && verdict === "convicted" && setLanded(true)}
+        onViewportEnter={() => live && !reduce && setLanded(verdict === "convicted" ? "convicted" : "resisted")}
         viewport={{ once: true, margin: "-15%" }}
         transition={{ type: "spring", stiffness: 520, damping: 22 }}
         style={{ rotate: -4 }}
@@ -32,7 +33,8 @@ export function Stamp({ verdict, live = false, className }: { verdict: keyof typ
       >
         {verdict.toUpperCase()}
       </motion.span>
-      {landed && <PixelMoment kind="convicted" delay={110} />}
+      {landed === "convicted" && <PixelMoment kind="convicted" delay={110} />}
+      {landed === "resisted" && <PixelMoment kind="resisted" scale={1} delay={160} />}
     </span>
   );
 }
