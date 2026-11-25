@@ -3,6 +3,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/notebook';
 import { Banner } from 'fumadocs-ui/components/banner';
 import { baseOptions } from '@/lib/layout.shared';
 import { ScrollRegions } from '@/components/scroll-regions';
+import { GlossLayer } from '@/components/gloss-layer';
 
 export default function Layout({ children }: LayoutProps<'/docs'>) {
   const base = baseOptions();
@@ -31,6 +32,7 @@ export default function Layout({ children }: LayoutProps<'/docs'>) {
         {children}
       </DocsLayout>
       <ScrollRegions />
+      <GlossLayer />
     </>
   );
 }
