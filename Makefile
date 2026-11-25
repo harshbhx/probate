@@ -1,5 +1,8 @@
 # Probate monorepo. `make help` lists everything.
-PY      := services/core/.venv/bin/python
+# The venv puts its programs in bin/ on Linux and macOS and in Scripts/ on Windows (Git Bash).
+VENVBIN := $(if $(wildcard services/core/.venv/Scripts),Scripts,bin)
+PY      := services/core/.venv/$(VENVBIN)/python
+PYTHON  := $(shell command -v python3 >/dev/null 2>&1 && echo python3 || echo python)
 SIMDATA := .data/sim
 # Addresses baked into the real builds so links, social cards and the Docs link point at the deployed sites.
 REPO      ?= harshbhx/probate
@@ -14,7 +17,7 @@ help: ## Show this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
 
 setup: ## Install Python and web dependencies
-	cd services/core && python3 -m venv .venv && .venv/bin/pip install -q -e '.[dev]'
+	cd services/core && $(PYTHON) -m venv .venv && "$$([ -d .venv/Scripts ] && echo .venv/Scripts || echo .venv/bin)/python" -m pip install -q -e '.[dev]'
 	npm install
 
 sim: ## Simulate 12 generations locally with stand-in models
@@ -22,7 +25,7 @@ sim: ## Simulate 12 generations locally with stand-in models
 	PROBATE_FAKE=1 PROBATE_DATA_DIR=$(SIMDATA) $(PY) -m probate.courthouse.simulate --generations 12
 
 api: ## Run the API on :8080 against the simulated family
-	cd services/core && PROBATE_FAKE=1 PROBATE_DATA_DIR=../../$(SIMDATA) .venv/bin/uvicorn probate.courthouse.app:app --port 8080 --reload
+	cd services/core && PROBATE_FAKE=1 PROBATE_DATA_DIR=../../$(SIMDATA) .venv/$(VENVBIN)/uvicorn probate.courthouse.app:app --port 8080 --reload
 
 web: ## Run the website with hot reload on :5173 (proxies /api to :8080)
 	npm run dev
@@ -34,11 +37,11 @@ dev: ## API and website together
 	@$(MAKE) -j2 api web
 
 test: ## Python tests and the family-face model
-	cd services/core && PROBATE_DATA_DIR=$$(mktemp -d) .venv/bin/python -m pytest -q
+	cd services/core && PROBATE_DATA_DIR=$$(mktemp -d) .venv/$(VENVBIN)/python -m pytest -q
 	npm test -w kinfaces --silent
 
 lint: ## Ruff and TypeScript for every app
-	cd services/core && .venv/bin/ruff check probate tests ../../scripts
+	cd services/core && .venv/$(VENVBIN)/ruff check probate tests ../../scripts
 	npm run lint -w @probate/web
 	npm run lint -w @probate/site
 
@@ -48,7 +51,7 @@ build: ## Build the live site (apps/web/dist) and the landing + docs (apps/site/
 
 serve: ## The built live site and API on :8080, the way the Courthouse serves it
 	npm run build -w @probate/web
-	cd services/core && PROBATE_FAKE=1 PROBATE_DATA_DIR=../../$(SIMDATA) .venv/bin/uvicorn probate.courthouse.app:app --port 8080
+	cd services/core && PROBATE_FAKE=1 PROBATE_DATA_DIR=../../$(SIMDATA) .venv/$(VENVBIN)/uvicorn probate.courthouse.app:app --port 8080
 
 deploy-check: ## Validate .env and the bundle without touching Sprites
 	$(WEB_ENV) npm run build -w @probate/web
@@ -65,7 +68,7 @@ site-data: ## Re-export the court examples the landing page shows (from the real
 	$(PY) scripts/export_site_data.py
 
 site-shots: ## Re-capture the landing page product shots (needs make serve running and Playwright)
-	python3 scripts/product_shots.py
+	$(PYTHON) scripts/product_shots.py
 
 site-deploy: ## Build the landing + docs and deploy them to Cloudflare (needs `npx wrangler login`)
 	$(SITE_ENV) npm run build -w @probate/site

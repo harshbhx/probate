@@ -13,7 +13,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 REPO="${1:-probate}"
-PY="services/core/.venv/bin/python"
+# The venv puts its programs in bin/ on Linux and macOS and in Scripts/ on Windows (Git Bash).
+if [ -d services/core/.venv/Scripts ]; then VENVBIN="Scripts"; else VENVBIN="bin"; fi
+PY="services/core/.venv/$VENVBIN/python"
 STATE=".data"
 mkdir -p "$STATE"
 
@@ -41,7 +43,7 @@ if git grep -nE '(sk-ant-|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{3
 fi
 
 say "Tests and lint"
-(cd services/core && PROBATE_DATA_DIR="$(mktemp -d)" .venv/bin/python -m pytest -q && .venv/bin/ruff check probate tests ../../scripts)
+(cd services/core && PROBATE_DATA_DIR="$(mktemp -d)" .venv/$VENVBIN/python -m pytest -q && .venv/$VENVBIN/ruff check probate tests ../../scripts)
 npm run lint --silent
 
 say "Building both sites"
