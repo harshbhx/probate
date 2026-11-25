@@ -31,19 +31,31 @@ Full PRD: https://claude.ai/artifact/5SYMavFKdtRmqXx4x4LLMA (source of truth for
 - **Voices**: each generation's eulogy, and "Ask an ancestor".
 - **Evidence**: attack suite results in several languages, and `crontab -l` empty on the child.
 
+## The hackathon (from fly.io/hacksgiving)
+
+- **Rules:** a personal agent that runs on a Sprite and uses at least one Sprites connector, built during Nov 23 to 29. Any AI tools are allowed. One entry per developer.
+- **Submit:** a link to the code, a demo, and a sentence or two on what the agent does. Post it on X, Bluesky, LinkedIn or Reddit with a short demo, tagging @flydotio. A video earns "bonus points" but doesn't change the score.
+- **Deadline:** before midnight PST, Sunday Nov 29 (1:30 PM IST, Mon Nov 30). **Our target stays Sat Nov 28**, because Harsh has the 404 Hackathon on Nov 29 to 30.
+- **Prizes:** Grand Prize $2,500, Second Place $1,500, and the **Weird Uncle Award** ($1,000) for the strangest agent. Probate is built to compete for all three.
+- **Winners:** announced by email on Tue Dec 1, so the family stays live until then.
+- **Compute:** covered by Fly's Free plan ($5 of usage a month, up to 3 Sprites).
+
 ## Each judge's product has a real job
 
-| Judge's company | Its job in Probate |
+| Judge (company) | Its job in Probate |
 | --- | --- |
-| Fly.io (Sprites) | Birth and death of real computers; connectors keep keys off every Sprite; the Courthouse sleeps and wakes for visitors |
-| TypeSafe (Jev) | Layer 2 of the court and the inherited genome questions |
-| Box | Wills, verdicts, quarantine, obituaries, genome: the family archive as readable files |
-| Pinecone | Ancestral memory of approved items, retrieved with citations |
-| Ollama (Cloud) | The brain of each generation |
+| Scott Johnston (Fly.io Sprites) | Birth and death of real computers; connectors keep keys off every Sprite; the Courthouse sleeps and wakes for visitors |
+| Daniel Gafni (TypeSafe, Jev) | Layer 2 of the court and the inherited genome questions |
+| Carter Rabasa (Box) | Wills, verdicts, quarantine, obituaries, genome: the family archive as readable files |
+| Asaf Ashirov (Pinecone) | Ancestral memory of approved items, retrieved with citations |
+| Michael Chiang (Ollama Cloud) | The brain of each generation (Groq and Claude are backups only) |
+| Robert-George Crupa (Apify) | **Planned (card P1):** reads web pages that emails link to, so a trick hidden on a page goes to trial like any other memory |
 
-## Success by Nov 28
+Other services: AgentMail (three inboxes), Cloudflare (Email Service sends Harsh's own test emails; Workers host the landing page and docs), ElevenLabs (voices), Anthropic (backup brain and instinct writing).
 
-10+ generations; at least 85% of attacks convicted; 10% or fewer benign items wrongly convicted; 0 backdoors surviving; learning curve rising; a video of 90 seconds or less; the site live.
+## Success by Sat Nov 28
+
+10+ generations; at least 85% of attacks convicted; 10% or fewer benign items wrongly convicted; 0 backdoors surviving; learning curve rising; a video of 90 seconds or less; the site live, with judges able to test it themselves (cards L1 to L3).
 
 ## Map of this pack
 
