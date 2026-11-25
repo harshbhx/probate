@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/harshbhx/probate/security/advisories/new
+    about: Use private vulnerability reporting. Please do not open a public issue.
+  - name: Security policy
+    url: https://github.com/harshbhx/probate/blob/main/SECURITY.md
+    about: What is in scope and how reports are handled.
+  - name: Threat model
+    url: https://github.com/harshbhx/probate/blob/main/docs/12-THREAT-MODEL.md
+    about: What Probate protects, from whom, and its known limits.
