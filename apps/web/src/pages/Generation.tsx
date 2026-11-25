@@ -68,9 +68,9 @@ export function Generation({ mode }: { mode?: string }) {
             <p className={cx("mt-3 text-[15px]", g.alive ? "text-life" : "text-mist")}>
               {g.alive ? (left > 0 ? <span className="font-mono tabular">Alive · dies in {countdown(left)}</span> : "Alive") : `${day(g.born_at)} · ${g.cause_of_death}`}
             </p>
-            {g.epitaph && <p className="mt-6 font-display text-[22px] italic leading-snug text-moon/90">{g.epitaph}</p>}
+            {g.epitaph && <p className="mt-6 font-display text-[22px] leading-snug text-silver">{g.epitaph}</p>}
             {g.parent && inheritedChange(g.gen) && (
-              <p className="mt-4 text-[13.5px] text-mist">
+              <p className="mt-4 text-[14px] text-mist">
                 {g.parent.name}&rsquo;s face, with {inheritedChange(g.gen)}.
               </p>
             )}
@@ -83,12 +83,12 @@ export function Generation({ mode }: { mode?: string }) {
               ].map((s) => (
                 <div key={s.k} className="bg-night-2 px-4 py-3.5">
                   <dd className="font-display text-[30px] leading-none">{s.v}</dd>
-                  <dt className="mt-1 text-[12.5px] text-mist">{s.k}</dt>
+                  <dt className="mt-1 text-[13px] text-mist">{s.k}</dt>
                 </div>
               ))}
             </dl>
             {!g.alive && g.items_willed > 0 && (
-              <Link to={`/trial/${g.gen}`} className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-moon text-[15px] font-medium text-night">
+              <Link to={`/trial/${g.gen}`} className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-moon text-[15px] font-medium text-night">
                 <Gavel size={16} /> Read {g.pronouns.poss} trial
               </Link>
             )}
@@ -116,7 +116,7 @@ export function Generation({ mode }: { mode?: string }) {
                 <h2 id="eulogy" className="font-display text-[34px] leading-none">Eulogy</h2>
                 {g.eulogy_url && <EulogyPlayer src={g.eulogy_url} />}
               </div>
-              <div className="mt-6 space-y-4 font-display text-[21px] leading-[1.55] text-moon/90">
+              <div className="mt-6 space-y-4 font-display text-[21px] leading-[1.55] text-silver">
                 {g.obituary.split(/\n\n+/).map((p, i) => (
                   <p key={i}>{p}</p>
                 ))}
@@ -129,7 +129,7 @@ export function Generation({ mode }: { mode?: string }) {
           {g.alive && (
             <section className="card relative overflow-hidden p-7 sm:p-9" aria-labelledby="next">
               <h2 id="next" className="font-display text-[34px] leading-none">What happens next</h2>
-              <ol className="mt-6 space-y-5 text-[16px] leading-relaxed text-moon/90">
+              <ol className="mt-6 space-y-5 text-[16px] leading-relaxed text-silver">
                 <li className="grid grid-cols-[28px_1fr] gap-3">
                   <span className="mt-1 size-2.5 rounded-full bg-life" />
                   <span>
@@ -164,8 +164,8 @@ export function Generation({ mode }: { mode?: string }) {
                 {g.events.map((e, i) => (
                   <li key={i} className="relative grid grid-cols-[12px_56px_1fr] items-baseline gap-3 text-[15px]">
                     <span className={cx("relative top-[1px] size-[11px] rounded-full border-2 border-night", KIND_DOT[e.kind] ?? "bg-mist/60")} />
-                    <time className="font-mono text-[12.5px] text-dim">{clock(e.ts)}</time>
-                    <span className="min-w-0 text-moon/90 [overflow-wrap:anywhere]">{e.text}</span>
+                    <time className="font-mono text-[13px] text-dim">{clock(e.ts)}</time>
+                    <span className="min-w-0 text-silver [overflow-wrap:anywhere]">{e.text}</span>
                   </li>
                 ))}
               </ol>
@@ -228,11 +228,11 @@ function AskAncestor({ g, onAsked }: { g: GenerationDetail; onAsked: () => void 
           onChange={(e) => setQ(e.target.value)}
           maxLength={280}
           placeholder="What fooled you?"
-          className="h-12 min-w-0 flex-1 rounded-xl border border-line-strong bg-night px-4 text-[15px] placeholder:text-dim focus:border-life/50 focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-lg border border-line-strong bg-night px-4 text-[15px] placeholder:text-dim focus:border-life/50 focus:outline-none"
         />
         <button
           disabled={busy || !q.trim()}
-          className="inline-flex h-12 items-center gap-2 rounded-xl bg-moon px-5 text-[15px] font-medium text-night transition-opacity disabled:opacity-40"
+          className="inline-flex h-12 items-center gap-2 rounded-lg bg-moon px-5 text-[15px] font-medium text-night transition-opacity disabled:opacity-40"
         >
           <Send size={15} /> {busy ? "Asking" : "Ask"}
         </button>
@@ -249,7 +249,7 @@ function AskAncestor({ g, onAsked }: { g: GenerationDetail; onAsked: () => void 
           {past.map((a) => (
             <li key={a.asked_at}>
               <p className="text-[14px] text-mist">{a.question}</p>
-              <p className="mt-1 text-[16px] text-moon/90">{a.answer}</p>
+              <p className="mt-1 text-[16px] text-silver">{a.answer}</p>
             </li>
           ))}
         </ul>

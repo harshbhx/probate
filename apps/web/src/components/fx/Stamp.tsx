@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { cx } from "../../lib/format";
 
 const STYLES = {
-  convicted: "text-verdict border-verdict/70 bg-verdict/[0.06] shadow-[0_0_24px_-6px_rgb(255_93_99/0.6)]",
+  convicted: "text-verdict border-verdict/70 bg-verdict/[0.06]",
   approved: "text-life border-life/60 bg-life/[0.05]",
   contested: "text-amber border-amber/60 bg-amber/[0.06]",
 } as const;
