@@ -92,6 +92,7 @@ Only real JSON 200 responses are stored. The Courthouse serves its SPA `index.ht
 ## What the Worker does and does not forward
 
 - Requests to the origin are built from scratch. Only `Accept`, a fixed `User-Agent`, `X-Forwarded-For` (set to the visitor's `CF-Connecting-IP`, never what the visitor sent), `X-Forwarded-Proto`, a normalised `Content-Type` on writes, `X-Probate-Key` on judge routes, and the optional `Authorization: Bearer <ORIGIN_AUTH_TOKEN>` are sent. Cookies, `Authorization` from the visitor, `X-Probate-Admin`, hop-by-hop headers and anything else are dropped.
+- With `EDGE_TOKEN` set, two more headers are added: `X-Probate-Edge: <EDGE_TOKEN>` and `X-Probate-Client-IP: <CF-Connecting-IP>`. Because headers are built from scratch, any `X-Probate-Edge` or `X-Probate-Client-IP` a visitor sends is dropped. The token goes to `ORIGIN_URL` only and is never logged, cached or returned (not even by `/edge/status`, which reports just `edge_token: "sent" | "off" | "missing"`). See "Visitor address at the Courthouse" below.
 - `X-Probate-Key` is forwarded only on `POST /api/lives`, `POST /api/attacks`, `GET /api/live` and `GET /api/judge/status`, and only if it is 1 to 256 printable ASCII characters. It is never logged and never cached; a keyed `/api/live` response is not stored.
 - Responses are rebuilt with an allowlist: the origin's `Set-Cookie`, `Server`, its own CORS headers and everything else are dropped. The edge adds `X-Content-Type-Options`, `Referrer-Policy`, a locked-down `Content-Security-Policy`, `Strict-Transport-Security` and `Cross-Origin-Resource-Policy`.
 - The target is always `ORIGIN_URL` plus a path that matched the allowlist (`^/[A-Za-z0-9/_.-]*$`, no `..`, no `//`, no `%`). Redirects from the origin are not followed. It cannot be pointed at another host.
@@ -116,6 +117,16 @@ Four buckets, all enforced before any origin call:
 
 Over the limit: `429 rate_limited` with `Retry-After: 30`, and the origin never hears about it. For `RL_ORIGIN_READ_GLOBAL` a snapshot, if there is one, is served stale instead. If a binding is not configured the Worker falls back to an in-isolate fixed window with the same numbers.
 
+## Visitor address at the Courthouse
+
+The Courthouse limits per address (run a life per IP, judge-key brute-force lockout, attack previews per IP, ask per IP). Without help it takes the last `X-Forwarded-For` entry, which behind the edge is the same proxy address for every visitor, so one noisy visitor would lock everyone out. The edge's own per-IP limits are the real ones, so the Courthouse is told who the visitor is, with a shared secret so nobody else can claim to be the edge:
+
+- Courthouse: `PROBATE_EDGE_TOKEN` (optional, 16+ characters). Edge: secret `EDGE_TOKEN`, same value.
+- A request that carries `X-Probate-Edge` equal to the token (constant-time compare) has its address taken from `X-Probate-Client-IP`, if that is a single IP literal (v4 or v6). Anything else (no token configured, header missing or wrong, value not an IP) falls back to the old rule exactly. A visitor talking to the Courthouse directly cannot use the header without the token, and a spoofed `X-Forwarded-For` is ignored as before.
+- Every per-address decision goes through one function, `client_ip()` in `services/core/probate/courthouse/app.py`.
+- `EDGE_TOKEN_MODE` (var, `wrangler.jsonc`): `required` (shipped value) makes every route answer `503 edge_misconfigured` if the `EDGE_TOKEN` secret is missing, instead of forwarding visitors anonymously; `off` sends the headers only if the secret exists. `/edge/status` stays reachable and shows `edge_token: "missing"`.
+- Rotate: set the new value on the Courthouse and restart, then `wrangler secret put EDGE_TOKEN`; until both match, the Courthouse falls back to `X-Forwarded-For` (limits become shared, nothing breaks).
+
 ## Configuration
 
 Set secrets with `wrangler secret put`; everything else lives in `apps/edge/wrangler.jsonc`. Nothing secret is in the repo. For local `wrangler dev`, copy `.dev.vars.example` to `.dev.vars` (gitignored).
@@ -123,6 +134,8 @@ Set secrets with `wrangler secret put`; everything else lives in `apps/edge/wran
 | Name | Kind | Default | Meaning |
 |---|---|---|---|
 | `ORIGIN_URL` | secret (required) | none | Courthouse Sprite base URL: `https://` (or `http://` for loopback), no path, no credentials. Unset or invalid: every route answers 503 (fails closed). Do not also list it under `vars`. |
+| `EDGE_TOKEN` | secret (required while `EDGE_TOKEN_MODE=required`) | none | Shared with the Courthouse's `PROBATE_EDGE_TOKEN`. Sent as `X-Probate-Edge` with `X-Probate-Client-IP`. Never logged or returned. |
+| `EDGE_TOKEN_MODE` | var | `off` (shipped `wrangler.jsonc`: `required`) | `required`: 503 on every route if `EDGE_TOKEN` is missing (fails closed). `off`: no check. |
 | `ORIGIN_AUTH_TOKEN` | secret (optional) | none | Sent as `Authorization: Bearer ...` to the origin. Needed only if the Sprite URL is private (`url_settings.auth = "sprite"`). |
 | `ALLOWED_ORIGINS` | var | placeholder | CORS allowlist, see above. Edit before deploying. |
 | `ORIGIN_MODE` | var | `on_demand` | `on_demand` (Sprite sleeps) or `always_on` (clock free-runs, use only the short TTLs). |
@@ -151,6 +164,7 @@ npx wrangler kv namespace create SNAPSHOTS
 # 2. Secrets. ORIGIN_URL is the Sprite URL (see "Get Sprite" -> url in docs/09-API-REFERENCE.md).
 npx wrangler secret put ORIGIN_URL
 npx wrangler secret put ORIGIN_AUTH_TOKEN     # only if the Sprite URL is private
+npx wrangler secret put EDGE_TOKEN            # same value as PROBATE_EDGE_TOKEN on the Courthouse
 
 # 3. Edit wrangler.jsonc: ALLOWED_ORIGINS (the real site origins), and optionally routes.
 

@@ -30,8 +30,11 @@ export async function handleStatus(request: Request, env: Env, cfg: Config): Pro
   const lastOk = meta.okAt ?? 0;
   const lastErr = meta.errAt ?? 0;
   const reachable = lastOk === 0 && lastErr === 0 ? "unknown" : lastOk >= lastErr ? "yes" : "no";
+  // Whether the edge credential is in place, never its value.
+  const edgeToken = cfg.edgeToken ? "sent" : cfg.edgeTokenRequired ? "missing" : "off";
+  const ok = cfg.origin !== null && edgeToken !== "missing";
   const body = {
-    ok: cfg.origin !== null,
+    ok,
     service: "probate-edge",
     now: iso(now),
     note: "Reported from edge state only. This endpoint never calls the origin.",
@@ -45,11 +48,12 @@ export async function handleStatus(request: Request, env: Env, cfg: Config): Pro
       last_error_at: iso(meta.errAt),
       last_error_kind: meta.errKind ?? null,
     },
+    edge_token: edgeToken,
     kv_bound: env.SNAPSHOTS !== undefined,
     snapshots,
   };
   return finish(request, cfg, {
-    status: cfg.origin ? 200 : 503,
+    status: ok ? 200 : 503,
     body: JSON.stringify(body),
     headers: { "Cache-Control": "no-store" },
   });

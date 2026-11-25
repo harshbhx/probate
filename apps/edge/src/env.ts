@@ -7,6 +7,14 @@ export interface Env {
   ORIGIN_AUTH_TOKEN?: string;
   /** Comma separated browser origins allowed by CORS. `https://*.example.com` wildcards allowed. */
   ALLOWED_ORIGINS?: string;
+  /** Secret. Shared with the Courthouse (`PROBATE_EDGE_TOKEN`, same value). Sent to the origin as
+   *  `X-Probate-Edge` next to `X-Probate-Client-IP` so the Courthouse can tell real visitors apart.
+   *  Never logged, never returned, never sent anywhere but the origin. */
+  EDGE_TOKEN?: string;
+  /** "required": every proxied request must carry the edge token, and without the `EDGE_TOKEN`
+   *  secret the Worker answers 503 instead of passing requests through unauthenticated.
+   *  "off" (default when unset): the token is sent only if `EDGE_TOKEN` happens to be set. */
+  EDGE_TOKEN_MODE?: string;
   /** "on_demand" (default): the Sprite sleeps, reads are served from snapshots while it is idle.
    *  "always_on": the Sprite free-runs, so the base TTLs apply all the time. */
   ORIGIN_MODE?: string;
@@ -33,6 +41,9 @@ export interface Env {
 export interface Config {
   origin: URL | null;
   originToken: string | null;
+  edgeToken: string | null;
+  /** True when EDGE_TOKEN_MODE=required. */
+  edgeTokenRequired: boolean;
   allowedOrigins: string[];
   alwaysOn: boolean;
   readTimeoutMs: number;
@@ -70,6 +81,8 @@ export function loadConfig(env: Env): Config {
   return {
     origin: parseOrigin(env.ORIGIN_URL),
     originToken: env.ORIGIN_AUTH_TOKEN?.trim() || null,
+    edgeToken: env.EDGE_TOKEN?.trim() || null,
+    edgeTokenRequired: (env.EDGE_TOKEN_MODE ?? "off").trim().toLowerCase() === "required",
     allowedOrigins: (env.ALLOWED_ORIGINS ?? "")
       .split(",")
       .map((s) => s.trim())
