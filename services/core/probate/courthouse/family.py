@@ -84,7 +84,7 @@ class Family:
         row = self.store.one("SELECT MAX(gen) AS m FROM generations")
         return (row["m"] or 0) + 1
 
-    def birth(self, at: datetime | None = None) -> Generation:
+    def birth(self, at: datetime | None = None, inherit_slack: int = 0) -> Generation:
         gen = self.next_number()
         name, pronoun, _hint = name_for(gen)
         born = at or datetime.now(UTC)
@@ -109,7 +109,7 @@ class Family:
             pronoun=pronoun,
             voice_id=g.voice_id,
             born_at=born,
-            dies_at=g.dies_at,
+            dies_at=g.dies_at + timedelta(seconds=inherit_slack),
             approved_items=self.inheritance_items(),
             genome=genome,
             lore=self.lore(),
