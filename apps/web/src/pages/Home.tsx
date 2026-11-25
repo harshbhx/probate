@@ -21,6 +21,13 @@ export function Home({ summary }: { summary: Summary | null }) {
     <>
       <Hero summary={summary} />
       <Page flush className="pt-10 md:pt-14">
+        <p className="mx-auto mb-6 flex max-w-3xl flex-wrap items-center gap-x-2 text-[14px] text-mist">
+          Judging Probate?
+          <Link to="/judges" className="inline-flex items-center gap-1.5 text-moon underline-offset-4 hover:underline">
+            Open the judges' page <ArrowRight size={14} aria-hidden />
+          </Link>
+          <span>to start a life or try to fool the family.</span>
+        </p>
         <RunLife summary={summary} />
         {!summary ? (
           <PageSkeleton />

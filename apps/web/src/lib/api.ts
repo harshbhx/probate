@@ -137,6 +137,10 @@ export type Live = {
   message?: string | null;
   error?: string;
   started?: boolean;
+  /** The site asks for the judge key before anyone may play (the real run). */
+  requires_key?: boolean;
+  /** The key sent with this request was valid. */
+  judge?: boolean;
 };
 
 export class ApiError extends Error {

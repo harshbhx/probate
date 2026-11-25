@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type Live } from "./api";
+import { KEY_HEADER } from "./judge";
 
 export function useApi<T>(path: string | null, refreshMs?: number) {
   const [data, setData] = useState<T | null>(null);
@@ -74,8 +75,9 @@ export type LiveView = {
 
 const ACTIVE = ["waking", "living", "on_trial"];
 
-/** Polls GET /api/live (every 2 s while a life runs, else every 10 s) and starts lives. */
-export function useLive(): LiveView {
+/** Polls GET /api/live (every 2 s while a life runs, else every 10 s) and starts lives.
+ *  With the judge key it sends it as a header so the Courthouse applies the judge's own limits. */
+export function useLive(judgeKey?: string | null, onKeyRefused?: () => void): LiveView {
   const [live, setLive] = useState<Live | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -84,7 +86,7 @@ export function useLive(): LiveView {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch("/api/live", { cache: "no-store" });
+      const res = await fetch("/api/live", { cache: "no-store", headers: judgeKey ? { [KEY_HEADER]: judgeKey } : {} });
       const data = await res.json();
       if (!res.ok || typeof data?.state !== "string") throw new Error("no live endpoint");
       setLive(data as Live);
@@ -92,7 +94,7 @@ export function useLive(): LiveView {
     } catch {
       setUnavailable(true);
     }
-  }, []);
+  }, [judgeKey]);
 
   useEffect(() => {
     load();
@@ -104,8 +106,17 @@ export function useLive(): LiveView {
     setStarting(true);
     setNotice(null);
     try {
-      const res = await fetch("/api/lives", { method: "POST" });
+      const res = await fetch("/api/lives", { method: "POST", headers: judgeKey ? { [KEY_HEADER]: judgeKey } : {} });
       const body = await res.json().catch(() => ({}));
+      if (body?.error === "key_required" || body?.error === "invalid_key" || body?.error === "key_disabled") {
+        setNotice(body.message ?? "The judge key was not accepted.");
+        if (body.error !== "key_required") onKeyRefused?.();
+        return;
+      }
+      if (body?.error === "too_many_attempts") {
+        setNotice(body.message);
+        return;
+      }
       if (typeof body?.state !== "string") {
         setUnavailable(true); // a static preview answers 503 (or 404) with no state
         return;
@@ -122,7 +133,7 @@ export function useLive(): LiveView {
     } finally {
       setStarting(false);
     }
-  }, []);
+  }, [judgeKey, onKeyRefused]);
 
   return { live, unavailable, starting, notice, start };
 }
