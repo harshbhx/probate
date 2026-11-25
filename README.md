@@ -173,7 +173,11 @@ The brain never leaves a generation stuck. If the main model fails, the next one
 
 ## Run it yourself
 
-You need Python 3.12+, Node 22 and `make` (on Windows, use WSL). No keys are needed for the simulation.
+**Nothing to install:** [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/harshbhx/probate?quickstart=1)
+
+The Codespace installs everything, simulates a 12-generation family with stand-in models (about a minute), and opens the live family site in a new tab. No keys are needed, and nothing leaves the Codespace.
+
+On your own machine, you need Python 3.12+, Node 22 and `make` (on Windows, use WSL). No keys are needed for the simulation.
 
 ```bash
 git clone https://github.com/harshbhx/probate && cd probate
