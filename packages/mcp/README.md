@@ -1,6 +1,6 @@
 # @probate/mcp
 
-A small, read-only [Model Context Protocol](https://modelcontextprotocol.io) server for Probate. It lets an assistant such as Claude Desktop or Claude Code look at the family: who is alive, how each generation's trial went, what the instincts are, and what the evidence says.
+A small, read-only [Model Context Protocol](https://modelcontextprotocol.io) server for Probate. It lets any MCP client look at the family: who is alive, how each generation's trial went, what the instincts are, and what the evidence says.
 
 It talks to the Courthouse's public API over HTTP `GET` and nothing else. There are no write or admin tools, and the admin token is never read or sent.
 
@@ -34,9 +34,9 @@ Smoke test (starts the server, lists the tools, calls each one):
 PROBATE_API_URL=http://localhost:8080 npm run smoke -w @probate/mcp
 ```
 
-## Add it to Claude Desktop
+## Add it to an MCP client
 
-In `claude_desktop_config.json`:
+In the client's MCP server settings (the file is usually a JSON with an `mcpServers` key):
 
 ```json
 {
@@ -48,10 +48,4 @@ In `claude_desktop_config.json`:
     }
   }
 }
-```
-
-## Add it to Claude Code
-
-```bash
-claude mcp add probate --env PROBATE_API_URL=http://localhost:8080 -- node /absolute/path/to/probate/packages/mcp/dist/server.js
 ```
