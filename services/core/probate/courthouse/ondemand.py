@@ -30,6 +30,7 @@ from probate.courthouse.family import Family
 from probate.courthouse.judge import Judge
 from probate.courthouse.scheduler import TICK_SECONDS, Scheduler
 from probate.suite import runner
+from probate.webhooks import events as wh_events
 
 log = logging.getLogger("probate.ondemand")
 
@@ -378,6 +379,18 @@ class OnDemand:
             self._set("last_gen", str(gen))
         self.scheduler.last_tick = None  # the idle gap is never billed as Courthouse uptime
         self.janitor()
+        if error:
+            self._failed(gen, error)
+        if self.family.hooks is not None:
+            self.family.hooks.kick()  # last chance to deliver before the Sprites sleep
+
+    def _failed(self, gen: int | None, reason: str) -> None:
+        # Only the public message the site already shows; the dedupe key keeps a repeat quiet.
+        self.family.emit(
+            "life.failed",
+            wh_events.life_failed(gen, reason, self.cfg.public_url),
+            f"gen:{gen}:{self._get('started_at')}",
+        )
 
     def _abandon(self, message: str) -> None:
         with self.lock:
@@ -424,4 +437,5 @@ class OnDemand:
             self._set("error", "The last life was interrupted when the Courthouse restarted.")
             if self._get("gen"):
                 self._set("last_gen", self._get("gen"))
+            self._failed(int(self._get("gen") or 0) or None, self._get("error"))
         self.janitor()

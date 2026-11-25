@@ -32,11 +32,13 @@ from probate.courthouse.judge import Judge
 from probate.courthouse.ondemand import OnDemand, ip_key
 from probate.courthouse.scheduler import Scheduler
 from probate.courthouse.store import Store
+from probate.webhooks.service import WebhookError, Webhooks
 
 store = Store(settings.db_path)
 w = world(settings)
 host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
-family = Family(settings, store, w, host)
+hooks = Webhooks(store, settings)
+family = Family(settings, store, w, host, hooks)
 scheduler = Scheduler(family)
 demo = OnDemand(family, scheduler)
 judge = Judge(settings, store)
@@ -51,6 +53,8 @@ async def lifespan(_: FastAPI):
             "PROBATE_REQUIRE_KEY_FOR_PLAY is on but PROBATE_JUDGE_KEY is unset, a dev default, "
             "shorter than 20 characters or equal to the admin token: play is refused until fixed"
         )
+    hooks.sync_env()
+    hooks.kick()  # deliver anything a restart left in the queue
     if settings.on_demand:
         # Nothing free-runs. Tear down anything a crash left behind, then wait for a visitor.
         await asyncio.to_thread(demo.startup)
@@ -434,6 +438,76 @@ def admin_tick(x_probate_admin: str | None = Header(None)) -> dict:
     if settings.on_demand:
         raise HTTPException(409, "On-demand mode has no free-running clock")
     return {"state": scheduler.step()}
+
+
+class WebhookIn(BaseModel):
+    url: str
+    events: list[str] | None = None  # omit for every event
+    description: str = ""
+
+
+class WebhookPatch(BaseModel):
+    enabled: bool
+
+
+def _webhook_error(exc: WebhookError):
+    raise HTTPException(exc.status, str(exc)) from exc
+
+
+@app.post("/admin/webhooks", status_code=201)
+def admin_webhook_create(body: WebhookIn, x_probate_admin: str | None = Header(None)) -> dict:
+    """Subscribe a URL. The signing secret is in this response and never shown again."""
+    _admin(x_probate_admin)
+    try:
+        ep, secret = hooks.create_endpoint(body.url, body.events, body.description)
+    except WebhookError as exc:
+        _webhook_error(exc)
+    return {**ep, "secret": secret}
+
+
+@app.get("/admin/webhooks")
+def admin_webhook_list(x_probate_admin: str | None = Header(None)) -> list[dict]:
+    _admin(x_probate_admin)
+    return hooks.list_endpoints()
+
+
+@app.patch("/admin/webhooks/{wid}")
+def admin_webhook_patch(
+    wid: str, body: WebhookPatch, x_probate_admin: str | None = Header(None)
+) -> dict:
+    _admin(x_probate_admin)
+    return _need(hooks.set_enabled(wid, body.enabled))
+
+
+@app.delete("/admin/webhooks/{wid}")
+def admin_webhook_delete(wid: str, x_probate_admin: str | None = Header(None)) -> dict:
+    _admin(x_probate_admin)
+    try:
+        found = hooks.delete_endpoint(wid)
+    except WebhookError as exc:
+        _webhook_error(exc)
+    if not found:
+        raise HTTPException(404, "No such webhook")
+    return {"deleted": wid}
+
+
+@app.get("/admin/webhooks/{wid}/deliveries")
+def admin_webhook_deliveries(
+    wid: str, limit: int = 50, x_probate_admin: str | None = Header(None)
+) -> list[dict]:
+    _admin(x_probate_admin)
+    return _need(hooks.deliveries(wid, limit))
+
+
+@app.post("/admin/webhooks/{wid}/test", status_code=202)
+def admin_webhook_test(wid: str, x_probate_admin: str | None = Header(None)) -> dict:
+    """Queue a ping for this endpoint only; read the result from /deliveries."""
+    _admin(x_probate_admin)
+    ep = _need(hooks.endpoint(wid))
+    if not ep["enabled"]:
+        raise HTTPException(409, "Endpoint is disabled; PATCH it with enabled=true first")
+    event_id, delivery_id = hooks.ping(wid)
+    return {"event_id": event_id, "delivery_id": delivery_id}
 
 
 # The built website (apps/web/dist). Any unknown path returns index.html for the client router.
