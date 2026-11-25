@@ -11,11 +11,23 @@ The family gets harder to fool with every generation.
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
 ![Tests](https://img.shields.io/badge/tests-72_passing-5be3a9?style=flat-square)
 
-[**How it works**](#how-it-works) · [**The court**](#the-court) · [**See it**](#see-it) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**Docs**](apps/site/content/docs)
+[**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place)
 
 </div>
 
 <br>
+
+## Everything in one place
+
+| | |
+| --- | --- |
+| **Start here** | [For judges](apps/site/content/docs/%28guide%29/for-judges.mdx): what to open, in what order, in five minutes |
+| **Proof** | [Every claim and how to check it](apps/site/content/docs/%28guide%29/proof.mdx) |
+| **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
+| **Code** | This repository |
+| **Live family, video, write-up** | Linked here on submission day, Nov 28 |
+
+The landing page has the same list under "Everything about Probate". Each link appears there once it has an address.
 
 ## The problem
 
@@ -109,7 +121,9 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 
 <img src="docs/media/architecture.gif" alt="Where everything runs. A visitor reaches the Courthouse over HTTPS. The Courthouse gives birth to gen-007-grace through the Sprites API. Grace calls her brain with no key; the connector gateway adds it on the way to Ollama Cloud. After a death the Courthouse asks TypeSafe Jev through the gateway. Grace dies, her Sprite is deleted, and gen-008-hiro is born with 5 instincts. Box, Pinecone, AgentMail, ElevenLabs and Cloudflare are also reached only through the gateway." width="100%">
 
-The Courthouse is the one Sprite that never dies: it runs the clock, the court, the API and the live site. Each generation lives on a fresh Sprite of its own. Keys live only in the connector gateway, so neither the Courthouse nor any generation holds one. More in [the architecture docs](apps/site/content/docs/%28guide%29/architecture/overview.mdx).
+The Courthouse is the one Sprite that never dies: it runs the clock, the court, the API and the live site. Each generation lives on a fresh Sprite of its own. Keys live only in the connector gateway, so neither the Courthouse nor any generation holds one.
+
+The brain never leaves a generation stuck. If the main model fails, the next one in `PROBATE_BRAIN_FALLBACKS` takes over (by default Ollama Cloud, then Claude Haiku; Groq can go between them), and the log says which one answered. More in [the architecture docs](apps/site/content/docs/%28guide%29/architecture/overview.mdx).
 
 ## Built with
 
@@ -121,9 +135,10 @@ The Courthouse is the one Sprite that never dies: it runs the clock, the court, 
 | [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends Harsh's own test emails from his domain; Workers host the landing page and docs |
 | [Box](https://box.com) | The family archive as readable files: wills, verdicts, obituaries, the genome |
 | [Pinecone](https://pinecone.io) | Ancestral memory, searched with citations |
-| [Ollama Cloud](https://ollama.com) | The brain of every generation |
+| [Ollama Cloud](https://ollama.com) | The brain of every generation, which also writes the obituaries and new instincts |
+| [Groq](https://groq.com) | Optional backup brain, tried first if Ollama fails |
 | [ElevenLabs](https://elevenlabs.io) | Each generation's voice, for eulogies and "Ask an ancestor" |
-| [Anthropic Claude](https://anthropic.com) | Backup brain, and writing new instincts from convictions |
+| [Anthropic Claude](https://anthropic.com) | Last backup brain (Claude Haiku), if every brain before it fails |
 
 ## Run it yourself
 
@@ -135,13 +150,14 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 69 Python tests and the face model
+make test      # 72 Python tests and the face model
+make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```
 
 **Go live on Fly.io**
 
-1. Create the Sprites connectors (TypeSafe, AgentMail, Box, Pinecone, Ollama, ElevenLabs, Anthropic, and a Custom API connector named `cloudflare`) in the Fly dashboard and allow only Sprites named `courthouse` and `gen-`. Steps in [`docs/06-SETUP-AND-SPIKES.md`](docs/06-SETUP-AND-SPIKES.md).
+1. Create the Sprites connectors (TypeSafe, AgentMail, Box, Pinecone, Ollama, ElevenLabs, Anthropic, a Custom API connector named `cloudflare`, and optionally one named `groq`) in the Fly dashboard and allow only Sprites named `courthouse` and `gen-`. Steps in [`docs/06-SETUP-AND-SPIKES.md`](docs/06-SETUP-AND-SPIKES.md).
 2. Create three AgentMail inboxes (family, friend, stranger). Turn on Cloudflare Email Service for your domain and verify the family inbox as a destination.
 3. Copy `services/core/.env.example` to `services/core/.env` and fill in the Sprites token, connection IDs and Cloudflare account ID.
 4. Sign in once: `gh auth login` and `npx wrangler login`.
@@ -151,12 +167,13 @@ make help      # everything else
 
 ```
 apps/web/          the live family site (React 19, Vite, Tailwind v4), served by the Courthouse
-apps/site/         landing page and docs (Fumadocs on Next.js, static export), on Cloudflare Workers
+apps/site/         landing page and docs (Fumadocs on Next.js, static export, API reference from openapi.json), on Cloudflare Workers
 packages/faces/    each generation's face, inherited with one change per child
 packages/tokens/   Night Court design tokens, shared by both sites
 services/core/     the Courthouse, the court and the generation agent (Python, FastAPI)
 fixtures/          the attack suite: 16 tricks and 16 harmless twins
-scripts/           deploy.py, ship.sh, export_site_data.py, product_shots.py
+scripts/           deploy.py, ship.sh, export_site_data.py, export_openapi.py, product_shots.py
+design/readme/     the scenes and renderer behind this README's animations (make them again with render.py)
 docs/              specs: overview, tech spec, court spec, attack suite, design, threat model, runbook
 ```
 
@@ -167,6 +184,7 @@ docs/              specs: overview, tech spec, court spec, attack suite, design,
 | [`docs/03-ATTACK-SUITE.md`](docs/03-ATTACK-SUITE.md) | The 16 attack families and their twins |
 | [`docs/12-THREAT-MODEL.md`](docs/12-THREAT-MODEL.md) | Assets, attackers, defences, honest limits |
 | [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md) | Deploy, operate, recover |
+| [The docs site](apps/site/content/docs/%28guide%29/index.mdx) | The same material as pages, with diagrams, costs and troubleshooting |
 
 ## Hacksgiving 2026
 
