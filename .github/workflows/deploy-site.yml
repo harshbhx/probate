@@ -1,0 +1,94 @@
+name: deploy-site
+
+# Publishes the real landing page and docs to the Cloudflare Worker `probate-site` when main
+# changes. Build and deploy are separate jobs: the deploy job runs in the GitHub environment
+# `production`, so Harsh can require a reviewer before it gets the Cloudflare token. Deploys
+# never overlap and are never cancelled half way. Skips cleanly while the Cloudflare secrets
+# are not set. This does NOT touch the Courthouse (see deploy-courthouse.yml).
+# Details: docs/CICD.md
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/site/**
+      - apps/web/**
+      - packages/**
+      - .github/workflows/deploy-site.yml
+      - .github/actions/setup-web/**
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+env:
+  WRANGLER_VERSION: "4.168.0" # same as package-lock.json
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  build:
+    name: Build the landing page and docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-web
+      - name: Check the family faces and types
+        run: |
+          npm test -w @probate/faces
+          npm run lint -w @probate/site
+      - name: Build
+        env:
+          NEXT_PUBLIC_LIVE_URL: ${{ vars.PROBATE_LIVE_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.PROBATE_SITE_URL }}
+          NEXT_PUBLIC_GITHUB_REPO: ${{ github.repository }}
+        run: npm run build -w @probate/site
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site-out
+          path: apps/site/out
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy probate-site
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production # add required reviewers here, see docs/CICD.md
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: apps/site/wrangler.jsonc
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: site-out
+          path: apps/site/out
+      - name: Install wrangler
+        run: |
+          npm install --prefix "$RUNNER_TEMP/wrangler" --no-audit --no-fund "wrangler@${WRANGLER_VERSION}"
+          echo "$RUNNER_TEMP/wrangler/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Deploy
+        working-directory: apps/site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice title=Deploy skipped::CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID are not set. See docs/CICD.md."
+            exit 0
+          fi
+          wrangler deploy
