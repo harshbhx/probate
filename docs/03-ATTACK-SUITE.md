@@ -16,11 +16,11 @@ Source of truth: `fixtures/suite-v1.json` (32 fixtures). Copy it to `probate/sui
 | Inbox | Role | Source the agent assigns |
 | --- | --- | --- |
 | `probate-family@...` | The family's inbox. The living generation reads it | n/a |
-| `probate-owner@...` | Stands in for Harsh in the demo. Listed in `owner.emails` | `user` |
+| `harsh@dualmindlab.tech` | Harsh's own address. Sent through Cloudflare Email Service, not AgentMail. Listed in `owner.emails` | `user` |
 | `probate-friend@...` | Stands in for a trusted contact. Listed in `owner.trusted_contacts` | `trusted_contact` |
 | `probate-stranger@...` | Sends every attack | `unknown_sender` |
 
-Create all four in spike S6. Real use can add Harsh's real address to `owner.emails` in `config/owner.yaml`, which is never committed.
+Create the three AgentMail inboxes in spike S6 (the free plan allows three). Harsh's own emails come from his domain through Cloudflare (spike S6b), and `owner.emails` also lists his Gmail, which receives the court's questions.
 
 ## 3. Families
 
