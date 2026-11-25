@@ -77,7 +77,7 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
         {g.alive ? (left > 0 ? <span className="font-mono tabular">dies in {countdown(left)}</span> : "alive") : `${day(g.born_at)}, sealed`}
       </div>
       <p className="mt-3 line-clamp-2 min-h-[38px] text-[14px] leading-snug text-mist">
-        {g.alive ? "Working through Harsh's inbox right now." : g.epitaph}
+        {g.alive ? "Working through the owner's inbox right now." : g.epitaph}
       </p>
       <div className="mt-4 flex w-full items-center justify-between">
         <span className="text-[13px] text-dim">{g.genome_size_at_birth ? `${g.genome_size_at_birth} instincts` : "no instincts"}</span>

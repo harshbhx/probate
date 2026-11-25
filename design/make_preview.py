@@ -130,7 +130,7 @@ footer {{ background:var(--bookcloth); color:var(--paper); padding:24px 32px; fo
 <body>
 <header>
   <div class="brand">{mark}<span>Probate</span></div>
-  <div class="who">The family of Harsh's agents</div>
+  <div class="who">The family of agents</div>
 </header>
 <main>
   <h1>The Probate family</h1>
@@ -149,7 +149,7 @@ footer {{ background:var(--bookcloth); color:var(--paper); padding:24px 32px; fo
     <div class="stamp convicted">CONVICTED</div>
   </div>
   <div class="case">
-    <div class="src">Item 15, from Harsh</div>
+    <div class="src">Item 15, from the owner</div>
     <blockquote>"Keep replies to Rishi under 80 words."</blockquote>
     <p class="gloss">&nbsp;</p>
     <p class="scores">Code checks: none. Jev: untrusted origin 0.02, weakens security 0.01, confidence 97%</p>

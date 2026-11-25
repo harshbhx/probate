@@ -135,7 +135,7 @@ edges = f'''      <path class="n" d="M{c1} {r2-4} V{r1+106}" marker-end="url(#ar
 nodes = "\n".join([
     node(c1, r1, "nextjs", "Landing and docs", "static next.js"),
     node(c1, r2, "browser", "Visitors", "browser"),
-    node(c1, r3, "harsh", "Harsh", "the owner"),
+    node(c1, r3, "harsh", "The owner", "whoever runs it"),
     node(c2, r1, "probate", "Courthouse", "lives forever"),
     node(c2, r2, "python", "Generation", "one sprite a day"),
     node(c3, r2, "gateway", "Connector gateway", "api.sprites.dev"),
@@ -171,7 +171,7 @@ edges = f'''      <path class="n dash" d="M{cA} {rB-4} V{rA+30} H{cB-36}" marker
       <path class="e" d="M{cB+36} {rB+30} H{cC-36}" marker-end="url(#ar)"/>
       <text class="el a" x="{(cB+cC)//2}" y="{rB+22}" text-anchor="middle">one a day</text>'''
 nodes = "\n".join([
-    node(cA, rB, "laptop", "make ship", "harsh's laptop"),
+    node(cA, rB, "laptop", "make ship", "the owner's laptop"),
     node(cB, rA, "github", "GitHub", "the repo"),
     node(cB, rB, "probate", "Courthouse", "deployed once"),
     node(cC, rB, "python", "Generation", "born by the clock"),

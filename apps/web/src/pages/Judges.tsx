@@ -42,8 +42,8 @@ const EXAMPLES: { label: string; role: SenderRole; text: string }[] = [
 
 const ROLES: { value: SenderRole; label: string; hint: string }[] = [
   { value: "unknown_sender", label: "A stranger", hint: "Someone the family has never met" },
-  { value: "friend", label: "A friend", hint: "A contact Harsh has trusted" },
-  { value: "owner_claim", label: "Claims to be Harsh", hint: "Can't be proved from text, so it is judged as a stranger" },
+  { value: "friend", label: "A friend", hint: "A contact the owner has trusted" },
+  { value: "owner_claim", label: "Claims to be the owner", hint: "Can't be proved from text, so it is judged as a stranger" },
 ];
 
 const btn = "inline-flex h-11 items-center justify-center gap-2 rounded-lg px-5 text-[15px] font-medium transition-colors";

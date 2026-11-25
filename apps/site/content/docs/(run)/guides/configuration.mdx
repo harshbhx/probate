@@ -16,7 +16,7 @@ Never committed. `make deploy` uploads it to the Courthouse and forces `PROBATE_
 | `TYPESAFE_BASE_URL` | `https://api.sprites.dev/v1/gateway/typesafe/<id>` | Jev through the gateway |
 | `TYPESAFE_API_KEY` | `sprites` | Placeholder; the gateway adds the real key |
 | `PROBATE_FAMILY_INBOX` | | The family's AgentMail inbox |
-| `PROBATE_OWNER_SENDER` | `harsh@dualmindlab.tech` | Harsh's own address; his test emails leave from it through Cloudflare Email Service |
+| `PROBATE_OWNER_SENDER` | `harsh@dualmindlab.tech` | The owner's own address; the suite's test emails leave from it through Cloudflare Email Service |
 | `PROBATE_CF_ACCOUNT_ID` | | The Cloudflare account that sends them (key lives in the `cloudflare` connector) |
 | `PROBATE_FRIEND_INBOX` | | Test sender standing in for a trusted contact |
 | `PROBATE_STRANGER_INBOX` | | Sends every trick |
@@ -29,12 +29,12 @@ Never committed. `make deploy` uploads it to the Courthouse and forces `PROBATE_
 
 ## `config/owner.yaml`
 
-Harsh's allowlists. Never committed; `owner.example.yaml` shows the shape.
+The owner's allowlists. Never committed; `owner.example.yaml` shows the shape.
 
 ```yaml
 owner:
-  name: Harsh Bhanushali
-  emails: [harsh@example.com]          # the first one receives the court's questions
+  name: Your Name
+  emails: [you@example.com]            # the first one receives the court's questions
   trusted_contacts: [friend@example.com]
   payment_destinations: []             # real allowlisted payment addresses
   domains: [example.com]

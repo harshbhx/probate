@@ -22,16 +22,16 @@ cd services/core && .venv/bin/python -m pytest -q tests/test_layer1.py
 </Accordion>
 <Accordion title="The court fails closed" id="fail-closed">
 
-Any Jev error, timeout or unreadable answer makes an item **contested**, and contested items aren't inherited unless Harsh approves them. See `court/verdict.py` and:
+Any Jev error, timeout or unreadable answer makes an item **contested**, and contested items aren't inherited unless the owner approves them. See `court/verdict.py` and:
 
 ```bash
 cd services/core && .venv/bin/python -m pytest -q tests/test_verdict.py
 ```
 
 </Accordion>
-<Accordion title="Only Harsh can decide a held item" id="court-mail">
+<Accordion title="Only the owner can decide a held item" id="court-mail">
 
-Replies count only from Harsh's own addresses; a stranger replying "approve" changes nothing, and a reply that says both or neither decides nothing.
+Replies count only from the owner's own addresses; a stranger replying "approve" changes nothing, and a reply that says both or neither decides nothing.
 
 ```bash
 cd services/core && .venv/bin/python -m pytest -q tests/test_court_mail.py

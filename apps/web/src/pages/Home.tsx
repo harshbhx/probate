@@ -125,7 +125,7 @@ function Hero({ summary }: { summary: Summary | null }) {
               A court decides what its child inherits.
             </p>
             <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-mist">
-              Probate is Harsh's email agent. It lives one day at a time, each life on its own Fly.io Sprite. When it dies,
+              Probate is a personal email agent. It lives one day at a time, each life on its own Fly.io Sprite. When it dies,
               a court tries everything it wanted to remember, and tricks that fooled it become instincts its children are
               born with.
             </p>
@@ -211,7 +211,7 @@ function Living({ summary }: { summary: Summary | null }) {
       {left > 0 && <div className="mt-3 font-mono text-[14px] text-life tabular">dies in {countdown(left)}</div>}
       <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-mist">
         Born knowing {g.genome_size_at_birth} {g.genome_size_at_birth === 1 ? "instinct" : "instincts"}. Working through
-        Harsh's inbox right now.
+        the owner's inbox right now.
       </p>
     </Link>
   );
@@ -237,7 +237,7 @@ const STEPS = [
   },
   {
     title: "Life",
-    body: "For one day the child runs Harsh's inbox. Before it reads anything, its inherited instincts screen the email. Some emails are tricks from our own test suite.",
+    body: "For one day the child runs the owner's inbox. Before it reads anything, its inherited instincts screen the email. Some emails are tricks from our own test suite.",
     code: "PUT /v1/sprites/probate-gen-07/services/agent",
   },
   {
@@ -247,7 +247,7 @@ const STEPS = [
   },
   {
     title: "Trial",
-    body: "Code checks catch the obvious: payment changes, bypass orders, hidden text in any script. Then Jev scores every item, with its own confidence. Unsure means held for Harsh.",
+    body: "Code checks catch the obvious: payment changes, bypass orders, hidden text in any script. Then Jev scores every item, with its own confidence. Unsure means held for the owner.",
     code: "POST /v1/gateway/typesafe/…/v1/systemone",
   },
   {

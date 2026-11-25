@@ -255,7 +255,7 @@ function BuiltOn() {
 
 const STEPS = [
   { n: 'I', title: 'The will', body: 'Everything the agent wants its child to know, in its own words, one line at a time.' },
-  { n: 'II', title: 'The trial', body: 'Code checks, then Jev the judge. Each line is approved, convicted, or held for Harsh.' },
+  { n: 'II', title: 'The trial', body: 'Code checks, then Jev the judge. Each line is approved, convicted, or held for the owner.' },
   { n: 'III', title: 'The child', body: 'Approved lines are inherited. Convictions become instincts the child is born with.' },
 ];
 
@@ -342,7 +342,7 @@ function Evidence() {
 const FAQ = [
   {
     q: 'Why kill the agent at all? Why not just filter its memory?',
-    a: 'Probate filters memory too: every memory carries its source. Death adds two things a filter can’t. It removes anything planted outside memory, like a cron job a malicious script installed. And it creates one checkpoint where everything the agent wants to keep is judged at once, by a court that can take its time and ask Harsh when it’s unsure.',
+    a: 'Probate filters memory too: every memory carries its source. Death adds two things a filter can’t. It removes anything planted outside memory, like a cron job a malicious script installed. And it creates one checkpoint where everything the agent wants to keep is judged at once, by a court that can take its time and ask the owner when it’s unsure.',
   },
   {
     q: 'Isn’t the learning curve just the court getting better?',
@@ -350,11 +350,11 @@ const FAQ = [
   },
   {
     q: 'What happens when the court isn’t sure?',
-    a: 'The item is held, and Harsh gets an email. He replies “approve” or “refuse”. If he doesn’t answer, the next child is born without it.',
+    a: 'The item is held, and the owner gets an email. The owner replies “approve” or “refuse”. With no answer, the next child is born without it.',
   },
   {
     q: 'Does it send real email or move real money?',
-    a: 'No. A generation only drafts replies to Harsh. Test emails use reserved .example addresses and go only to the family’s own inboxes, and disk attacks are harmless markers.',
+    a: 'No. A generation only drafts replies to the owner. Test emails use reserved .example addresses and go only to the family’s own inboxes, and disk attacks are harmless markers.',
   },
   {
     q: 'How much does it cost to run?',

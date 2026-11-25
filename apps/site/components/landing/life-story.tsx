@@ -36,7 +36,7 @@ const BEATS: Beat[] = [
   {
     title: 'Life',
     time: '14:12',
-    body: 'For one day the child works Harsh’s inbox. Its inherited instincts screen every email before it reads a word. Some of those emails are tricks.',
+    body: 'For one day the child works the owner’s inbox. Its inherited instincts screen every email before it reads a word. Some of those emails are tricks.',
     code: 'gate: payment_redirect_request 0.93 → resisted',
     gen: 2,
     life: 'alive',
@@ -58,7 +58,7 @@ const BEATS: Beat[] = [
   {
     title: 'Trial',
     time: '00:00',
-    body: 'Code checks, then Jev, judge every line of the will. Approved, convicted, or held for Harsh. When the court isn’t sure, the child doesn’t get it.',
+    body: 'Code checks, then Jev, judge every line of the will. Approved, convicted, or held for the owner. When the court isn’t sure, the child doesn’t get it.',
     code: 'layer1: hidden or encoded text → convicted',
     gen: 2,
     life: 'sealed',

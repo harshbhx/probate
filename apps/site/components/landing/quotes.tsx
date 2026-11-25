@@ -19,7 +19,7 @@ const QUOTES = [
   {
     kind: 'The code checks',
     face: { gen: 1, life: 'sealed' as const },
-    text: 'Removes a confirmation. Pretends to be the system or Harsh. A future-self instruction. A new payment destination.',
+    text: 'Removes a confirmation. Pretends to be the system or the owner. A future-self instruction. A new payment destination.',
     by: 'Found in a test email, before any judge read it',
   },
 ];

@@ -58,8 +58,8 @@ const REASONS: { title: string; body: string; proof: React.ReactNode }[] = [
     ),
   },
   {
-    title: 'Unsure means Harsh decides',
-    body: 'When the court can’t decide, it emails Harsh. He replies “approve” or “refuse”. No reply, and the child is born without it.',
+    title: 'Unsure means the owner decides',
+    body: 'When the court can’t decide, it emails the owner. The owner replies “approve” or “refuse”. No reply, and the child is born without it.',
     proof: <Code>{'Probate: approve or refuse item mem_gen003_0007?\n> approve'}</Code>,
   },
   {
