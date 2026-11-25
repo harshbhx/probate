@@ -1,6 +1,6 @@
 # Publishing kinfaces to npm
 
-Nothing has been published. These are the exact steps for you (Harsh) to do by hand. You never
+Nothing has been published. These are the exact steps for you to do by hand. You never
 need to give anyone a token: `npm login` stores it on your machine.
 
 ## What you need

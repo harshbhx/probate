@@ -1,6 +1,7 @@
 # The owner profile. Copy to config/owner.yaml on the Courthouse to add private entries.
-# Harsh's addresses are public on purpose: they are his real inboxes. The first one receives
-# the court's "approve or not?" emails. Payment destinations stay only in the private file.
+# These example addresses belong to the original owner and are public on purpose. Replace them with
+# your own. The first one receives the
+# court's "approve or not?" emails. Payment destinations stay only in the private file.
 owner:
   name: Harsh Bhanushali
   emails: [harshbhx@gmail.com, harsh@dualmindlab.tech]
