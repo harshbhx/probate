@@ -214,7 +214,7 @@ function BirthMark({ children }: { children: ReactNode }) {
   return (
     <span ref={ref} className="relative inline-flex">
       {children}
-      {inView && <PixelMoment kind="birth" scale={1} delay={250} />}
+      {inView && <PixelMoment kind="birth" scale={0.5} delay={250} />}
     </span>
   );
 }
