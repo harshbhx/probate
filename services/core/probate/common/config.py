@@ -74,7 +74,7 @@ def load_owner() -> OwnerProfile:
     for name in ("owner.yaml", "owner.example.yaml"):
         path = CONFIG_DIR / name
         if path.exists():
-            raw = yaml.safe_load(path.read_text()) or {}
+            raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
             return OwnerProfile(**(raw.get("owner") or {}))
     return OwnerProfile()
 
@@ -82,7 +82,7 @@ def load_owner() -> OwnerProfile:
 def load_names() -> list[dict]:
     path = CONFIG_DIR / "names.yaml"
     return (
-        yaml.safe_load(path.read_text()) if path.exists() else [{"name": "Ada", "pronoun": "she"}]
+        yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else [{"name": "Ada", "pronoun": "she"}]
     )
 
 

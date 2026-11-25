@@ -26,17 +26,17 @@ class LocalArchive:
         return p
 
     def put_text(self, path: str, text: str) -> str:
-        self._p(path).write_text(text)
+        self._p(path).write_text(text, encoding="utf-8")
         return path
 
     def append_text(self, path: str, text: str) -> str:
         p = self._p(path)
-        p.write_text((p.read_text() if p.exists() else "") + text)
+        p.write_text((p.read_text(encoding="utf-8") if p.exists() else "") + text, encoding="utf-8")
         return path
 
     def get_text(self, path: str) -> str | None:
         p = self._p(path)
-        return p.read_text() if p.exists() else None
+        return p.read_text(encoding="utf-8") if p.exists() else None
 
     def put_bytes(self, path: str, data: bytes) -> str:
         self._p(path).write_bytes(data)
@@ -108,4 +108,4 @@ class BoxArchive:
         return r.text if r.status_code == 200 else None
 
     def append_text(self, path: str, text: str) -> str:
-        return self.put_text(path, (self.get_text(path) or "") + text)
+        return self.put_text(path, (self.get_text(path) or "") + text, encoding="utf-8")

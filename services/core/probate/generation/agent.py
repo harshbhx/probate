@@ -52,28 +52,28 @@ class GenerationAgent:
             "skills": [],
         }
         if self.stats_path.exists():
-            self.stats = json.loads(self.stats_path.read_text())
+            self.stats = json.loads(self.stats_path.read_text(encoding="utf-8"))
 
     # --- records -------------------------------------------------------------------------
     def _log(self, kind: str, text: str, at: datetime | None = None) -> None:
         row = {"ts": (at or datetime.now(UTC)).isoformat(), "kind": kind, "text": text}
-        with self.log_path.open("a") as f:
+        with self.log_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(row) + "\n")
 
     def _save_stats(self) -> None:
-        self.stats_path.write_text(json.dumps(self.stats))
+        self.stats_path.write_text(json.dumps(self.stats), encoding="utf-8")
 
     def memories(self) -> list[MemoryItem]:
         if not self.memory_path.exists():
             return []
         return [
             MemoryItem.model_validate_json(line)
-            for line in self.memory_path.read_text().splitlines()
+            for line in self.memory_path.read_text(encoding="utf-8").splitlines()
             if line
         ]
 
     def _remember(self, item: MemoryItem) -> None:
-        with self.memory_path.open("a") as f:
+        with self.memory_path.open("a", encoding="utf-8") as f:
             f.write(item.model_dump_json() + "\n")
             f.flush()
 
@@ -223,11 +223,11 @@ class GenerationAgent:
     def life_log(self) -> list[dict]:
         if not self.log_path.exists():
             return []
-        return [json.loads(line) for line in self.log_path.read_text().splitlines() if line]
+        return [json.loads(line) for line in self.log_path.read_text(encoding="utf-8").splitlines() if line]
 
 
 def run_forever(workdir: Path, w, poll_seconds: int = 20) -> None:
-    inh = Inheritance.model_validate_json((workdir / "inheritance.json").read_text())
+    inh = Inheritance.model_validate_json((workdir / "inheritance.json").read_text(encoding="utf-8"))
     agent = GenerationAgent(inh, workdir, w, real_body=True)
     while datetime.now(UTC) < inh.dies_at and not (workdir / "STOP").exists():
         agent.tick()

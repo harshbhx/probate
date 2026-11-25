@@ -10,7 +10,7 @@ PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
 
 @cache
 def raw(name: str) -> str:
-    return (PROMPT_DIR / f"{name}.md").read_text()
+    return (PROMPT_DIR / f"{name}.md").read_text(encoding="utf-8")
 
 
 def render(template: str, **values: object) -> str:
