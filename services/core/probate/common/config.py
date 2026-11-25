@@ -114,6 +114,29 @@ class Settings:
     judge_bad_keys_per_ip: int = field(
         default_factory=lambda: int(_env("PROBATE_JUDGE_BAD_KEYS_PER_IP", "8"))
     )
+    # Outgoing webhooks (docs/WEBHOOKS.md). Subscriptions are operator-only.
+    webhook_urls: list[str] = field(
+        default_factory=lambda: [
+            u.strip() for u in _env("PROBATE_WEBHOOK_URLS").split(",") if u.strip()
+        ]
+    )
+    webhook_secret: str = field(default_factory=lambda: _env("PROBATE_WEBHOOK_SECRET"))
+    webhook_allow_insecure: bool = field(
+        default_factory=lambda: _env("PROBATE_WEBHOOK_ALLOW_INSECURE") == "1"
+    )
+    webhook_ports: list[int] = field(
+        default_factory=lambda: [
+            int(p) for p in _env("PROBATE_WEBHOOK_PORTS", "443").split(",") if p.strip()
+        ]
+    )
+    webhook_max_endpoints: int = field(
+        default_factory=lambda: int(_env("PROBATE_WEBHOOK_MAX_ENDPOINTS", "10"))
+    )
+    webhook_max_failures: int = field(
+        default_factory=lambda: int(_env("PROBATE_WEBHOOK_MAX_FAILURES", "10"))
+    )
+    # Public origin of the website, used for links inside events (optional).
+    public_url: str = field(default_factory=lambda: _env("PROBATE_PUBLIC_URL").rstrip("/"))
     web_dist: Path = field(
         default_factory=lambda: Path(
             _env("PROBATE_WEB_DIST", str(REPO_ROOT / "apps" / "web" / "dist"))

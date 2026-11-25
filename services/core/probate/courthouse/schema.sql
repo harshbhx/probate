@@ -122,3 +122,44 @@ CREATE TABLE IF NOT EXISTS settings (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL            -- paused, budget_spent_usd, last_tick
 );
+
+-- Outgoing webhooks. Endpoints are operator-managed (admin API or env); secrets stay in this file.
+CREATE TABLE IF NOT EXISTS webhook_endpoints (
+  id                   TEXT PRIMARY KEY,           -- we_...
+  url                  TEXT NOT NULL,
+  secret               TEXT NOT NULL,
+  events               TEXT NOT NULL DEFAULT '*',  -- '*' or a JSON array of event names
+  description          TEXT NOT NULL DEFAULT '',
+  source               TEXT NOT NULL DEFAULT 'admin' CHECK (source IN ('admin','env')),
+  enabled              INTEGER NOT NULL DEFAULT 1,
+  disabled_reason      TEXT,
+  consecutive_failures INTEGER NOT NULL DEFAULT 0,
+  last_success_at      TEXT,
+  last_failure_at      TEXT,
+  created_at           TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS webhook_events (
+  id         TEXT PRIMARY KEY,                     -- evt_..., also the idempotency key
+  type       TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  payload    TEXT NOT NULL                         -- the exact JSON body that is sent
+);
+
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+  id               TEXT PRIMARY KEY,               -- dlv_..., sent as X-Probate-Delivery on every attempt
+  event_id         TEXT NOT NULL,
+  endpoint_id      TEXT NOT NULL,
+  event_type       TEXT NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','succeeded','failed','skipped')),
+  attempts         INTEGER NOT NULL DEFAULT 0,
+  next_attempt_at  REAL NOT NULL,                  -- unix seconds
+  last_status_code INTEGER,
+  last_error       TEXT,
+  created_at       TEXT NOT NULL,
+  updated_at       TEXT NOT NULL,
+  delivered_at     TEXT,
+  UNIQUE (event_id, endpoint_id)
+);
+CREATE INDEX IF NOT EXISTS webhook_deliveries_due ON webhook_deliveries(status, next_attempt_at);
+CREATE INDEX IF NOT EXISTS webhook_deliveries_ep ON webhook_deliveries(endpoint_id, created_at);
