@@ -17,7 +17,8 @@ Fly dashboard → your org → **Sprites → Connectors → Add connector**. For
 | TypeSafeAI | TypeSafe API key | The court (layer 2), the gate, distillation tests |
 | Box | Box sign-in (read and write) | The family archive in `/Probate/` |
 | Pinecone | Pinecone API key; create index `probate-ancestry` | Ancestral memory |
-| AgentMail | AgentMail API key | Family, owner-sim, friend-sim and stranger inboxes |
+| AgentMail | AgentMail API key | Family, friend-sim and stranger inboxes (three, the free plan) |
+| Custom API `cloudflare` | Cloudflare API token with Email Sending permission, upstream `https://api.cloudflare.com` | Harsh's own test emails, from `harsh@dualmindlab.tech` |
 | ElevenLabs | ElevenLabs API key | Eulogies and ancestor answers |
 | Ollama Cloud | Ollama account key | The brain |
 | Anthropic | Anthropic key (Claude for Startups credits) | Brain fallback and distillation |
@@ -38,7 +39,8 @@ Each spike is one small script that prints PASS or FAIL plus what it learned. Ru
 | S3 | `spike_gateway.py` | Base URL pattern per connector: `https://api.sprites.dev/v1/gateway/<service>/<connection_id>/...`; does a placeholder key work for each SDK | One successful call per connector |
 | S4 | `spike_jev.py` | Request shape for `noul`, `choice` and `score` questions; how confidence is returned (overall or per question); latency; max questions per call | A call with 6 base + 3 extra questions returns parseable values and confidence |
 | S5 | `spike_box.py` | Create folder `/Probate/`, upload text, read back, append, upload mp3 | Round trip works |
-| S6 | `spike_agentmail.py` | Create 4 inboxes; send with a custom header; receive and list new mail from inside a Sprite; are custom headers preserved | Mail sent from stranger appears in the family inbox with `X-Probate-Fixture` intact |
+| S6 | `spike_agentmail.py` | Create 3 inboxes; send with a custom header; receive and list new mail from inside a Sprite; are custom headers preserved | Mail sent from stranger appears in the family inbox with `X-Probate-Fixture` intact |
+| S6b | `spike_cloudflare_mail.py` (from `gen-spike`) | The custom-API connector's gateway path for Cloudflare; does a send from `harsh@dualmindlab.tech` reach the family inbox with `X-Probate-Fixture` intact | The mail arrives in the family inbox, authenticated, with the header |
 | S7 | `spike_pinecone.py` | Upsert with metadata and query; is integrated embedding available, or do we embed ourselves | Query returns the upserted item |
 | S8 | `spike_voice_llm.py` | ElevenLabs TTS through the gateway returns mp3; list voices; Ollama Cloud chat completion with JSON output; Anthropic fallback | mp3 saved and plays; JSON parses |
 
