@@ -1,0 +1,69 @@
+---
+title: Accessibility
+icon: Accessibility
+description: PageSpeed and Lighthouse scores, what axe found on every page, and what is still untested.
+---
+
+<Summary who="anyone checking the sites">
+  Google PageSpeed gives the landing page 100 for Accessibility, Best Practices and SEO on phones. axe finds no WCAG A or AA problems on any of the 48 pages of the landing page and docs, on a phone or a laptop screen.
+</Summary>
+
+## PageSpeed scores
+
+PageSpeed Insights, mobile, on the live landing page, Nov 26, 2026:
+
+<StatRow note="Performance lost 8 points to layout shift alone; the next section says how that was fixed.">
+  <Stat value="100" label="Accessibility" tone="good" />
+  <Stat value="100" label="Best Practices" tone="good" />
+  <Stat value="100" label="SEO" tone="good" />
+  <Stat value="92" label="Performance, before the fix" />
+</StatRow>
+
+The animated "every night." in the headline changed its width on every frame, so the text around it moved (layout shift 0.15). Agentic browsing (2 of 3) counts the same shift. The animation now sits on top of the real text and never resizes it, so layout shift is 0.
+
+After that fix, and two more that cut the work a docs page does while loading, Lighthouse 13.6 on our own machine gives:
+
+| Page | Accessibility | Best Practices | SEO | Agentic browsing | Performance, phone | Performance, desktop |
+| --- | --- | --- | --- | --- | --- | --- |
+| Landing page | 100 | 100 | 100 | 100 | 91 to 96 | 100 |
+| Docs pages | 100 | 100 | 100 | 100 | 93 to 97 | 100 |
+
+The phone Performance range is what our test machine measures for main-thread time, which varies between runs. PageSpeed's own run gave full marks for main-thread time and paint speed, so the live page should score 100 once the fix is deployed. This page will show that run.
+
+What changed on the docs pages:
+
+- Each underlined [glossary](/docs/glossary) word used to load its own pop-up code. One shared card per page now shows every definition, so the words themselves need no JavaScript.
+- Opening a docs page used to download about 20 other pages for the sidebar links straight away. Pages are now fetched when a pointer, finger or the keyboard reaches a link (6 downloads instead of 20).
+
+## axe on every page
+
+[axe](https://github.com/dequelabs/axe-core) checks a page against the WCAG rules a program can test. We run it on every page of the landing page and docs, at 390 and 1280 pixels wide.
+
+| What | Result |
+| --- | --- |
+| Pages checked | 48, each at 2 widths |
+| WCAG 2.0, 2.1 and 2.2 A and AA problems | 0 |
+| Pages that scroll sideways on a phone | 0 |
+| Broken links between pages | 0 of 49 |
+
+With axe's extra best-practice rules on, 28 notes remain, all from one rule (`region`) on parts of the docs framework we don't write: its "skip to page" link and the table of contents sit outside a landmark. They are not WCAG failures.
+
+The live family site was checked the same way on its home, trial, generation, instincts, evidence and judges pages: no problems on any of them.
+
+## Built in
+
+- **Keyboard.** Every link, button and glossary word can be reached with Tab. A focused glossary word opens its definition, and Escape closes it and returns focus to the word.
+- **Reduced motion.** With reduced motion turned on in the device settings, nothing animates: the headline is final, numbers show their end values, and the scroll film shows its last frame.
+- **No JavaScript.** Every heading and paragraph is in the page's HTML, and a fallback rule shows text that animations would fade in.
+- **Plain words.** Hard words are underlined the first time they appear on a page, and hovering or tapping one shows what it means.
+- **Dark only.** Both sites have one dark theme, checked for contrast by axe.
+
+## Not tested yet
+
+- Screen readers (VoiceOver, NVDA, TalkBack) and forced-colours mode.
+- A keyboard-only walk through the search dialog and the docs menu on phones.
+- The live family's attack panel and running-life panel, which need a real Courthouse.
+- The product screenshots on the landing page: their small text can't be read on phones, but each has alt text.
+- axe can't judge text over the hero glow, or words that are dim on purpose until you scroll to them.
+
+How to repeat every check, and what was fixed along the way, is in [`docs/ACCESSIBILITY.md`](https://github.com/harshbhx/probate/blob/main/docs/ACCESSIBILITY.md).
