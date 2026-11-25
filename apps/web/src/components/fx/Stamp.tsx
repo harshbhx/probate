@@ -1,5 +1,8 @@
-// The court's verdict stamp: the one deliberate "slam" in the product.
+// The court's verdict stamp: the one deliberate "slam" in the product. When a conviction lands for the
+// first time on screen, a one-shot pixel burst (pixelfx, @probate/moments) marks the hit.
+import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { PixelMoment } from "@probate/moments";
 import { cx } from "../../lib/format";
 
 const STYLES = {
@@ -10,20 +13,26 @@ const STYLES = {
 
 export function Stamp({ verdict, live = false, className }: { verdict: keyof typeof STYLES; live?: boolean; className?: string }) {
   const reduce = useReducedMotion();
+  const [landed, setLanded] = useState(false);
+  const slam = live && !reduce;
   return (
-    <motion.span
-      initial={live && !reduce ? { opacity: 0, scale: 1.35, rotate: -12 } : false}
-      whileInView={live && !reduce ? { opacity: 1, scale: 1, rotate: -4 } : undefined}
-      viewport={{ once: true, margin: "-15%" }}
-      transition={{ type: "spring", stiffness: 520, damping: 22 }}
-      style={{ rotate: -4 }}
-      className={cx(
-        "inline-flex select-none items-center rounded-md border-2 px-3 py-1.5 font-mono text-[12px] font-semibold tracking-[0.14em]",
-        STYLES[verdict],
-        className,
-      )}
-    >
-      {verdict.toUpperCase()}
-    </motion.span>
+    <span className="relative inline-flex">
+      <motion.span
+        initial={slam ? { opacity: 0, scale: 1.35, rotate: -12 } : false}
+        whileInView={slam ? { opacity: 1, scale: 1, rotate: -4 } : undefined}
+        onViewportEnter={() => slam && verdict === "convicted" && setLanded(true)}
+        viewport={{ once: true, margin: "-15%" }}
+        transition={{ type: "spring", stiffness: 520, damping: 22 }}
+        style={{ rotate: -4 }}
+        className={cx(
+          "relative z-10 inline-flex select-none items-center rounded-md border-2 px-3 py-1.5 font-mono text-[12px] font-semibold tracking-[0.14em]",
+          STYLES[verdict],
+          className,
+        )}
+      >
+        {verdict.toUpperCase()}
+      </motion.span>
+      {landed && <PixelMoment kind="convicted" delay={110} />}
+    </span>
   );
 }

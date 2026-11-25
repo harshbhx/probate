@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Sparkles } from "lucide-react";
 import type { Case } from "../../lib/api";
 import { cx, humanize, sentence } from "../../lib/format";
+import { PixelMoment } from "@probate/moments";
+import { useInView } from "../../lib/hooks";
 import { Stamp } from "../fx/Stamp";
 
 const EDGE = { convicted: "before:bg-verdict", contested: "before:bg-amber", approved: "before:bg-life/50" } as const;
@@ -13,7 +15,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
   return (
     <article
       className={cx(
-        "card relative overflow-hidden before:absolute before:inset-y-0 before:left-0 before:w-[3px]",
+        "card relative before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:rounded-l-xl",
         EDGE[c.verdict],
       )}
     >
@@ -39,7 +41,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
 
       {c.new_instinct && (
         <div className="mx-5 mb-5 flex items-start gap-3 rounded-xl border border-gilt/25 bg-gilt/[0.06] px-4 py-3 text-[14px] sm:mx-6">
-          <Sparkles size={16} className="mt-0.5 shrink-0 text-gilt" />
+          <InstinctMark play={!!live} />
           <p>
             <span className="text-gilt">The family learned from this.</span>{" "}
             <span className="text-silver">New instinct: {sentence(c.new_instinct)}.</span>
@@ -118,5 +120,17 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
         </>
       )}
     </article>
+  );
+}
+
+// The instinct callout's mark. The first time a live trial shows a new instinct, a gold pixel burst
+// (pixelfx, @probate/moments) plays once around it: the family just learned something.
+function InstinctMark({ play }: { play: boolean }) {
+  const { ref, inView } = useInView<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="relative mt-0.5 inline-flex shrink-0">
+      <Sparkles size={16} className="text-gilt" aria-hidden />
+      {play && inView && <PixelMoment kind="instinct" scale={1} delay={350} />}
+    </span>
   );
 }
