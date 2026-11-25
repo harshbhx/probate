@@ -1,7 +1,9 @@
 name: dependency-review
 
 # Blocks a pull request that adds a dependency with a known high or critical vulnerability.
-# Needs the dependency graph, which is on by default for public repositories.
+# Needs the dependency graph. If the repository has it switched off (Settings > Advanced Security),
+# GitHub answers "Forbidden" and this job cannot run. It is therefore non-blocking until the graph is on;
+# once it is, remove `continue-on-error` below and make `review` a required check.
 
 on:
   pull_request:
@@ -15,6 +17,7 @@ concurrency:
 jobs:
   review:
     runs-on: ubuntu-latest
+    continue-on-error: true # remove once the dependency graph is enabled
     timeout-minutes: 10
     permissions:
       contents: read
