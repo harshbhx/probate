@@ -10,6 +10,7 @@ authors:
 repository-code: "https://github.com/harshbhx/probate"
 url: "https://github.com/harshbhx/probate"
 version: "0.1.0"
+license: MIT
 date-released: "2026-11-25"
 keywords:
   - agent memory poisoning
