@@ -1,0 +1,24 @@
+{
+  "name": "@probate/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A read-only MCP server for the Probate Courthouse's public API: the family, its trials, its instincts and its evidence.",
+  "type": "module",
+  "bin": { "probate-mcp": "./dist/server.js" },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p .",
+    "lint": "tsc -p . --noEmit",
+    "start": "node dist/server.js",
+    "smoke": "node dist/smoke.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  },
+  "engines": { "node": ">=20" }
+}

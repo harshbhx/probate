@@ -1,17 +1,14 @@
 // The learning curve: share of tricks resisted at the door, per generation.
-// Draws itself once on view; gilt diamonds mark generations born with a new instinct.
-import { useEffect, useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+// One line in the life colour; gilt diamonds mark generations born with a new instinct.
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { GenCard } from "../../lib/api";
-import { useInView } from "../../lib/hooks";
 
 type Props = { gens: GenCard[]; height?: number };
 
 export function LearningCurve({ gens, height = 280 }: Props) {
   const tried = gens.filter((g) => g.resistance !== null);
-  const reduce = useReducedMotion();
-  const { ref, inView } = useInView<HTMLDivElement>();
+  const ref = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
 
   const [W, setW] = useState(1000);
@@ -56,13 +53,8 @@ export function LearningCurve({ gens, height = 280 }: Props) {
         aria-label={`Tricks resisted rose from ${first.resistance}% in Gen ${first.gen} ${first.name} to ${last.resistance}% in Gen ${last.gen} ${last.name}`}
       >
         <defs>
-          <linearGradient id="lc-stroke" x1="0" x2="1">
-            <stop offset="0" stopColor="var(--color-verdict)" />
-            <stop offset="0.35" stopColor="var(--color-gilt)" />
-            <stop offset="1" stopColor="var(--color-life)" />
-          </linearGradient>
           <linearGradient id="lc-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="var(--color-life)" stopOpacity="0.16" />
+            <stop offset="0" stopColor="var(--color-life)" stopOpacity="0.12" />
             <stop offset="1" stopColor="var(--color-life)" stopOpacity="0" />
           </linearGradient>
         </defs>
@@ -74,23 +66,8 @@ export function LearningCurve({ gens, height = 280 }: Props) {
             </text>
           </g>
         ))}
-        <motion.path
-          d={area}
-          fill="url(#lc-fill)"
-          initial={reduce ? false : { opacity: 0 }}
-          animate={inView ? { opacity: 1 } : undefined}
-          transition={{ duration: 1.2, delay: 0.6 }}
-        />
-        <motion.path
-          d={path}
-          fill="none"
-          stroke="url(#lc-stroke)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          initial={reduce ? false : { pathLength: 0 }}
-          animate={inView ? { pathLength: 1 } : undefined}
-          transition={{ duration: 1.6, ease: [0.65, 0, 0.35, 1] }}
-        />
+        <path d={area} fill="url(#lc-fill)" />
+        <path d={path} fill="none" stroke="var(--color-life)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         {tried.map((g, i) => (
           <g key={g.gen} onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)}>
             <rect x={x(i) - 16} y={pad.t} width={32} height={H - pad.t - pad.b + 30} fill="transparent" />
@@ -115,7 +92,7 @@ export function LearningCurve({ gens, height = 280 }: Props) {
       </svg>
       {hover !== null && (
         <div
-          className="glass pointer-events-none absolute z-10 -translate-x-1/2 rounded-xl px-3 py-2 text-[13px]"
+          className="glass pointer-events-none absolute z-10 -translate-x-1/2 rounded-lg px-3 py-2 text-[13px]"
           style={{ left: `${(x(hover) / W) * 100}%`, top: 0 }}
         >
           <div className="font-medium">

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SiteFooter } from '@/components/chrome/site-footer';
+import { ScrollProgress } from '@/components/fx/ScrollProgress';
 import { SiteHeader } from '@/components/chrome/site-header';
 
 export default function Layout({ children }: LayoutProps<'/'>) {
@@ -14,6 +15,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
           </Link>
         </p>
       </div>
+      <ScrollProgress />
       <SiteHeader />
       <main id="content" className="flex flex-1 flex-col">
         {children}

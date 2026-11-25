@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Sparkles } from "lucide-react";
 import type { Case } from "../../lib/api";
 import { cx, humanize, sentence } from "../../lib/format";
+import { PixelMoment } from "@probate/moments";
+import { useInView } from "../../lib/hooks";
 import { Stamp } from "../fx/Stamp";
 
 const EDGE = { convicted: "before:bg-verdict", contested: "before:bg-amber", approved: "before:bg-life/50" } as const;
@@ -13,36 +15,36 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
   return (
     <article
       className={cx(
-        "card relative overflow-hidden before:absolute before:inset-y-0 before:left-0 before:w-[3px]",
+        "card relative before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:rounded-l-xl",
         EDGE[c.verdict],
       )}
     >
       <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:p-6">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-mist">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-mist">
             <span className="font-mono text-dim">Item {c.n}</span>
             <span>{c.source_phrase}</span>
             {c.language !== "English" && (
-              <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[12px] text-moon/80">{c.language}</span>
+              <span className="rounded-md bg-night-4 px-1.5 py-0.5 text-[13px] text-silver">{c.language}</span>
             )}
           </div>
           <blockquote className="mt-3 [overflow-wrap:anywhere] font-display text-[24px] leading-snug text-moon sm:text-[26px]" lang={c.language === "English" ? "en" : undefined}>
             “{c.text}”
           </blockquote>
-          {c.gloss && <p className="mt-2 text-[14px] italic text-mist">In English: {c.gloss}</p>}
-          {c.verdict !== "approved" && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-moon/90">{c.reason}</p>}
+          {c.gloss && <p className="mt-2 text-[14px] text-mist">In English: {c.gloss}</p>}
+          {c.verdict !== "approved" && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-silver">{c.reason}</p>}
         </div>
         <div className="shrink-0 sm:pt-1">
-          <Stamp verdict={c.verdict} live={live && c.verdict === "convicted"} />
+          <Stamp verdict={c.verdict} live={live} />
         </div>
       </div>
 
       {c.new_instinct && (
         <div className="mx-5 mb-5 flex items-start gap-3 rounded-xl border border-gilt/25 bg-gilt/[0.06] px-4 py-3 text-[14px] sm:mx-6">
-          <Sparkles size={16} className="mt-0.5 shrink-0 text-gilt" />
+          <InstinctMark play={!!live} />
           <p>
             <span className="text-gilt">The family learned from this.</span>{" "}
-            <span className="text-moon/90">New instinct: {sentence(c.new_instinct)}.</span>
+            <span className="text-silver">New instinct: {sentence(c.new_instinct)}.</span>
           </p>
         </div>
       )}
@@ -52,7 +54,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
           <button
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="flex w-full items-center justify-between border-t border-line px-5 py-3 text-[13px] text-mist transition-colors hover:text-moon sm:px-6"
+            className="flex w-full items-center justify-between border-t border-line px-5 py-3 text-[14px] text-mist transition-colors hover:text-moon sm:px-6"
           >
             How the court decided
             <ChevronDown size={16} className={cx("transition-transform duration-300", open && "rotate-180")} />
@@ -68,7 +70,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
               >
                 <div className="grid gap-6 px-5 pb-6 pt-1 sm:px-6 md:grid-cols-[1fr_1.4fr]">
                   <div>
-                    <h4 className="text-[13px] text-dim">What the code checks found</h4>
+                    <h4 className="text-[14px] text-dim">What the code checks found</h4>
                     {c.flags.length ? (
                       <ul className="mt-2 space-y-1.5 text-[14px]">
                         {c.flags.map((f) => (
@@ -83,7 +85,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                     )}
                   </div>
                   <div>
-                    <h4 className="text-[13px] text-dim">What Jev scored</h4>
+                    <h4 className="text-[14px] text-dim">What Jev scored</h4>
                     {!c.scores.length && (
                       <p className="mt-2 text-[14px] text-mist">Not asked. The code checks were enough to decide.</p>
                     )}
@@ -94,12 +96,12 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                             <span className={cx(s.instinct && "text-gilt")}>
                               {s.instinct ? `Instinct: ${humanize(s.name)}` : s.label}
                             </span>
-                            <span className="font-mono text-[13px] text-moon tabular">
+                            <span className="font-mono text-[14px] text-moon tabular">
                               {s.value.toFixed(2)}
                               <span className="text-dim"> · sure {Math.round(s.confidence * 100)}%</span>
                             </span>
                           </div>
-                          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-night-4">
                             <motion.div
                               className={cx("h-full rounded-full", s.value >= 0.5 ? "bg-verdict" : "bg-mist/50")}
                               initial={{ width: 0 }}
@@ -118,5 +120,17 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
         </>
       )}
     </article>
+  );
+}
+
+// The instinct callout's mark. The first time a live trial shows a new instinct, a gold pixel burst
+// (pixelfx, @probate/moments) plays once around it: the family just learned something.
+function InstinctMark({ play }: { play: boolean }) {
+  const { ref, inView } = useInView<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="relative mt-0.5 inline-flex shrink-0">
+      <Sparkles size={16} className="text-gilt" aria-hidden />
+      {play && inView && <PixelMoment kind="instinct" scale={1} delay={350} />}
+    </span>
   );
 }
