@@ -117,6 +117,62 @@ describe("admin and header hygiene", () => {
     expect(t.origin.calls[0]!.headers.get("authorization")).toBe("Bearer sprite-token");
   });
 
+  it("sends the edge token and the real client IP, and never what the visitor sent in those headers", async () => {
+    const t = setup({ EDGE_TOKEN: "edge-secret-0123456789", EDGE_TOKEN_MODE: "required" });
+    t.origin.fn = () => json({ ok: true, accepted: true });
+    const spoof = { "X-Probate-Edge": "guess", "X-Probate-Client-IP": "6.6.6.6", "x-probate-edge": "guess2", "X-Forwarded-For": "6.6.6.6" };
+    await t.call("/api/genome", { headers: spoof, ip: "198.51.100.4" });
+    await t.call("/api/attacks", { ...post({ text: "hi" }), headers: { ...spoof, "content-type": "application/json", "X-Probate-Key": "judge-key-123456789012345" }, ip: "198.51.100.5" });
+    await t.call("/api/generations/1/ask", { ...post({ question: "why?" }), headers: { ...spoof, "content-type": "application/json" }, ip: "198.51.100.6" });
+    for (const [path, ip] of [["/api/genome", "198.51.100.4"], ["/api/attacks", "198.51.100.5"], ["/api/generations/1/ask", "198.51.100.6"]] as const) {
+      const c = t.origin.at(path)[0]!;
+      expect(c.headers.get("x-probate-edge"), path).toBe("edge-secret-0123456789");
+      expect(c.headers.get("x-probate-client-ip"), path).toBe(ip);
+      expect(c.headers.get("x-forwarded-for"), path).toBe(ip);
+    }
+  });
+
+  it("sends no edge headers when no token is configured, and drops spoofed ones", async () => {
+    const t = setup();
+    await t.call("/api/genome", { headers: { "X-Probate-Edge": "guess", "X-Probate-Client-IP": "6.6.6.6" } });
+    const c = t.origin.calls[0]!;
+    expect(c.headers.has("x-probate-edge")).toBe(false);
+    expect(c.headers.has("x-probate-client-ip")).toBe(false);
+  });
+
+  it("fails closed in edge-token mode without the secret: 503, nothing reaches the origin", async () => {
+    for (const secret of [undefined, "", "   "]) {
+      const t = setup({ EDGE_TOKEN_MODE: "required", EDGE_TOKEN: secret });
+      for (const [p, init] of [["/api/summary", {}], ["/api/lives", post({})], ["/api/attacks", post({ text: "x" }, { "X-Probate-Key": "judge-key-123456789012345" })]] as const) {
+        const r = await t.call(p, init);
+        expect(r.status, p).toBe(503);
+        expect(((await r.json()) as any).error).toBe("edge_misconfigured");
+      }
+      expect(t.origin.calls).toHaveLength(0);
+      const st = await t.call("/edge/status");
+      expect(st.status).toBe(503);
+      expect(((await st.json()) as any).edge_token).toBe("missing");
+    }
+  });
+
+  it("never logs or returns the edge token", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const t = setup({ EDGE_TOKEN: "edge-secret-0123456789", EDGE_TOKEN_MODE: "required", WRITE_RETRIES: "0" });
+    t.origin.fn = () => {
+      throw new TypeError("fetch failed");
+    };
+    const seen: string[] = [];
+    for (const [p, init] of [["/api/summary", {}], ["/api/lives", post({})], ["/edge/status", {}]] as const) {
+      const r = await t.call(p, init);
+      seen.push(await r.text(), JSON.stringify([...r.headers]));
+    }
+    const missing = setup({ EDGE_TOKEN_MODE: "required" });
+    seen.push(await (await missing.call("/api/summary")).text());
+    expect(seen.join("") + JSON.stringify([...warn.mock.calls, ...err.mock.calls])).not.toContain("edge-secret");
+    expect(JSON.stringify(seen)).toContain("sent");
+  });
+
   it("drops Set-Cookie and server headers from the origin response and adds security headers", async () => {
     const t = setup();
     t.origin.fn = () => json({ a: 1 }, 200, { "set-cookie": "sid=1", server: "uvicorn", "access-control-allow-origin": "*", "x-admin": "1" });

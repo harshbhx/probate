@@ -33,6 +33,13 @@ export function originHeaders(
     "X-Forwarded-Proto": "https",
   });
   if (o.ip) h.set("X-Forwarded-For", o.ip);
+  // Visitor-supplied X-Probate-Edge / X-Probate-Client-IP never get here (nothing is copied), so
+  // these two are the only ones the origin can ever see. Without a CF-Connecting-IP the edge sends
+  // no client-IP header (the origin then falls back to X-Forwarded-For).
+  if (cfg.edgeToken) {
+    h.set("X-Probate-Edge", cfg.edgeToken);
+    if (o.ip) h.set("X-Probate-Client-IP", o.ip);
+  }
   if (o.key) h.set("X-Probate-Key", o.key);
   if (o.contentType) h.set("Content-Type", o.contentType);
   if (cfg.originToken) h.set("Authorization", `Bearer ${cfg.originToken}`);
