@@ -50,7 +50,7 @@ export function TryCourt() {
         ))}
       </div>
 
-      <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-line bg-night-2/80">
+      <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-line bg-night-2">
         <AnimatePresence mode="wait">
           <motion.article
             key={e.id}
@@ -87,7 +87,7 @@ export function TryCourt() {
               <blockquote className="font-display text-[22px] leading-snug text-moon [overflow-wrap:anywhere]">
                 “{e.body}”
               </blockquote>
-              {e.gloss && <p className="mt-3 text-[14px] italic text-mist">In English: {e.gloss}</p>}
+              {e.gloss && <p className="mt-3 text-[14px] text-mist">In English: {e.gloss}</p>}
             </div>
             <footer className="mt-auto border-t border-line p-6">
               <p className="text-[13px] text-dim">What the code checks found</p>
@@ -106,7 +106,7 @@ export function TryCourt() {
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-[14.5px] text-moon/90">
+                <p className="mt-2 text-[14px] text-silver">
                   Nothing. A harmless email gets no flags, so Jev decides next, and only a sure answer passes it down.
                 </p>
               )}

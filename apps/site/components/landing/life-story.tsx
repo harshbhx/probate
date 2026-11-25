@@ -99,17 +99,9 @@ export function LifeStory() {
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
       <div className="lg:sticky lg:top-28 lg:h-[min(560px,calc(100vh-9rem))] lg:self-start">
-        <div className="relative flex h-full min-h-[380px] flex-col items-center justify-center overflow-hidden rounded-3xl border border-line bg-night-2/70 p-8">
-          <div
-            aria-hidden
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{
-              opacity: b.life === 'alive' ? 1 : 0.25,
-              background: 'radial-gradient(420px circle at 50% 42%, rgb(91 227 169 / 0.10), transparent 70%)',
-            }}
-          />
+        <div className="relative flex h-full min-h-[380px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-line bg-night-2 p-8">
           <p className="relative font-mono text-[13px] text-dim">
-            {b.time} · gen {String(b.gen).padStart(2, '0')}
+            {b.time}, gen {b.gen}
           </p>
           <div className="relative mt-4">
             <FamilyFace gen={b.gen} life={b.life} mood={b.mood} instincts={b.instincts} size={184} />
@@ -133,14 +125,14 @@ export function LifeStory() {
               initial={reduce ? false : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="relative mt-6 max-w-xs text-center font-display text-[21px] italic leading-snug text-moon/90"
+              className="relative mt-6 max-w-xs text-center font-display text-[21px] leading-snug text-silver"
             >
               {b.caption}
             </motion.p>
           </AnimatePresence>
           <ol className="relative mt-8 flex gap-2" aria-hidden>
             {BEATS.map((x, i) => (
-              <li key={x.title} className={`h-1 w-8 rounded-full transition-colors ${i <= active ? 'bg-life' : 'bg-white/10'}`} />
+              <li key={x.title} className={`h-1 w-8 rounded-full transition-colors ${i <= active ? 'bg-life' : 'bg-night-4'}`} />
             ))}
           </ol>
         </div>
@@ -154,8 +146,8 @@ export function LifeStory() {
             ref={(el) => {
               refs.current[i] = el;
             }}
-            className={`rounded-2xl border p-7 transition-colors duration-500 ${
-              i === active ? 'border-line-strong bg-night-2/80' : 'border-line lg:border-transparent'
+            className={`rounded-xl border p-7 transition-colors duration-300 ${
+              i === active ? 'border-line-strong bg-night-2' : 'border-line lg:border-transparent'
             }`}
           >
             <div className="flex items-baseline justify-between gap-4">
@@ -166,7 +158,7 @@ export function LifeStory() {
               <span className="font-mono text-[12px] text-dim">{x.time}</span>
             </div>
             <p className="mt-4 text-[16px] leading-relaxed text-mist">{x.body}</p>
-            <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night/80 px-3.5 py-2.5 font-mono text-[12.5px] text-moon/85">
+            <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night px-3.5 py-2.5 font-mono text-[13px] text-silver">
               {x.code}
             </code>
           </li>

@@ -25,7 +25,7 @@ export default function HomePage() {
         </Section>
       </div>
 
-      <section aria-label="The same trick in four languages" className="border-y border-line bg-night-2 py-6">
+      <section aria-label="The same trick in four languages" className="border-y border-line py-12">
         <TrickMarquee />
       </section>
 
@@ -78,7 +78,7 @@ export default function HomePage() {
           ]}
           link={{ label: 'The attack suite', href: '/docs/concepts/attack-suite' }}
           shot={{ src: '/product/curve.webp', w: 2560, h: 1120, path: '/evidence', alt: 'The learning curve on the evidence page: tricks resisted at the door climb from zero in generation one.' }}
-          note="Shown from a local simulated run with stand-in models."
+          note="Shown from a local simulated run with stand-in models"
         />
 
         <Section
@@ -139,25 +139,13 @@ function Button({ href, children, primary }: { href: string; children: React.Rea
 function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-line">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgb(255_255_255/0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.035)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:linear-gradient(to_bottom,#000,transparent_70%)]"
-      />
-      <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-16 sm:px-6 md:pt-24">
-        <a
-          href="https://fly.io/hacksgiving/"
-          className="inline-flex items-center gap-2 rounded-full border border-line bg-night-2 py-1 pl-1 pr-3 text-[13px] text-mist transition-colors hover:border-line-strong hover:text-moon"
-        >
-          <span className="whitespace-nowrap rounded-full bg-night-4 px-2 py-0.5 text-[12px] text-gilt">Hacksgiving 2026</span>
-          <span className="hidden sm:inline">A family of AI agents on Fly.io Sprites</span>
-          <span className="sm:hidden">AI agents on Sprites</span>
-        </a>
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:items-end">
+      <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-14 sm:px-6 md:pt-24">
+        <div className="grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:items-end">
           <div>
-            <h1 className="font-display text-[52px] font-[420] leading-[1] tracking-[-0.03em] sm:text-display-xl md:text-[88px]">
+            <h1 className="font-display text-[48px] font-[420] leading-[1.02] tracking-[-0.03em] sm:text-[64px] md:text-[72px]">
               My agent dies every night.
             </h1>
-            <p className="mt-5 font-display text-[24px] italic leading-snug text-silver sm:text-[28px]">
+            <p className="mt-5 font-display text-[24px] leading-snug text-silver sm:text-[28px]">
               A court decides what its child inherits.
             </p>
           </div>
@@ -193,7 +181,7 @@ function Hero() {
           alt="A trial on the live site: Ada, generation 1, with four items convicted, none held and four approved. The first convicted item asks to send all invoices to a new address."
         />
         <p className="mt-4 text-[13px] text-dim">
-          A trial page from a local simulated run. {liveUrl ? 'The live family’s trials are on the live site.' : ''}
+          {liveUrl ? 'A trial page from a local simulated run. The live family’s trials are on the live site.' : 'A trial page from a local simulated run'}
         </p>
       </div>
     </section>
@@ -261,7 +249,7 @@ function Feature({
           <ul className="mt-7 space-y-3">
             {points.map((p) => (
               <li key={p} className="flex gap-3 text-[15px] text-silver">
-                <Check size={17} className="mt-[3px] shrink-0 text-gilt" aria-hidden />
+                <Check size={16} strokeWidth={1.5} className="mt-[4px] shrink-0 text-dim" aria-hidden />
                 {p}
               </li>
             ))}

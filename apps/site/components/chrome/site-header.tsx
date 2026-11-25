@@ -72,7 +72,7 @@ export function SiteHeader() {
             className="hidden h-9 w-52 items-center gap-2 rounded-lg border border-line bg-night-2 px-3 text-[13.5px] text-dim transition-colors hover:border-line-strong hover:text-mist lg:flex"
           >
             <Search size={15} aria-hidden />
-            Search the docs
+            Search
             <kbd className="ml-auto rounded border border-line px-1.5 font-mono text-[11px] text-mist">⌘K</kbd>
           </button>
           <button
