@@ -7,6 +7,7 @@ import { useApi, useNow, useTitle } from "../lib/hooks";
 import { BorderBeam } from "../components/fx/BorderBeam";
 import { TextGenerate } from "../components/fx/TextGenerate";
 import { Seal } from "../components/ui/Seal";
+import { FamilyFace, inheritedChange } from "@probate/faces";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { ErrorState, PageSkeleton } from "../components/ui/States";
 
@@ -53,11 +54,26 @@ export function Generation({ mode }: { mode?: string }) {
               <span className="font-mono text-[12px] text-dim">GENERATION {g.gen}</span>
               <Seal size={30} />
             </div>
-            <h1 className="mt-8 font-display text-[76px] leading-[0.9] tracking-tight">{g.name}</h1>
+            <div className="mt-6 flex justify-center">
+              <FamilyFace
+                gen={g.gen}
+                life={g.alive ? "alive" : "sealed"}
+                instincts={g.genome_size_at_birth}
+                track={g.alive}
+                size={150}
+                title={`${g.name}'s family face`}
+              />
+            </div>
+            <h1 className="mt-6 font-display text-[76px] leading-[0.9] tracking-tight">{g.name}</h1>
             <p className={cx("mt-3 text-[15px]", g.alive ? "text-life" : "text-mist")}>
               {g.alive ? (left > 0 ? <span className="font-mono tabular">Alive · dies in {countdown(left)}</span> : "Alive") : `${day(g.born_at)} · ${g.cause_of_death}`}
             </p>
             {g.epitaph && <p className="mt-6 font-display text-[22px] italic leading-snug text-moon/90">{g.epitaph}</p>}
+            {g.parent && inheritedChange(g.gen) && (
+              <p className="mt-4 text-[13.5px] text-mist">
+                {g.parent.name}&rsquo;s face, with {inheritedChange(g.gen)}.
+              </p>
+            )}
             <dl className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line">
               {[
                 { k: "emails handled", v: g.emails_handled },
