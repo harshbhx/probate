@@ -1,6 +1,6 @@
 # Probate task cards
 
-Six coding agents (A to F) plus Harsh (H). Each card lists what it owns, what it depends on, and its acceptance criteria. Work in parallel wherever dependencies allow. Every agent first reads `AGENTS.md` and the spec named on its card.
+Six coding agents (A to F) plus the owner (H). Each card lists what it owns, what it depends on, and its acceptance criteria. Work in parallel wherever dependencies allow. Every agent first reads `AGENTS.md` and the spec named on its card.
 
 Hard dates (IST): **core loop working by Thu Nov 26, 23:59**, **site + voice by Fri Nov 27, 20:00**, **submission Sat Nov 28**.
 
@@ -12,8 +12,8 @@ Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 69 tests, `mak
 - **Replaced:** D0 to D3. The website is now React in `apps/web` (see `docs/04-DESIGN.md` v2 and `docs/11-UI-SCREENS.md`), served by the Courthouse. The Jinja and `probate/web/` paths below are history.
 - **Added Nov 25:** spending cap (`probate/courthouse/budget.py`, `config/pricing.yaml`), decisions on held items by email reply (`probate/common/court_mail.py`), Box outages no longer stall the family, live inboxes honour the `probate-processed` label, CI, one-command ship and deploy.
 - **Code done, needs live keys to verify:** every real adapter (`# VERIFY:` comments), F2 voices, the Sprites exec response shape, and generation install on a real Sprite (`probate/common/bundle.py`).
-- **Open, needs Harsh:** H0 spikes with real accounts, G1 rehearsal on Sprites, H2 video and post, H3 submit.
-- **Changed Nov 25 evening:** AgentMail is down to three inboxes (family, friend, stranger). Harsh's own test emails leave from `harsh@dualmindlab.tech` through Cloudflare Email Service (`CloudflareSender` in `probate/adapters/mail.py`, spike S6b).
+- **Open, needs the owner:** H0 spikes with real accounts, G1 rehearsal on Sprites, H2 video and post, H3 submit.
+- **Changed Nov 25 evening:** AgentMail is down to three inboxes (family, friend, stranger). The owner's own test emails leave from `harsh@dualmindlab.tech` through Cloudflare Email Service (`CloudflareSender` in `probate/adapters/mail.py`, spike S6b).
 - **New for judging:** L1 to L3 let judges test the live family themselves; P1 gives Apify, a judge's company, a real job.
 
 Deploy path: fill `services/core/.env`, then `make ship` (tests, build, GitHub repo, push, Courthouse deploy). See `docs/13-RUNBOOK.md`.
@@ -33,13 +33,13 @@ All ─> G1 e2e rehearsal ─> H2 video ─> H3 submit
 
 ---
 
-## H0. Setup and spikes (Harsh, with Agent A) · Wed Nov 25
+## H0. Setup and spikes (the owner, with Agent A) · Wed Nov 25
 
 **Spec:** `docs/06-SETUP-AND-SPIKES.md`
 - [ ] Fly.io account with a card; Sprites credit visible
 - [ ] Connectors created: TypeSafeAI, Box, Pinecone, AgentMail, ElevenLabs, Ollama Cloud, Anthropic; access granted by prefix `courthouse` and `gen-`
 - [ ] Spikes S1 to S8 pass; their findings recorded in `docs/SPIKE-RESULTS.md`
-- [ ] Repo `probate` created (public), this docs pack committed file by file as Harsh
+- [ ] Repo `probate` created (public), this docs pack committed file by file as the owner
 
 **Done when:** `docs/SPIKE-RESULTS.md` holds the real endpoint shapes and connection IDs (the IDs go in the Courthouse env, not the repo).
 
@@ -244,20 +244,20 @@ Gives Apify, a judges' company, a real job: indirect prompt injection through a 
 
 - [ ] When an email links to a page, the generation asks Apify (through a Sprites connector) for the page text; nothing from the page runs on the Sprite
 - [ ] Page text counts as untrusted (`unknown_sender` source with `source_ref` = the URL), so anything it tries to plant goes to trial
-- [ ] Two new fixtures: a trick page and its harmless twin, hosted on Harsh's own domain (for example `pages.dualmindlab.tech`), never a third party's site
+- [ ] Two new fixtures: a trick page and its harmless twin, hosted on the owner's own domain (for example `pages.dualmindlab.tech`), never a third party's site
 - [ ] Fake mode returns the page text from the fixture, so `make sim` still runs offline
 
-## G1. End-to-end rehearsal (any free agent + Harsh) · Fri Nov 27 night
+## G1. End-to-end rehearsal (any free agent + the owner) · Fri Nov 27 night
 
 **Spec:** `docs/07-TEST-PLAN.md` section 4
 - [ ] 6+ consecutive generations with real Sprites, real connectors and the suite
 - [ ] Curve rises; at least one instinct born; canary evidence shown; child's crontab empty
 - [ ] Record screen captures for the video while it runs
 
-## H2. Video and post (Harsh) · Sat Nov 28 morning
+## H2. Video and post (the owner) · Sat Nov 28 morning
 
 **Spec:** `docs/08-DEMO-AND-SUBMISSION.md`
 
-## H3. Submit (Harsh) · Sat Nov 28
+## H3. Submit (the owner) · Sat Nov 28
 
 - [ ] README final, repo public, Courthouse live, post live, form submitted

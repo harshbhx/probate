@@ -59,7 +59,7 @@ Use `extracted_text` (not raw text) as the body the agent sees. Store `X-Probate
 
 ## 4a. Cloudflare Email Service (via a custom-API connector named `cloudflare`)
 
-Sends the suite's "from Harsh" emails from his own domain, so AgentMail stays at three inboxes.
+Sends the suite's "from the owner" emails from the owner's own domain, so AgentMail stays at three inboxes.
 
 | Item | Value |
 | --- | --- |

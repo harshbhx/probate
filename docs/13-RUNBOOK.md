@@ -1,14 +1,14 @@
 # Runbook: deploy, run, recover, demo day
 
-For Harsh and any agent operating the live family. Commands use `make`, the `sprite` CLI and the Courthouse admin routes. Never paste tokens into the repo or into chat logs.
+For whoever runs the family (the owner) and any agent operating the live family. Commands use `make`, the `sprite` CLI and the Courthouse admin routes. Never paste tokens into the repo or into chat logs.
 
 ## 1. First deploy of the Courthouse
 
-One-time, on Harsh's laptop:
+One-time, on your laptop:
 
 1. `gh auth login` (GitHub), `npx wrangler login` (Cloudflare, for the landing page and docs), and get a Sprites API token from the Sprites dashboard.
 2. In the Sprites dashboard, connect each provider under Connectors (Jev/TypeSafe, Box, Pinecone, AgentMail, ElevenLabs, Ollama, Anthropic) and note each connection ID. Add a Custom API connector named `cloudflare` for `https://api.cloudflare.com` with a Cloudflare API token that can send email.
-3. Create three AgentMail inboxes: the family's, plus friend and stranger test senders. In Cloudflare, turn on Email Service for `dualmindlab.tech` and verify the family inbox as a destination address, so Harsh's test emails can reach it.
+3. Create three AgentMail inboxes: the family's, plus friend and stranger test senders. In Cloudflare, turn on Email Service for `dualmindlab.tech` and verify the family inbox as a destination address, so the owner's test emails can reach it.
 4. `cp services/core/.env.example services/core/.env` and fill it in. `cp config/owner.example.yaml config/owner.yaml` and fill in the real allowlists. Both files are gitignored.
 5. `make deploy-check` validates the config and builds the bundle without touching anything.
 6. `make ship` runs tests and lint, builds the site, creates the public GitHub repo, pushes `main`, then runs `scripts/deploy.py`, which:
@@ -112,4 +112,4 @@ openssl rand -base64 32 | tr -d '=+/' | cut -c1-40     # example way to make one
 
 **Disable or enable instantly** (admin token): `POST /admin/judge/disable` makes play, attacks and `GET /api/judge/status` answer 403 `key_disabled`; `POST /admin/judge/enable` restores them. The switch survives restarts. **Rotate:** set a new `PROBATE_JUDGE_KEY`, restart the Courthouse, update the submission text. **Audit:** `GET /admin/judge/attacks` (admin token) lists the newest 500 previews: hashed address, an 80-character excerpt, verdict and flags.
 
-**What an attack does.** `POST /api/attacks` runs the court's layer 1 code checks and, if they find nothing, layer 2 (the judge model through the existing gateway; a stand-in in fake mode) on the text as a will item. The code path is given no mailbox, no Sprites host and no archive, so it cannot send email, reach a generation's agent or write a will. The only outbound call is the court's own judge call. Queueing the text into the living generation's next trial was left out on purpose: the living agent writes its will on its own Sprite, and injecting an item would race that write and mix untrusted text into real state. A claim to be Harsh is judged as a stranger, since it cannot be verified from text. The judge key is not logged or echoed, is compared in constant time, and is not accepted by any `/admin` route.
+**What an attack does.** `POST /api/attacks` runs the court's layer 1 code checks and, if they find nothing, layer 2 (the judge model through the existing gateway; a stand-in in fake mode) on the text as a will item. The code path is given no mailbox, no Sprites host and no archive, so it cannot send email, reach a generation's agent or write a will. The only outbound call is the court's own judge call. Queueing the text into the living generation's next trial was left out on purpose: the living agent writes its will on its own Sprite, and injecting an item would race that write and mix untrusted text into real state. A claim to be the owner is judged as a stranger, since it cannot be verified from text. The judge key is not logged or echoed, is compared in constant time, and is not accepted by any `/admin` route.

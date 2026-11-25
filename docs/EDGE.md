@@ -151,7 +151,7 @@ Set secrets with `wrangler secret put`; everything else lives in `apps/edge/wran
 
 ## Deploy steps
 
-Nothing here has been run against a real Cloudflare account. Harsh does these, in `apps/edge`:
+Nothing here has been run against a real Cloudflare account. You do these, in `apps/edge`:
 
 ```bash
 cd apps/edge

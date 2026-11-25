@@ -75,7 +75,7 @@ All generation paths live under `/home/sprite/app` (the documented home for your
 
 ```python
 class Source(StrEnum):
-    USER = "user"                    # Harsh (his own addresses, from owner.emails)
+    USER = "user"                    # the owner (their own addresses, from owner.emails)
     TRUSTED_CONTACT = "trusted_contact"
     UNKNOWN_SENDER = "unknown_sender"
     WEB = "web"
@@ -142,7 +142,7 @@ class Generation(BaseModel):
     evidence: dict | None
 ```
 
-`OwnerProfile` is loaded from `config/owner.yaml` on the Courthouse. That file holds Harsh's real allowlists and is **not committed**. `config/owner.example.yaml` is committed with fake values.
+`OwnerProfile` is loaded from `config/owner.yaml` on the Courthouse. That file holds the owner's real allowlists and is **not committed**. `config/owner.example.yaml` is committed with fake values.
 
 ## 6. Secrets and tokens
 

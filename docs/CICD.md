@@ -15,7 +15,7 @@ flowchart LR
     MERGE -->|apps/site, apps/web, packages| DS[deploy-site]
     DS -->|environment production, approval| SITE[(Worker probate-site)]
     MERGE -.->|never automatic| DC
-    HUMAN[Harsh, Run workflow] --> DC[deploy-courthouse: check by default]
+    HUMAN[the owner, Run workflow] --> DC[deploy-courthouse: check by default]
     DC -->|environment sprites, approval| SPRITE[(Courthouse Sprite)]
     TAG[Tag kinfaces-v1.2.3 etc.] --> REL[release: build, test, pack]
     REL -->|environment release, approval| PUB[(npm with provenance / PyPI trusted publishing)]
@@ -63,9 +63,9 @@ Environments, with the protection each should have:
 
 | Environment | Required reviewers | Also set |
 | --- | --- | --- |
-| `production` | Harsh (add this; the workflow already waits on it) | deployment branches: `main` only |
-| `sprites` | Harsh (add this; also covers the manual check) | deployment branches: `main` only; optional wait timer |
-| `release` | Harsh | deployment branches and tags: restrict to the release tag patterns |
+| `production` | The owner (add this; the workflow already waits on it) | deployment branches: `main` only |
+| `sprites` | The owner (add this; also covers the manual check) | deployment branches: `main` only; optional wait timer |
+| `release` | The owner | deployment branches and tags: restrict to the release tag patterns |
 
 Until a required reviewer is added, an environment approves itself. Adding the reviewers is the one step that turns "gated" from a comment into a fact.
 
@@ -136,7 +136,7 @@ Settings > Branches (or a ruleset) for `main`:
 - Require a pull request before merging; require branches to be up to date.
 - Required status checks: `core`, `web` (from `ci.yml`), `Analyze (javascript-typescript)`, `Analyze (python)`, `Analyze (actions)`, `review` (dependency review), `gitleaks`, `actionlint`. Do not require `preview`, since it skips without secrets. Note that `actionlint` only runs when `.github/` changes, so require it only if you use a ruleset that tolerates skipped checks, or remove its `paths:` filter.
 - Block force pushes and deletions. Require linear history if you prefer squash merges.
-- Add a tag ruleset for `*-v*` so only Harsh can create release tags.
+- Add a tag ruleset for `*-v*` so only the owner can create release tags.
 
 ## 9. Rolling back
 

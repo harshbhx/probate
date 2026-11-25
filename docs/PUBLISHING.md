@@ -1,6 +1,6 @@
 # Publishing the package and datasets
 
-Nothing here has been run. Harsh does these steps himself, with his own logins.
+Nothing here has been run. You do these steps yourself, with your own logins.
 
 ## 0. Before you start
 

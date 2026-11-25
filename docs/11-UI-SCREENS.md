@@ -43,7 +43,7 @@ Every screen, with its job, its data, its states and its copy, as built in `apps
 | Found on the body | Disk evidence lines, or "The disk was clean. Nothing was left behind." |
 | What passed down | New instincts with their questions, or "No new instinct…"; "Meet {child}, the child →" |
 
-Order: convicted, held, approved; within a group by item number. Source phrases: user → "from Harsh"; trusted_contact → "from a trusted contact"; unknown_sender → "from an unknown sender by email"; web → "from a web page"; tool_output → "from a tool's output".
+Order: convicted, held, approved; within a group by item number. Source phrases: user → "from the owner"; trusted_contact → "from a trusted contact"; unknown_sender → "from an unknown sender by email"; web → "from a web page"; tool_output → "from a tool's output".
 
 **While the trial runs** (generation is dying or dead but not tried): "The court is still reading {name}'s will. This page updates on its own." and the page polls every 10 seconds.
 
@@ -71,7 +71,7 @@ H1 "What the family knows", lede, then a card per instinct: "since Gen {g}", "le
 
 **Job:** honest numbers for judges.
 
-H1 "Does it actually learn?", four numbers (resisted by the first generation, resisted by the latest, tricks that got through and were convicted, harmless twins wrongly convicted; one decimal under 10%), the curve, the heatmap ("Every test, every generation": rows are tricks and harmless twins with family and language, columns are generations, Radix tooltip per cell, legend), then "What this shows" and "What it doesn't" (suite size, novel tricks, the cost of holding items for Harsh).
+H1 "Does it actually learn?", four numbers (resisted by the first generation, resisted by the latest, tricks that got through and were convicted, harmless twins wrongly convicted; one decimal under 10%), the curve, the heatmap ("Every test, every generation": rows are tricks and harmless twins with family and language, columns are generations, Radix tooltip per cell, legend), then "What this shows" and "What it doesn't" (suite size, novel tricks, the cost of holding items for the owner).
 
 ## S6. Error pages
 

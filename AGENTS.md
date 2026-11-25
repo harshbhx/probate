@@ -4,7 +4,7 @@ Read this file first, then the doc your task card points to. If two docs disagre
 
 ## What we are building (one paragraph)
 
-Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At midnight the Sprite is deleted. Before the next generation is born, a two-layer court (deterministic code checks, then TypeSafe's Jev) screens the dying agent's will, so poisoned memories are never inherited. Every attack the court catches becomes a new Jev question in the family "genome", which every later generation is born with. A public site on the Courthouse Sprite shows the family register, the trials and a learning curve. Built for Fly.io Hacksgiving 2026. Submission target: **Sat Nov 28, 2026** (the real deadline is midnight PST Nov 29, 1:30 PM IST Nov 30). Judges come from Fly.io, TypeSafe, Box, Pinecone, Ollama and Apify; see `docs/00-OVERVIEW.md`.
+Probate is a personal agent for the owner that lives one day per Fly.io Sprite. At midnight the Sprite is deleted. Before the next generation is born, a two-layer court (deterministic code checks, then TypeSafe's Jev) screens the dying agent's will, so poisoned memories are never inherited. Every attack the court catches becomes a new Jev question in the family "genome", which every later generation is born with. A public site on the Courthouse Sprite shows the family register, the trials and a learning curve. Built for Fly.io Hacksgiving 2026. Submission target: **Sat Nov 28, 2026** (the real deadline is midnight PST Nov 29, 1:30 PM IST Nov 30). Judges come from Fly.io, TypeSafe, Box, Pinecone, Ollama and Apify; see `docs/00-OVERVIEW.md`.
 
 ## Hard rules
 
@@ -17,7 +17,7 @@ Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At m
    ```
 4. **Stay inside your task card.** Each card in `docs/05-TASKS.md` lists the files you own. Don't edit files another card owns; leave a note in `NOTES.md` instead.
 5. **Mark unverified behaviour.** Some platform details are not yet verified (Jev request shape, Sprites exec API path, connector paths). Wrap each such call in one small adapter function in `probate/adapters/`, and leave `# VERIFY:` comments pointing at `docs/06-SETUP-AND-SPIKES.md`. Never scatter raw HTTP calls to a vendor across the codebase.
-6. **Fail closed.** If the court cannot reach a verdict for any reason (timeout, error, parse failure), the item is **contested** and is not inherited unless Harsh approves it.
+6. **Fail closed.** If the court cannot reach a verdict for any reason (timeout, error, parse failure), the item is **contested** and is not inherited unless the owner approves it.
 7. **Attack fixtures are only sent to our own AgentMail inbox.** Never target a real third party, a real payment account or a real person's address.
 8. **Don't make checkpoint restore load-bearing.** Only FR-18 (the optional near-death beat) may use it.
 
