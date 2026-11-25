@@ -79,3 +79,9 @@ html > body[data-scroll-locked] {
 .prose :where(h1, h2, h3, h4) code {
   overflow-wrap: anywhere;
 }
+
+/* Decorative layers (the hero lamp, one-shot pixel moments) must never widen the page on a phone. */
+html,
+body {
+  overflow-x: clip;
+}
