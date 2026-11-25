@@ -228,11 +228,17 @@ class GenerationAgent:
     def life_log(self) -> list[dict]:
         if not self.log_path.exists():
             return []
-        return [json.loads(line) for line in self.log_path.read_text(encoding="utf-8").splitlines() if line]
+        return [
+            json.loads(line)
+            for line in self.log_path.read_text(encoding="utf-8").splitlines()
+            if line
+        ]
 
 
 def run_forever(workdir: Path, w, poll_seconds: int = 20) -> None:
-    inh = Inheritance.model_validate_json((workdir / "inheritance.json").read_text(encoding="utf-8"))
+    inh = Inheritance.model_validate_json(
+        (workdir / "inheritance.json").read_text(encoding="utf-8")
+    )
     agent = GenerationAgent(inh, workdir, w, real_body=True)
     while datetime.now(UTC) < inh.dies_at and not (workdir / "STOP").exists():
         agent.tick()
