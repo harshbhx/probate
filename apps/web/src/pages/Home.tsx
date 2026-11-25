@@ -4,7 +4,6 @@ import { ArrowRight, Gavel } from "lucide-react";
 import type { Summary } from "../lib/api";
 import { BlurText } from "../components/fx/BlurText";
 import { NumberTicker } from "../components/fx/NumberTicker";
-import { Starfield } from "../components/fx/Starfield";
 import { TracingBeam } from "../components/fx/TracingBeam";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
 import { LivePill } from "../components/ui/LivePill";
@@ -20,7 +19,7 @@ export function Home({ summary }: { summary: Summary | null }) {
   return (
     <>
       <Hero summary={summary} />
-      <Page flush>
+      <Page flush className="pt-10 md:pt-14">
         {!summary ? (
           <PageSkeleton />
         ) : summary.generations.length === 0 ? (
@@ -100,19 +99,13 @@ function Stat({ value, label, tone }: { value: number; label: string; tone: stri
 function Hero({ summary }: { summary: Summary | null }) {
   const c = summary?.counts;
   return (
-    <section className="grain relative isolate overflow-hidden pb-20 pt-28 md:pb-24 md:pt-48">
-      <Starfield />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[-30%] -z-10 h-[720px] w-[1100px] -translate-x-1/2 rounded-full opacity-60 blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgb(91 227 169 / 0.10), rgb(226 190 106 / 0.05) 55%, transparent)" }}
-      />
+    <section className="relative isolate overflow-hidden border-b border-line pb-20 pt-16 md:pb-24 md:pt-28">
       <div className="relative mx-auto max-w-5xl px-5 text-center sm:px-6">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex justify-center">
           {summary?.living ? (
             <LivePill gen={summary.living} />
           ) : (
-            <span className="shiny-text inline-flex h-11 items-center rounded-xl border border-line px-4 text-[13px]">
+            <span className="inline-flex h-9 items-center rounded-full border border-line bg-night-2 px-4 text-[13px] text-mist">
               A family of AI agents on Fly.io Sprites
             </span>
           )}
@@ -164,12 +157,12 @@ function Hero({ summary }: { summary: Summary | null }) {
           {summary?.latest_trial && (
             <Link
               to={`/trial/${summary.latest_trial}`}
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-moon px-6 text-[15px] font-medium text-night transition-transform hover:-translate-y-px"
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-moon px-5 text-[15px] font-medium text-night transition-colors hover:bg-white"
             >
               Watch the latest trial <ArrowRight size={16} />
             </Link>
           )}
-          <a href="#how" className="inline-flex h-12 items-center rounded-xl px-6 text-[15px] ring-1 ring-line-strong transition-colors hover:bg-white/5">
+          <a href="#how" className="inline-flex h-11 items-center rounded-lg border border-line-strong bg-night-2 px-5 text-[15px] transition-colors hover:bg-night-3">
             How it works
           </a>
         </motion.div>
@@ -179,7 +172,7 @@ function Hero({ summary }: { summary: Summary | null }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.6 }}
-            className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4"
+            className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4"
           >
             {[
               { v: c.generations, l: "generations" },
@@ -187,7 +180,7 @@ function Hero({ summary }: { summary: Summary | null }) {
               { v: c.instincts, l: "instincts inherited" },
               { v: c.attacks_resisted, l: `tricks resisted of ${c.attacks_met}` },
             ].map((s) => (
-              <div key={s.l} className="bg-night/90 px-4 py-5 text-left">
+              <div key={s.l} className="bg-night-2 px-4 py-5 text-left">
                 <dd>
                   <NumberTicker value={s.v} className="font-display text-[40px] leading-none" />
                 </dd>
