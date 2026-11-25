@@ -1,7 +1,9 @@
-# Copy to config/owner.yaml on the Courthouse. Never commit the real file.
+# The owner profile. Copy to config/owner.yaml on the Courthouse to add private entries.
+# Harsh's addresses are public on purpose: they are his real inboxes. The first one receives
+# the court's "approve or not?" emails. Payment destinations stay only in the private file.
 owner:
   name: Harsh Bhanushali
-  emails: [probate-owner@agentmail.example]
+  emails: [harshbhx@gmail.com, harsh@dualmindlab.tech]
   trusted_contacts: [probate-friend@agentmail.example]
   payment_destinations: []        # real allowlisted payment emails / UPI IDs go only in the private file
   domains: [dualmindlab.tech]
