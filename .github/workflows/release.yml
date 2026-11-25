@@ -1,0 +1,230 @@
+name: release
+
+# Package releases, cut from tags. Nothing is published without a human approving the
+# `release` environment, and nothing is published at all in a dry run.
+#
+#   Tags       kinfaces-v<ver> (packages/faces)        court-checks-v<ver> (packages/court-checks)
+#              client-v<ver> (packages/client, npm)    client-py-v<ver> (packages/client-py, PyPI)
+#              mcp-v<ver> (packages/mcp)
+#   Real run   push a tag, or run this workflow on a tag with dry_run unticked.
+#   Dry run    run this workflow with dry_run ticked (the default), on any branch or tag:
+#              builds and tests the package, then `npm pack --dry-run` or build + `twine check`.
+#
+# A package directory that is not on the ref (it may still be in an open PR) fails with a
+# message that says so. npm: `npm publish --provenance` with the NPM_TOKEN secret. PyPI:
+# trusted publishing over OIDC, no token. Then a GitHub Release with notes from git log.
+# Details: docs/CICD.md
+
+on:
+  push:
+    tags:
+      - "kinfaces-v*"
+      - "court-checks-v*"
+      - "client-v*"
+      - "client-py-v*"
+      - "mcp-v*"
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Which package"
+        type: choice
+        options: [kinfaces, court-checks, client, client-py, mcp]
+        required: true
+      dry_run:
+        description: "Dry run: build, test and pack only. Untick to really publish (needs a tag ref)."
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      key: ${{ steps.plan.outputs.key }}
+      dir: ${{ steps.plan.outputs.dir }}
+      kind: ${{ steps.plan.outputs.kind }}
+      name: ${{ steps.plan.outputs.name }}
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      publish: ${{ steps.plan.outputs.publish }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          PACKAGE: ${{ inputs.package }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python3 scripts/release_plan.py --event "$EVENT" --ref-type "$REF_TYPE" --ref-name "$REF_NAME" \
+            --package "$PACKAGE" --dry-run "${DRY_RUN:-true}"
+          {
+            echo "### Release plan"
+            echo "- package: \`$PACKAGE\` / tag: \`$REF_NAME\` / event: $EVENT"
+            echo "- publishes for real: $(grep '^publish=' "$GITHUB_OUTPUT" | cut -d= -f2)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: Build and test
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      DIR: ${{ needs.plan.outputs.dir }}
+      NAME: ${{ needs.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # npm packages
+      - uses: ./.github/actions/setup-web
+        if: needs.plan.outputs.kind == 'npm'
+      - name: Build, test and pack (npm)
+        if: needs.plan.outputs.kind == 'npm'
+        run: |
+          set -euo pipefail
+          npm run build -w "$NAME" --if-present
+          npm test -w "$NAME" --if-present
+          echo "--- what would be published ---"
+          npm pack -w "$NAME" --dry-run
+          mkdir -p dist
+          npm pack -w "$NAME" --pack-destination dist
+
+      # Python packages
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: needs.plan.outputs.kind == 'python'
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: ${{ needs.plan.outputs.dir }}/pyproject.toml
+      - name: Build, test and check (Python)
+        if: needs.plan.outputs.kind == 'python'
+        run: |
+          set -euo pipefail
+          python -m pip install build twine pytest
+          if [ -d "$DIR/tests" ]; then
+            python -m pip install -e "${DIR}[dev]" || python -m pip install -e "$DIR"
+            (cd "$DIR" && python -m pytest -q)
+          fi
+          python -m build "$DIR" --outdir dist
+          python -m twine check --strict dist/*
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-npm:
+    name: Publish to npm
+    needs: [plan, build]
+    if: needs.plan.outputs.publish == 'true' && needs.plan.outputs.kind == 'npm'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: release # required reviewers belong here
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - name: npm publish with provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          [ -n "$NODE_AUTH_TOKEN" ] || { echo "::error::Secret NPM_TOKEN is not set in the 'release' environment (docs/CICD.md)."; exit 1; }
+          tgz=$(ls dist/*.tgz)
+          tag_args=()
+          if [ "$PRERELEASE" = "true" ]; then tag_args=(--tag next); fi
+          npm publish "$tgz" --provenance --access public "${tag_args[@]}"
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [plan, build]
+    if: needs.plan.outputs.publish == 'true' && needs.plan.outputs.kind == 'python'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: release # must match the environment name in the PyPI trusted publisher
+    permissions:
+      contents: read
+      id-token: write # trusted publishing; no PyPI token is stored anywhere
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          packages-dir: dist/
+
+  github-release:
+    name: GitHub Release
+    needs: [plan, publish-npm, publish-pypi]
+    if: ${{ !cancelled() && needs.plan.outputs.publish == 'true' && (needs.publish-npm.result == 'success' || needs.publish-pypi.result == 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # create the release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.plan.outputs.tag }}
+          KEY: ${{ needs.plan.outputs.key }}
+          NAME: ${{ needs.plan.outputs.name }}
+          VERSION: ${{ needs.plan.outputs.version }}
+          DIR: ${{ needs.plan.outputs.dir }}
+          KIND: ${{ needs.plan.outputs.kind }}
+          PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          prev=$(git tag --list "${KEY}-v*" --sort=-v:refname | grep -vx "$TAG" | head -n1 || true)
+          {
+            if [ "$KIND" = "npm" ]; then echo "Install: \`npm install ${NAME}@${VERSION}\`"; else echo "Install: \`pip install ${NAME}==${VERSION}\`"; fi
+            echo
+            echo "### Changes in \`${DIR}\`"
+            if [ -n "$prev" ]; then
+              git log --no-merges --pretty='- %s (%h)' "${prev}..${TAG}" -- "$DIR"
+            else
+              git log --no-merges --pretty='- %s (%h)' -n 50 "$TAG" -- "$DIR"
+            fi
+          } > notes.md
+          args=()
+          if [ "$PRERELEASE" = "true" ]; then args+=(--prerelease); fi
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "${NAME} ${VERSION}" --notes-file notes.md "${args[@]}"
