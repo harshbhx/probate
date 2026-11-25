@@ -19,6 +19,7 @@ import {
   Play,
   Radio,
   Table2,
+  Terminal,
   Trophy,
   User,
 } from 'lucide-react';
@@ -44,6 +45,7 @@ const GROUPS: Group[] = [
       { icon: Radio, label: 'The live family', note: 'Running on Fly.io Sprites right now', href: liveUrl },
       { icon: Trophy, label: 'Start here, judges', note: 'What to open and try in five minutes', href: '/docs/for-judges' },
       { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#court' },
+      { icon: Terminal, label: 'Run it in your browser', note: 'A GitHub Codespace simulates a family in a minute', href: 'https://codespaces.new/harshbhx/probate?quickstart=1' },
       { icon: Play, label: 'The 90-second video', note: 'One generation fooled, the next one not', href: videoUrl },
     ],
   },
