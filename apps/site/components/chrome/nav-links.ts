@@ -3,7 +3,7 @@ import { githubUrl, liveUrl } from '@/lib/shared';
 
 export const NAV = [
   { label: 'How it works', href: '/#life' },
-  { label: 'The court', href: '/#court' },
+  { label: 'The court', href: '/#will' },
   { label: 'Instincts', href: '/#instincts' },
   { label: 'Docs', href: '/docs' },
 ];
@@ -16,7 +16,7 @@ export const FOOTER: { title: string; links: FootLink[] }[] = [
     links: [
       ...(liveUrl ? [{ label: 'Live family', href: liveUrl }] : []),
       { label: 'How it works', href: '/#life' },
-      { label: 'Try the court', href: '/#court' },
+      { label: 'Try the court', href: '/#will' },
       { label: 'Instincts', href: '/#instincts' },
       { label: 'Evidence', href: '/#evidence' },
     ],

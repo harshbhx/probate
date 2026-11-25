@@ -2,12 +2,13 @@
 import Link from 'next/link';
 import { FamilyFace } from '@probate/faces';
 import { Seal } from '@/components/seal';
+import { BigWord } from '@/components/fx/BigWord';
 import { FOOTER } from './nav-links';
 import { LiveStatus } from './live-status';
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-night">
+    <footer className="overflow-hidden border-t border-line bg-night">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:px-6 md:grid-cols-[1.5fr_repeat(3,1fr)]">
         <div className="max-w-xs">
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-md">
@@ -48,6 +49,9 @@ export function SiteFooter() {
             In memory of every generation that was fooled, so its children would not be.
           </p>
         </div>
+      </div>
+      <div className="relative -mb-[3%] px-2 pt-6 sm:px-4">
+        <BigWord />
       </div>
     </footer>
   );

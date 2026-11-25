@@ -11,6 +11,11 @@ import { CountUp } from '@/components/fx/CountUp';
 import { Reveal } from '@/components/fx/Reveal';
 import { Scramble } from '@/components/fx/Scramble';
 import { Spotlight } from '@/components/fx/Spotlight';
+import { SpotlightCard } from '@/components/fx/SpotlightCard';
+import { Magnet } from '@/components/fx/Magnet';
+import { TextReveal } from '@/components/fx/TextReveal';
+import { Quotes } from '@/components/landing/quotes';
+import { VerdictStack } from '@/components/landing/verdict-stack';
 import { githubUrl, liveUrl } from '@/lib/shared';
 
 // Night Court v7 landing page: one lit courtroom, then the story in order (a day, a will, a trial, a child).
@@ -20,6 +25,12 @@ export default function HomePage() {
     <>
       <Hero />
       <BuiltOn />
+      <TextReveal
+        id="statement"
+        run={1.25}
+        text="An agent that forgets nothing can be fooled by anything. So ours dies every night, and only what survives a trial is passed on."
+        accent={['dies', 'trial']}
+      />
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
         <Section
           id="life"
@@ -36,6 +47,14 @@ export default function HomePage() {
         >
           <Inheritance />
           <div className="mt-14">
+            <h3 className="font-display text-headline text-moon">Three possible verdicts</h3>
+            <p className="mt-2 max-w-2xl text-[17px] leading-relaxed text-mist">Every line of the will ends up in one of these.</p>
+            <div className="mt-8">
+              <VerdictStack />
+            </div>
+            <p className="mt-4 text-[14px] text-dim">Example lines from the simulated run.</p>
+          </div>
+          <div className="mt-14">
             <h3 className="font-display text-headline text-moon">Try the court</h3>
             <p className="mt-2 max-w-2xl text-[17px] leading-relaxed text-mist">
               Pick a test email from the family’s attack suite and see what the code checks really find. Each trick has a
@@ -49,6 +68,15 @@ export default function HomePage() {
               suite. Test addresses use the reserved .example domain.
             </p>
           </div>
+        </Section>
+
+        <Section
+          id="record"
+          title="From the record"
+          lede="No testimonials here, because nobody has used it yet. These are the words the court and the family actually produced."
+        >
+          <Quotes />
+          <p className="mt-4 text-[14px] text-dim">Text from the simulated run.</p>
         </Section>
 
         <Section
@@ -138,8 +166,8 @@ function Button({ href, children, primary }: { href: string; children: React.Rea
       href={href}
       className={
         primary
-          ? 'inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-moon px-6 text-[16px] font-medium text-night transition-colors hover:bg-white'
-          : 'inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-line-strong bg-night-2 px-6 text-[16px] text-moon transition-colors hover:bg-night-3'
+          ? 'inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-moon px-6 sm:w-auto text-[16px] font-medium text-night transition-colors hover:bg-white'
+          : 'inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-line-strong bg-night-2 px-6 text-[16px] text-moon transition-colors hover:bg-night-3 sm:w-auto'
       }
     >
       {children}
@@ -154,7 +182,7 @@ function Hero() {
       <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-10 sm:px-6 md:pb-24 md:pt-20">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16">
           <div>
-            <h1 className="font-display text-[50px] font-[420] leading-[1.0] tracking-[-0.03em] sm:text-[68px] lg:text-[76px]">
+            <h1 className="font-display text-[50px] font-[420] leading-[1.0] tracking-[-0.03em] sm:text-[68px] lg:text-[84px]">
               My agent dies <Scramble text="every night." className="text-gilt" />
             </h1>
             <p className="mt-5 font-display text-[26px] leading-[1.2] text-silver sm:text-[32px]">
@@ -167,19 +195,19 @@ function Hero() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               {liveUrl ? (
-                <Button href={liveUrl} primary>
+                <Magnet className="w-full sm:w-auto"><Button href={liveUrl} primary>
                   Open the live family <ArrowRight size={17} aria-hidden />
-                </Button>
+                </Button></Magnet>
               ) : (
-                <Button href="/docs/quickstart" primary>
+                <Magnet className="w-full sm:w-auto"><Button href="/docs/quickstart" primary>
                   Run it locally <ArrowRight size={17} aria-hidden />
-                </Button>
+                </Button></Magnet>
               )}
               <Button href="/docs">Read the docs</Button>
             </div>
           </div>
           <div className="relative">
-            <Docket />
+            <SpotlightCard className="rounded-2xl"><Docket /></SpotlightCard>
             <div className="pointer-events-none absolute -right-2 -top-9 hidden sm:block lg:-right-5">
               <FamilyFace gen={7} life="alive" mood="happy" instincts={3} size={72} title="Grace, generation 7, alive" />
             </div>
@@ -231,13 +259,13 @@ const STEPS = [
 
 function Inheritance() {
   return (
-    <ol className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
+    <ol className="grid gap-4 md:grid-cols-3">
       {STEPS.map((s) => (
-        <li key={s.n} className="bg-night-2 p-6 sm:p-8">
+        <SpotlightCard as="li" key={s.n} className="rounded-2xl border border-line bg-night-2 p-6 sm:p-8">
           <span className="font-display text-[15px] text-gilt">{s.n}</span>
           <h3 className="mt-3 font-display text-[28px] leading-none text-moon">{s.title}</h3>
           <p className="mt-3 text-[16px] leading-relaxed text-silver">{s.body}</p>
-        </li>
+        </SpotlightCard>
       ))}
     </ol>
   );
@@ -245,7 +273,7 @@ function Inheritance() {
 
 function Tile({ title, body, href, link, children }: { title: string; body: string; href: string; link: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-col rounded-2xl border border-line bg-night-2 p-4 sm:p-6">
+    <SpotlightCard className="flex min-w-0 flex-col rounded-2xl border border-line bg-night-2 p-4 sm:p-6">
       <div className="min-w-0">{children}</div>
       <h3 className="mt-6 font-display text-[28px] leading-none text-moon">{title}</h3>
       <p className="mt-3 text-[16px] leading-relaxed text-silver">{body}</p>
@@ -255,7 +283,7 @@ function Tile({ title, body, href, link, children }: { title: string; body: stri
       >
         {link}
       </Link>
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -379,7 +407,7 @@ function Closing() {
             <FamilyFace gen={7} life="alive" mood="happy" instincts={3} size={76} track title="Grace, generation 7, alive" />
           </span>
         </div>
-        <h2 className="mx-auto mt-10 max-w-3xl font-display text-display-md font-[420] sm:text-display-lg">
+        <h2 className="mx-auto mt-10 max-w-4xl font-display text-[40px] font-[420] leading-[1.05] tracking-[-0.025em] sm:text-[64px]">
           Persistent enough to remember. Disposable enough to die.
         </h2>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
