@@ -45,7 +45,13 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
     else:
         _WORLD = World(
             jev=RealJev(cfg.gateway("typesafe")),
-            llm=RealLLM(cfg.brain, cfg.gateway("ollama"), cfg.gateway("anthropic")),
+            llm=RealLLM(
+                cfg.brain,
+                cfg.gateway("ollama"),
+                cfg.gateway("anthropic"),
+                fallbacks=cfg.brain_fallbacks,
+                groq_url=cfg.gateway("groq"),
+            ),
             mail=RoutedMailbox(
                 RealMailbox(cfg.gateway("agentmail")),
                 {cfg.owner_sender: CloudflareSender(cfg.gateway("cloudflare"), cfg.cf_account_id)},
