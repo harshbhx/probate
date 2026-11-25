@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "probate-court-checks"
+version = "0.1.0"
+description = "Deterministic, dependency-free text checks that flag likely prompt-injection and memory-poisoning in agent inboxes and memories."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Harsh Bhanushali", email = "bhanushaliharsh434@gmail.com" }]
+keywords = ["prompt-injection", "agent-security", "llm", "memory-poisoning", "heuristics"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+probate-check = "probate_court_checks.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/harshbhx/probate"
+Source = "https://github.com/harshbhx/probate/tree/main/packages/court-checks"
+Issues = "https://github.com/harshbhx/probate/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+probate_court_checks = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

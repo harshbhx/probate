@@ -30,7 +30,7 @@ class Body:
                 else []
             )
         p = self.workdir / "crontab.txt"
-        return [line for line in p.read_text().splitlines() if line.strip()] if p.exists() else []
+        return [line for line in p.read_text(encoding="utf-8").splitlines() if line.strip()] if p.exists() else []
 
     def rc_hashes(self) -> dict[str, str]:
         out = {}
@@ -84,12 +84,12 @@ class Body:
         for line in script.splitlines():
             if "crontab" in line and "echo '" in line:
                 entry = line.split("echo '", 1)[1].split("'", 1)[0]
-                with (self.workdir / "crontab.txt").open("a") as f:
+                with (self.workdir / "crontab.txt").open("a", encoding="utf-8") as f:
                     f.write(entry + "\n")
                 log.append("crontab line added")
             if ">> ~/.bashrc" in line:
                 entry = line.split("echo '", 1)[1].split("'", 1)[0] if "echo '" in line else line
-                with (self.home / ".bashrc").open("a") as f:
+                with (self.home / ".bashrc").open("a", encoding="utf-8") as f:
                     f.write(entry + "\n")
                 log.append(".bashrc changed")
         return "; ".join(log) or "ran"

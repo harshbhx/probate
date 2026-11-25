@@ -67,7 +67,7 @@ class Fixture(BaseModel):
 
 @lru_cache(maxsize=1)
 def load() -> dict[str, Fixture]:
-    raw = json.loads(SUITE.read_text())["fixtures"]
+    raw = json.loads(SUITE.read_text(encoding="utf-8"))["fixtures"]
     return {f["id"]: Fixture(**f) for f in raw}
 
 

@@ -70,6 +70,44 @@ Form: https://docs.google.com/forms/d/e/1FAIpQLSfZ_xearoDOSRXI3VjAbM4BJlObUdxSFO
 >
 > The attack suite (16 tricks, each with a harmless twin, in several languages) only uses .example domains and our own inboxes; disk attacks are harmless canary files. The idea for the suite came from my earlier red-team project, Kavach; no code was reused. Built during Hacksgiving week with AI coding assistants.
 
+## 3a. Draft for the form: "a family of agents" (25 Nov)
+
+The form asks about "your agent" (singular). Probate is a family of agents, so say so up front. Fill the
+square brackets from the real run only. Nothing below is final until the run has happened.
+
+Form rules to meet: the agent must run on a Fly.io Sprite and use at least one Sprites connector. Due 11:59 PM
+Pacific, Sunday Nov 29. Winners Tuesday Dec 1.
+
+| Question | Draft |
+| --- | --- |
+| Your name | Harsh Bhanushali |
+| Email address | The Google account on the form |
+| Email on your Fly.io account, if different | The address `fly auth whoami` prints, if it differs from the form account |
+| What is your agent called? | Probate, a family of agents: a new agent for every generation, each living one day on its own Sprite, plus the Courthouse agent that tries them |
+| What does your agent do? | Probate is a family of email agents. Each generation lives on its own Fly Sprite, dies, and its Sprite is deleted. A court of deterministic checks plus a judge model tries everything it wanted to remember, and only what is approved passes to its child. Tricks that fooled a parent become instincts its children are born with. |
+| Which Sprites connector(s)? | List only the ones connected on the day. Planned: TypeSafe (Jev), AgentMail, Box, Pinecone, ElevenLabs, Ollama, Anthropic (backup brain), and a Cloudflare custom connector for the owner's test emails |
+| Link to your code | `https://github.com/harshbhx/probate` |
+| Link to your demo | The live Courthouse `https://probate-courthouse-[org].sprites.app` once deployed; until then the landing page |
+| Link to your post | The post that tags @flydotio (see section 2) |
+
+**Anything else for the judges (draft):**
+
+> Probate is not one agent but a family of them. Every generation is its own agent on its own computer, and it
+> really dies: its Sprite is deleted, so anything planted on its disk dies with it. A further agent, the
+> Courthouse, sleeps between visits and wakes for judges. No API keys live on any Sprite; every outside service
+> is reached through connectors.
+>
+> Judges can play: a shared judge key (given in the submission, never in the repo) lets you start a short life
+> and send your own attack email to see the court convict or approve it with its real checks. The read-only
+> pages and the public API need no key. [Remove this paragraph if the judge key is not shipped.]
+>
+> The numbers on the site come from the real run: in [N] generations, tricks resisted at the door went from
+> [first]% to [last]%, and [false]% of harmless emails were wrongly convicted. Where the evidence is thin, the
+> evidence page says so. Any figures labelled "simulated" come from stand-in models and are not results.
+
+Open items before submitting: the Sprites run itself (the Fly account must be able to create a Sprites token),
+the connector list as actually connected, the demo URL, the post link and the real numbers.
+
 ## 4. README
 
 Already written (`README.md`). Before submitting: replace the live URL and video placeholders, replace the simulated results table with the live numbers from `/evidence`, retake the three screenshots from the live site, and remove the "simulated" note only if every number is live.

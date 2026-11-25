@@ -1,0 +1,48 @@
+name: Bug report
+description: Something in Probate does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not include secrets, tokens or real email addresses.
+        Security problems go through the [private reporting form](https://github.com/harshbhx/probate/security/advisories/new), not here.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Court (layer 1 / layer 2 / instincts)
+        - Courthouse API or scheduler (services/core)
+        - Generation agent
+        - Live site (apps/web)
+        - Landing page and docs (apps/site)
+        - Deploy scripts or CI
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, for example `make sim` then `make api`.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python and Node versions, and whether PROBATE_FAKE=1 was set.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Redact anything private.

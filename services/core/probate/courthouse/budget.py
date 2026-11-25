@@ -44,7 +44,7 @@ class Pricing:
         path = path or REPO_ROOT / "config" / "pricing.yaml"
         if not path.exists():
             return cls()
-        d = yaml.safe_load(path.read_text()) or {}
+        d = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         s = d.get("sprites", {})
         gen, ch = s.get("generation", {}), s.get("courthouse", {})
         p = cls()

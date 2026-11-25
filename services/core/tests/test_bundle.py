@@ -8,16 +8,16 @@ def _names(tmp_path, **kw):
     root = tmp_path / "repo"
     core = root / "services" / "core"
     (core / "probate").mkdir(parents=True)
-    (core / "probate" / "__init__.py").write_text("")
-    (core / ".env").write_text("PROBATE_SPRITES_TOKEN=secret")
+    (core / "probate" / "__init__.py").write_text("", encoding="utf-8")
+    (core / ".env").write_text("PROBATE_SPRITES_TOKEN=secret", encoding="utf-8")
     (core / ".venv" / "lib").mkdir(parents=True)
     (core / "probate" / "__pycache__").mkdir()
     (core / "tests").mkdir()
     (root / "config").mkdir()
-    (root / "config" / "names.yaml").write_text("names: []")
+    (root / "config" / "names.yaml").write_text("names: []", encoding="utf-8")
     dist = root / "apps" / "web" / "dist"
     dist.mkdir(parents=True)
-    (dist / "index.html").write_text("<!doctype html>")
+    (dist / "index.html").write_text("<!doctype html>", encoding="utf-8")
     data = make_bundle(root, **kw)
     return tarfile.open(fileobj=io.BytesIO(data)).getnames()
 

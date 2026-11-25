@@ -1,0 +1,37 @@
+{
+  "name": "probate-client",
+  "version": "0.1.0",
+  "description": "Typed client for the Probate Courthouse public API. Zero dependencies, uses global fetch.",
+  "license": "MIT",
+  "author": "Harsh Bhanushali <bhanushaliharsh434@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harshbhx/probate.git",
+    "directory": "packages/client"
+  },
+  "homepage": "https://github.com/harshbhx/probate/tree/main/packages/client#readme",
+  "bugs": "https://github.com/harshbhx/probate/issues",
+  "keywords": ["probate", "courthouse", "api-client", "typescript"],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/test/client.test.js dist-test/test/contract.test.js",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

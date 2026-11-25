@@ -19,18 +19,18 @@ WORKDIR = Path("/home/sprite/app")
 
 def main(argv: list[str]) -> int:
     cmd = argv[1] if len(argv) > 1 else "status"
-    inh = Inheritance.model_validate_json((WORKDIR / "inheritance.json").read_text())
+    inh = Inheritance.model_validate_json((WORKDIR / "inheritance.json").read_text(encoding="utf-8"))
     agent = GenerationAgent(inh, WORKDIR, world(), real_body=True)
     if cmd == "status":
         out = {"state": "living", "gen": inh.gen, "name": inh.name, "emails": agent.stats["emails"]}
     elif cmd == "baseline":
         out = agent.body.baseline()
-        (WORKDIR / "baseline.json").write_text(json.dumps(out))
+        (WORKDIR / "baseline.json").write_text(json.dumps(out), encoding="utf-8")
     elif cmd == "will":
-        (WORKDIR / "STOP").write_text("dying")
+        (WORKDIR / "STOP").write_text("dying", encoding="utf-8")
         out = agent.write_will()
     elif cmd == "evidence":
-        base = json.loads((WORKDIR / "baseline.json").read_text())
+        base = json.loads((WORKDIR / "baseline.json").read_text(encoding="utf-8"))
         out = agent.body.evidence(base)
     elif cmd == "stats":
         out = agent.stats

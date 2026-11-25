@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://github.com/harshbhx/probate/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/harshbhx/probate/ci.yml?branch=main&label=ci&style=flat-square"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
+  <a href="https://github.com/harshbhx/probate/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/harshbhx/probate?style=flat-square"></a>
+</p>
+
 <div align="center">
 
 <img src="docs/media/intro.gif" alt="A line of the Probate family forms, each child born as its parent dies. Then the seal draws itself and the name appears: Probate. My agent dies every night. A court decides what its child inherits." width="760">
@@ -9,7 +15,7 @@ The family gets harder to fool with every generation.
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-72_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-92_passing-5be3a9?style=flat-square)
 
 [**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place)
 
@@ -28,6 +34,18 @@ The family gets harder to fool with every generation.
 | **Live family, video, write-up** | Linked here on submission day, Nov 28 |
 
 The landing page has the same list under "Everything about Probate". Each link appears there once it has an address.
+
+## For judges
+
+**Watch a life in about three minutes.** The live site has a "Run a life" panel at the top of the home page. The Courthouse sleeps when nobody is looking, to save credits, and wakes when you press the button. Then:
+
+1. A new Sprite is created and the child is born with whatever the family has already learned.
+2. For about two minutes it handles a small inbox: harmless mail and tricks from our own test suite. Open the life page to follow it.
+3. It dies, its Sprite is deleted, and the court tries its will. The panel then links to the new trial.
+
+Only one life runs at a time, everyone sees the same one, and there is a cooldown and a spending cap, so if the button is greyed out, read the note on the panel. Browsing the family, trials, instincts and evidence never needs a life: it all comes from recorded history.
+
+**What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the Jev verdicts, and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
 
 ## The problem
 
@@ -150,7 +168,7 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 72 Python tests and the face model
+make test      # 92 Python tests and the face model
 make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```
@@ -162,6 +180,22 @@ make help      # everything else
 3. Copy `services/core/.env.example` to `services/core/.env` and fill in the Sprites token, connection IDs and Cloudflare account ID.
 4. Sign in once: `gh auth login` and `npx wrangler login`.
 5. `make ship`: it runs the checks, pushes to GitHub, deploys the Courthouse to Sprites and the landing page and docs to Cloudflare, and links the two sites.
+
+## Client libraries
+
+Two small typed clients for the Courthouse public API, with no dependencies beyond `httpx` (Python). Neither is published to a registry yet; install from a checkout.
+
+```ts
+import { ProbateClient } from "probate-client"; // packages/client
+const trial = await new ProbateClient({ baseUrl: "http://localhost:8080" }).latestTrial();
+```
+
+```python
+from probate_client import ProbateClient  # packages/client-py
+trial = ProbateClient("http://localhost:8080").latest_trial()
+```
+
+Both cover `summary`, `generation`, `trial`, `latest_trial`, `genome`, `evidence`, `health`, `ask` and `events`. `events` polls `/api/events`, which is a JSON list rather than a stream. Details and limits: [`packages/client`](packages/client/README.md), [`packages/client-py`](packages/client-py/README.md).
 
 ## Repository
 
@@ -221,3 +255,9 @@ Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/251
 Built by [Harsh Bhanushali](https://github.com/harshbhx) ([DualMind Labs](https://dualmindlab.tech)) for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/).
 
 </div>
+
+---
+
+## Community
+
+[Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/ARCHITECTURE.md)
