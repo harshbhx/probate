@@ -30,6 +30,7 @@ Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At m
 | Live site | React 19, Vite 8, TypeScript 7, Tailwind v4, `motion`, Radix (dialog, tabs, tooltip), `lucide-react`, Fontsource (Newsreader, Geist). Served by the Courthouse from `apps/web/dist` |
 | Landing + docs | Fumadocs 16 on Next.js 16 (static export), same tokens, deployed to Cloudflare with Wrangler (`apps/site/wrangler.jsonc`) |
 | Faces | `packages/faces`: the family portrait model and component, shared by both sites |
+| Design tokens | `packages/tokens`: Night Court v3 colours, type scale and base rules (`theme.css`, `base.css`), imported by both sites. Change colours here, never in an app |
 | Sprites | REST via `httpx` in `probate/adapters/sprites.py` (shapes in `docs/09-API-REFERENCE.md`) |
 | Vendors | `typesafe-sdk` (Jev), `agentmail`, `pinecone`, `anthropic`, plain `httpx` for Ollama Cloud, Box and ElevenLabs, all through the connector gateway |
 | Storage | SQLite on the Courthouse (`/home/sprite/data/probate.db`) for the UI; Box is the archive |
@@ -47,6 +48,7 @@ probate/
   config/               names.yaml, owner.example.yaml (owner.yaml is gitignored)
   fixtures/             suite-v1.json (the attack suite with harmless twins)
   packages/faces/       family faces: model.ts (inheritance, tested), face.tsx, faces.css
+  packages/tokens/      design tokens shared by both sites (docs/04-DESIGN.md)
   apps/site/            landing page and docs (Fumadocs); content/docs/*.mdx, components/landing/*
   apps/web/             the live-family site
     src/lib/            api.ts (types mirror views.py), hooks.ts, format.ts

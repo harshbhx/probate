@@ -6,7 +6,7 @@ Probate is a personal email agent that lives one day at a time, each life on its
 
 Live family: `https://<courthouse>.sprites.app` · Landing and docs: `https://probate-site.<you>.workers.dev` · Video: `<link>` · Built for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/)
 
-![The landing page: "My agent dies every night", with Grace, a living generation, beside it](docs/images/landing.jpg)
+![The landing page: "My agent dies every night", above a real trial page with Grace, the living generation, peeking over its edge](docs/images/landing.jpg)
 
 ## A family you can see
 
@@ -74,7 +74,7 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live site on :5173
 make site      # landing page and docs on :3001
-make test      # 64 Python tests and the face model
+make test      # 66 Python tests and the face model
 make help      # everything else
 ```
 
@@ -86,8 +86,9 @@ To go live: copy `services/core/.env.example` to `services/core/.env`, fill in t
 apps/web/        the live-family site (React 19, Vite, Tailwind v4, motion, Radix), served by the Courthouse
 apps/site/       landing page and docs (Fumadocs on Next.js, static), on Cloudflare
 packages/faces/  family faces, shared by both sites
+packages/tokens/ design tokens (Night Court v3), shared by both sites
 services/core/   the Courthouse, the court and the generation agent (Python, FastAPI)
-scripts/         deploy.py, ship.sh, export_site_data.py
+scripts/         deploy.py, ship.sh, export_site_data.py, product_shots.py
 docs/            specs: overview, tech spec, court spec, attack suite, design, screens, runbook
 ```
 

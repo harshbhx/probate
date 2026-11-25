@@ -2,7 +2,7 @@
 PY      := services/core/.venv/bin/python
 SIMDATA := .data/sim
 
-.PHONY: help setup dev api web site site-data test lint sim build serve deploy deploy-check site-deploy ship clean
+.PHONY: help setup dev api web site site-data site-shots test lint sim build serve deploy deploy-check site-deploy ship clean
 
 help: ## Show this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
@@ -54,6 +54,9 @@ deploy: ## Deploy or update the Courthouse Sprite
 
 site-data: ## Re-export the court examples the landing page shows (from the real layer-1 code)
 	$(PY) scripts/export_site_data.py
+
+site-shots: ## Re-capture the landing page product shots (needs make serve running and Playwright)
+	python3 scripts/product_shots.py
 
 site-deploy: ## Build the landing + docs and deploy them to Cloudflare (needs `npx wrangler login`)
 	npm run build -w @probate/site
