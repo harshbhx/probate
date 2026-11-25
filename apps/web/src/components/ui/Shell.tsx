@@ -7,6 +7,9 @@ import type { Summary } from "../../lib/api";
 import { Seal } from "./Seal";
 import { LivePill } from "./LivePill";
 
+// Set at build time by scripts/ship.sh once the docs site is deployed.
+const DOCS_URL: string = import.meta.env.VITE_DOCS_URL ?? "";
+
 const LINKS = [
   { to: "/", label: "Family", end: true },
   { to: "/trial", label: "Trials" },
@@ -64,6 +67,11 @@ export function Nav({ summary }: { summary: Summary | null }) {
             </li>
           ))}
         </ul>
+        {DOCS_URL && (
+          <a href={DOCS_URL} className="hidden rounded-lg px-3 py-2 text-[14px] text-mist transition-colors hover:text-moon md:block">
+            Docs
+          </a>
+        )}
         {summary?.living && <LivePill gen={summary.living} compact />}
       </nav>
     </header>
@@ -136,7 +144,15 @@ export function Footer() {
           <Seal size={22} />
           <span>Probate, the family of Harsh's agents. Every generation lives on its own Fly.io Sprite.</span>
         </div>
-        <p className="text-dim">Built for Fly.io Hacksgiving 2026 by Harsh Bhanushali</p>
+        <p className="text-dim">
+          {DOCS_URL && (
+            <>
+              <a href={DOCS_URL} className="text-mist hover:text-moon">How it works</a>
+              <span aria-hidden> · </span>
+            </>
+          )}
+          Built for Fly.io Hacksgiving 2026 by Harsh Bhanushali
+        </p>
       </div>
     </footer>
   );
