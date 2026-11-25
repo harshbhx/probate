@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Gavel, Loader2, Moon, Play } from "lucide-react";
-import { FamilyFace } from "@probate/faces";
+import { FamilyFace } from "kinfaces/react";
 import type { Live, Summary } from "../../lib/api";
 import { cx, pad } from "../../lib/format";
 import { useLive, useNow } from "../../lib/hooks";
