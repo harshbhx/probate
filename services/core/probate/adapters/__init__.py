@@ -55,6 +55,8 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
                 cfg.gateway("anthropic"),
                 fallbacks=cfg.brain_fallbacks,
                 groq_url=cfg.gateway("groq"),
+                cloudflare_url=cfg.gateway("cloudflare"),
+                cloudflare_account_id=cfg.cf_account_id,
             ),
             mail=RoutedMailbox(
                 RealMailbox(cfg.gateway("agentmail")),
