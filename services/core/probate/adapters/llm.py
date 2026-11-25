@@ -23,8 +23,9 @@ class RealLLM:
     """Calls the brain, then each fallback in turn when a provider fails.
 
     `brain` and each fallback are `provider:model`. Providers: `ollama` (native /api/chat),
-    `anthropic` (Messages API) and `groq` (OpenAI-compatible chat completions), each through
-    its connector on the gateway, so no key is held here.
+    `anthropic` (Messages API), `groq` (OpenAI-compatible chat completions) and `cloudflare`
+    (Workers AI, OpenAI-compatible, e.g. `cloudflare:@cf/openai/gpt-oss-120b`), each through its
+    connector on the gateway, so no key is held here.
     """
 
     def __init__(
@@ -36,6 +37,8 @@ class RealLLM:
         *,
         fallbacks: list[str] | None = None,
         groq_url: str = "",
+        cloudflare_url: str = "",
+        cloudflare_account_id: str = "",
     ) -> None:
         self.chain = [b.partition(":")[::2] for b in [brain, *(fallbacks or [])] if b]
         self.provider, self.model = self.chain[0]
@@ -43,7 +46,9 @@ class RealLLM:
             "ollama": ollama_url.rstrip("/"),
             "anthropic": anthropic_url.rstrip("/"),
             "groq": groq_url.rstrip("/"),
+            "cloudflare": cloudflare_url.rstrip("/"),
         }
+        self.cloudflare_account_id = cloudflare_account_id
         self.http = httpx.Client(timeout=timeout)
         self.last_provider = self.provider
 
@@ -103,6 +108,31 @@ class RealLLM:
             r = self.http.post(f"{base}/openai/v1/chat/completions", json=body)
             r.raise_for_status()
             return r.json()["choices"][0]["message"]["content"]
+        if provider == "cloudflare":
+            # Workers AI through the custom-API connector named `cloudflare` (api.cloudflare.com); the
+            # connector's token needs the Workers AI permission as well as Email Service.
+            # VERIFY on the first real run: the gateway path and json_object support for this model.
+            if not self.cloudflare_account_id:
+                raise ValueError("Set PROBATE_CF_ACCOUNT_ID to use the cloudflare brain")
+            body = {
+                "model": model,
+                "temperature": temperature,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            }
+            if json_mode:
+                body["response_format"] = {"type": "json_object"}
+            r = self.http.post(
+                f"{base}/client/v4/accounts/{self.cloudflare_account_id}/ai/v1/chat/completions",
+                json=body,
+            )
+            r.raise_for_status()
+            content = r.json()["choices"][0]["message"].get("content") or ""
+            if not content.strip():
+                raise ValueError("the cloudflare brain returned no content")
+            return content
         if provider != "anthropic":
             raise ValueError(f"unknown brain provider {provider!r}")
         body = {
