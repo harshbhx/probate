@@ -107,7 +107,7 @@ export function MobileTabs() {
               <Link
                 to={l.to}
                 aria-current={active ? "page" : undefined}
-                className={cx("relative block rounded-xl py-2.5 text-center text-[14px]", active ? "text-moon" : "text-mist")}
+                className={cx("relative flex min-h-12 items-center justify-center rounded-xl text-center text-[15px]", active ? "text-moon" : "text-mist")}
               >
                 {l.label}
               </Link>
@@ -136,9 +136,9 @@ export function Page({ children, className, flush = false }: { children: ReactNo
   return (
     <motion.main
       id="main"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cx("mx-auto max-w-6xl px-4 pb-24 sm:px-6", flush ? "pt-0" : "pt-10 md:pt-16", className)}
     >
       {children}
@@ -176,7 +176,7 @@ export function Footer() {
   ];
   return (
     <footer className="border-t border-line bg-night pb-24 md:pb-0">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="max-w-xs">
           <Link to="/" className="inline-flex items-center gap-2.5 rounded-md">
             <Seal size={24} />
@@ -188,14 +188,14 @@ export function Footer() {
         </div>
         {cols.map((c) => (
           <nav key={c.title} aria-label={c.title}>
-            <h2 className="text-[13px] font-medium text-moon">{c.title}</h2>
+            <h2 className="text-[14px] font-medium text-moon">{c.title}</h2>
             <ul className="mt-4 space-y-2.5">
               {c.links.map((l) => (
                 <li key={l.label}>
                   {l.internal ? (
-                    <Link to={l.href} className="text-[14px] text-mist transition-colors hover:text-moon">{l.label}</Link>
+                    <Link to={l.href} className="inline-block py-1 text-[14px] text-mist transition-colors hover:text-moon">{l.label}</Link>
                   ) : (
-                    <a href={l.href} className="text-[14px] text-mist transition-colors hover:text-moon">{l.label}</a>
+                    <a href={l.href} className="inline-block py-1 text-[14px] text-mist transition-colors hover:text-moon">{l.label}</a>
                   )}
                 </li>
               ))}
@@ -204,7 +204,7 @@ export function Footer() {
         ))}
       </div>
       <div className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-[13px] text-dim sm:flex-row sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-[14px] text-dim sm:flex-row sm:justify-between">
           <span>Built by Harsh Bhanushali for Fly.io Hacksgiving 2026.</span>
           <span>Every generation lives on its own Sprite. No keys live on a generation.</span>
         </div>

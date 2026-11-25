@@ -26,7 +26,7 @@ export function Stamp({ verdict, live = false, className }: { verdict: keyof typ
         transition={{ type: "spring", stiffness: 520, damping: 22 }}
         style={{ rotate: -4 }}
         className={cx(
-          "relative z-10 inline-flex select-none items-center rounded-md border-2 px-3 py-1.5 font-mono text-[12px] font-semibold tracking-[0.14em]",
+          "relative z-10 inline-flex select-none items-center rounded-md border-2 px-3 py-1.5 font-mono text-[13px] font-semibold tracking-[0.14em]",
           STYLES[verdict],
           className,
         )}

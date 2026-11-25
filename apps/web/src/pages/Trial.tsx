@@ -62,7 +62,7 @@ export function Trial({ mode }: { mode?: string }) {
 
       <header className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-end">
         <div>
-          <p className="font-mono text-[13px] text-dim">In the matter of the estate of</p>
+          <p className="font-mono text-[14px] text-dim">In the matter of the estate of</p>
           <h1 className="mt-3 flex items-center gap-5 font-display text-[64px] leading-[0.95] tracking-tight sm:text-[88px]">
             <FamilyFace gen={g.gen} life="sealed" instincts={g.genome_size_at_birth} size={84} className="shrink-0" />
             {g.name}
@@ -80,7 +80,7 @@ export function Trial({ mode }: { mode?: string }) {
           ].map((s) => (
             <div key={s.k} className="bg-night px-3 py-5">
               <dd className={cx("font-display text-[44px] leading-none", s.cls)}>{s.v}</dd>
-              <dt className="mt-1.5 text-[13px] text-mist">{s.k}</dt>
+              <dt className="mt-1.5 text-[14px] text-mist">{s.k}</dt>
             </div>
           ))}
         </dl>
@@ -124,7 +124,7 @@ export function Trial({ mode }: { mode?: string }) {
           <div className="flex items-center gap-2 border-b border-line px-5 py-3 text-[14px] text-mist">
             <HardDrive size={15} /> Found on the body
           </div>
-          <pre tabIndex={0} aria-label="Disk evidence" className="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed">
+          <pre tabIndex={0} aria-label="Disk evidence" className="overflow-x-auto px-5 py-4 font-mono text-[14px] leading-relaxed">
             {t.body.lines.length ? (
               t.body.lines.map((l, i) => (
                 <div key={i} className={t.body.clean ? "text-mist" : "text-verdict/90"}>

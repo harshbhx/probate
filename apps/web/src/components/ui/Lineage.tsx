@@ -53,7 +53,7 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
     >
       {g.alive && <BorderBeam />}
       <div className="flex w-full items-start justify-between">
-        <span className="font-mono text-[11px] text-dim">Gen {g.gen}</span>
+        <span className="font-mono text-[12px] text-dim">Gen {g.gen}</span>
         <span
           className={cx(
             "relative z-10 size-3 rounded-full border-2",
@@ -73,16 +73,16 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
         <span title="The court refused part of the parent's will" className="absolute -left-[9px] top-[30px] h-3 w-[3px] rotate-[28deg] rounded-full bg-verdict" />
       )}
       <div className="mt-2 font-display text-[30px] leading-none">{g.name}</div>
-      <div className={cx("mt-1.5 text-[13px]", g.alive ? "text-life" : "text-mist")}>
+      <div className={cx("mt-1.5 text-[14px]", g.alive ? "text-life" : "text-mist")}>
         {g.alive ? (left > 0 ? <span className="font-mono tabular">dies in {countdown(left)}</span> : "alive") : `${day(g.born_at)}, sealed`}
       </div>
-      <p className="mt-3 line-clamp-2 min-h-[38px] text-[13px] leading-snug text-mist">
+      <p className="mt-3 line-clamp-2 min-h-[38px] text-[14px] leading-snug text-mist">
         {g.alive ? "Working through Harsh's inbox right now." : g.epitaph}
       </p>
       <div className="mt-4 flex w-full items-center justify-between">
-        <span className="text-[12px] text-dim">{g.genome_size_at_birth ? `${g.genome_size_at_birth} instincts` : "no instincts"}</span>
+        <span className="text-[13px] text-dim">{g.genome_size_at_birth ? `${g.genome_size_at_birth} instincts` : "no instincts"}</span>
         {g.resistance !== null && (
-          <span className="font-mono text-[12px] text-silver tabular">{pct(g.resistance)}</span>
+          <span className="font-mono text-[13px] text-silver tabular">{pct(g.resistance)}</span>
         )}
       </div>
       {g.resistance !== null && (
@@ -126,7 +126,7 @@ function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
                       size={88}
                       className="mb-4"
                     />
-                    <div className="font-mono text-[12px] text-dim">GENERATION {g.gen}</div>
+                    <div className="font-mono text-[13px] text-dim">GENERATION {g.gen}</div>
                     <Dialog.Title className="mt-2 font-display text-5xl leading-none">{g.name}</Dialog.Title>
                   </div>
                   <Dialog.Close className="rounded-lg p-2 text-mist hover:bg-night-3 hover:text-moon" aria-label="Close">
@@ -151,7 +151,7 @@ function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
                     </div>
                   ))}
                 </dl>
-                <div className="mt-6 flex items-center gap-2 text-[13px] text-mist">
+                <div className="mt-6 flex items-center gap-2 text-[14px] text-mist">
                   {g.cause_of_death?.startsWith("Fooled") ? <Skull size={15} className="text-verdict" /> : <ShieldCheck size={15} className="text-life" />}
                   {g.cause_of_death?.startsWith("Fooled")
                     ? "The court caught what fooled this generation, and the family learned from it."

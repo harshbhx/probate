@@ -52,7 +52,7 @@ export function Generation({ mode }: { mode?: string }) {
           <div className={cx("card relative overflow-hidden p-7", g.alive && "border-life/30")}>
             {g.alive && <BorderBeam size={120} />}
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] text-dim">GENERATION {g.gen}</span>
+              <span className="font-mono text-[13px] text-dim">GENERATION {g.gen}</span>
               <Seal size={30} />
             </div>
             <div className="mt-6 flex justify-center">
@@ -86,7 +86,7 @@ export function Generation({ mode }: { mode?: string }) {
               ].map((s) => (
                 <div key={s.k} className="bg-night-2 px-4 py-3.5">
                   <dd className="font-display text-[30px] leading-none">{s.v}</dd>
-                  <dt className="mt-1 text-[13px] text-mist">{s.k}</dt>
+                  <dt className="mt-1 text-[14px] text-mist">{s.k}</dt>
                 </div>
               ))}
             </dl>
@@ -102,7 +102,7 @@ export function Generation({ mode }: { mode?: string }) {
               <h2 className="text-[14px] text-mist">Born knowing</h2>
               <ul className="mt-3 flex flex-wrap gap-2">
                 {g.instincts_at_birth.map((i) => (
-                  <li key={i.name} className="inline-flex items-center gap-1.5 rounded-lg border border-gilt/25 bg-gilt/[0.05] px-2.5 py-1 text-[13px] text-gilt">
+                  <li key={i.name} className="inline-flex items-center gap-1.5 rounded-lg border border-gilt/25 bg-gilt/[0.05] px-2.5 py-1 text-[14px] text-gilt">
                     <span className="size-1.5 rotate-45 bg-gilt" />
                     {humanize(i.name)}
                   </li>
@@ -167,7 +167,7 @@ export function Generation({ mode }: { mode?: string }) {
                 {g.events.map((e, i) => (
                   <li key={i} className="relative grid grid-cols-[12px_56px_1fr] items-baseline gap-3 text-[15px]">
                     <span className={cx("relative top-[1px] size-[11px] rounded-full border-2 border-night", KIND_DOT[e.kind] ?? "bg-mist/60")} />
-                    <time className="font-mono text-[13px] text-dim">{clock(e.ts)}</time>
+                    <time className="font-mono text-[14px] text-dim">{clock(e.ts)}</time>
                     <span className="min-w-0 text-silver [overflow-wrap:anywhere]">{e.text}</span>
                   </li>
                 ))}
@@ -194,7 +194,7 @@ function DeathMark({ dead, children }: { dead: boolean; children: ReactNode }) {
 
 function EulogyPlayer({ src }: { src: string }) {
   return (
-    <div className="flex items-center gap-2 text-[13px] text-mist">
+    <div className="flex items-center gap-2 text-[14px] text-mist">
       <Volume2 size={16} />
       <audio controls preload="none" src={src} className="h-9 max-w-[220px]" aria-label="Listen to the eulogy" />
     </div>

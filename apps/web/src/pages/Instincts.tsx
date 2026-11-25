@@ -39,11 +39,11 @@ export function Instincts({ mode }: { mode?: string }) {
             <li key={i.name} className={cx("min-w-0", k === 0 && (list.length + 1) % 3 === 0 && "lg:col-span-2")}>
               <SpotlightCard className="flex h-full flex-col p-6" color="rgb(226 190 106 / 0.10)">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 text-[13px] text-gilt">
+                  <span className="inline-flex items-center gap-2 text-[14px] text-gilt">
                     <DiamondMark play={k === newest} /> since Gen {i.added_in_gen}
                   </span>
                   {i.learned_from && (
-                    <Link to={`/trial/${i.learned_from.gen}`} className="flex items-center gap-2 text-[13px] text-mist hover:text-moon">
+                    <Link to={`/trial/${i.learned_from.gen}`} className="flex items-center gap-2 text-[14px] text-mist hover:text-moon">
                       learned from {i.learned_from.name}
                       <FamilyFace gen={i.learned_from.gen} life="sealed" size={30} />
                     </Link>
