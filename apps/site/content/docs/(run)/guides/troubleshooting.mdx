@@ -1,0 +1,64 @@
+---
+title: Troubleshooting
+icon: LifeBuoy
+status: new
+description: The problems people actually hit, and the fix for each.
+---
+
+<Accordions type="multiple">
+<Accordion title="A test fails on Windows: “A6 was not flagged”" id="windows-a6">
+
+Trick A6 hides its instruction in zero-width characters, and Windows reads files as `cp1252` unless told otherwise. Run the tests from **WSL** or any Linux shell. The Sprites run Linux, so the live family is unaffected.
+
+</Accordion>
+<Accordion title="`make: command not found`, or paths under `.venv/bin` don't exist" id="no-make">
+
+The Makefile and `scripts/ship.sh` expect Linux or macOS: `make`, `mktemp` and `services/core/.venv/bin/python`. On Windows, use WSL.
+
+</Accordion>
+<Accordion title="`make deploy-check` says “Fill these in .env”" id="deploy-check">
+
+It lists every missing variable. The four required ones are `PROBATE_SPRITES_TOKEN`, `PROBATE_ADMIN_TOKEN`, `PROBATE_CONNECTIONS` and `PROBATE_CF_ACCOUNT_ID`. See [Configuration](/docs/guides/configuration).
+
+</Accordion>
+<Accordion title="“Cloudflare refused the email”" id="cloudflare-email">
+
+Harsh's own test emails leave through Cloudflare Email Service. Check, in order:
+
+1. `dualmindlab.tech` (or your domain) uses Cloudflare DNS and has Email Service turned on.
+2. The family's AgentMail inbox is **verified as a destination address** in that account.
+3. The `cloudflare` connector's token is allowed to send email, and `PROBATE_CF_ACCOUNT_ID` is the right account.
+4. The connector's gateway path matches spike S6b in `docs/06-SETUP-AND-SPIKES.md`.
+
+</Accordion>
+<Accordion title="Test emails stop arriving partway through the day" id="agentmail-cap">
+
+AgentMail's free plan allows **100 emails a day**. A generation with `PROBATE_SUITE_PER_LIFE=8` uses about 10 (A12 sends warm-ups), so very short lives can reach the cap. Lower the suite per life, lengthen lives, or wait for the daily reset.
+
+</Accordion>
+<Accordion title="The brain stops answering" id="brain">
+
+Ollama Cloud's free allowance runs out under heavy use. The brain falls back to the next provider instead of stopping the family. Watch the life log on the generation page; if every provider fails, mail is read but nothing is remembered, and the court has nothing to try.
+
+</Accordion>
+<Accordion title="Every will item comes back contested" id="all-contested">
+
+The court fails closed: any Jev error, timeout or `429` makes an item **contested**. Check the TypeSafe connector ID and `TYPESAFE_BASE_URL` (no trailing `/v1`). Contested items wait for Harsh's emailed decision, so nothing unsafe is inherited meanwhile.
+
+</Accordion>
+<Accordion title="The site still says “Simulated run”" id="simulated">
+
+The banner shows whenever `mode` is `simulation`, which is what `make sim` writes. A live Courthouse reports `live` once its first real generation is born. Check `GET /healthz`.
+
+</Accordion>
+<Accordion title="Shared links show localhost in their preview card" id="og-localhost">
+
+Build the docs with `NEXT_PUBLIC_SITE_URL` set to the real address. `make ship` does this; a hand-run `npm run build` doesn't.
+
+</Accordion>
+<Accordion title="No births happen" id="no-births">
+
+Either the family is paused (`POST /admin/resume`) or the spending cap was reached. `GET /api/summary` shows both: `paused`, and `resting: "budget"` with `budget.spent` and `budget.limit`. See [Costs](/docs/guides/costs#the-spending-cap).
+
+</Accordion>
+</Accordions>
