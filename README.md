@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="https://github.com/harshbhx/probate/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/harshbhx/probate/ci.yml?branch=main&label=ci&style=flat-square"></a>
+  <a href="https://github.com/harshbhx/probate/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/harshbhx/probate?style=flat-square"></a>
+</p>
+
 <div align="center">
 
 <img src="design/logo-wordmark.svg" alt="Probate" width="240">
@@ -202,3 +207,9 @@ Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/251
 Built by [Harsh Bhanushali](https://github.com/harshbhx) ([DualMind Labs](https://dualmindlab.tech)) for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/).
 
 </div>
+
+---
+
+## Community
+
+[Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/ARCHITECTURE.md)
