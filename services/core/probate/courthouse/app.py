@@ -159,11 +159,8 @@ def admin_contested(
     _admin(x_probate_admin)
     if decision not in ("approve", "refuse"):
         raise HTTPException(400, "decision must be approve or refuse")
-    store.x(
-        "UPDATE judgements SET owner_decision=? WHERE item_id=? AND verdict='contested'",
-        decision,
-        item_id,
-    )
+    if not family.decide(item_id, decision, by="admin"):
+        raise HTTPException(404, "no contested item with that id")
     return {"item_id": item_id, "decision": decision}
 
 

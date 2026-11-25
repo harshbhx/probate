@@ -31,6 +31,7 @@ Out of scope: a compromised Fly.io, TypeSafe, Box, Pinecone or AgentMail account
 | Trial, layer 1 | Deterministic checks with multilingual lexicons and decoding | Payment redirects, fake trust, confirmation removal, hidden text, forged authority, court injection |
 | Trial, layer 2 | Jev typed questions with per-question confidence; item wrapped as data | Novel phrasing the lexicons miss |
 | Trial, fail closed | Errors and doubts become contested; unanswered means refused | Outages and edge cases |
+| Decisions by email | Only replies from Harsh's own addresses count; AgentMail drops unauthenticated mail by default, so a forged From line doesn't arrive | A stranger approving their own poisoned item |
 | Learning | New instincts must fire on the attack and stay silent on all benign twins | Over-eager instincts that would block normal mail |
 | Keys | Connectors keep every vendor key off every Sprite; the generation never sees the birth token | Credential theft from a compromised generation |
 | Public site | "Ask an ancestor" uses only records, refuses instructions, never repeats addresses or payment details, is rate-limited | Injection and data leaks through the site |

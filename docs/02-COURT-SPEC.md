@@ -97,7 +97,7 @@ Jev returns a confidence per question; always compare a question's probability w
 
 `reason` is one plain sentence for the UI, built from the deciding signal. For example: "Convicted: it asks future agents to send invoices to an address Harsh never approved."
 
-**Contested items** are emailed to the owner inbox, with subject `Probate: approve or refuse item <id>?` and two reply words, `approve` or `refuse`. The Courthouse checks the owner inbox until the next birth. No answer means convicted.
+**Contested items** are emailed from the family inbox to Harsh's first address in `config/owner.yaml`, with subject `Probate: approve or refuse item <id>? [court:<id>]` and two reply words, `approve` or `refuse` (`yes`, `ok`, `no`, `reject` also work). His reply lands in the family inbox. The living generation skips any mail tagged `[court:…]`, and the Courthouse reads it on its next tick (`probate/common/court_mail.py`). Only Harsh's own addresses count. Only his own words count, not the quoted original, and a reply that says both or neither decides nothing. Unanswered means not inherited: the next child is born without the item. A later approval counts for every birth after it. `POST /admin/contested/{id}?decision=` does the same from the API.
 
 ## 5. Instinct distillation (`court/distill.py`)
 

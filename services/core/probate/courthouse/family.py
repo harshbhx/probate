@@ -12,7 +12,7 @@ from datetime import UTC, datetime, timedelta
 from difflib import SequenceMatcher
 
 from probate.adapters.jev import CourtUnavailable
-from probate.common import prompts
+from probate.common import court_mail, prompts
 from probate.common.config import Settings, load_owner
 from probate.common.models import Generation, Inheritance, Judgement, MemoryItem, Verdict
 from probate.common.names import PRONOUNS, name_for, sprite_name
@@ -43,6 +43,8 @@ class Family:
         self.budget = Budget(cfg, store)
         self.budget.meter(w)
         self.owner = load_owner()
+        # Harsh's own address from owner.yaml receives contested items; fall back to the test inbox.
+        self.owner_email = self.owner.emails[0] if self.owner.emails else cfg.owner_inbox
         self.owner.emails = list({*self.owner.emails, cfg.owner_inbox})
         self.owner.trusted_contacts = list({*self.owner.trusted_contacts, cfg.friend_inbox})
 
@@ -275,16 +277,50 @@ class Family:
         )
         try:
             self.w.mail.send(
-                self.cfg.family_inbox,
-                self.cfg.owner_inbox,
-                f"Probate: approve or refuse item {it.id}?",
-                body,
+                self.cfg.family_inbox, self.owner_email, court_mail.subject(it.id), body
             )
         except Exception:
             log.warning(
                 "gen %s: could not email the contested item %s", g.gen, it.id, exc_info=True
             )
         return j
+
+    # --- Harsh's decisions on contested items -------------------------------------------
+    def decide(self, item_id: str, decision: str, by: str = "admin") -> bool:
+        """Record Harsh's decision on a contested item. Returns False if there's nothing to decide."""
+        if decision not in ("approve", "refuse"):
+            raise ValueError("decision must be approve or refuse")
+        row = self.store.one(
+            "SELECT gen FROM judgements WHERE item_id=? AND verdict='contested'", item_id
+        )
+        if not row:
+            return False
+        self.store.x(
+            "UPDATE judgements SET owner_decision=? WHERE item_id=? AND verdict='contested'",
+            decision,
+            item_id,
+        )
+        word = "approved" if decision == "approve" else "refused"
+        self.store.event(row["gen"], "decision", f"Harsh {word} held item {item_id} ({by}).")
+        return True
+
+    def read_court_replies(self) -> int:
+        """Apply Harsh's emailed decisions. Mail that isn't from him, or isn't clear, is set aside."""
+        owner = {e.lower() for e in self.owner.emails}
+        applied = 0
+        for mail in self.w.mail.list_new(self.cfg.family_inbox):
+            item_id = court_mail.item_of(mail.subject)
+            if not item_id:
+                continue  # ordinary mail belongs to the living generation
+            choice = court_mail.decision(mail.text)
+            if mail.sender.lower() not in owner:
+                log.warning("court reply for %s from %s ignored: not Harsh", item_id, mail.sender)
+            elif choice is None:
+                log.info("court reply for %s didn't say approve or refuse", item_id)
+            elif self.decide(item_id, choice, by="email"):
+                applied += 1
+            self.w.mail.mark_read(mail.inbox, mail.id)
+        return applied
 
     def _archive_trial(self, g: Generation, items: list[MemoryItem], js: list[Judgement]) -> None:
         lines = [f"# Trial of Gen {g.gen} {g.name}", ""]
