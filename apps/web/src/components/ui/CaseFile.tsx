@@ -35,7 +35,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
           {c.verdict !== "approved" && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-silver">{c.reason}</p>}
         </div>
         <div className="shrink-0 sm:pt-1">
-          <Stamp verdict={c.verdict} live={live && c.verdict === "convicted"} />
+          <Stamp verdict={c.verdict} live={live} />
         </div>
       </div>
 
