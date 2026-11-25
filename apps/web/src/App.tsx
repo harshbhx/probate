@@ -10,6 +10,7 @@ import { Trial, TrialIndex } from "./pages/Trial";
 import { Generation } from "./pages/Generation";
 import { Instincts } from "./pages/Instincts";
 import { Evidence } from "./pages/Evidence";
+import { Judges } from "./pages/Judges";
 
 function ScrollTop() {
   const { pathname } = useLocation();
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/gen/:gen" element={<Generation mode={mode} />} />
         <Route path="/instincts" element={<Instincts mode={mode} />} />
         <Route path="/evidence" element={<Evidence summary={summary} />} />
+        <Route path="/judges" element={<Judges summary={summary} />} />
         <Route
           path="*"
           element={

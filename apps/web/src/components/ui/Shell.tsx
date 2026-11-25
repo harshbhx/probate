@@ -18,6 +18,7 @@ const LINKS = [
   { to: "/trial", label: "Trials" },
   { to: "/instincts", label: "Instincts" },
   { to: "/evidence", label: "Evidence" },
+  { to: "/judges", label: "Judges" },
 ];
 
 export function Nav({ summary }: { summary: Summary | null }) {
