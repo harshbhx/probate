@@ -1,0 +1,16 @@
+// Production deploy of the landing page and docs: the same Worker as wrangler.jsonc, plus the custom
+// domain. Previews deploy with wrangler.jsonc and another name, so they never claim this domain.
+//   npx wrangler deploy --config wrangler.production.jsonc
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "probate-site",
+  "compatibility_date": "2026-11-20",
+  "assets": {
+    "directory": "./out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [{ "pattern": "probate.dualmindlab.tech", "custom_domain": true }]
+}

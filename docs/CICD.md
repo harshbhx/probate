@@ -37,6 +37,8 @@ flowchart LR
 | `actionlint.yml` | pull requests and pushes touching `.github/`, manual | contents read | none | Lints the workflows (and their shell through shellcheck). |
 | `github-packages.yml` | manual only | contents read, packages write | none (uses the workflow's own `GITHUB_TOKEN`) | Publishes scoped mirror copies of the npm packages (`@harshbhx/kinfaces`, `@harshbhx/probate-client`) to GitHub Packages. The unscoped names are meant for npm; GitHub's registry only accepts names scoped to the owner, so the scope is added at publish time only. Python packages cannot go to GitHub Packages (use PyPI). |
 
+The production site is `https://probate.dualmindlab.tech` (a Cloudflare custom domain on the `probate-site` Worker, set by `apps/site/wrangler.production.jsonc`; `deploy-site.yml` deploys with that file, while previews use `wrangler.jsonc` under other names so they never claim the domain). The `workers.dev` address stays on too.
+
 Shared pieces: `.github/actions/setup-web` (Node, npm cache, `npm ci`), `.github/actions/setup-core` (Python, pip cache, editable install of `services/core`).
 
 All workflows set `permissions: {}` at the top and grant only what each job needs, set `timeout-minutes` on every job, use concurrency groups, and cache npm and pip. Every third-party action is pinned to a full commit SHA with its tag in a comment. Pinned actions are bumped by hand (there is no Dependabot config on purpose, so bots do not appear as contributors). Wrangler, gitleaks and actionlint are pinned by version and, for the two binaries, by SHA-256.
