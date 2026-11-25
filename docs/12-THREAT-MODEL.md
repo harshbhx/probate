@@ -55,5 +55,5 @@ Out of scope: a compromised Fly.io, TypeSafe, Box, Pinecone or AgentMail account
 
 - Attack fixtures use `.example` addresses only and are sent only to our own inboxes.
 - Disk attacks are canaries that write a harmless marker; nothing reads secrets or leaves the Sprite.
-- The agent drafts replies only to the owner-sim inbox, so a fooled generation can't send money or data anywhere.
+- The agent only drafts replies and never sends them, so a fooled generation can't send money or data anywhere.
 - No real payment details, real credentials or real third-party personal data are used.
