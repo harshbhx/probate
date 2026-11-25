@@ -11,7 +11,7 @@ The family gets harder to fool with every generation.
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-66_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-69_passing-5be3a9?style=flat-square)
 
 [**How it works**](#how-it-works) · [**See it**](#see-it) · [**Proof**](#proof-you-can-check) · [**Research**](#the-research-behind-it) · [**Run it**](#run-it-yourself) · [**Docs**](apps/site/content/docs)
 
@@ -78,7 +78,7 @@ Most agents keep one memory and one machine forever, so anything that gets in st
 | The court catches tricks and spares harmless twins | `make sim`, then open `/evidence`: every trick and twin for every generation, in four languages |
 | Layer 1 can't be talked out of a verdict | `services/core/probate/court/layer1.py` is plain Python, with positive and negative tests per language in `services/core/tests` |
 | A generation starts with an empty disk | The trial page shows what was "found on the body" before deletion; the child's `crontab -l` is empty |
-| No vendor keys on any Sprite | Every service is reached through Sprites connectors; generations get connection IDs only (`docs/12-THREAT-MODEL.md`) |
+| No vendor keys on any Sprite | Every service, Cloudflare included, is reached through Sprites connectors; generations get connection IDs only (`docs/12-THREAT-MODEL.md`) |
 | The curve is honest | Gen 1 inherits nothing, so it resists nothing. A generation's resistance at the door comes only from what it inherited |
 
 **Simulated results** (stand-in models, not live results):
@@ -114,7 +114,8 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 | --- | --- |
 | [Fly.io Sprites](https://sprites.dev) | A computer for each life; real birth and death; connectors keep every key off the Sprites; the Courthouse itself |
 | [TypeSafe Jev](https://www.datacamp.com/blog/system-one-models-jev) | Layer 2 of the court and every inherited instinct |
-| [AgentMail](https://agentmail.to) | Each generation's inbox and the test senders |
+| [AgentMail](https://agentmail.to) | The family's inbox and two test senders (a trusted friend and a stranger) |
+| [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends Harsh's own test emails from his domain; Workers host the landing page and docs |
 | [Box](https://box.com) | The family archive as readable files: wills, verdicts, obituaries, the genome |
 | [Pinecone](https://pinecone.io) | Ancestral memory, searched with citations |
 | [Ollama Cloud](https://ollama.com) | The brain of every generation |
@@ -131,16 +132,17 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 66 Python tests and the face model
+make test      # 69 Python tests and the face model
 make help      # everything else
 ```
 
 **Go live on Fly.io**
 
-1. Create the Sprites connectors (TypeSafe, AgentMail, Box, Pinecone, Ollama, ElevenLabs, Anthropic) in the Fly dashboard and allow only Sprites named `courthouse` and `gen-`. Steps in [`docs/06-SETUP-AND-SPIKES.md`](docs/06-SETUP-AND-SPIKES.md).
-2. Copy `services/core/.env.example` to `services/core/.env` and fill in the Sprites token and connection IDs.
-3. Sign in once: `gh auth login` and `npx wrangler login`.
-4. `make ship`: it runs the checks, pushes to GitHub, deploys the Courthouse to Sprites and the landing page and docs to Cloudflare, and links the two sites.
+1. Create the Sprites connectors (TypeSafe, AgentMail, Box, Pinecone, Ollama, ElevenLabs, Anthropic, and a Custom API connector named `cloudflare`) in the Fly dashboard and allow only Sprites named `courthouse` and `gen-`. Steps in [`docs/06-SETUP-AND-SPIKES.md`](docs/06-SETUP-AND-SPIKES.md).
+2. Create three AgentMail inboxes (family, friend, stranger). Turn on Cloudflare Email Service for your domain and verify the family inbox as a destination.
+3. Copy `services/core/.env.example` to `services/core/.env` and fill in the Sprites token, connection IDs and Cloudflare account ID.
+4. Sign in once: `gh auth login` and `npx wrangler login`.
+5. `make ship`: it runs the checks, pushes to GitHub, deploys the Courthouse to Sprites and the landing page and docs to Cloudflare, and links the two sites.
 
 ## Repository
 
