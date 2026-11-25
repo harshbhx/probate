@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "A personal agent family on Fly.io Sprites: each generation dies at midnight and a court decides what its child inherits."
 authors = [{ name = "Harsh Bhanushali", email = "bhanushaliharsh434@gmail.com" }]
 requires-python = ">=3.11"
+license = { text = "MIT" }
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.32",

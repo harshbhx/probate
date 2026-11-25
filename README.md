@@ -1,5 +1,6 @@
 <p align="center">
   <a href="https://github.com/harshbhx/probate/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/harshbhx/probate/ci.yml?branch=main&label=ci&style=flat-square"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
   <a href="https://github.com/harshbhx/probate/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/harshbhx/probate?style=flat-square"></a>
 </p>
 
