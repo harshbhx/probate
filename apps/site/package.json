@@ -17,8 +17,6 @@
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
-    "@probate/faces": "*",
-    "@probate/tokens": "*",
     "cn": "^0.5.2",
     "fumadocs-core": "16.19.7",
     "fumadocs-mdx": "15.6.4",
