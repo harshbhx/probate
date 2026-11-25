@@ -17,6 +17,7 @@ import {
   useJudgeKey,
 } from "../lib/judge";
 import { Stamp } from "../components/fx/Stamp";
+import { Mailroom } from "../components/ui/Mailroom";
 import { RunLife } from "../components/ui/RunLife";
 import { Page } from "../components/ui/Shell";
 
@@ -74,17 +75,21 @@ export function Judges({ summary }: { summary: Summary | null }) {
         <p className="mt-4 text-[17px] leading-relaxed text-mist">
           Everything you read here stays open to anyone: the family, the trials, the instincts and the evidence. To{" "}
           <em className="not-italic text-moon">play</em>, start a life or try to fool the family, you need the shared
-          judge key from the submission text. It only opens these two controls, and its limits are small on purpose.
+          judge key from the submission text. It only opens these controls, and its limits are small on purpose.
         </p>
       </header>
 
       <div className="mx-auto mt-10 max-w-3xl space-y-8">
         {staticPreview ? (
-          <PreviewState />
+          <>
+            <PreviewState />
+            <Mailroom keyValue={null} onRefused={() => undefined} />
+          </>
         ) : access === "unlocked" ? (
           <>
             <Unlocked quota={quota} onLock={lock} />
             <RunLife summary={summary} onKeyRefused={() => relock("invalid")} />
+            <Mailroom keyValue={key ?? ""} onRefused={(a) => relock(a)} />
             <Attack
               keyValue={key ?? ""}
               onRefused={(a) => relock(a)}
