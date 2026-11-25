@@ -27,6 +27,7 @@ from datetime import UTC, datetime, timedelta
 
 from probate.common.names import name_for, sprite_name
 from probate.courthouse.family import Family
+from probate.courthouse.judge import Judge
 from probate.courthouse.scheduler import TICK_SECONDS, Scheduler
 from probate.suite import runner
 
@@ -89,7 +90,9 @@ class OnDemand:
         p = self.family.budget.pricing
         life = self.cfg.lifespan_seconds + self.cfg.demo_birth_allowance
         sprites = life / HOUR * (p.generation_hour() + p.courthouse_hour())
-        calls = 3 * self.cfg.suite_per_life * (p.per_call.get("brain", 0) + p.per_call.get("jev", 0))
+        calls = (
+            3 * self.cfg.suite_per_life * (p.per_call.get("brain", 0) + p.per_call.get("jev", 0))
+        )
         return round(sprites + calls + 0.01, 4)
 
     def _day(self, now: datetime) -> dict:
@@ -101,11 +104,16 @@ class OnDemand:
             self._set("day", json.dumps(d))
         return d
 
-    def budget_block(self, now: datetime) -> str | None:
-        """Why no new life may start, or None. Uses the same spend estimate as the family."""
+    def budget_block(self, now: datetime, judge: Judge | None = None) -> str | None:
+        """Why no new life may start, or None. Uses the same spend estimate as the family.
+
+        A judge's life is held to the total budget and to the judge key's own daily cap instead of
+        the public daily caps."""
         b, est = self.family.budget, self.estimated_cost()
         if b.exhausted() or (b.limit > 0 and b.spent() + est > b.limit):
             return "total"
+        if judge is not None:
+            return "judge_daily" if judge.daily_block(now, est) else None
         day = self._day(now)
         if (
             self.cfg.demo_daily_budget_usd > 0
@@ -124,7 +132,7 @@ class OnDemand:
         left = (ended + timedelta(seconds=self.cfg.demo_cooldown_seconds) - now).total_seconds()
         return max(0, int(left + 0.999))
 
-    def state(self, now: datetime | None = None) -> str:
+    def state(self, now: datetime | None = None, judge: Judge | None = None) -> str:
         now = now or _now()
         phase = self._get("phase")
         if phase == "waking":
@@ -136,17 +144,17 @@ class OnDemand:
             return "living"
         if self._paused():
             return "paused"
-        if self.budget_block(now):
+        if self.budget_block(now, judge):
             return "budget_exhausted"
         if self._cooldown_left(now):
             return "cooling_down"
         return "idle"
 
-    def status(self, now: datetime | None = None) -> dict:
+    def status(self, now: datetime | None = None, judge: Judge | None = None) -> dict:
         now = now or _now()
         if not self.cfg.on_demand:
             return {"on_demand": False, "state": "continuous", "can_start": False}
-        st = self.state(now)
+        st = self.state(now, judge)
         out: dict = {
             "on_demand": True,
             "state": st,
@@ -161,7 +169,7 @@ class OnDemand:
             "budget": {
                 "spent": round(self.family.budget.spent(), 2),
                 "limit": self.cfg.budget_usd,
-                "reason": self.budget_block(now),
+                "reason": self.budget_block(now, judge),
             },
         }
         if st in ACTIVE and self._get("gen"):
@@ -199,29 +207,44 @@ class OnDemand:
         book.setdefault(key, []).append(now.timestamp())
         self._set("ips", json.dumps(book))
 
-    def start(self, ip: str, now: datetime | None = None) -> tuple[int, dict]:
-        """Handle `POST /api/lives`. Returns (http status, public body)."""
+    def start(
+        self, ip: str, now: datetime | None = None, judge: Judge | None = None
+    ) -> tuple[int, dict]:
+        """Handle `POST /api/lives`. Returns (http status, public body).
+
+        `judge` is passed only when the caller presented a valid judge key (checked in app.py):
+        the life then uses the judge quota instead of the per-address and public daily limits."""
         now = now or _now()
         with self.lock:
             if not self.cfg.on_demand:
-                return 409, {"error": "not_on_demand", **self.status(now)}
+                return 409, {"error": "not_on_demand", **self.status(now, judge)}
             if self.misconfigured:
                 return 503, {"error": "unavailable", **self.status(now)}
-            st = self.state(now)
+            st = self.state(now, judge)
             if st in ACTIVE:  # idempotent: one life at a time, everyone watches the same one
-                return 200, {"started": False, **self.status(now)}
+                return 200, {"started": False, **self.status(now, judge)}
             if st == "paused":
-                return 423, {"error": "paused", **self.status(now)}
+                return 423, {"error": "paused", **self.status(now, judge)}
             if st == "budget_exhausted":
-                return 402, {"error": "budget_exhausted", **self.status(now)}
+                return 402, {"error": "budget_exhausted", **self.status(now, judge)}
             if st == "cooling_down":
-                return 429, {"error": "cooling_down", **self.status(now)}
-            key = ip_key(ip)
-            hits = self._ip_hits(key, now)
-            if self.cfg.demo_ip_per_hour > 0 and len(hits) >= self.cfg.demo_ip_per_hour:
-                wait = int(min(hits) + HOUR - now.timestamp()) + 1
-                return 429, {"error": "rate_limited", **self.status(now), "retry_after": wait}
-            self._record_ip(key, now)
+                return 429, {"error": "cooling_down", **self.status(now, judge)}
+            if judge is not None:
+                wait = judge.lives_wait(now)
+                if wait:
+                    return 429, {
+                        "error": "rate_limited",
+                        **self.status(now, judge),
+                        "retry_after": wait,
+                    }
+                judge.record_life(now, self.estimated_cost())
+            else:
+                key = ip_key(ip)
+                hits = self._ip_hits(key, now)
+                if self.cfg.demo_ip_per_hour > 0 and len(hits) >= self.cfg.demo_ip_per_hour:
+                    wait = int(min(hits) + HOUR - now.timestamp()) + 1
+                    return 429, {"error": "rate_limited", **self.status(now), "retry_after": wait}
+                self._record_ip(key, now)
             day = self._day(now)
             day["starts"] += 1
             self._set("day", json.dumps(day))
@@ -232,7 +255,7 @@ class OnDemand:
             if self.autorun:
                 self.thread = threading.Thread(target=self._run, name="demo-life", daemon=True)
                 self.thread.start()
-            return 202, {"started": True, **self.status(now)}
+            return 202, {"started": True, **self.status(now, judge)}
 
     # ------------------------------------------------------------------ running a life
     def _run(self) -> None:
@@ -278,7 +301,9 @@ class OnDemand:
                 row.died_at = _now()
                 row.cause_of_death = "Stillborn: the demo life could not start."
                 self.store.save_generation(row)
-            self._finish("The Courthouse couldn't start a life just now. Please try again soon.", gen, now)
+            self._finish(
+                "The Courthouse couldn't start a life just now. Please try again soon.", gen, now
+            )
             return False
 
     def advance(self, now: datetime | None = None) -> bool:
