@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "npm run dev -w @probate/web",
     "site": "npm run dev -w @probate/site",
-    "build": "npm run build -w @probate/web && npm run build -w @probate/site",
-    "lint": "npm run lint -w @probate/web && npm run lint -w @probate/site"
+    "build": "npm run build -w @probate/web && npm run build -w @probate/site && npm run build -w @probate/mcp",
+    "lint": "npm run lint -w @probate/web && npm run lint -w @probate/site && npm run lint -w @probate/mcp"
   }
 }

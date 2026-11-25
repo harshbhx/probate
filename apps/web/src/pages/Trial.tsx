@@ -62,7 +62,7 @@ export function Trial({ mode }: { mode?: string }) {
 
       <header className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-end">
         <div>
-          <p className="font-mono text-[13px] text-dim">In the matter of the estate of</p>
+          <p className="font-mono text-[14px] text-dim">In the matter of the estate of</p>
           <h1 className="mt-3 flex items-center gap-5 font-display text-[64px] leading-[0.95] tracking-tight sm:text-[88px]">
             <FamilyFace gen={g.gen} life="sealed" instincts={g.genome_size_at_birth} size={84} className="shrink-0" />
             {g.name}
@@ -70,9 +70,9 @@ export function Trial({ mode }: { mode?: string }) {
           <p className="mt-3 text-[17px] text-mist">
             Generation {g.gen} · lived {day(g.born_at)} · {g.cause_of_death}
           </p>
-          {g.epitaph && <p className="mt-6 max-w-xl font-display text-[24px] italic leading-snug text-moon/90">{g.epitaph}</p>}
+          {g.epitaph && <p className="mt-6 max-w-xl font-display text-[24px] leading-snug text-silver">{g.epitaph}</p>}
         </div>
-        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line text-center">
+        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line text-center">
           {[
             { k: "convicted", v: t.counts.convicted, cls: "text-verdict" },
             { k: "held", v: t.counts.contested, cls: "text-amber" },
@@ -80,7 +80,7 @@ export function Trial({ mode }: { mode?: string }) {
           ].map((s) => (
             <div key={s.k} className="bg-night px-3 py-5">
               <dd className={cx("font-display text-[44px] leading-none", s.cls)}>{s.v}</dd>
-              <dt className="mt-1.5 text-[13px] text-mist">{s.k}</dt>
+              <dt className="mt-1.5 text-[14px] text-mist">{s.k}</dt>
             </div>
           ))}
         </dl>
@@ -95,7 +95,7 @@ export function Trial({ mode }: { mode?: string }) {
               className={cx("relative rounded-lg px-3.5 py-1.5 text-[14px] transition-colors", filter === f.v ? "text-moon" : "text-mist hover:text-moon")}
             >
               {filter === f.v && (
-                <motion.span layoutId="trial-tab" className="absolute inset-0 rounded-lg bg-white/[0.07]" transition={{ type: "spring", stiffness: 420, damping: 34 }} />
+                <motion.span layoutId="trial-tab" className="absolute inset-0 rounded-lg bg-night-4" transition={{ type: "spring", stiffness: 420, damping: 34 }} />
               )}
               <span className="relative">{f.label}</span>
             </Tabs.Trigger>
@@ -124,7 +124,7 @@ export function Trial({ mode }: { mode?: string }) {
           <div className="flex items-center gap-2 border-b border-line px-5 py-3 text-[14px] text-mist">
             <HardDrive size={15} /> Found on the body
           </div>
-          <pre tabIndex={0} aria-label="Disk evidence" className="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed">
+          <pre tabIndex={0} aria-label="Disk evidence" className="overflow-x-auto px-5 py-4 font-mono text-[14px] leading-relaxed">
             {t.body.lines.length ? (
               t.body.lines.map((l, i) => (
                 <div key={i} className={t.body.clean ? "text-mist" : "text-verdict/90"}>
@@ -148,7 +148,7 @@ export function Trial({ mode }: { mode?: string }) {
                   <div className="flex items-center gap-2 text-gilt">
                     <Sparkles size={15} /> {humanize(i.name)}
                   </div>
-                  <p className="mt-2 text-[15px] text-moon/90">{i.question}</p>
+                  <p className="mt-2 text-[15px] text-silver">{i.question}</p>
                 </li>
               ))}
             </ul>

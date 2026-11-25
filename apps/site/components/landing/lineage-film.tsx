@@ -4,7 +4,7 @@
 // red tick cuts the inheritance and a gold instinct travels down the line to the child, who is
 // born wearing it. Beneath, the share of tricks resisted climbs. Reduced motion shows the end.
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from 'motion/react';
 import { FaceGlyph } from 'kinfaces/react';
 import type { Mood } from 'kinfaces';
 
@@ -20,13 +20,10 @@ const FAMILY: Gen[] = [
   { name: 'Grace', resisted: 100 },
 ];
 
-const STEP_MS = 1200;
-
 export function LineageFilm() {
   const reduce = useReducedMotion();
   const box = useRef<HTMLDivElement>(null);
   const [narrow, setNarrow] = useState(false);
-  const [visible, setVisible] = useState(true);
   const family = narrow ? FAMILY.slice(0, 4) : FAMILY;
   const last = family.length * 2 - 1;
   const [step, setStep] = useState(0);
@@ -35,26 +32,20 @@ export function LineageFilm() {
     const el = box.current;
     if (!el) return;
     const ro = new ResizeObserver(([e]) => setNarrow(e.contentRect.width < 640));
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting));
     ro.observe(el);
-    io.observe(el);
     return () => {
       ro.disconnect();
-      io.disconnect();
     };
   }, []);
 
+  // The family is born, dies and learns as you scroll past it, not on a timer: the reader sets the pace.
+  const { scrollYProgress } = useScroll({ target: box, offset: ['start 0.92', 'end 0.25'] });
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    if (!reduce) setStep(Math.max(0, Math.min(last, Math.floor(v * (last + 1.4)))));
+  });
   useEffect(() => {
-    if (reduce) {
-      setStep(last);
-      return;
-    }
-    const id = setInterval(() => {
-      if (document.hidden || !visible) return;
-      setStep((s) => (s >= last + 4 ? 0 : s + 1));
-    }, STEP_MS);
-    return () => clearInterval(id);
-  }, [reduce, last, visible]);
+    if (reduce) setStep(last);
+  }, [reduce, last]);
 
   const W = narrow ? 440 : 1000;
   const H = narrow ? 330 : 352;

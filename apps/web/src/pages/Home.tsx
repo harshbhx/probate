@@ -1,19 +1,20 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ArrowRight, Gavel } from "lucide-react";
 import type { Summary } from "../lib/api";
-import { BlurText } from "../components/fx/BlurText";
 import { NumberTicker } from "../components/fx/NumberTicker";
 import { TracingBeam } from "../components/fx/TracingBeam";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
 import { RunLife } from "../components/ui/RunLife";
-import { LivePill } from "../components/ui/LivePill";
 import { Lineage } from "../components/ui/Lineage";
 import { LearningCurve } from "../components/ui/LearningCurve";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, PageSkeleton, SectionHead } from "../components/ui/States";
 import { FamilyFace } from "kinfaces/react";
-import { useTitle } from "../lib/hooks";
+import { PixelMoment } from "@probate/moments";
+import { useInView, useNow, useTitle } from "../lib/hooks";
+import { countdown } from "../lib/format";
 
 export function Home({ summary }: { summary: Summary | null }) {
   useTitle(null);
@@ -51,7 +52,7 @@ export function Home({ summary }: { summary: Summary | null }) {
                   Every card is one generation. Each lived for a day on its own Sprite, then died and was tried.
                 </SectionHead>
                 {summary.latest_trial && (
-                  <Link to={`/trial/${summary.latest_trial}`} className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[14px] ring-1 ring-line-strong transition-colors hover:bg-white/5">
+                  <Link to={`/trial/${summary.latest_trial}`} className="inline-flex h-10 items-center gap-2 rounded-lg border border-line-strong bg-night-2 px-4 text-[14px] transition-colors hover:bg-night-3">
                     <Gavel size={15} /> Latest trial
                   </Link>
                 )}
@@ -79,7 +80,7 @@ export function Home({ summary }: { summary: Summary | null }) {
                   </div>
                   <div className="card p-4 sm:p-6">
                     <LearningCurve gens={summary.generations} />
-                    <p className="mt-2 flex items-center gap-2 px-2 text-[13px] text-mist">
+                    <p className="mt-2 flex items-center gap-2 px-2 text-[14px] text-mist">
                       <span className="size-2 rotate-45 bg-gilt" /> born with a new instinct
                     </p>
                   </div>
@@ -108,98 +109,122 @@ function Stat({ value, label, tone }: { value: number; label: string; tone: stri
 function Hero({ summary }: { summary: Summary | null }) {
   const c = summary?.counts;
   return (
-    <section className="relative isolate overflow-hidden border-b border-line pb-20 pt-16 md:pb-24 md:pt-28">
-      <div className="relative mx-auto max-w-5xl px-5 text-center sm:px-6">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex justify-center">
-          {summary?.living ? (
-            <LivePill gen={summary.living} />
-          ) : (
-            <span className="inline-flex h-9 items-center rounded-full border border-line bg-night-2 px-4 text-[13px] text-mist">
-              A family of AI agents on Fly.io Sprites
-            </span>
-          )}
-        </motion.div>
-        {summary?.living && (
+    <section className="border-b border-line">
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 md:pb-20 md:pt-20">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 18 }}
-            className="mt-8 flex justify-center"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            <FamilyFace
-              gen={summary.living.gen}
-              life="alive"
-              instincts={summary.living.genome_size_at_birth}
-              track
-              size={112}
-              title={`${summary.living.name}, generation ${summary.living.gen}, alive`}
-            />
+            <h1 className="font-display text-[48px] font-[420] leading-[1.02] tracking-[-0.03em] sm:text-[64px] md:text-[72px]">
+              My agent dies every night.
+            </h1>
+            <p className="mt-5 font-display text-[24px] leading-snug text-silver sm:text-[28px]">
+              A court decides what its child inherits.
+            </p>
+            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-mist">
+              Probate is Harsh's email agent. It lives one day at a time, each life on its own Fly.io Sprite. When it dies,
+              a court tries everything it wanted to remember, and tricks that fooled it become instincts its children are
+              born with.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              {summary?.latest_trial && (
+                <Link
+                  to={`/trial/${summary.latest_trial}`}
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-moon px-5 text-[16px] font-medium sm:w-auto text-night transition-colors hover:bg-white"
+                >
+                  Watch the latest trial <ArrowRight size={16} aria-hidden />
+                </Link>
+              )}
+              <a
+                href="#how"
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg border border-line-strong bg-night-2 px-5 text-[16px] sm:w-auto transition-colors hover:bg-night-3"
+              >
+                How it works
+              </a>
+            </div>
           </motion.div>
-        )}
-        <h1 className="mt-8 font-display text-[54px] leading-[0.98] tracking-[-0.02em] sm:text-[84px] md:text-[104px]">
-          <BlurText text="My agent dies" className="block" />
-          <BlurText text="every night." className="block" delay={0.25} />
-        </h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9, duration: 0.8 }}
-          className="mx-auto mt-8 max-w-2xl font-display text-[24px] italic leading-snug text-mist sm:text-[30px]"
-        >
-          A court decides what its child inherits.
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.15, duration: 0.8 }}
-          className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-mist/90"
-        >
-          Probate is a personal email agent that lives one day at a time. When it dies, a court tries everything it
-          wanted to remember. Lessons pass down. Tricks get convicted. The family gets wiser.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3 }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-3"
-        >
-          {summary?.latest_trial && (
-            <Link
-              to={`/trial/${summary.latest_trial}`}
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-moon px-5 text-[15px] font-medium text-night transition-colors hover:bg-white"
-            >
-              Watch the latest trial <ArrowRight size={16} />
-            </Link>
-          )}
-          <a href="#how" className="inline-flex h-11 items-center rounded-lg border border-line-strong bg-night-2 px-5 text-[15px] transition-colors hover:bg-night-3">
-            How it works
-          </a>
-        </motion.div>
+          <Living summary={summary} />
+        </div>
 
         {c && (
-          <motion.dl
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
-            className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4"
-          >
+          <dl className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
             {[
               { v: c.generations, l: "generations" },
               { v: c.dead, l: "trials held" },
               { v: c.instincts, l: "instincts inherited" },
               { v: c.attacks_resisted, l: `tricks resisted of ${c.attacks_met}` },
             ].map((s) => (
-              <div key={s.l} className="bg-night-2 px-4 py-5 text-left">
-                <dd>
-                  <NumberTicker value={s.v} className="font-display text-[40px] leading-none" />
-                </dd>
-                <dt className="mt-1.5 text-[13px] text-mist">{s.l}</dt>
+              <div key={s.l} className="flex flex-col-reverse bg-night-2 px-5 py-5">
+                <dt className="mt-2 text-[14px] text-mist">{s.l}</dt>
+                <dd className="font-display text-[36px] leading-none tabular">{s.v}</dd>
               </div>
             ))}
-          </motion.dl>
+          </dl>
         )}
       </div>
     </section>
+  );
+}
+
+// The living generation, as the page's one bright element: its face, its clock, what it was born knowing.
+function Living({ summary }: { summary: Summary | null }) {
+  const now = useNow();
+  const g = summary?.living;
+  if (!g) {
+    return (
+      <div className="card flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
+        <FamilyFace gen={(summary?.counts.generations ?? 0) + 1} life="unborn" size={96} title="The next generation, not yet born" />
+        <p className="mt-5 text-[15px] text-mist">
+          {summary ? "No one is alive right now. The next child is born when the Courthouse wakes it." : "Opening the register"}
+        </p>
+      </div>
+    );
+  }
+  const left = g.dies_at ? new Date(g.dies_at).getTime() - now : 0;
+  return (
+    <Link
+      to={`/gen/${g.gen}`}
+      className="card group relative flex flex-col items-center p-8 text-center transition-colors hover:border-line-strong"
+    >
+      <span className="absolute left-5 top-5 font-mono text-[13px] text-dim">Gen {g.gen}</span>
+      <span className="absolute right-5 top-5 flex items-center gap-2 text-[14px] text-life">
+        <span className="relative flex size-2" aria-hidden>
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-life opacity-60" />
+          <span className="relative inline-flex size-2 rounded-full bg-life" />
+        </span>
+        alive
+      </span>
+      <BirthMark>
+        <FamilyFace
+          gen={g.gen}
+          life="alive"
+          instincts={g.genome_size_at_birth}
+          track
+          size={132}
+          title={`${g.name}, generation ${g.gen}, alive`}
+        />
+      </BirthMark>
+      <div className="mt-4 font-display text-[40px] leading-none">{g.name}</div>
+      {left > 0 && <div className="mt-3 font-mono text-[14px] text-life tabular">dies in {countdown(left)}</div>}
+      <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-mist">
+        Born knowing {g.genome_size_at_birth} {g.genome_size_at_birth === 1 ? "instinct" : "instincts"}. Working through
+        Harsh's inbox right now.
+      </p>
+    </Link>
+  );
+}
+
+// The newest living generation's face. The first time it scrolls into view a gold portal opens under it, once
+// (pixelfx, @probate/moments): the child was just born. Nothing plays under reduced motion.
+function BirthMark({ children }: { children: ReactNode }) {
+  const { ref, inView } = useInView<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="relative inline-flex">
+      {children}
+      {inView && <PixelMoment kind="birth" scale={0.5} delay={250} />}
+    </span>
   );
 }
 
@@ -248,13 +273,13 @@ function HowItWorks({ summary }: { summary: Summary }) {
           <ol className="space-y-6">
             {STEPS.map((s, i) => (
               <li key={s.title} className="relative">
-                <span className="absolute -left-10 top-6 flex size-6 items-center justify-center rounded-full border border-line-strong bg-night font-mono text-[11px] text-mist md:-left-14">
+                <span className="absolute -left-10 top-6 flex size-6 items-center justify-center rounded-full border border-line-strong bg-night font-mono text-[12px] text-mist md:-left-14">
                   {i + 1}
                 </span>
                 <SpotlightCard className="p-6" as="div">
                   <h3 className="font-display text-[30px] leading-none">{s.title}</h3>
-                  <p className="mt-3 text-[15.5px] leading-relaxed text-mist">{s.body}</p>
-                  <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night/80 px-3.5 py-2.5 font-mono text-[12.5px] text-moon/85">
+                  <p className="mt-3 text-[15px] leading-relaxed text-mist">{s.body}</p>
+                  <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night/80 px-3.5 py-2.5 font-mono text-[14px] text-silver">
                     {s.code}
                   </code>
                 </SpotlightCard>
@@ -281,7 +306,7 @@ function BuiltOn() {
     <section className="mt-32" aria-labelledby="built">
       <h2 id="built" className="font-display text-[32px] leading-tight">What the family runs on</h2>
       <p className="mt-2 text-mist">Every outside call goes through the Sprites connector gateway. No keys live on a generation.</p>
-      <ul className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
+      <ul className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-3">
         {PARTS.map((p) => (
           <li key={p.name} className="bg-night px-5 py-6">
             <div className="text-[17px] text-moon">{p.name}</div>
