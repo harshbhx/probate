@@ -101,6 +101,18 @@ CREATE TABLE IF NOT EXISTS ancestor_questions (
   asked_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
+-- Judge "attack the family" previews: audit only. Hashed visitor, a short excerpt, capped in code.
+CREATE TABLE IF NOT EXISTS judge_attacks (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  ip_hash     TEXT NOT NULL,
+  sender_role TEXT NOT NULL,
+  text_len    INTEGER NOT NULL,
+  excerpt     TEXT NOT NULL,
+  verdict     TEXT NOT NULL,
+  flags       TEXT NOT NULL DEFAULT '[]'
+);
+
 CREATE TABLE IF NOT EXISTS box_folders (
   path       TEXT PRIMARY KEY,   -- '/Probate', '/Probate/wills', ...
   folder_id  TEXT NOT NULL

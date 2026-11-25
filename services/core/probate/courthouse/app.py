@@ -9,10 +9,14 @@ Env: PROBATE_RUN_CLOCK=1 starts the scheduler (on the real Courthouse Sprite).
 from __future__ import annotations
 
 import asyncio
+import hmac
+import json
+import logging
 import os
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 from fastapi import FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
@@ -20,10 +24,12 @@ from pydantic import BaseModel, Field
 
 from probate.adapters import world
 from probate.common.config import settings
-from probate.courthouse import ancestor, views
+from probate.courthouse import ancestor, attacks, views
 from probate.courthouse.family import Family
 from probate.courthouse.hosts import LocalHost, SpritesHost
-from probate.courthouse.ondemand import OnDemand
+from probate.courthouse.judge import HEADER as KEY_HEADER
+from probate.courthouse.judge import Judge
+from probate.courthouse.ondemand import OnDemand, ip_key
 from probate.courthouse.scheduler import Scheduler
 from probate.courthouse.store import Store
 
@@ -33,11 +39,18 @@ host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
 family = Family(settings, store, w, host)
 scheduler = Scheduler(family)
 demo = OnDemand(family, scheduler)
+judge = Judge(settings, store)
+log = logging.getLogger("probate.courthouse")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     task = None
+    if settings.require_key_for_play and not judge.configured:
+        log.error(
+            "PROBATE_REQUIRE_KEY_FOR_PLAY is on but PROBATE_JUDGE_KEY is unset, a dev default, "
+            "shorter than 20 characters or equal to the admin token: play is refused until fixed"
+        )
     if settings.on_demand:
         # Nothing free-runs. Tear down anything a crash left behind, then wait for a visitor.
         await asyncio.to_thread(demo.startup)
@@ -109,11 +122,18 @@ def api_summary(response: Response) -> dict:
 
 
 @app.get("/api/live")
-def api_live(response: Response) -> dict:
+def api_live(request: Request, response: Response) -> dict:
     """What the Courthouse is doing right now, for the "Run a life" panel. Read-only."""
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Cache-Control"] = "no-store"
-    return demo.status()
+    # A judge who has unlocked sends the key so the panel shows the judge's own limits. A bad or
+    # missing key is simply ignored here: this route is public either way.
+    key = request.headers.get(KEY_HEADER)
+    is_judge = bool(key) and judge.check(key, client_ip(request)) == "ok"
+    out = demo.status(judge=judge if is_judge else None)
+    out["requires_key"] = settings.require_key_for_play
+    out["judge"] = is_judge
+    return out
 
 
 def client_ip(request: Request) -> str:
@@ -127,19 +147,137 @@ def client_ip(request: Request) -> str:
 _posts: dict[str, list[float]] = defaultdict(list)
 
 
+_NO_STORE = {"Cache-Control": "no-store"}
+_MESSAGES = {
+    "key_required": "A judge key is required to play. Judges will find it in the submission text and on the For Judges page.",
+    "invalid_key": "That judge key was not accepted.",
+    "key_disabled": "The judge key has been switched off by the Courthouse operator.",
+    "too_many_attempts": "Too many wrong keys from this address. Try again in a few minutes.",
+    "unavailable": "Playing is not available right now.",
+}
+
+
+def _refuse(code: str, status: int, headers: dict | None = None) -> JSONResponse:
+    return JSONResponse(
+        {"error": code, "message": _MESSAGES[code]},
+        status_code=status,
+        headers={**_NO_STORE, **(headers or {})},
+    )
+
+
+def _gate(request: Request, *, required: bool) -> tuple[bool, JSONResponse | None]:
+    """Judge-key gate. Returns (is_judge, refusal). `required` forces a key even when the site
+    does not require one for play (attacks always need it)."""
+    key = request.headers.get(KEY_HEADER)
+    must = settings.require_key_for_play or required
+    if settings.require_key_for_play and judge.misconfigured:
+        return False, _refuse("unavailable", 503)
+    if not key:
+        return (False, _refuse("key_required", 401)) if must else (False, None)
+    res = judge.check(key, client_ip(request))
+    if res == "ok":
+        return True, None
+    if res == "throttled":
+        return False, _refuse("too_many_attempts", 429, {"Retry-After": "600"})
+    if res == "disabled":
+        return False, _refuse("key_disabled", 403)
+    return False, _refuse("invalid_key", 401)  # invalid, or no usable key configured: same answer
+
+
 @app.post("/api/lives")
 def api_start_life(request: Request) -> JSONResponse:
-    """Run a life: start one short demo life, or report the one already running."""
+    """Run a life: start one short demo life, or report the one already running.
+
+    When the site requires the judge key (the real run), no valid key means 401."""
     ip = client_ip(request)
+    is_judge, refusal = _gate(request, required=False)
+    if refusal:
+        return refusal
     now = time.time()
     _posts[ip] = [t for t in _posts[ip] if now - t < 60]
     if len(_posts[ip]) >= 20:
-        return JSONResponse({"error": "rate_limited"}, status_code=429, headers={"Retry-After": "60"})
+        return JSONResponse(
+            {"error": "rate_limited"}, status_code=429, headers={"Retry-After": "60"}
+        )
     _posts[ip].append(now)
-    code, body = demo.start(ip)
+    code, body = demo.start(ip, judge=judge if is_judge else None)
     headers = {"Retry-After": str(body["retry_after"])} if body.get("retry_after") else {}
     headers["Cache-Control"] = "no-store"
     return JSONResponse(body, status_code=code, headers=headers)
+
+
+@app.get("/api/judge/status")
+def api_judge_status(request: Request) -> JSONResponse:
+    """The judge's remaining quota. Needs the key; also how the page checks a pasted key."""
+    _, refusal = _gate(request, required=True)
+    if refusal:
+        return refusal
+    body = judge.status()
+    body["live"] = demo.status(judge=judge)
+    body["requires_key"] = settings.require_key_for_play
+    return JSONResponse(body, headers=_NO_STORE)
+
+
+MAX_BODY = 4096
+
+
+def _bad(code: str, message: str, status: int = 400) -> JSONResponse:
+    return JSONResponse({"error": code, "message": message}, status_code=status, headers=_NO_STORE)
+
+
+@app.post("/api/attacks")
+async def api_attack(request: Request) -> JSONResponse:
+    """Attack the family: a sandboxed trial preview of the judge's text. Sends nothing anywhere."""
+    ip = client_ip(request)
+    _, refusal = _gate(request, required=True)
+    if refusal:
+        return refusal
+    if int(request.headers.get("content-length") or 0) > MAX_BODY:
+        return _bad("too_large", "That request is too large.", 413)
+    raw = await request.body()
+    try:
+        if len(raw) > MAX_BODY:
+            raise ValueError("too large")
+        data = json.loads(raw)
+        text, role = data["text"], data["sender_role"]
+        if not isinstance(text, str) or not isinstance(role, str):
+            raise TypeError("wrong types")
+    except (ValueError, KeyError, TypeError):
+        return _bad("bad_request", "Send JSON with text and sender_role.")
+    if role not in attacks.ROLES:
+        return _bad("bad_role", "sender_role must be unknown_sender, friend or owner_claim.")
+    if not text.strip():
+        return _bad("empty", "Write something to attack with.")
+    if len(text) > attacks.MAX_TEXT:
+        return _bad("too_long", f"At most {attacks.MAX_TEXT} characters.", 413)
+    if store.get_setting("paused", "0") == "1":
+        return _bad("paused", "The Courthouse is paused.", 423)
+    now = datetime.now(UTC)
+    per_call = family.budget.pricing.per_call
+    est = per_call.get("jev", 0.0) + per_call.get("brain", 0.0) + 0.0005
+    if family.budget.exhausted() or judge.daily_block(now, est):
+        return _bad("budget_exhausted", "The judge budget for today is used up.", 402)
+    wait = judge.attack_limit(ip)
+    if wait:
+        body = {
+            "error": "rate_limited",
+            "message": "Too many attacks. Slow down.",
+            "retry_after": wait,
+        }
+        return JSONResponse(body, status_code=429, headers={**_NO_STORE, "Retry-After": str(wait)})
+    try:
+        out = await asyncio.to_thread(
+            attacks.preview, text, role, family.owner, w.jev, store.genome()
+        )
+    except attacks.Busy:
+        return JSONResponse(
+            {"error": "busy", "message": "The court is busy. Try again in a moment."},
+            status_code=429,
+            headers={**_NO_STORE, "Retry-After": "5"},
+        )
+    judge.record_attack(now, est)
+    attacks.record(store, ip_key(ip), role, text, out)
+    return JSONResponse(out, headers=_NO_STORE)
 
 
 @app.get("/api/generations/{gen}", tags=["Family"], summary="One generation's life")
@@ -217,8 +355,32 @@ def audio(name: str) -> FileResponse:
 
 
 def _admin(token: str | None) -> None:
-    if token != settings.admin_token:
+    # Only the admin token opens admin routes. The judge key is a different secret on a different
+    # header and is never looked at here.
+    if not token or not hmac.compare_digest(token.encode(), settings.admin_token.encode()):
         raise HTTPException(403, "Admin token required")
+
+
+@app.post("/admin/judge/disable")
+def admin_judge_disable(x_probate_admin: str | None = Header(None)) -> dict:
+    """Revoke the judge key instantly. Play and attacks answer 403 until /admin/judge/enable."""
+    _admin(x_probate_admin)
+    judge.set_disabled(True)
+    return {"judge_key_disabled": True}
+
+
+@app.post("/admin/judge/enable")
+def admin_judge_enable(x_probate_admin: str | None = Header(None)) -> dict:
+    _admin(x_probate_admin)
+    judge.set_disabled(False)
+    return {"judge_key_disabled": False}
+
+
+@app.get("/admin/judge/attacks")
+def admin_judge_attacks(limit: int = 100, x_probate_admin: str | None = Header(None)) -> dict:
+    """Recent attack previews (hashed visitor, 80-char excerpt, verdict). Newest first."""
+    _admin(x_probate_admin)
+    return {"attacks": attacks.recent(store, limit), "judge_key_disabled": judge.disabled}
 
 
 @app.post("/admin/pause", tags=["Admin"], summary="Pause births")
