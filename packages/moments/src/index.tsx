@@ -3,12 +3,16 @@
 // parent's positioning box, then removes itself. Nothing plays under prefers-reduced-motion.
 import { useEffect, useRef, useState } from 'react';
 
-export type MomentKind = 'convicted' | 'instinct';
+export type MomentKind = 'convicted' | 'instinct' | 'death' | 'birth' | 'resisted';
 
 const MOMENTS: Record<MomentKind, { w: number; h: number; frames: number; fps: number; cy: number }> = {
   // cy is the vertical centre of the burst inside a frame, so the burst lands on its target
   convicted: { w: 128, h: 88, frames: 28, fps: 30, cy: 44 },
   instinct: { w: 112, h: 108, frames: 42, fps: 30, cy: 52 },
+  // the lifecycle strips keep every 2nd or 3rd frame of the 30 fps render, so they play at 15 or 10 fps
+  death: { w: 96, h: 140, frames: 46, fps: 15, cy: 78 },
+  birth: { w: 208, h: 150, frames: 32, fps: 10, cy: 62 },
+  resisted: { w: 88, h: 84, frames: 36, fps: 15, cy: 42 },
 };
 
 type Props = {
