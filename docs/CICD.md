@@ -35,10 +35,11 @@ flowchart LR
 | `dependency-review.yml` | pull requests | contents read | none | Fails a PR that adds a dependency with a high or critical advisory. |
 | `secret-scan.yml` | pull requests, push to main, Mondays, manual | contents read | none | gitleaks over the PR's commits (or the whole history on main). |
 | `actionlint.yml` | pull requests and pushes touching `.github/`, manual | contents read | none | Lints the workflows (and their shell through shellcheck). |
+| `github-packages.yml` | manual only | contents read, packages write | none (uses the workflow's own `GITHUB_TOKEN`) | Publishes scoped mirror copies of the npm packages (`@harshbhx/kinfaces`, `@harshbhx/probate-client`) to GitHub Packages. The unscoped names are meant for npm; GitHub's registry only accepts names scoped to the owner, so the scope is added at publish time only. Python packages cannot go to GitHub Packages (use PyPI). |
 
-Shared pieces: `.github/actions/setup-web` (Node, npm cache, `npm ci`), `.github/actions/setup-core` (Python, pip cache, editable install of `services/core`), `.github/dependabot.yml` (weekly bumps of the pinned actions).
+Shared pieces: `.github/actions/setup-web` (Node, npm cache, `npm ci`), `.github/actions/setup-core` (Python, pip cache, editable install of `services/core`).
 
-All workflows set `permissions: {}` at the top and grant only what each job needs, set `timeout-minutes` on every job, use concurrency groups, and cache npm and pip. Every third-party action is pinned to a full commit SHA with its tag in a comment. Dependabot opens the bump PRs. Wrangler, gitleaks and actionlint are pinned by version and, for the two binaries, by SHA-256.
+All workflows set `permissions: {}` at the top and grant only what each job needs, set `timeout-minutes` on every job, use concurrency groups, and cache npm and pip. Every third-party action is pinned to a full commit SHA with its tag in a comment. Pinned actions are bumped by hand (there is no Dependabot config on purpose, so bots do not appear as contributors). Wrangler, gitleaks and actionlint are pinned by version and, for the two binaries, by SHA-256.
 
 ## 3. Secrets, variables and environments
 
