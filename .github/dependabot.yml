@@ -16,11 +16,17 @@ updates:
     groups:
       pip-minor-patch:
         update-types: [minor, patch]
+  # Keeps the SHA-pinned actions current. Each update PR bumps the commit and the tag comment.
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - /
+      - /.github/actions/setup-web
+      - /.github/actions/setup-core
     schedule:
       interval: weekly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
     groups:
-      actions-minor-patch:
-        update-types: [minor, patch]
+      actions:
+        patterns: ["*"]
