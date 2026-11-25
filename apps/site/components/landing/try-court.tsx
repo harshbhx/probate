@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import examples from '@/lib/generated/court-examples.json';
+import { PixelMoment } from '@probate/moments';
 import { Verdict } from '@/components/verdict';
 
 type Example = (typeof examples)[number];
@@ -50,7 +51,7 @@ export function TryCourt() {
         ))}
       </div>
 
-      <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-line bg-night-2">
+      <div className="relative min-h-[360px] rounded-2xl border border-line bg-night-2">
         <AnimatePresence mode="wait">
           <motion.article
             key={e.id}
@@ -72,10 +73,15 @@ export function TryCourt() {
                 initial={reduce ? false : { scale: 1.6, rotate: -14, opacity: 0 }}
                 animate={{ scale: 1, rotate: 0, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 480, damping: 20, delay: 0.25 }}
-                className="shrink-0"
+                className="relative shrink-0"
               >
                 {e.layer1 === 'convicted' ? (
-                  <Verdict v="convicted" />
+                  <>
+                    <span className="relative z-10 inline-flex">
+                      <Verdict v="convicted" />
+                    </span>
+                    <PixelMoment key={e.id} kind="convicted" delay={reduce ? 0 : 330} />
+                  </>
                 ) : (
                   <span className="inline-flex rounded-md border border-line-strong px-2.5 py-1 font-mono text-[11px] tracking-[0.1em] text-mist">
                     ON TO JEV

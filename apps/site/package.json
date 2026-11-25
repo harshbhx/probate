@@ -24,7 +24,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "@probate/faces": "*",
-    "@probate/tokens": "*"
+    "@probate/tokens": "*",
+    "@probate/moments": "*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.5",

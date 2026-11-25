@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { FamilyFace, type Life, type Mood } from '@probate/faces';
+import { PixelMoment } from '@probate/moments';
 import { Verdict } from '@/components/verdict';
 
 type Beat = {
@@ -114,9 +115,13 @@ export function LifeStory() {
                   transition={{ type: 'spring', stiffness: 460, damping: 20 }}
                   className="absolute -right-10 top-6"
                 >
-                  <Verdict v="convicted" className="text-[13px]" />
+                  <span className="relative z-10 inline-flex">
+                    <Verdict v="convicted" className="text-[13px]" />
+                  </span>
+                  <PixelMoment kind="convicted" delay={120} />
                 </motion.div>
               )}
+              {b.title === 'Inheritance' && <PixelMoment key={active} kind="instinct" delay={200} />}
             </AnimatePresence>
           </div>
           <AnimatePresence mode="wait">
