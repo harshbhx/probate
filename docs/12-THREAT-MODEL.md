@@ -42,6 +42,7 @@ Out of scope: a compromised Fly.io, TypeSafe, Box, Pinecone or AgentMail account
 - The birth token is the one secret on a Sprite (the Courthouse's environment). Spike S1 decides between: (a) a custom-API connector to `api.sprites.dev`, so no Sprite holds it; (b) a token scoped by name prefix, count and expiry; (c) the narrowest token Fly offers. The README states which one we use.
 - `config/owner.yaml` (real allowlists) lives only on the Courthouse disk and is never committed.
 - Admin routes need `PROBATE_ADMIN_TOKEN`.
+- Outgoing webhooks: only the operator can add a URL (no public registration, which would be an SSRF and abuse route). Destinations must be https on an allowed port and resolve to public addresses, re-checked at delivery time and connected by validated IP; events carry only fields the public API shows; each endpoint has its own server-generated signing secret that is shown once and never logged. See `docs/WEBHOOKS.md`.
 
 ## 5. What the court can miss (publish this)
 
