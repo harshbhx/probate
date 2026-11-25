@@ -17,6 +17,7 @@
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
+    "@probate/moments": "*",
     "@probate/tokens": "*",
     "cn": "^0.5.2",
     "fumadocs-core": "16.19.7",
@@ -24,14 +25,12 @@
     "fumadocs-openapi": "^12.6.7",
     "fumadocs-ui": "npm:@fumadocs/base-ui@16.19.7",
     "json-schema-typed": "^9.0.0",
+    "kinfaces": "*",
     "lucide-react": "^1.71.0",
     "motion": "^12.43.0",
     "next": "16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "kinfaces": "*",
-    "@probate/tokens": "*",
-    "@probate/moments": "*",
     "zod": "^4.6.7"
   },
   "devDependencies": {
