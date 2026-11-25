@@ -1,11 +1,12 @@
 // One list of destinations for the header, the mobile menu and the footer.
-import { githubUrl, liveUrl } from '@/lib/shared';
+import { articleUrl, githubUrl, liveUrl, videoUrl } from '@/lib/shared';
 
 export const NAV = [
   { label: 'How it works', href: '/#life' },
   { label: 'The court', href: '/#court' },
   { label: 'Instincts', href: '/#instincts' },
   { label: 'Docs', href: '/docs' },
+  { label: 'For judges', href: '/docs/for-judges' },
 ];
 
 export type FootLink = { label: string; href: string };
@@ -35,6 +36,9 @@ export const FOOTER: { title: string; links: FootLink[] }[] = [
     title: 'Project',
     links: [
       ...(githubUrl ? [{ label: 'Source on GitHub', href: githubUrl }] : []),
+      ...(videoUrl ? [{ label: 'The video', href: videoUrl }] : []),
+      ...(articleUrl ? [{ label: 'The write-up', href: articleUrl }] : []),
+      { label: 'For judges', href: '/docs/for-judges' },
       { label: 'Security model', href: '/docs/security' },
       { label: 'Deploy your own', href: '/docs/guides/deploy' },
       { label: 'Fly.io Hacksgiving', href: 'https://fly.io/hacksgiving/' },
