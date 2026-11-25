@@ -32,7 +32,12 @@ from probate.common.bundle import INSTALL, make_bundle
 
 ENV_FILE = ROOT / "services" / "core" / ".env"
 URL_FILE = ROOT / ".data" / "courthouse-url.txt"
-REQUIRED = ["PROBATE_SPRITES_TOKEN", "PROBATE_ADMIN_TOKEN", "PROBATE_CONNECTIONS"]
+REQUIRED = [
+    "PROBATE_SPRITES_TOKEN",
+    "PROBATE_ADMIN_TOKEN",
+    "PROBATE_CONNECTIONS",
+    "PROBATE_CF_ACCOUNT_ID",
+]
 LIVE = {
     "PROBATE_FAKE": "0",
     "PROBATE_RUN_CLOCK": "1",
