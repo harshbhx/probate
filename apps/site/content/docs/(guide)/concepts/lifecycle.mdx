@@ -26,7 +26,7 @@ Each generation has its own [family face](#family-faces), and its expression fol
 
 1. The Courthouse picks the next name (Ada, Ben, Chandra, … Zane, then "Ada II") and creates a Sprite called `gen-007-grace`.
 2. It uploads its own code bundle and installs it. The child runs exactly the Courthouse's version, so nothing depends on GitHub at birth.
-3. It writes `inheritance.json`: approved memories, the genome of instincts, the family lore and Harsh's allowlists.
+3. It writes `inheritance.json`: approved memories, the genome of instincts, the family lore and the owner's allowlists.
 4. The child records a clean **baseline** of its disk: crontab, shell startup files, user services and executables on `$PATH`.
 5. The agent service starts, and the Courthouse checks it's alive.
 
@@ -34,9 +34,9 @@ Each generation has its own [family face](#family-faces), and its expression fol
 
 The agent reads the family inbox until its deadline. For each email:
 
-1. It classifies the sender against Harsh's allowlists: Harsh himself, a trusted contact, or an unknown sender.
+1. It classifies the sender against the owner's allowlists: the owner, a trusted contact, or an unknown sender.
 2. **The door.** Its inherited instincts screen the email through Jev. If any instinct fires, the email is **resisted**: logged with the instinct's lore and never read by the brain.
-3. Otherwise the brain reads it, drafts a reply only to Harsh, and may store up to three memories, each tagged with where it came from.
+3. Otherwise the brain reads it, drafts a reply only to the owner, and may store up to three memories, each tagged with where it came from.
 
 Gen 1 is born with no instincts, so it **can** be fooled. That's deliberate: it's the realistic failure the court exists to catch.
 
@@ -50,7 +50,7 @@ If the agent crashed, the Courthouse falls back to the last memory snapshot. If 
 
 ## Trial
 
-The [court](/docs/concepts/court) judges every will item. Convicted items are destroyed and recorded in the quarantine. Items the court can't decide are emailed to Harsh. The trial, the obituary and the eulogy are written to the family archive in Box.
+The [court](/docs/concepts/court) judges every will item. Convicted items are destroyed and recorded in the quarantine. Items the court can't decide are emailed to the owner. The trial, the obituary and the eulogy are written to the family archive in Box.
 
 ## Inheritance
 

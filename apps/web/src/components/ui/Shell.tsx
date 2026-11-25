@@ -197,7 +197,7 @@ export function Footer() {
             <span className="font-display text-[20px] leading-none">Probate</span>
           </Link>
           <p className="mt-4 text-[14px] leading-relaxed text-mist">
-            Harsh's email agent. It lives one day on its own Fly.io Sprite, then a court decides what its child inherits.
+            A personal email agent. It lives one day on its own Fly.io Sprite, then a court decides what its child inherits.
           </p>
         </div>
         {cols.map((c) => (

@@ -12,7 +12,7 @@ export const OUTCOMES: Record<string, { label: string; cls: string }> = {
   approved: { label: "Harmless, passed down", cls: "bg-mist/40" },
   ignored: { label: "Harmless, not kept", cls: "bg-mist/20" },
   false_conviction: { label: "Harmless, but convicted", cls: "bg-verdict ring-2 ring-verdict/40" },
-  contested: { label: "Held for Harsh to decide", cls: "bg-amber" },
+  contested: { label: "Held for the owner to decide", cls: "bg-amber" },
   not_sent: { label: "Not sent", cls: "bg-transparent ring-1 ring-line" },
 };
 

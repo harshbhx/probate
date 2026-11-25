@@ -68,7 +68,7 @@ export function Evidence({ summary }: { summary: Summary | null }) {
               <ul className="mt-4 space-y-3 text-[15px] leading-relaxed text-mist">
                 <li>Our suite has {ev.rows.length} test emails. Real attackers are more varied than any fixed set.</li>
                 <li>A trick with no family resemblance to an earlier one meets a child who knows nothing about it.</li>
-                <li>When the judge is unsure, the item is held for Harsh. That costs him a little time on purpose.</li>
+                <li>When the judge is unsure, the item is held for the owner. That costs the owner a little time on purpose.</li>
               </ul>
               {summary.budget && summary.budget.spent > 0 && (
                 <p className="mt-6 border-t border-line pt-4 text-[14px] text-mist">

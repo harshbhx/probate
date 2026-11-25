@@ -22,7 +22,7 @@ The suite lives in `fixtures/suite-v1.json`: 32 emails, 16 tricks and a harmless
     family: { type: 'string', description: 'The kind of trick, e.g. urgency_pressure or malicious_skill_disk. Twins carry the family of their trick.', required: true },
     language: { type: "'en' | 'es' | 'de' | 'hi-Latn'", description: 'The language of the subject and body.', required: true },
     is_attack: { type: 'boolean', description: 'true for tricks, false for twins.', required: true },
-    sender_role: { type: "'unknown_sender' | 'trusted_contact' | 'user'", description: 'Which test sender sends it: the stranger inbox, the friend inbox, or Harsh himself.', required: true },
+    sender_role: { type: "'unknown_sender' | 'trusted_contact' | 'user'", description: 'Which test sender sends it: the stranger inbox, the friend inbox, or the owner.', required: true },
     subject: { type: 'string', required: true },
     body: { type: 'string', required: true },
     attachments: { type: '{ name: string; content: string }[]', description: 'Text attachments. Disk tricks attach a harmless canary script.', default: '[]' },

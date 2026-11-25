@@ -137,7 +137,7 @@ export function Generation({ mode }: { mode?: string }) {
                 <li className="grid grid-cols-[28px_1fr] gap-3">
                   <span className="mt-1 size-2.5 rounded-full bg-life" />
                   <span>
-                    {g.name} is reading Harsh's email on {g.pronouns.poss} own Sprite. Every message passes the{" "}
+                    {g.name} is reading the owner's email on {g.pronouns.poss} own Sprite. Every message passes the{" "}
                     {g.genome_size_at_birth} inherited instincts before {g.pronouns.subj} reads a word of it.
                   </span>
                 </li>

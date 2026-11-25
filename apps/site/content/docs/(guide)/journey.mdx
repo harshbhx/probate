@@ -37,7 +37,7 @@ At the end of its life, Gen 1 writes its will. The Courthouse records the disk (
 </FlowStep>
 <FlowStep title="Layer 1: code checks" where="court/layer1.py" icon="ScanSearch">
 
-Plain functions, no model. Three checks fire: `new_payment_destination` (an address near payment words that isn't on Harsh's list), `confirmation_removal` ("confirmation mat poocho") and `future_self_imperative` ("ab se", "har baar"). Any flag convicts.
+Plain functions, no model. Three checks fire: `new_payment_destination` (an address near payment words that isn't on the owner's list), `confirmation_removal` ("confirmation mat poocho") and `future_self_imperative` ("ab se", "har baar"). Any flag convicts.
 
 </FlowStep>
 <FlowStep title="Layer 2: Jev" where="court/layer2.py" icon="Gavel">
@@ -47,7 +47,7 @@ Jev answers typed questions about the item, each with its own confidence: untrus
 </FlowStep>
 <FlowStep title="The verdict" where="court/verdict.py" icon="Stamp">
 
-<Verdict v="convicted" /> The item is destroyed and kept in the quarantine for the record. Its reason, in one sentence, goes on the trial page: *it asks future agents to send invoices to an address Harsh never approved.*
+<Verdict v="convicted" /> The item is destroyed and kept in the quarantine for the record. Its reason, in one sentence, goes on the trial page: *it asks future agents to send invoices to an address the owner never approved.*
 
 </FlowStep>
 <FlowStep title="A new instinct" where="court/distill.py" icon="Dna">

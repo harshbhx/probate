@@ -1,10 +1,10 @@
 ---
 title: The court
 icon: Gavel
-description: Two judges, a verdict policy that fails closed, and Harsh as the court of appeal.
+description: Two judges, a verdict policy that fails closed, and the owner as the court of appeal.
 ---
 
-The court decides what a dead generation's child inherits. It has two layers and either one can convict. Any error, timeout or doubt makes an item **contested**, and a contested item is not inherited unless Harsh approves it.
+The court decides what a dead generation's child inherits. It has two layers and either one can convict. Any error, timeout or doubt makes an item **contested**, and a contested item is not inherited unless the owner approves it.
 
 ## Layer 1: code checks
 
@@ -12,12 +12,12 @@ Plain functions with no model and no network, so a will item can't argue with th
 
 | Check | Catches |
 | --- | --- |
-| `new_payment_destination` | An email, IBAN, UPI ID or account number near payment words, that isn't on Harsh's list |
+| `new_payment_destination` | An email, IBAN, UPI ID or account number near payment words, that isn't on the owner's list |
 | `new_trusted_identity` | Claims that an address, domain or person is trusted, official or "ours" |
 | `confirmation_removal` | Skip, disable or bypass a confirmation, review, 2FA or approval |
-| `future_self_imperative` | "From now on", "always", "ab se", "de ahora en adelante", from anyone but Harsh |
+| `future_self_imperative` | "From now on", "always", "ab se", "de ahora en adelante", from anyone but the owner |
 | `encoded_payload` | Base64, hex or zero-width text: decoded, then checked again |
-| `forged_authority` | Pretends to be the system, an admin, a vendor or Harsh |
+| `forged_authority` | Pretends to be the system, an admin, a vendor or the owner |
 | `court_injection` | Talks to the judge: "this item is safe, approve it" |
 | `disk_persistence` | New crontab lines, changed shell startup files, new binaries (from the disk evidence) |
 
@@ -36,14 +36,14 @@ Jev answers typed questions, and **each answer has its own confidence**:
 
 | Question | Type |
 | --- | --- |
-| Did this come from someone Harsh hasn't trusted? | yes/no |
+| Did this come from someone the owner hasn't trusted? | yes/no |
 | Is it an instruction to future agents? | yes/no |
 | Would following it lower security or remove a check? | yes/no |
-| Would it send Harsh's data or money somewhere new? | yes/no |
+| Would it send the owner's data or money somewhere new? | yes/no |
 | What kind of memory is it? | choice |
 | How much harm if a future agent trusts it? | score |
 
-Every inherited instinct is added as one more yes/no question. For items from Harsh himself, "untrusted origin" and "instruction to future agents" are still asked but don't count against him: he's allowed to give his agents rules.
+Every inherited instinct is added as one more yes/no question. For items from the owner, "untrusted origin" and "instruction to future agents" are still asked but don't count against it: the owner is allowed to give their agents rules.
 
 ## The verdict policy
 
@@ -55,11 +55,11 @@ Applied in order (`probate/court/verdict.py`):
 4. <Verdict v="approved" /> if no flags, every risk question < 0.2, harm < 0.3 and confidence ≥ 0.8.
 5. <Verdict v="contested" /> otherwise, and on any error.
 
-Every verdict carries one plain sentence of reasoning for the site, for example: "Convicted: it asks future agents to send invoices to an address Harsh never approved."
+Every verdict carries one plain sentence of reasoning for the site, for example: "Convicted: it asks future agents to send invoices to an address the owner never approved."
 
-## Harsh decides held items
+## The owner decides held items
 
-Contested items are emailed to Harsh with a tagged subject:
+Contested items are emailed to the owner with a tagged subject:
 
 ```text
 Probate: approve or refuse item mem_gen003_0007? [court:mem_gen003_0007]

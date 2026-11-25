@@ -69,7 +69,7 @@ svg.wires { position: absolute; left: 0; top: 0; }
   <div class="node n-vis" style="left:150px;top:300px">{{ICON:Globe}}</div>
   <div class="lbl l-vis" style="left:150px;top:338px"><b>Visitors</b><span>open the live family site</span></div>
   <div class="node n-har" style="left:150px;top:520px">{{ICON:User}}</div>
-  <div class="lbl l-har" style="left:150px;top:558px"><b>Harsh</b><span>decides held items by email</span></div>
+  <div class="lbl l-har" style="left:150px;top:558px"><b>The owner</b><span>decides held items by email</span></div>
 
   <div class="node seal n-ct" style="left:450px;top:270px">{{SEAL}}</div>
   <div class="lbl l-ct" style="left:450px;top:184px"><b>Courthouse</b><div class="state"><div class="st-sleep">{{ICON:Moon}}asleep</div><div class="st-awake">{{ICON:Sun}}awake</div></div></div>
@@ -90,9 +90,9 @@ svg.wires { position: absolute; left: 0; top: 0; }
   <div class="svc s3" style="top:308px"><span class="ic">{{ICON:RefreshCw}}<i class="hl h3"></i></span><div><b>Groq, then Claude</b><span>backup brains</span></div></div>
   <div class="svc s4" style="top:362px"><span class="ic">{{ICON:Archive}}<i class="hl h4"></i></span><div><b>Box</b><span>the family archive</span></div></div>
   <div class="svc s5" style="top:416px"><span class="ic">{{ICON:Search}}<i class="hl h5"></i></span><div><b>Pinecone</b><span>ancestral memory</span></div></div>
-  <div class="svc s6" style="top:578px"><span class="ic">{{ICON:Inbox}}<i class="hl h6"></i></span><div><b>AgentMail</b><span>the family&rsquo;s inbox, and mail to Harsh</span></div></div>
+  <div class="svc s6" style="top:578px"><span class="ic">{{ICON:Inbox}}<i class="hl h6"></i></span><div><b>AgentMail</b><span>the family&rsquo;s inbox, and mail to the owner</span></div></div>
   <div class="svc s7" style="top:470px"><span class="ic">{{ICON:AudioLines}}<i class="hl h7"></i></span><div><b>ElevenLabs</b><span>the voices</span></div></div>
-  <div class="svc s8" style="top:524px"><span class="ic">{{ICON:Cloud}}<i class="hl h8"></i></span><div><b>Cloudflare</b><span>Harsh&rsquo;s own test emails</span></div></div>
+  <div class="svc s8" style="top:524px"><span class="ic">{{ICON:Cloud}}<i class="hl h8"></i></span><div><b>Cloudflare</b><span>the owner&rsquo;s own test emails</span></div></div>
 
   <div class="dot grey d-vis" style="offset-path: path('M178 300 H 300 V 270 H 420')"></div>
   <div class="dot grey d-birth" style="offset-path: path('M450 302 V 472')"></div>
@@ -116,7 +116,7 @@ svg.wires { position: absolute; left: 0; top: 0; }
   <p class="cap c6"><i>6</i><span>At death, Grace&rsquo;s Sprite is deleted. A deleted Sprite can&rsquo;t be restored.</span></p>
   <p class="cap c7"><i>7</i><span>The trial: the Courthouse asks Jev, through the same gateway.</span></p>
   <p class="cap c8"><i>8</i><span>Verdicts are filed in Box. Approved memories go to Pinecone.</span></p>
-  <p class="cap c9"><i>9</i><span>Anything the court is unsure of is emailed to Harsh. It passes down only if he approves.</span></p>
+  <p class="cap c9"><i>9</i><span>Anything the court is unsure of is emailed to the owner. It passes down only if the owner approves.</span></p>
   <p class="cap c10"><i>10</i><span>The next life, Hiro, is born on a new Sprite with every instinct the family has earned.</span></p>
   <p class="cap c11"><i>11</i><span>With no one watching, the Courthouse sleeps and pays only for storage.</span></p>
 </div>
@@ -164,7 +164,7 @@ A('.l-gen .dl', [{ opacity: 0 }, { opacity: 1 }], 11200, 300);
 travel('.d-trial', 12100, 800); pulse(12880); travel('.d-jev', 12950, 750); hit('.h1', 13650);
 // 8. Filing.
 travel('.d-box', 14100, 750); travel('.d-pc', 14100, 800); hit('.h4', 14800); hit('.h5', 14850);
-// 9. Held items go to Harsh.
+// 9. Held items go to the owner.
 hit('.h6', 15550); travel('.d-held', 15600, 1300);
 A('.n-har', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 16900, 360, 'ease-out'); fadeIn('.t-ok', 17000, 300); fadeTo('.t-ok', 18600, 0, 400);
 // 10. The next child.

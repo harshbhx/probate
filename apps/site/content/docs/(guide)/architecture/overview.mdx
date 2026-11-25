@@ -10,7 +10,7 @@ description: Two kinds of Sprite, one connector gateway, and a website on each s
 
 One Sprite, `probate-courthouse`, that never dies. It runs a FastAPI app on port 8080 with:
 
-- **The clock**: every 15 seconds it charges the [spending cap](/docs/guides/operate#spending-cap), applies Harsh's emailed decisions, and moves the family one step (birth, death, trial).
+- **The clock**: every 15 seconds it charges the [spending cap](/docs/guides/operate#spending-cap), applies the owner's emailed decisions, and moves the family one step (birth, death, trial).
 - **The court and distillation**, which run right after each death.
 - **The JSON API** the live site reads ([reference](/docs/reference/api)).
 - **The live site** itself: the React app from `apps/web`, served from the same origin.

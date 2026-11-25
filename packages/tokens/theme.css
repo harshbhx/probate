@@ -2,7 +2,7 @@
  *
  * Achromatic first. Hierarchy comes from the surface ladder and hairlines, not shadows or glows.
  * One brand accent (gilt) for the mark, focus rings and instincts. Colour otherwise only means
- * something: life (alive, resisted), verdict (convicted), amber (held for Harsh).
+ * something: life (alive, resisted), verdict (convicted), amber (held for the owner).
  * Every text level is at least 4.5:1 on every surface.
  */
 @theme {
@@ -26,7 +26,7 @@
   --color-gilt: #d9b46a;    /* brand accent: mark, focus, instincts */
   --color-life: #5be3a9;    /* alive, approved, resisted */
   --color-verdict: #ff6b6b; /* convicted, and nothing else */
-  --color-amber: #f2a93b;   /* held for Harsh, simulation notices */
+  --color-amber: #f2a93b;   /* held for the owner, simulation notices */
 
   /* type */
   --font-display: "Newsreader Variable", ui-serif, Georgia, serif;
