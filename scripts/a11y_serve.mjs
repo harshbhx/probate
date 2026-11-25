@@ -21,14 +21,28 @@ const json = (res, code, body) => {
   res.writeHead(code, { 'content-type': 'application/json' });
   res.end(JSON.stringify(body));
 };
-const resolve = (root, url) => decodeURIComponent(url.split('?')[0]).replace(/\/$/, '');
+// The URL path, normalised so ".." cannot climb out of the folder, and never a malformed escape.
+const resolve = (root, url) => {
+  let p;
+  try {
+    p = decodeURIComponent(url.split('?')[0]);
+  } catch {
+    p = '/';
+  }
+  return path.posix.normalize('/' + p).replace(/\/$/, '');
+};
+// A file is only served when it really lives inside the folder being served.
+const within = (root, f) => {
+  const r = path.resolve(f);
+  return r === root || r.startsWith(root + path.sep);
+};
 
 if (args.site) {
   const root = path.resolve(args.site);
   http
     .createServer((req, res) => {
       const p = resolve(root, req.url);
-      const f = [path.join(root, p), path.join(root, p + '.html'), path.join(root, p, 'index.html')].find(isFile);
+      const f = [path.join(root, p), path.join(root, p + '.html'), path.join(root, p, 'index.html')].filter((c) => within(root, c)).find(isFile);
       f ? send(res, 200, f) : send(res, 404, path.join(root, '404.html'));
     })
     .listen(+(args['site-port'] || 4747), '127.0.0.1');
@@ -45,7 +59,7 @@ if (args.web) {
           : json(res, 401, { error: 'invalid_key' });
       }
       const f = path.join(root, p);
-      isFile(f) ? send(res, 200, f) : send(res, 200, path.join(root, 'index.html'));
+      within(root, f) && isFile(f) ? send(res, 200, f) : send(res, 200, path.join(root, 'index.html'));
     })
     .listen(+(args['web-port'] || 4848), '127.0.0.1');
 }
