@@ -55,11 +55,47 @@ class Settings:
     )
     brain: str = field(default_factory=lambda: _env("PROBATE_BRAIN", "ollama:gpt-oss:120b"))
     budget_usd: float = field(default_factory=lambda: float(_env("PROBATE_BUDGET_USD", "20")))
+    # "continuous" (default): the clock free-runs and a new life starts as soon as one ends.
+    # "on_demand": nothing runs until a visitor asks for one short demo life (docs/13-RUNBOOK.md).
+    mode: str = field(default_factory=lambda: _env("PROBATE_MODE", "continuous").strip().lower())
+    demo_lifespan_seconds: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_LIFESPAN_SECONDS", "120"))
+    )
+    demo_suite_per_life: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_SUITE_PER_LIFE", "6"))
+    )
+    demo_cooldown_seconds: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_COOLDOWN_SECONDS", "120"))
+    )
+    demo_ip_per_hour: int = field(default_factory=lambda: int(_env("PROBATE_DEMO_IP_PER_HOUR", "3")))
+    demo_max_per_day: int = field(default_factory=lambda: int(_env("PROBATE_DEMO_MAX_PER_DAY", "30")))
+    demo_daily_budget_usd: float = field(
+        default_factory=lambda: float(_env("PROBATE_DEMO_DAILY_BUDGET_USD", "2"))
+    )
+    # How long past its death time a demo life may run (the trial included) before it is cut off.
+    demo_hard_timeout_extra: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_HARD_TIMEOUT_EXTRA_SECONDS", "240"))
+    )
+    # A real birth spends time creating the Sprite and installing code before the life starts.
+    demo_birth_allowance: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_BIRTH_ALLOWANCE_SECONDS", "120"))
+    )
     web_dist: Path = field(
         default_factory=lambda: Path(
             _env("PROBATE_WEB_DIST", str(REPO_ROOT / "apps" / "web" / "dist"))
         )
     )
+
+    def __post_init__(self) -> None:
+        if self.on_demand:
+            # Demo lives are short and small; the free-running clock's settings don't apply.
+            self.lifespan_seconds = self.demo_lifespan_seconds
+            self.suite_per_life = self.demo_suite_per_life
+            self.gap_seconds = 0
+
+    @property
+    def on_demand(self) -> bool:
+        return self.mode == "on_demand"
 
     def gateway(self, provider: str) -> str:
         conn = self.connections.get(provider, "")

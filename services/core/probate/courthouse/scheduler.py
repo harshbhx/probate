@@ -22,7 +22,7 @@ class Scheduler:
         self.store = family.store
         self.last_tick = None
 
-    def step(self, now: datetime | None = None) -> str:
+    def step(self, now: datetime | None = None, allow_birth: bool = True) -> str:
         now = now or datetime.now(UTC)
         if self.last_tick is not None:
             # The Courthouse is awake while the clock runs; cap the gap so a restart isn't billed.
@@ -49,6 +49,8 @@ class Scheduler:
         unfinished = [g for g in self.store.generations() if g.state == "dead"]
         for g in unfinished:  # a trial interrupted by a restart
             self.family.trial(g)
+        if not allow_birth:
+            return "idle"  # on-demand mode: only a visitor's request starts a life
         if self.store.get_setting("paused", "0") == "1":
             return "paused"  # the living finish their lives; no one new is born
         if self.family.budget.exhausted():

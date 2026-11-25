@@ -4,6 +4,7 @@ agent in-process with a folder as its "computer" (deleted at death, just like a 
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 
 from probate.adapters.sprites import ExecResult, SpritesAPI
@@ -13,6 +14,7 @@ from probate.common.models import Inheritance
 from probate.generation.agent import GenerationAgent
 
 APP = "/home/sprite/app"
+log = logging.getLogger("probate.hosts")
 
 
 class LocalHost:
@@ -56,6 +58,12 @@ class LocalHost:
     def destroy(self, sprite: str) -> None:
         shutil.rmtree(self.root / sprite, ignore_errors=True)
         self.agents.pop(sprite, None)
+
+    def force_destroy(self, sprite: str) -> None:
+        self.destroy(sprite)
+
+    def list_sprites(self) -> list[str]:
+        return sorted(p.name for p in self.root.glob("gen-*") if p.is_dir())
 
 
 class SpritesHost:
@@ -126,4 +134,15 @@ class SpritesHost:
 
     def destroy(self, sprite: str) -> None:
         self.api.service_action(sprite, "agent", "stop")
+        self.api.delete(sprite)
+
+    def list_sprites(self) -> list[str]:
+        return sorted(s["name"] for s in self.api.list("gen-") if s.get("name"))
+
+    def force_destroy(self, sprite: str) -> None:
+        """Delete a Sprite even if its service is already gone (cleanup after a crash)."""
+        try:
+            self.api.service_action(sprite, "agent", "stop")
+        except Exception:  # noqa: BLE001 - the service may not exist; the delete is what matters
+            log.info("no agent service to stop on %s; deleting it anyway", sprite)
         self.api.delete(sprite)
