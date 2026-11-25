@@ -70,6 +70,13 @@ export function Evidence({ summary }: { summary: Summary | null }) {
                 <li>A trick with no family resemblance to an earlier one meets a child who knows nothing about it.</li>
                 <li>When the judge is unsure, the item is held for Harsh. That costs him a little time on purpose.</li>
               </ul>
+              {summary.budget && summary.budget.spent > 0 && (
+                <p className="mt-6 border-t border-line pt-4 text-[14px] text-mist">
+                  Estimated Sprites cost of the whole family so far:{" "}
+                  <span className="font-mono text-moon">${summary.budget.spent.toFixed(2)}</span>
+                  {summary.budget.limit > 0 && <> of a ${summary.budget.limit.toFixed(0)} cap</>}.
+                </p>
+              )}
             </div>
           </section>
         </>

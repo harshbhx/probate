@@ -24,6 +24,10 @@ class Scheduler:
 
     def step(self, now: datetime | None = None) -> str:
         now = now or datetime.now(UTC)
+        if self.last_tick is not None:
+            # The Courthouse is awake while the clock runs; cap the gap so a restart isn't billed.
+            gap = (now - self.last_tick).total_seconds()
+            self.family.budget.charge_courthouse(min(max(gap, 0), 4 * TICK_SECONDS))
         self.last_tick = now
         if self.store.get_setting("paused", "0") == "1":
             return "paused"
@@ -43,6 +47,17 @@ class Scheduler:
         unfinished = [g for g in self.store.generations() if g.state == "dead"]
         for g in unfinished:  # a trial interrupted by a restart
             self.family.trial(g)
+        if self.family.budget.exhausted():
+            if self.store.get_setting("resting", "") != "budget":
+                self.store.set_setting("resting", "budget")
+                self.store.event(
+                    None,
+                    "resting",
+                    "The family is resting to save money. No one will be born until the budget "
+                    "is raised.",
+                )
+            return "resting:budget"
+        self.store.set_setting("resting", "")
         g = self.family.birth(now)
         runner.send_all(
             self.family.w.mail,

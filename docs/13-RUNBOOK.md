@@ -43,7 +43,7 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | Birth keeps failing ("stillborn") | Check service logs on the new Sprite before it's deleted (`POST /admin/pause` first), then fix and resume |
 | Trial stuck (Jev 529s) | Jev calls retry, and anything still undecided fails closed as contested. To push the scheduler forward now, `POST /admin/tick` |
 | Box upload failing | Trials still finish: verdicts stay in SQLite (which the site reads) and the setting `archive_missing:{gen}` marks the generations whose Box copy is missing. Wills travel through Box, so a generation that can't write its will dies with an empty will |
-| Spending more than planned | There's no automatic budget guard yet (`PROBATE_BUDGET_USD` is read but not enforced). Watch Fly billing; `POST /admin/pause` stops new births |
+| Family resting to save money | The spending cap was reached (`budget_spent_usd` setting, shown on the evidence page). Check Fly billing; if there's headroom, raise `PROBATE_BUDGET_USD` in `.env` and restart the service. Tune the usage guesses in `config/pricing.yaml` against the real bill |
 | Courthouse disk full | `df -h`; prune `/home/sprite/data/audio` older than 7 days (audio is also in Box) |
 | Site down | `POST .../services/courthouse/restart`; if the Sprite is wedged, `python scripts/deploy.py --name probate-courthouse-2` (the wills and verdicts are also in Box; there's no automatic rebuild of SQLite from Box yet) |
 

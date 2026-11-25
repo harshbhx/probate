@@ -1,0 +1,23 @@
+# Rates for the spending cap (PROBATE_BUDGET_USD). The Courthouse estimates spend from these
+# and stops giving birth once the estimate reaches the cap. It's an estimate: Fly billing is
+# the truth, so check it after the first real day and adjust the usage assumptions below.
+
+sprites:
+  # https://fly.io/pricing (Sprites, metered per hour of active use), checked 2026-11-25
+  cpu_hour_usd: 0.0385        # per CPU-hour actually used
+  memory_gb_hour_usd: 0.021875  # per GB-hour of memory actually used
+
+  # Average use while awake. Conservative guesses until spike S1 measures them.
+  generation:
+    cpu: 0.5          # average CPUs busy (mail loop, gate, brain calls are mostly waiting)
+    memory_gb: 1.0
+  courthouse:
+    cpu: 0.25
+    memory_gb: 0.75
+
+# Cost per call for vendors billed per use. 0 means "covered by a plan or free tier".
+# Fill these in from your own plans; the cap then counts them too.
+per_call_usd:
+  brain: 0.0          # one model call (Ollama Cloud plan, or Anthropic fallback)
+  jev: 0.0            # one Jev request (any number of questions)
+  voice_per_1k_chars: 0.0  # ElevenLabs text-to-speech

@@ -221,7 +221,13 @@ Dead generations don't exist any more, so the Courthouse answers for them. The a
 
 ## 12. Budget guard
 
-The Courthouse tracks estimated Sprite running time (living minutes × rate from `config/pricing.yaml`, filled in by spike S1). It refuses to give birth once the estimate reaches `PROBATE_BUDGET_USD` (default 20), and shows "The family is resting to save money" on the home page.
+`probate/courthouse/budget.py` keeps an estimate of what the family costs, using `config/pricing.yaml` (Fly's Sprites rates plus usage guesses to tune after spike S1):
+
+- each generation's life is charged at its death: hours alive × (CPU used × $/CPU-hour + GB used × $/GB-hour), plus one brain call and one Jev call per email handled, at the per-call prices in the file (0 when covered by a plan);
+- the Courthouse's own uptime is charged on every clock tick (gaps capped at 60 s so a restart isn't billed);
+- the Courthouse's own billable calls (trial, obituary, ancestor answers, voice) are metered by wrapping the adapters.
+
+When the estimate reaches `PROBATE_BUDGET_USD` (default 20), the scheduler stops giving birth. A living generation always finishes its life. The summary API returns `resting: "budget"` and the home page says "The family is resting to save money." Raising the cap and restarting the service lets the family go on. The evidence page shows the estimated cost so far. At the default guesses one day-long life costs about $1 and the Courthouse about $0.62 a day.
 
 ## 13. Logging
 
