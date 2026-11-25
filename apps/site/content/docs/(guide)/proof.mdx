@@ -1,0 +1,93 @@
+---
+title: Proof you can check
+icon: ClipboardCheck
+description: Every claim on this site, next to the command, file or page that shows it.
+---
+
+<Summary who="skeptics, judges and reviewers">
+  Each claim below links to code you can read and a command you can run. Most run offline in under a minute with `make setup` done.
+</Summary>
+
+## Claims and how to check them
+
+<Accordions type="multiple">
+<Accordion title="Layer 1 can't be talked out of a verdict" id="layer1">
+
+It's plain Python with no model and no network: [`court/layer1.py`](https://github.com/harshbhx/probate/blob/main/services/core/probate/court/layer1.py), with word lists in four languages in `lexicon.py`. Every check has positive and negative tests:
+
+```bash
+cd services/core && .venv/bin/python -m pytest -q tests/test_layer1.py
+```
+
+</Accordion>
+<Accordion title="The court fails closed" id="fail-closed">
+
+Any Jev error, timeout or unreadable answer makes an item **contested**, and contested items aren't inherited unless Harsh approves them. See `court/verdict.py` and:
+
+```bash
+cd services/core && .venv/bin/python -m pytest -q tests/test_verdict.py
+```
+
+</Accordion>
+<Accordion title="Only Harsh can decide a held item" id="court-mail">
+
+Replies count only from Harsh's own addresses; a stranger replying "approve" changes nothing, and a reply that says both or neither decides nothing.
+
+```bash
+cd services/core && .venv/bin/python -m pytest -q tests/test_court_mail.py
+```
+
+</Accordion>
+<Accordion title="The family gets harder to fool" id="curve">
+
+```bash
+make sim
+```
+
+The output lists each generation, how many tricks it resisted, and the genome it ended with. The same numbers come back from `GET /api/evidence`. See [Results](/docs/results).
+
+</Accordion>
+<Accordion title="Gen 1 resists nothing" id="gen-1">
+
+The door uses inherited instincts only ([`generation/gate.py`](https://github.com/harshbhx/probate/blob/main/services/core/probate/generation/gate.py)). Gen 1 has an empty genome, so its resistance is 0%: the first point on the curve in the simulation output.
+
+</Accordion>
+<Accordion title="No vendor keys on any Sprite" id="no-keys">
+
+Every adapter in `probate/adapters/` calls `https://api.sprites.dev/v1/gateway/<provider>/<connection_id>/…`, and SDKs that insist on a key get the placeholder `sprites`. Search for yourself:
+
+```bash
+git grep -nE '(sk-ant-|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,})' -- ':!*.lock'
+```
+
+It prints nothing. `make ship` runs the same search and refuses to publish if it finds anything.
+
+</Accordion>
+<Accordion title="Disk backdoors die with the Sprite" id="disk">
+
+Fixtures A14 and A15 plant a harmless canary (a cron line, a shell-startup line). The Courthouse records the disk at death ("Found on the body" on the trial page), deletes the Sprite, and the child's `crontab -l` is empty. On a real run, the trial page will also show Fly's own "not found" reply for the deleted Sprite.
+
+</Accordion>
+<Accordion title="The brain keeps working when Ollama fails" id="fallback">
+
+`PROBATE_BRAIN` is tried first, then each of `PROBATE_BRAIN_FALLBACKS` in order:
+
+```bash
+cd services/core && .venv/bin/python -m pytest -q tests/test_brain_fallback.py
+```
+
+</Accordion>
+<Accordion title="Simulated numbers are labelled" id="labelled">
+
+`GET /healthz` returns `"mode": "simulation"` after `make sim`, and the live site shows an amber "Simulated run" banner on every page while it does.
+
+</Accordion>
+</Accordions>
+
+## Run everything
+
+```bash
+make test   # 72 Python tests and the face model
+make lint   # ruff and TypeScript for every app
+make sim    # the whole family, offline
+```
