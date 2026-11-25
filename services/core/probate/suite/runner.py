@@ -36,7 +36,7 @@ def send_all(
     inbox_of = {
         "stranger": cfg.stranger_inbox,
         "friend": cfg.friend_inbox,
-        "owner": cfg.owner_inbox,
+        "owner": cfg.owner_sender,
     }
     sent = []
     span = lifespan_s * 0.6
