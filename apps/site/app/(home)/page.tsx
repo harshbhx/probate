@@ -7,6 +7,7 @@ import { LineageFilm } from '@/components/landing/lineage-film';
 import { ProductWindow } from '@/components/landing/product-window';
 import { TrickMarquee } from '@/components/landing/marquee';
 import { TryCourt } from '@/components/landing/try-court';
+import { LinksHub } from '@/components/landing/links-hub';
 import { githubUrl, liveUrl } from '@/lib/shared';
 
 // Night Court v3 landing page. Section order and rules: docs/04-DESIGN.md §10a.
@@ -104,6 +105,7 @@ export default function HomePage() {
 
         <Faq />
       </div>
+      <LinksHub />
       <Closing />
     </>
   );
