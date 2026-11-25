@@ -1,0 +1,118 @@
+name: deploy-courthouse
+
+# Continuous delivery for the Courthouse Sprite (scripts/deploy.py). MANUAL ONLY: it has no
+# push, schedule or pull_request trigger, and nothing else calls it.
+#
+#   mode = check   (default) builds the web bundle and runs `scripts/deploy.py --check`.
+#                  Changes nothing on Sprites.
+#   mode = deploy  runs `scripts/deploy.py` for real: uploads the code, rewrites the Sprite's
+#                  .env, and restarts the courthouse service. The living generation keeps its
+#                  old code; the next one born gets the new code.
+#
+# RULE: tell the VM agent BEFORE a real run. A deploy restarts the service the VM agent may be
+# watching. A real run also needs the `vm_agent_told` box ticked and must run from main.
+#
+# The job uses the GitHub environment `sprites`. Give it required reviewers (docs/CICD.md), so
+# even a check needs a human click before any secret is released.
+# Details: docs/CICD.md
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = validate config and bundle only (safe). deploy = REAL deploy to the Sprite."
+        type: choice
+        options: [check, deploy]
+        default: check
+      vm_agent_told:
+        description: "Required for deploy: I told the VM agent before this run."
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: deploy-courthouse
+  cancel-in-progress: false
+
+jobs:
+  courthouse:
+    name: ${{ inputs.mode }} the Courthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: sprites # required reviewers belong here
+    permissions:
+      contents: read
+    steps:
+      - name: Refuse unsafe real runs
+        env:
+          MODE: ${{ inputs.mode }}
+          TOLD: ${{ inputs.vm_agent_told }}
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [ "$MODE" = "deploy" ]; then
+            [ "$REF" = "refs/heads/main" ] || { echo "::error::Real deploys only run from main (this run is on $REF)."; exit 1; }
+            [ "$TOLD" = "true" ] || { echo "::error::Tell the VM agent first, then tick vm_agent_told."; exit 1; }
+          fi
+          echo "mode: $MODE"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-web
+      - uses: ./.github/actions/setup-core
+
+      - name: Lint and test the Courthouse
+        run: |
+          cd services/core
+          ruff check probate tests
+          PROBATE_DATA_DIR="$RUNNER_TEMP/probate" python -m pytest -q
+
+      - name: Build the web bundle
+        env:
+          VITE_DOCS_URL: ${{ vars.PROBATE_SITE_URL }}
+          VITE_REPO_URL: https://github.com/${{ github.repository }}
+        run: npm run build -w @probate/web
+
+      - name: Write services/core/.env from the environment secrets
+        env:
+          COURTHOUSE_ENV: ${{ secrets.COURTHOUSE_ENV }}
+          OWNER_YAML: ${{ secrets.OWNER_YAML }}
+        run: |
+          set -euo pipefail
+          [ -n "$COURTHOUSE_ENV" ] || { echo "::error::Secret COURTHOUSE_ENV is empty. Add it to the 'sprites' environment (docs/CICD.md)."; exit 1; }
+          # Mask before anything is written or used. Multi-line secrets are only masked as a whole
+          # by GitHub, so mask every sensitive-looking value line by line too.
+          while IFS= read -r line || [ -n "$line" ]; do
+            line="${line%$'\r'}"
+            case "$line" in ''|'#'*) continue ;; esac
+            key="${line%%=*}"; val="${line#*=}"
+            if [ -n "$val" ] && { [ "${#val}" -ge 12 ] || [[ "$key" =~ (TOKEN|KEY|SECRET|PASSWORD|CONNECTIONS) ]]; }; then
+              printf '::add-mask::%s\n' "$val"
+            fi
+          done <<< "$COURTHOUSE_ENV"
+          umask 077
+          printf '%s\n' "$COURTHOUSE_ENV" > services/core/.env
+          if [ -n "$OWNER_YAML" ]; then printf '%s\n' "$OWNER_YAML" > config/owner.yaml; fi
+          echo "wrote services/core/.env ($(wc -l < services/core/.env) lines, values not shown)"
+
+      - name: Check (and deploy when mode is deploy)
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          if [ "$MODE" = "deploy" ]; then
+            python scripts/deploy.py
+            if [ -f .data/courthouse-url.txt ]; then
+              echo "Courthouse is live: $(cat .data/courthouse-url.txt)" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            python scripts/deploy.py --check
+            echo "Check passed. Nothing on Sprites was changed." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Remove the secrets from the runner
+        if: always()
+        run: rm -f services/core/.env config/owner.yaml

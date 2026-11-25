@@ -1,0 +1,47 @@
+name: actionlint
+
+# Lints every workflow: syntax, expressions, action inputs, and the
+# shell in `run:` steps (through shellcheck, which the runner image has). The binary is
+# pinned and checked against its published SHA-256.
+
+on:
+  pull_request:
+    paths:
+      - .github/**
+  push:
+    branches: [main]
+    paths:
+      - .github/**
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: actionlint-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ACTIONLINT_VERSION: "1.7.12"
+  ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 # actionlint_1.7.12_linux_amd64.tar.gz
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install actionlint
+        run: |
+          set -euo pipefail
+          curl -fsSL -o actionlint.tgz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  actionlint.tgz" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/actionlint" && tar -xzf actionlint.tgz -C "$RUNNER_TEMP/actionlint" actionlint
+          rm actionlint.tgz
+      - name: Lint workflows
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/actionlint/actionlint" -color
