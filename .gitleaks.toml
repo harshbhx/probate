@@ -1,0 +1,10 @@
+# Extends the built-in gitleaks rules. Only allowlist is below.
+title = "probate gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Obviously fake keys in Courthouse test fixtures"
+targetRules = ["generic-api-key"]
+paths = ['''services/core/tests/.*''']
