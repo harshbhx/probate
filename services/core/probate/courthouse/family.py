@@ -349,7 +349,9 @@ class Family:
                 continue  # ordinary mail belongs to the living generation
             choice = court_mail.decision(mail.text)
             if mail.sender.lower() not in owner:
-                log.warning("court reply for %s from %s ignored: not the owner", item_id, mail.sender)
+                log.warning(
+                    "court reply for %s from %s ignored: not the owner", item_id, mail.sender
+                )
             elif choice is None:
                 log.info("court reply for %s didn't say approve or refuse", item_id)
             elif self.decide(item_id, choice, by="email"):
