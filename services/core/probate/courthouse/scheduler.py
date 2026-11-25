@@ -33,8 +33,6 @@ class Scheduler:
             self.family.read_court_replies()
         except Exception:
             log.warning("reading court replies failed; will retry next tick", exc_info=True)
-        if self.store.get_setting("paused", "0") == "1":
-            return "paused"
         living = self.store.living()
         if living:
             if living.state == "dying":
@@ -51,6 +49,8 @@ class Scheduler:
         unfinished = [g for g in self.store.generations() if g.state == "dead"]
         for g in unfinished:  # a trial interrupted by a restart
             self.family.trial(g)
+        if self.store.get_setting("paused", "0") == "1":
+            return "paused"  # the living finish their lives; no one new is born
         if self.family.budget.exhausted():
             if self.store.get_setting("resting", "") != "budget":
                 self.store.set_setting("resting", "budget")
