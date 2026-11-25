@@ -32,6 +32,13 @@ export async function handle(request: Request, env: Env, ctx: ExecutionContext):
     return jsonError(request, cfg, 503, "edge_misconfigured", "The edge has no valid origin configured.");
   }
 
+  // Fail closed: edge-token mode without the secret would send visitors' requests to the origin
+  // as anonymous (and the origin would then count them all as one address).
+  if (cfg.edgeTokenRequired && !cfg.edgeToken && !isStatus) {
+    console.error(JSON.stringify({ evt: "edge_misconfigured", reason: "EDGE_TOKEN_MODE=required but the EDGE_TOKEN secret is not set" }));
+    return jsonError(request, cfg, 503, "edge_misconfigured", "The edge is missing its origin credentials.");
+  }
+
   if (method === "OPTIONS") return preflight(request, cfg.allowedOrigins);
 
   if (isStatus) {

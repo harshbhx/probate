@@ -35,6 +35,7 @@ Stop the Courthouse and request `/api/summary` after its 15 s TTL: you get the o
 ## Secrets and variables
 
 - `ORIGIN_URL` (secret, required): `npx wrangler secret put ORIGIN_URL`. If unset or invalid the Worker answers 503 for everything. Do not add it to `vars`.
+- `EDGE_TOKEN` (secret): `npx wrangler secret put EDGE_TOKEN`, same value as the Courthouse's `PROBATE_EDGE_TOKEN`. `wrangler.jsonc` sets `EDGE_TOKEN_MODE=required`, so without it every route answers 503 `edge_misconfigured`. Generate one with `openssl rand -hex 24`.
 - `ORIGIN_AUTH_TOKEN` (secret, optional): bearer token if the Sprite URL is private.
 - Everything else is a var in `wrangler.jsonc` and is documented in docs/EDGE.md. `ALLOWED_ORIGINS` must be edited before a real deploy.
 - The `SNAPSHOTS` KV id and the `ratelimits` namespace ids in `wrangler.jsonc` are placeholders. Create the KV namespace with `npx wrangler kv namespace create SNAPSHOTS`.

@@ -3,6 +3,8 @@
 //
 // Nothing here is a secret. Secrets are set with `wrangler secret put` (see README.md):
 //   ORIGIN_URL         required. The Sprite URL, e.g. https://probate-courthouse-xxxx.sprites.app
+//   EDGE_TOKEN         required while EDGE_TOKEN_MODE is "required" (below). Same value as the
+//                      Courthouse's PROBATE_EDGE_TOKEN: `npx wrangler secret put EDGE_TOKEN`
 //   ORIGIN_AUTH_TOKEN  optional. Bearer token, only if the Sprite URL is private (auth = "sprite")
 // Do not also list ORIGIN_URL under "vars": a secret and a var of the same name collide.
 {
@@ -26,6 +28,9 @@
     // "on_demand": the Sprite sleeps; idle reads are served from snapshots (default).
     // "always_on": the Sprite free-runs; only the short base TTLs apply.
     "ORIGIN_MODE": "on_demand",
+    // "required": send X-Probate-Edge / X-Probate-Client-IP to the origin, and answer 503 on every
+    // route if the EDGE_TOKEN secret is missing. "off": only send them if the secret exists.
+    "EDGE_TOKEN_MODE": "required",
     "READ_TIMEOUT_MS": "10000", // give a cold Sprite this long when there is no snapshot to show
     "SLOW_MS": "2500", // with a snapshot, answer stale after this long instead of waiting
     "WRITE_TIMEOUT_MS": "20000", // total budget for a write, including cold-start retries
