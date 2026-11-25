@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { source } from '@/lib/source';
 import {
   DocsBody,
@@ -48,6 +49,9 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         <ViewOptionsPopover markdownUrl={markdownUrl} githubUrl={editUrl} />
       </div>
       <DocsBody>
+        {/* A Suspense boundary lets React hydrate the article separately from the page around it, in smaller
+            pieces, so the browser can answer input between them. */}
+        <Suspense>
         <MDX
           components={getMDXComponents({
             // Hard words show their meaning on hover; not on the glossary itself.
@@ -56,6 +60,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
             a: createRelativeLink(source, page),
           })}
         />
+        </Suspense>
       </DocsBody>
       <div className="mt-10 flex flex-row flex-wrap items-center justify-between gap-4 border-t pt-6">
         {editUrl && <EditOnGitHub href={editUrl} />}
