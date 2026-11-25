@@ -12,10 +12,10 @@ are exact. ffmpeg turns the frames into a GIF. Tokens in the HTML:
     {{SEAL}}            the Probate seal, with classes for drawing it in
 
 Needs Playwright with Chromium, ffmpeg, and the npm workspaces installed (for the fonts).
-faces.json comes from faces-entry.tsx (the real packages/faces component):
+faces.json and faces.css come from faces-entry.tsx (the real faces package, kinfaces):
 
-    npx esbuild design/readme/faces-entry.tsx --bundle --platform=node --jsx=automatic \
-      --outfile=/tmp/faces.cjs && (cd design/readme && node /tmp/faces.cjs)
+    cd design/readme && npx esbuild faces-entry.tsx --bundle --platform=node \
+      --outfile=/tmp/faces.cjs && node /tmp/faces.cjs
 
 curve.json is `generations` from GET /api/evidence after `make sim`; the curve scene was laid
 out from it, so regenerate scenes/curve.html's points if the numbers change.
@@ -124,7 +124,7 @@ SEAL_CSS = """
 
 
 def fill(html: str) -> str:
-    base = BASE.replace("NM", str(NM)).replace("FACESCSS", (REPO / "packages/faces/src/faces.css").read_text())
+    base = BASE.replace("NM", str(NM)).replace("FACESCSS", (HERE / "faces.css").read_text())
     html = html.replace("{{BASE}}", base).replace("{{SEAL}}", SEAL).replace("{{SEAL_JS}}", SEAL_JS).replace("{{SEAL_CSS}}", SEAL_CSS)
     html = re.sub(r"\{\{FACE:([^}]+)\}\}", lambda m: FACES[m.group(1)], html)
     html = re.sub(r"\{\{ICON:([^}]+)\}\}", lambda m: ICONS[m.group(1)], html)
