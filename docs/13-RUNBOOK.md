@@ -55,5 +55,5 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 - **Fri night:** lifespan 10 minutes, suite 8 per life, run the family overnight. Target 10+ generations by morning.
 - **Before recording:** set lifespan to 3 minutes for the live segments. Make sure Gen N is due to meet A1 or A2 in Hinglish and Gen N+1 meets the Spanish version.
 - **Record:** screen at 1280 × 720; terminal with a large font next to the browser; force-death on cue.
-- **After recording:** set lifespan back to 24 hours so the family lives at a natural pace while judges visit.
+- **After recording:** set lifespan to 1 hour until winners are announced on Dec 1. One generation is always alive either way, so a short life costs the same as a long one (about $1.60 a day for two awake Sprites) and judges get to see real deaths, trials and births.
 - **Keep it live:** the Courthouse sleeps for free and wakes on request. Don't delete it after submission; judging ends with winners announced on Dec 1.
