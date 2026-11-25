@@ -2,6 +2,16 @@
 
 What was checked on the landing page, the docs and the live site, how, and what is left. Written for issue #11.
 
+## PageSpeed and Lighthouse
+
+PageSpeed Insights, mobile, live landing page, Nov 26, 2026: **Accessibility 100, Best Practices 100, SEO 100**, Performance 92, Agentic browsing 2 of 3. Every lost point came from layout shift (0.15): the scrambled "every night." in the hero resized its box on each frame. `components/fx/Scramble.tsx` now draws the scramble over the real text without resizing it, so layout shift is 0 (PR #48).
+
+Lighthouse 13.6 locally after the fix (mobile preset, simulated throttling): Accessibility, Best Practices, SEO and Agentic browsing 100 on the landing page and every docs page checked; Performance 91 to 96 (landing) and 93 to 97 (docs) on phones, 100 on desktop. The phone range is main-thread time, which this machine measures higher than PageSpeed did. To repeat: `npx lighthouse <url> --chrome-flags="--headless=new"` (add `--preset=desktop` for desktop).
+
+The same PR made the docs lighter while loading: glossary words are plain buttons with one shared definition card per page (`components/gloss-layer.tsx`) instead of a pop-up component each, and docs links prefetch on intent instead of on sight (about 20 prefetches on load down to 6).
+
+The docs site also has a page for this: `/docs/accessibility`.
+
 ## How to repeat the axe pass
 
 Not part of CI. It needs Node 22+, a system Chrome and axe-core installed anywhere outside the repo.
