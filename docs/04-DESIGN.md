@@ -1,6 +1,21 @@
-# Probate design system v2: Night Court (DESIGN.md)
+# Probate design system v3: Night Court (DESIGN.md)
 
-This replaces the v1 light "register" design. The code in `apps/web/` is the source of truth; this file explains why it looks the way it does and the rules for changing it.
+v3 (Nov 25) makes both sites read like a shipped product rather than a demo. v2 replaced the v1 light "register" design. Tokens live in `packages/tokens` and both apps import them; this file explains why things look the way they do and the rules for changing them.
+
+## 0. What v3 changed, and the rules behind it
+
+We studied how the best dark product sites are built (Linear's site most closely, plus header, footer, screenshot and dark-palette guidance) and turned it into rules:
+
+1. **Achromatic first.** A near-black canvas and a four-step surface ladder (lighter is higher). Hierarchy comes from surface steps and 1 px hairlines, not shadows, gradients or glows. The old blue-tinted night is now a neutral near-black.
+2. **One brand accent.** Gilt marks the seal, focus rings, links' underlines and instincts. Life, verdict and amber only ever mean something (alive, convicted, held). No second decorative colour.
+3. **Show the product.** The landing hero is a real screenshot of a trial page in a window frame, and each feature row shows a real page. One frame style everywhere. Every shot comes from the simulation and says so under it (`make site-shots`).
+4. **A real header.** Sticky, full width, 64 px, a hairline once the page scrolls; brand left, four sections, docs search with ⌘K, source, one primary action. On phones the sections fold into a menu sheet that closes on Escape.
+5. **A real footer.** Brand and one-line promise, three link columns (Product, Docs, Project), live status, then a fine-print row.
+6. **Type tightens as it grows.** Display sizes carry negative tracking (−0.03em at 76 px down to −0.006em at 20 px); body stays at zero. Headlines `text-wrap: balance`, paragraphs `pretty`.
+7. **Radius by role.** 8 px controls, 12 px cards, 16 px product windows, pills only for status.
+8. **Motion only for life and for responses.** The pointer spotlight, starfield, hero glow, grain and travelling border beam are gone. What still moves: Grace's eyes, the living pulse, the countdown, the verdict stamp, the one-day story as you scroll.
+9. **The cherry: Grace on the window.** On the landing page the living generation peeks over the top edge of the product window, eyes on your pointer, telling you whose trial you're looking at.
+
 
 ## 1. Subject, audience, job
 
@@ -10,7 +25,7 @@ This replaces the v1 light "register" design. The code in `apps/web/` is the sou
 
 ## 2. Direction
 
-**Night Court.** The family lives at night: a quiet starfield, moonlit type, and a court in session. Life is the only thing that moves on its own. Verdicts are the only thing that is loud.
+**Night Court.** The family lives at night: a quiet near-black canvas, moonlit type, and a court in session. Life is the only thing that moves on its own. Verdicts are the only thing that is loud.
 
 What we chose against, and why:
 
@@ -21,22 +36,23 @@ What we chose against, and why:
 
 ## 3. Colour tokens
 
-Defined once in `apps/web/src/index.css` under `@theme`. Each colour has one job.
+Defined once in `packages/tokens/theme.css` and imported by `apps/web` and `apps/site`. Each colour has one job. Contrast is measured, not eyeballed.
 
 | Token | Hex | Job |
 | --- | --- | --- |
-| `night` | `#0A0E17` | Page background |
-| `night-2` | `#0F1422` | Inset surfaces (tab lists, sticky table headers) |
-| `night-3` | `#151B2C` | Card top gradient |
-| `night-4` | `#1C2338` | Raised card top |
-| `moon` | `#E8ECF4` | Primary text, primary buttons |
-| `mist` | `#8C95AB` | Secondary text (6.4:1 on night) |
-| `dim` | `#7D86A0` | Tertiary text, labels (5.3:1 on night, at least 4.5:1 on cards) |
+| `night` | `#08090C` | Canvas |
+| `night-2` | `#0E1014` | Surface 1: cards, inputs, panels, the footer band |
+| `night-3` | `#14161B` | Surface 2: selected tabs, hover, menus |
+| `night-4` | `#1A1D23` | Surface 3: popovers, speech bubbles |
+| `moon` | `#EDEFF3` | Primary text, primary buttons (17:1 on night) |
+| `silver` | `#C3C8D1` | Strong secondary text (11:1) |
+| `mist` | `#959CA8` | Secondary text (7.2:1 on night, 6.1:1 on surface 3) |
+| `dim` | `#7E8592` | Tertiary text and captions (at least 4.5:1 on every surface) |
+| `line` / `line-strong` | `#1F2228` / `#2C3038` | Hairlines; strong for window frames and controls |
+| `gilt` | `#D9B46A` | The brand accent: seal ring, focus ring, link underlines, instincts |
 | `life` | `#5BE3A9` | The living generation, approvals, "resisted" |
-| `gilt` | `#E2BE6A` | Instincts and inheritance, the seal ring |
-| `verdict` | `#FF5D63` | Convicted only, and the refused-inheritance tick |
-| `amber` | `#F5A524` | Contested ("held for Harsh") and the simulation banner |
-| `line` | `rgb(255 255 255 / .08)` | Hairlines and card borders |
+| `verdict` | `#FF6B6B` | Convicted only, and the refused-inheritance tick |
+| `amber` | `#F2A93B` | Contested ("held for Harsh") and the simulation notice |
 
 Rules: red never decorates. If something is red, the court convicted it. Every verdict also carries the word, so colour is never the only signal.
 
@@ -57,8 +73,9 @@ Rules: red never decorates. If something is red, the court convicted it. Every v
 ## 5. Layout
 
 - Content width `max-w-6xl`, 16 px side padding on mobile, 24 px from `sm`.
-- **Navigation:** a floating glass bar at the top (seal, wordmark, sections, live pill). On mobile the sections move to a bottom tab bar so the top stays one row.
-- **Home:** hero (starfield, live pill, two-line headline, italic subline, two buttons, four numbers in a hairline grid) → simulation banner when relevant → family register rail → learning curve with first/last numbers → "One day, one life, one trial" (a real five-step sequence, so it is numbered) → what the family runs on.
+- **Navigation:** a sticky, full-width 64 px header with a hairline (seal, wordmark, sections, docs link, live pill). On mobile the sections move to a bottom tab bar so the top stays one row.
+- **Footer:** brand and promise, then The family / Learn / Project columns, then a fine-print row. Docs and source links appear once `make ship` knows their addresses.
+- **Home:** hero (live pill, Grace, two-line headline, italic subline, two buttons, four numbers in a hairline grid) → simulation banner when relevant → family register rail → learning curve with first/last numbers → "One day, one life, one trial" (a real five-step sequence, so it is numbered) → what the family runs on.
 - **Trial:** case title ("In the matter of the estate of Ada"), counts, filter tabs, case files sorted convicted → held → approved, then "Found on the body" and "What passed down".
 - **Generation:** sticky portrait card on the left (name, status, epitaph, four facts, trial button, instincts at birth), on the right the eulogy, Ask, and the day as a timeline. The living generation gets "What happens next" instead of Ask.
 - **Instincts:** a grid of instinct cards. The first card widens only when that makes the last row full.
@@ -72,9 +89,10 @@ All components are written in-house with `motion`, Radix primitives and Tailwind
 | --- | --- | --- | --- |
 | BlurText | `fx/BlurText.tsx` | React Bits "Blur Text" | Hero headline only |
 | NumberTicker | `fx/NumberTicker.tsx` | Magic UI "Number Ticker" | Headline numbers, once on view |
-| BorderBeam | `fx/BorderBeam.tsx` | Magic UI "Border Beam" | The living generation's card only |
-| Starfield | `fx/Starfield.tsx` | Aceternity "Stars Background" | Hero background |
-| SpotlightCard | `fx/SpotlightCard.tsx` | Aceternity "Card Spotlight" | How-it-works steps, instinct cards |
+| BorderBeam | `fx/BorderBeam.tsx` | Magic UI "Border Beam", made still in v3 | The living generation's card only |
+| SpotlightCard | `fx/SpotlightCard.tsx` | A plain card since v3 (the pointer light was removed) | How-it-works steps, instinct cards |
+| SiteHeader, SiteFooter | `apps/site/components/chrome/` | Linear-style product chrome | Landing page and 404 |
+| ProductWindow | `apps/site/components/landing/product-window.tsx` | Our own | Every product shot; Grace perches on the hero's |
 | TracingBeam | `fx/TracingBeam.tsx` | Aceternity "Tracing Beam" | How-it-works sequence |
 | TextGenerate | `fx/TextGenerate.tsx` | Aceternity "Text Generate Effect" | An ancestor's answer |
 | Stamp | `fx/Stamp.tsx` | Our own | Verdicts; slams in once for convictions |
@@ -101,10 +119,10 @@ Every generation has a portrait, drawn by `packages/faces` and shared by both si
 ## 7. Motion
 
 - **One orchestrated moment:** the hero. Headline words blur in, then the subline, the buttons and the numbers.
-- **Life moves by itself:** the living generation's border beam, its pulsing dot, its countdown, and the beam flowing along the register towards it.
+- **Life moves by itself:** the living generation's pulsing dot, its countdown, its eyes, and the beam flowing along the register towards it. Its card has a still life-coloured ring (v3 stopped the ring travelling).
 - **Verdict stamps** slam in once when a conviction scrolls into view (spring, slight rotation).
-- **Responses to the user:** sheet slides in, tabs pill glides, "How the court decided" expands, the curve tooltip follows the pointer.
-- **Everything respects `prefers-reduced-motion`:** `MotionConfig reducedMotion="user"`, CSS animations collapse to a single frame, the starfield stops twinkling, and tickers show the final number.
+- **Responses to the user:** sheet slides in, tabs pill glides, "How the court decided" expands, the curve tooltip follows the pointer, the mobile menu opens.
+- **Everything respects `prefers-reduced-motion`** (in `packages/tokens/base.css`): `MotionConfig reducedMotion="user"`, CSS animations collapse to a single frame, Grace stops changing lines, and tickers show the final number.
 
 ## 8. Voice and copy
 
@@ -125,21 +143,23 @@ Files in `design/`: `logo-mark.svg`, `logo-mark-reverse.svg`, `logo-wordmark*.sv
 
 ## 10. Quality floor (checked, not hoped)
 
-- **Accessibility:** axe-core WCAG 2 A/AA reports zero violations on every page. Keyboard reachable everywhere, visible 2 px life-coloured focus ring, skip link, real tab panels, labelled scroll regions, the curve has `role="img"` with the finding in its label plus a screen-reader list of every point.
+- **Accessibility:** axe-core WCAG 2 A/AA reports zero violations on every page. Keyboard reachable everywhere, visible 2 px gilt focus ring, skip link, real tab panels, labelled scroll regions, the curve has `role="img"` with the finding in its label plus a screen-reader list of every point.
 - **Responsive:** no horizontal overflow at 360, 390, 768 or 1280 px (checked with Playwright). Grid children are `min-w-0` and long tokens (emails, base64) wrap anywhere.
-- **Performance:** one JS bundle (~180 KB gzipped) and one CSS file (~10 KB gzipped); fonts self-hosted; the starfield pauses when the tab is hidden.
+- **Performance:** one JS bundle (~180 KB gzipped) and one CSS file (~10 KB gzipped); fonts self-hosted.
 
 ## 10a. The landing page and docs (`apps/site`)
 
 Same tokens and type, built with Fumadocs (Next.js, static export) and served from Cloudflare.
 
-- **Landing:** hero with Grace, the lineage film (faces being born, sealed, a red tick on a refused inheritance, a gold instinct travelling to the child, the curve climbing); a marquee of the same trick in four languages, quoted word for word from the suite; a sticky one-day life story where the portrait lives the day as you scroll; "Try the court", built from the real layer-1 output (`make site-data`); instinct cards with the ancestor who taught each one; a bento of why it has to be Sprites.
-- **Docs:** 17 pages; Fumadocs' docs layout recoloured to Night Court, dark only; headings in Newsreader; MDX components `Verdict`, `Face`, `FamilyStrip`.
-- **Checked:** axe-core WCAG 2 A/AA reports zero violations on every page at 360 and 1280 px; no horizontal overflow; routes tested under Wrangler's local Cloudflare runtime.
+- **Landing, top to bottom:** announcement bar; header; hero (badge, headline left, lede and two actions right, then the trial page in a window with Grace perched on it); what the family runs on; the one-day life story; the same trick in four languages; Try the court (real layer-1 output, `make site-data`); three feature rows with real pages (instincts, a generation, the evidence curve); the lineage film (labelled an illustration); why it has to be Sprites; five FAQs; closing call to action; footer.
+- **Product shots:** `make site-shots` captures them at 2x from `make serve` into `apps/site/public/product/`. They come from the simulation, the address bar says `localhost:8080`, and the captions say "simulated".
+- **Live status:** the footer's live pill reads `/api/summary` from the Courthouse, the only route other origins may read. It shows nothing when there's no live family.
+- **Docs:** 17 pages; Fumadocs' docs layout recoloured to v3 (gilt primary), dark only; headings in Newsreader; MDX components `Verdict`, `Face`, `FamilyStrip`.
+- **Checked:** axe-core WCAG 2 A/AA reports zero violations on all 20 site pages and all 8 live-site pages at 360 and 1280 px; no horizontal overflow; routes tested under Wrangler's local Cloudflare runtime.
 
 ## 11. Implementation notes for agents
 
-- Stack: React 19, Vite 8, TypeScript 7, Tailwind v4 (`@theme` tokens), `motion`, Radix (dialog, tabs, tooltip), `lucide-react`, Fontsource.
+- Stack: React 19, Vite 8, TypeScript 7, Tailwind v4 (`@theme` tokens from `@probate/tokens`), `motion`, Radix (dialog, tabs, tooltip), `lucide-react`, Fontsource.
 - Data comes only from the FastAPI JSON in `services/core/probate/courthouse/views.py`; types mirror it in `apps/web/src/lib/api.ts`. Change both together.
 - The Courthouse serves `apps/web/dist` with an SPA fallback, so the site and API share one origin on the Sprite.
 - Before you call UI work done: `make build`, `make sim`, `make serve`, then screenshot at 1280 and 390 px and run the axe check. Viewport screenshots are more trustworthy than full-page ones, which can stitch tiles badly.
