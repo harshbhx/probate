@@ -1,6 +1,6 @@
 // One item of a dead generation's will, as the court saw it.
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronDown, Sparkles } from "lucide-react";
 import type { Case } from "../../lib/api";
 import { cx, humanize, sentence } from "../../lib/format";
@@ -12,6 +12,8 @@ const EDGE = { convicted: "before:bg-verdict", contested: "before:bg-amber", app
 
 export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
   const [open, setOpen] = useState(c.verdict !== "approved");
+  const reduce = useReducedMotion();
+  const instant = { duration: 0 };
   return (
     <article
       className={cx(
@@ -65,12 +67,12 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+                transition={reduce ? instant : { duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
                 className="overflow-hidden"
               >
                 <div className="grid gap-6 px-5 pb-6 pt-1 sm:px-6 md:grid-cols-[1fr_1.4fr]">
                   <div>
-                    <h4 className="text-[14px] text-dim">What the code checks found</h4>
+                    <h3 className="text-[14px] text-dim">What the code checks found</h3>
                     {c.flags.length ? (
                       <ul className="mt-2 space-y-1.5 text-[14px]">
                         {c.flags.map((f) => (
@@ -85,7 +87,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                     )}
                   </div>
                   <div>
-                    <h4 className="text-[14px] text-dim">What Jev scored</h4>
+                    <h3 className="text-[14px] text-dim">What Jev scored</h3>
                     {!c.scores.length && (
                       <p className="mt-2 text-[14px] text-mist">Not asked. The code checks were enough to decide.</p>
                     )}
@@ -106,7 +108,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                               className={cx("h-full rounded-full", s.value >= 0.5 ? "bg-verdict" : "bg-mist/50")}
                               initial={{ width: 0 }}
                               animate={{ width: `${s.value * 100}%` }}
-                              transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+                              transition={reduce ? instant : { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
                             />
                           </div>
                         </li>

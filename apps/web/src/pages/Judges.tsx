@@ -181,9 +181,9 @@ function Locked({ access, onUnlock }: { access: Access; onUnlock: (k: string) =>
         </button>
         <p className="mt-6 border-t border-line pt-5 text-[14px] text-mist">
           No key? Everything else is still open:{" "}
-          <Link to="/trial" className="text-moon underline-offset-4 hover:underline">trials</Link>,{" "}
-          <Link to="/instincts" className="text-moon underline-offset-4 hover:underline">instincts</Link> and the{" "}
-          <Link to="/evidence" className="text-moon underline-offset-4 hover:underline">evidence</Link>.
+          <Link to="/trial" className="text-moon underline decoration-gilt/50 underline-offset-4 hover:decoration-gilt">trials</Link>,{" "}
+          <Link to="/instincts" className="text-moon underline decoration-gilt/50 underline-offset-4 hover:decoration-gilt">instincts</Link> and the{" "}
+          <Link to="/evidence" className="text-moon underline decoration-gilt/50 underline-offset-4 hover:decoration-gilt">evidence</Link>.
         </p>
       </form>
     </section>
