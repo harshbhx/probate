@@ -1,21 +1,10 @@
 ---
 title: Overview
+icon: Network
 description: Two kinds of Sprite, one connector gateway, and a website on each side.
 ---
 
-```text
-                        ┌────────────────────────────────────┐
-  visitors ───────────▶ │  Courthouse Sprite (lives forever) │ ◀── Harsh's email replies
-                        │  clock · court · API · live site   │
-                        └──────┬───────────────────┬─────────┘
-                 Sprites API   │                   │  connector gateway
-          create · exec · fs   │                   │  (no keys on any Sprite)
-          services · delete    ▼                   ▼
-                        ┌──────────────┐   Jev · AgentMail · Box
-                        │ Generation   │   Pinecone · Ollama · ElevenLabs
-                        │ Sprite (1/day)├──▶ (same gateway)
-                        └──────────────┘
-```
+<Diagram src="/diagrams/overview.webp" alt="Visitors reach the Courthouse Sprite over HTTPS. The Courthouse drives generation Sprites through the Sprites API. Generations call TypeSafe Jev, Ollama Cloud, Box, Pinecone, AgentMail and ElevenLabs only through the connector gateway, which adds the keys. The landing page and docs are on Cloudflare." width={2000} height={1240} caption="Keys live only in the connector gateway. Neither the Courthouse nor any generation holds one. Click to zoom." />
 
 ## The Courthouse
 
