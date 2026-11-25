@@ -12,6 +12,9 @@ everything below is unreleased and was built during Fly.io Hacksgiving 2026 (fro
 
 ### Added
 
+- **Judge mailroom.** `POST /api/judge/mail` lets a judge send a real email to the family inbox as the
+  Friend or the Stranger (never the owner), `GET /api/judge/mail` follows it to the court's verdict,
+  `GET /admin/judge/mail` is the audit; panel on the For judges page.
 - **Courthouse and court.** The two-layer court (layer 1 deterministic checks, layer 2 Jev
   typed questions), instinct distillation, the Courthouse (store, hosts, family lifecycle,
   scheduler, API), the generation agent with inbox loop, instinct gate, body and CLI, and the

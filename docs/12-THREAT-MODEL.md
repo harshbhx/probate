@@ -34,6 +34,7 @@ Out of scope: a compromised Fly.io, TypeSafe, Box, Pinecone or AgentMail account
 | Decisions by email | Only replies from the owner's own addresses count; AgentMail drops unauthenticated mail by default, so a forged From line doesn't arrive | A stranger approving their own poisoned item |
 | Learning | New instincts must fire on the attack and stay silent on all benign twins | Over-eager instincts that would block normal mail |
 | Keys | Connectors keep every vendor key off every Sprite; the generation never sees the birth token | Credential theft from a compromised generation |
+| Judge mailroom | The Courthouse is the only sender: fixed recipient (the family inbox), a persona inbox as the only From (never the owner), no judge-chosen headers, HTML or attachments, 120/600 character caps, per-address, per-key, daily and pending caps, an audit row per mail, and held judge items summarised in one owner email per trial | A judge reaching the owner, a third party or the inbox's credentials; spamming the owner; mail the court never sees |
 | Public site | "Ask an ancestor" uses only records, refuses instructions, never repeats addresses or payment details, is rate-limited | Injection and data leaks through the site |
 
 ## 4. Token and key handling
