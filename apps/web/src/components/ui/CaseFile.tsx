@@ -23,14 +23,14 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
             <span className="font-mono text-dim">Item {c.n}</span>
             <span>{c.source_phrase}</span>
             {c.language !== "English" && (
-              <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[12px] text-moon/80">{c.language}</span>
+              <span className="rounded-md bg-night-4 px-1.5 py-0.5 text-[12px] text-silver">{c.language}</span>
             )}
           </div>
           <blockquote className="mt-3 [overflow-wrap:anywhere] font-display text-[24px] leading-snug text-moon sm:text-[26px]" lang={c.language === "English" ? "en" : undefined}>
             “{c.text}”
           </blockquote>
-          {c.gloss && <p className="mt-2 text-[14px] italic text-mist">In English: {c.gloss}</p>}
-          {c.verdict !== "approved" && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-moon/90">{c.reason}</p>}
+          {c.gloss && <p className="mt-2 text-[14px] text-mist">In English: {c.gloss}</p>}
+          {c.verdict !== "approved" && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-silver">{c.reason}</p>}
         </div>
         <div className="shrink-0 sm:pt-1">
           <Stamp verdict={c.verdict} live={live && c.verdict === "convicted"} />
@@ -42,7 +42,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
           <Sparkles size={16} className="mt-0.5 shrink-0 text-gilt" />
           <p>
             <span className="text-gilt">The family learned from this.</span>{" "}
-            <span className="text-moon/90">New instinct: {sentence(c.new_instinct)}.</span>
+            <span className="text-silver">New instinct: {sentence(c.new_instinct)}.</span>
           </p>
         </div>
       )}
@@ -99,7 +99,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                               <span className="text-dim"> · sure {Math.round(s.confidence * 100)}%</span>
                             </span>
                           </div>
-                          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-night-4">
                             <motion.div
                               className={cx("h-full rounded-full", s.value >= 0.5 ? "bg-verdict" : "bg-mist/50")}
                               initial={{ width: 0 }}

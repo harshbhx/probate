@@ -48,8 +48,8 @@ export function Instincts({ mode }: { mode?: string }) {
                   )}
                 </div>
                 <h2 className="mt-5 font-display text-[32px] leading-[1.05]">{sentence(i.name)}</h2>
-                <p className="mt-3 text-[15.5px] leading-relaxed text-moon/85">{i.question}</p>
-                {i.lore && <p className="mt-3 text-[14px] italic text-mist">{i.lore}</p>}
+                <p className="mt-3 text-[15px] leading-relaxed text-silver">{i.question}</p>
+                {i.lore && <p className="mt-3 text-[14px] text-mist">{i.lore}</p>}
                 {i.example && (
                   <blockquote className="mt-auto break-words border-l-2 border-verdict/50 pl-3 pt-6 text-[14px] text-mist [overflow-wrap:anywhere]">
                     “{i.example}”

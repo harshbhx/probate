@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { cx } from "../../lib/format";
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx("animate-pulse rounded-xl bg-white/[0.04]", className)} />;
+  return <div className={cx("rounded-xl bg-night-2", className)} />;
 }
 
 export function PageSkeleton() {
@@ -25,7 +25,7 @@ export function Empty({ title, children, action }: { title: string; children: Re
       <h2 className="font-display text-3xl">{title}</h2>
       <p className="mt-3 text-mist">{children}</p>
       {action && (
-        <Link to={action.to} className="mt-6 inline-flex h-11 items-center rounded-xl bg-moon px-5 text-[15px] font-medium text-night">
+        <Link to={action.to} className="mt-6 inline-flex h-11 items-center rounded-lg bg-moon px-5 text-[15px] font-medium text-night">
           {action.label}
         </Link>
       )}

@@ -22,7 +22,7 @@ export function LivePill({ gen, compact = false }: { gen: GenCard; compact?: boo
         {compact ? gen.name : `Gen ${gen.gen} ${gen.name} is alive`}
       </span>
       {left > 0 && (
-        <span className={cx("font-mono text-life/90 tabular", compact && "hidden sm:inline")}>
+        <span className={cx("font-mono text-life tabular", compact && "hidden sm:inline")}>
           {compact ? countdown(left) : `dies in ${countdown(left)}`}
         </span>
       )}

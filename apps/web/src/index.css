@@ -11,20 +11,11 @@
 /* Live-site motion tokens. Colours, type and radius come from @probate/tokens (docs/04-DESIGN.md). */
 @theme {
   --animate-pulse-life: pulse-life 2.4s ease-in-out infinite;
-  --animate-border-beam: border-beam 6s linear infinite;
-  --animate-beam-flow: beam-flow 3.2s linear infinite;
 }
 
 @keyframes pulse-life {
   0%, 100% { box-shadow: 0 0 0 0 rgb(91 227 169 / 0.5); }
   50% { box-shadow: 0 0 0 6px rgb(91 227 169 / 0); }
-}
-@keyframes border-beam {
-  to { offset-distance: 100%; }
-}
-@keyframes beam-flow {
-  from { stroke-dashoffset: 240; }
-  to { stroke-dashoffset: 0; }
 }
 
 @layer base {

@@ -100,14 +100,14 @@ export function MobileTabs() {
               {active && (
                 <motion.span
                   layoutId="mobile-tab"
-                  className="absolute inset-0 rounded-xl bg-white/[0.08]"
+                  className="absolute inset-0 rounded-xl bg-night-4"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
               <Link
                 to={l.to}
                 aria-current={active ? "page" : undefined}
-                className={cx("relative block rounded-xl py-2.5 text-center text-[13.5px]", active ? "text-moon" : "text-mist")}
+                className={cx("relative block rounded-xl py-2.5 text-center text-[14px]", active ? "text-moon" : "text-mist")}
               >
                 {l.label}
               </Link>
