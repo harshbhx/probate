@@ -46,7 +46,7 @@ SCENES = {
     "lineage": (1200, 600, 16000, True),
     "court": (1200, 580, 10000, True),
     "curve": (1200, 580, 7500, True),
-    "architecture": (1200, 640, 11000, True),
+    "architecture": (1200, 760, 22000, True),
     "outro": (1200, 440, 6000, False),
 }
 FPS = 25
