@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/chrome/site-header';
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <>
-      <div className="border-b border-line bg-night-2 text-[13px] text-mist">
+      <aside aria-label="Hacksgiving 2026" className="border-b border-line bg-night-2 text-[13px] text-mist">
         <p className="mx-auto max-w-6xl px-5 py-2.5 text-center sm:px-6">
           <span className="hidden sm:inline">Probate is an entry in Fly.io Hacksgiving 2026.</span>
           <span className="sm:hidden">A Hacksgiving 2026 entry.</span>{' '}
@@ -14,7 +14,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
             See how it uses Sprites
           </Link>
         </p>
-      </div>
+      </aside>
       <ScrollProgress />
       <SiteHeader />
       <main id="content" className="flex flex-1 flex-col">

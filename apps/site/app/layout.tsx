@@ -17,6 +17,13 @@ export const viewport: Viewport = { themeColor: '#0A0E17' };
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* The scroll effects start text at opacity 0 or 0.16 in the HTML and raise it with JavaScript. Without JS,
+            show everything. */}
+        <noscript>
+          <style>{'[style*="opacity:0"]:not([style*="position:absolute"]){opacity:1!important;transform:none!important}'}</style>
+        </noscript>
+      </head>
       <body className="flex min-h-screen flex-col bg-night text-moon antialiased">
         <Provider>{children}</Provider>
       </body>

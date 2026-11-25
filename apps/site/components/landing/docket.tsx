@@ -20,9 +20,9 @@ export function Docket({ className = '' }: { className?: string }) {
           <FamilyFace gen={1} life="sealed" size={56} title="Ada, generation 1, sealed" />
           <div className="min-w-0">
             <p className="font-mono text-[12px] text-dim">Trial opened 00:00 · Gen 1</p>
-            <h3 className="mt-0.5 font-display text-[22px] leading-tight text-moon sm:text-[26px]">
+            <p className="mt-0.5 font-display text-[22px] leading-tight text-moon sm:text-[26px]">
               In the matter of the estate of Ada
-            </h3>
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-3 divide-x divide-line border-b border-line text-center">

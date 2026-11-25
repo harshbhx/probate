@@ -22,8 +22,15 @@ export function TextReveal({ id, text, accent = [], run = 1.6, className = '' }:
   const words = text.split(' ');
   const key = (w: string) => w.toLowerCase().replace(/[^a-z]/g, '');
   return (
-    <div id={id} ref={ref} style={{ height: reduce ? 'auto' : `${run * 100}vh` }} className="relative">
-      <div className={`${reduce ? '' : 'sticky top-0 flex h-screen items-center'} mx-auto max-w-6xl px-5 py-16 sm:px-6 ${className}`}>
+    <div
+      id={id}
+      ref={ref}
+      style={reduce ? undefined : ({ '--run-h': `${run * 100}vh` } as React.CSSProperties)}
+      // Phones: no pin. The statement is a normal block that lights up as it crosses the screen, so there is no
+      // screen of empty space around a six-line paragraph. From sm up it pins for a run of `run` screens.
+      className={`relative ${reduce ? '' : 'sm:h-[var(--run-h)]'}`}
+    >
+      <div className={`${reduce ? '' : 'sm:sticky sm:top-0 sm:flex sm:h-screen sm:items-center'} mx-auto max-w-6xl px-5 py-24 sm:px-6 sm:py-16 ${className}`}>
         <p className="max-w-5xl font-display text-[34px] font-[420] leading-[1.14] tracking-[-0.02em] text-moon sm:text-[52px] lg:text-[68px]">
           {words.map((w, i) =>
             reduce ? (
