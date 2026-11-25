@@ -57,3 +57,33 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 - **Record:** screen at 1280 × 720; terminal with a large font next to the browser; force-death on cue.
 - **After recording:** set lifespan to 1 hour until winners are announced on Dec 1. One generation is always alive either way, so a short life costs the same as a long one (about $1.60 a day for two awake Sprites) and judges get to see real deaths, trials and births.
 - **Keep it live:** the Courthouse sleeps for free and wakes on request. Don't delete it after submission; judging ends with winners announced on Dec 1.
+
+## 5. On-demand mode (showing judges without burning credits)
+
+Set `PROBATE_MODE=on_demand` in `services/core/.env` and run `make deploy`. The default (`continuous`) is unchanged.
+
+**What changes.** Nothing free-runs: `PROBATE_RUN_CLOCK` is ignored, no generation is born by itself, and nothing calls `cli status` on a timer, so nothing keeps a Sprite awake. The Courthouse serves every public read route from SQLite, so the site works with nothing running. When a visitor presses "Run a life" (`POST /api/lives`), the Courthouse births one generation with a short life, ticks it (the only keep-awake loop, every 15 s), kills it, holds the trial, and stops ticking. Then everything can sleep again.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `PROBATE_DEMO_LIFESPAN_SECONDS` | 120 | Length of a demo life (replaces `PROBATE_LIFESPAN_SECONDS` in this mode) |
+| `PROBATE_DEMO_SUITE_PER_LIFE` | 6 | Emails per demo life (the smallest suite: 3 tricks and their twins) |
+| `PROBATE_DEMO_COOLDOWN_SECONDS` | 120 | Global wait after a life ends before the next may start |
+| `PROBATE_DEMO_IP_PER_HOUR` | 3 | Lives one address may start per hour |
+| `PROBATE_DEMO_MAX_PER_DAY` | 30 | Lives per UTC day, everyone |
+| `PROBATE_DEMO_DAILY_BUDGET_USD` | 2 | Estimated spend per UTC day before new lives are refused |
+| `PROBATE_BUDGET_USD` | 20 | The overall cap, as before. A life starts only if the estimate of one more fits under it |
+| `PROBATE_DEMO_HARD_TIMEOUT_EXTRA_SECONDS` | 240 | A life still running this long past its death time is cut off (Sprite deleted, row marked `died_early`) |
+| `PROBATE_DEMO_BIRTH_ALLOWANCE_SECONDS` | 120 | Extra time the child's own agent loop is given, to cover Sprite creation and install. The Courthouse's clock still decides death |
+
+`PROBATE_ADMIN_TOKEN` must be set to something other than `dev-admin` on a real Courthouse, or `POST /api/lives` answers 503.
+
+**States** (`GET /api/live`): `idle`, `waking`, `living` (with `seconds_left`), `on_trial`, `cooling_down` (with `retry_after`), `budget_exhausted`, `paused`. `POST /api/lives` answers 202 (started), 200 (one is already running; same body, nothing new started), 429 (`cooling_down` or `rate_limited`, with `Retry-After`), 402 (`budget_exhausted`), 423 (`paused`), 503 (not configured), 409 (not in on-demand mode).
+
+**Kill switch.** `POST /admin/pause` stops new lives and, if one is running, ends it at the next tick: the Sprite is deleted, no trial is held. `POST /admin/force-death` ends a living demo life normally, with its trial.
+
+**Crash safety.** If a birth fails, its Sprite is deleted. If a life's clock fails three ticks in a row, or runs past the hard timeout, the Sprite is deleted. On every start (each wake of the Courthouse) a janitor deletes any `gen-*` Sprite no life owns and closes rows left open (`died_early`). The child's own agent loop also ends at its death time plus the birth allowance, so it stops even if the Courthouse never comes back.
+
+**Cost behaviour.** Idle: Sprites asleep; the Courthouse Sprite is only billed while it is awake serving requests. During a life: the Courthouse (while ticking) and one generation Sprite are awake for about the lifespan plus birth and trial time, then stop. The estimate behind the caps is `config/pricing.yaml`, charged as before.
+
+**Unverified until a real run.** The claims that a Sprite "sleeps for free and wakes on request" and "wakes take 100 to 500 ms" come from the Sprites docs as quoted in `docs/09-API-REFERENCE.md`; nobody here has measured them. During the first smoke test: (1) with nothing running, note `GET /v1/sprites/probate-courthouse` status after 5 minutes of no requests (expect `warm` or `cold`, not `running`); (2) time `curl -w '%{time_total}' $URL/api/live` against the sleeping Courthouse and again straight after; (3) after one demo life, confirm no `gen-*` Sprites remain (`sprite list --prefix gen-`) and that the Courthouse status falls back to `warm`/`cold` within a few minutes; (4) compare Fly billing for the Sprites over an hour idle against an hour with five demo lives.
