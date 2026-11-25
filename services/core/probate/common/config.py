@@ -96,6 +96,10 @@ class Settings:
     # Judge key: one shared secret that lets a judge PLAY (start a life, attack the family) while the
     # read-only pages stay open. It is not an admin credential (docs/13-RUNBOOK.md section 6).
     judge_key: str = field(default_factory=lambda: _env("PROBATE_JUDGE_KEY"))
+    # Shared secret with the Cloudflare edge Worker (docs/EDGE.md). Unset: nothing changes. Set: a
+    # request carrying a matching X-Probate-Edge header has its real client address taken from
+    # X-Probate-Client-IP. A value under 16 characters is ignored.
+    edge_token: str = field(default_factory=lambda: _env("PROBATE_EDGE_TOKEN").strip())
     require_key_for_play_env: str = field(
         default_factory=lambda: _env("PROBATE_REQUIRE_KEY_FOR_PLAY").strip()
     )
