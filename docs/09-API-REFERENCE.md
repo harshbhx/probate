@@ -57,6 +57,20 @@ Base `https://api.sprites.dev/v1`, header `Authorization: Bearer $SPRITES_TOKEN`
 
 Use `extracted_text` (not raw text) as the body the agent sees. Store `X-Probate-Fixture` from `headers` for scoring only. Spike S6 confirms custom headers survive delivery.
 
+## 4a. Cloudflare Email Service (via a custom-API connector named `cloudflare`)
+
+Sends the suite's "from Harsh" emails from his own domain, so AgentMail stays at three inboxes.
+
+| Item | Value |
+| --- | --- |
+| Send | `POST /client/v4/accounts/{account_id}/email/sending/send` `{"to", "from", "subject", "text", "html"?, "headers"?: {...}, "attachments"?: [{"content": <base64>, "filename", "type", "disposition"}]}` |
+| Success | `{"success": true, "errors": [], "result": {"message_id": "...", "delivered": [...], "queued": [...]}}` |
+| Failure | `{"success": false, "errors": [{"code": 10001, "message": "email.sending.error.invalid_request_schema"}], "result": null}` |
+| Plan | Sending to arbitrary recipients needs Workers Paid; sending to verified destination addresses in the account is free on every plan. We only send to the family inbox, verified as a destination |
+| Spike S6b | The custom-API connector's gateway path; custom `X-` headers preserved on delivery |
+
+Docs: https://developers.cloudflare.com/email-service/api/send-emails/rest-api/ and https://developers.cloudflare.com/email-service/platform/pricing/
+
 ## 5. Pinecone (via the `pinecone` connector)
 
 - Create the index once from the console or CLI with **integrated embedding** (field map `chunk_text`), named `probate-ancestry`.
