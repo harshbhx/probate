@@ -35,6 +35,7 @@ The family gets harder to fool with every generation.
 | **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
 | **Code** | This repository, plus the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and four [packages](#packages) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
+| **For AI agents** | An [ARD manifest](apps/site/app/.well-known/ard.json/route.ts), two Agent Skills and four WebMCP tools, so an agent can find and use Probate on its own: [what each one does](apps/site/content/docs/%28reference%29/reference/agents.mdx). Lighthouse Agentic browsing: 100 |
 | **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
 | **Live family, video, write-up** | Linked here on submission day, Nov 28 |
 
