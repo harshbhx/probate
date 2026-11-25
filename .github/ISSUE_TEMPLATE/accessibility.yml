@@ -62,8 +62,14 @@ body:
     attributes:
       label: Browser, device and assistive technology
       placeholder: Safari on iPhone 15, VoiceOver
+  - type: upload
+    id: screenshots
+    attributes:
+      label: Screenshot or recording
+      description: Optional. A picture or a short screen recording of the barrier, if you're comfortable sharing one.
+    validations:
+      required: false
   - type: textarea
     id: more
     attributes:
       label: Anything else?
-      description: Screenshots or a short recording help, if you're comfortable sharing them.
