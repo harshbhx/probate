@@ -1,0 +1,69 @@
+name: github-packages
+
+# Publishes scoped mirror copies of the npm packages to GitHub Packages, so they show up under
+# "Packages" on the repository. Manual only. Uses the workflow's own GITHUB_TOKEN (no personal
+# token). GitHub's npm registry only accepts names scoped to the owner, so the scope is added at
+# publish time (the packages in the repository keep their unscoped npm names).
+# Python packages cannot be hosted on GitHub Packages. Details: docs/CICD.md
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only pack and print what would be published"
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: github-packages
+  cancel-in-progress: false
+
+env:
+  SCOPE: "@harshbhx"
+  REGISTRY: "https://npm.pkg.github.com"
+
+jobs:
+  publish:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@harshbhx"
+      - run: npm ci
+      - name: Test and build
+        run: |
+          npm test -w kinfaces
+          npm run build -w probate-client
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          for dir in packages/faces packages/client; do
+            name="$(node -p "require('./$dir/package.json').name")"
+            version="$(node -p "require('./$dir/package.json').version")"
+            echo "::group::$SCOPE/$name@$version"
+            cd "$dir"
+            npm pkg set "name=$SCOPE/$name" "publishConfig.registry=$REGISTRY" "publishConfig.access=public"
+            if [ "$DRY_RUN" = "true" ]; then
+              npm publish --ignore-scripts --dry-run
+            else
+              npm publish --ignore-scripts
+            fi
+            cd - >/dev/null
+            echo "::endgroup::"
+          done
