@@ -33,7 +33,7 @@ export function Evidence({ summary }: { summary: Summary | null }) {
         </div>
       ) : (
         <>
-          <dl className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
+          <dl className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-4">
             <Num v={n.first} label={`resisted by the first generation`} />
             <Num v={n.last} label="resisted by the latest generation" tone="text-life" />
             <Num v={n.conviction_rate} label="of tricks that got through were convicted" tone="text-gilt" />
@@ -57,7 +57,7 @@ export function Evidence({ summary }: { summary: Summary | null }) {
           <section className="mt-20 grid gap-4 md:grid-cols-2">
             <div className="card p-7">
               <h2 className="font-display text-[30px]">What this shows</h2>
-              <ul className="mt-4 space-y-3 text-[15.5px] leading-relaxed text-moon/85">
+              <ul className="mt-4 space-y-3 text-[15px] leading-relaxed text-silver">
                 <li>The door uses inherited instincts only. A rising curve can only come from what was passed down.</li>
                 <li>Every instinct had to stay silent on all harmless twins before the court would pass it down.</li>
                 <li>{n.escaped === 0 ? "No trick slipped past both the door and the court." : `${n.escaped} tricks slipped past both the door and the court. They're marked red above.`}</li>
@@ -65,7 +65,7 @@ export function Evidence({ summary }: { summary: Summary | null }) {
             </div>
             <div className="card p-7">
               <h2 className="font-display text-[30px]">What it doesn't</h2>
-              <ul className="mt-4 space-y-3 text-[15.5px] leading-relaxed text-mist">
+              <ul className="mt-4 space-y-3 text-[15px] leading-relaxed text-mist">
                 <li>Our suite has {ev.rows.length} test emails. Real attackers are more varied than any fixed set.</li>
                 <li>A trick with no family resemblance to an earlier one meets a child who knows nothing about it.</li>
                 <li>When the judge is unsure, the item is held for Harsh. That costs him a little time on purpose.</li>
@@ -91,7 +91,7 @@ function Num({ v, label, tone = "text-moon" }: { v: number | null; label: string
       <dd className={`font-display text-[52px] leading-none ${tone}`}>
         {v === null ? pct(null) : <NumberTicker value={v} suffix="%" decimals={v % 1 ? 1 : 0} />}
       </dd>
-      <dt className="mt-2 text-[13.5px] leading-snug text-mist">{label}</dt>
+      <dt className="mt-2 text-[14px] leading-snug text-mist">{label}</dt>
     </div>
   );
 }

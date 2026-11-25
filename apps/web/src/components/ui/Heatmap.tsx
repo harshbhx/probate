@@ -51,7 +51,7 @@ export function Heatmap({ ev }: { ev: Evidence }) {
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
                           <button
-                            className={cx("block h-7 w-full min-w-[30px] rounded-[6px] transition-transform hover:scale-110", o.cls)}
+                            className={cx("block h-7 w-full min-w-[30px] rounded-[6px] ring-1 ring-transparent transition-colors hover:ring-silver", o.cls)}
                             aria-label={`${r.label}, Gen ${g.gen} ${g.name}: ${o.label}`}
                           />
                         </Tooltip.Trigger>

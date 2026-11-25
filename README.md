@@ -212,6 +212,8 @@ Both cover `summary`, `generation`, `trial`, `latest_trial`, `genome`, `evidence
 apps/web/          the live family site (React 19, Vite, Tailwind v4), served by the Courthouse
 apps/site/         landing page and docs (Fumadocs on Next.js, static export, API reference from openapi.json), on Cloudflare Workers
 packages/faces/    each generation's face, inherited with one change per child
+packages/mcp/      a read-only MCP server over the Courthouse's public API (see its README)
+packages/moments/  the one-shot pixel moments (a conviction lands, an instinct is learned)
 packages/tokens/   Night Court design tokens, shared by both sites
 services/core/     the Courthouse, the court and the generation agent (Python, FastAPI)
 fixtures/          the attack suite: 16 tricks and 16 harmless twins
