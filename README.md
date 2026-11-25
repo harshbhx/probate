@@ -256,6 +256,16 @@ Built by [Harsh Bhanushali](https://github.com/harshbhx) ([DualMind Labs](https:
 
 </div>
 
+## About the author
+
+**Harsh Bhanushali** builds AI agents, and the tools that keep them safe. He is the founder of [DualMind Labs](https://dualmindlab.tech), where he and Rishi Bangroiya build DualMind Arena, and a B.Tech student at Parul University.
+
+- **Probate** (this repo): an agent family that dies every night, so poisoned memories can't survive it. Built in one week for Fly.io Hacksgiving 2026.
+- **Tarang FM**: a live AI radio station on Sarvam Bulbul. It won the Sarvam Bulbul Build Challenge.
+- **Kavach**: a red-team project that attacks agents with tricks like the ones in Probate's attack suite. No code from it is used here.
+
+Questions, ideas or a job that fits: [harsh@dualmindlab.tech](mailto:harsh@dualmindlab.tech) · [GitHub](https://github.com/harshbhx)
+
 ---
 
 ## Community
