@@ -2,7 +2,7 @@
 PY      := services/core/.venv/bin/python
 SIMDATA := .data/sim
 
-.PHONY: help setup dev api web site test lint sim build serve deploy deploy-check site-deploy ship clean
+.PHONY: help setup dev api web site site-data test lint sim build serve deploy deploy-check site-deploy ship clean
 
 help: ## Show this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
@@ -27,8 +27,9 @@ site: ## The landing page and docs (Fumadocs) on :3001
 dev: ## API and website together
 	@$(MAKE) -j2 api web
 
-test: ## Python tests
+test: ## Python tests and the family-face model
 	cd services/core && PROBATE_DATA_DIR=$$(mktemp -d) .venv/bin/python -m pytest -q
+	npm test -w @probate/faces --silent
 
 lint: ## Ruff and TypeScript for every app
 	cd services/core && .venv/bin/ruff check probate tests ../../scripts
@@ -51,11 +52,14 @@ deploy: ## Deploy or update the Courthouse Sprite
 	npm run build -w @probate/web
 	$(PY) scripts/deploy.py
 
+site-data: ## Re-export the court examples the landing page shows (from the real layer-1 code)
+	$(PY) scripts/export_site_data.py
+
 site-deploy: ## Build the landing + docs and deploy them to Cloudflare (needs `npx wrangler login`)
 	npm run build -w @probate/site
 	cd apps/site && npx wrangler deploy
 
-ship: ## Test, build, create the GitHub repo, push, deploy
+ship: ## Everything: checks, GitHub, Sprites (Courthouse) and Cloudflare (landing + docs)
 	bash scripts/ship.sh
 
 clean: ## Remove local data and build output
