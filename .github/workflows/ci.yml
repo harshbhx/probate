@@ -21,6 +21,21 @@ jobs:
       - name: Simulate a family
         run: PROBATE_FAKE=1 PROBATE_DATA_DIR=$RUNNER_TEMP/sim python -m probate.courthouse.simulate --generations 6
 
+  court-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/court-checks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e '.[dev]'
+      - run: ruff check .
+      - run: python -m pytest -q
+      - run: python ../../datasets/probate-attack-suite/build.py --check
+
   web:
     runs-on: ubuntu-latest
     steps:
