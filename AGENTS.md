@@ -4,7 +4,7 @@ Read this file first, then the doc your task card points to. If two docs disagre
 
 ## What we are building (one paragraph)
 
-Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At midnight the Sprite is deleted. Before the next generation is born, a two-layer court (deterministic code checks, then TypeSafe's Jev) screens the dying agent's will, so poisoned memories are never inherited. Every attack the court catches becomes a new Jev question in the family "genome", which every later generation is born with. A public site on the Courthouse Sprite shows the family register, the trials and a learning curve. Built for Fly.io Hacksgiving 2026. Submission target: **Nov 28, 2026**.
+Probate is a personal agent for Harsh that lives one day per Fly.io Sprite. At midnight the Sprite is deleted. Before the next generation is born, a two-layer court (deterministic code checks, then TypeSafe's Jev) screens the dying agent's will, so poisoned memories are never inherited. Every attack the court catches becomes a new Jev question in the family "genome", which every later generation is born with. A public site on the Courthouse Sprite shows the family register, the trials and a learning curve. Built for Fly.io Hacksgiving 2026. Submission target: **Sat Nov 28, 2026** (the real deadline is midnight PST Nov 29, 1:30 PM IST Nov 30). Judges come from Fly.io, TypeSafe, Box, Pinecone, Ollama and Apify; see `docs/00-OVERVIEW.md`.
 
 ## Hard rules
 
