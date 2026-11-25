@@ -72,6 +72,7 @@ probate/
 
 - `make test` and `make lint` pass.
 - Nothing in the diff contains a key, token or real third-party address. `.env` and `config/owner.yaml` stay untracked.
+- Every user-facing component passes the unslop checklist (`docs/04-DESIGN.md` section 00): no gradients, glows, italic emphasis, looping motion, pill badges or bento grids; one accent; three text roles.
 - UI work follows `docs/04-DESIGN.md` and `docs/11-UI-SCREENS.md`: `make build && make sim && make serve` (live site) or `make site` (landing + docs), screenshot at 1280 and 390 px, no horizontal overflow, axe shows no WCAG A/AA violations.
 - If the court's checks change, run `make site-data` so the landing page shows the new real output.
 - Prompts are loaded from `probate/prompts/` and match `docs/10-PROMPTS.md` word for word.

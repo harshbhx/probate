@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { FamilyFace } from 'kinfaces/react';
 import type { Life, Mood } from 'kinfaces';
+import { PixelMoment } from '@probate/moments';
 import { Verdict } from '@/components/verdict';
 
 type Beat = {
@@ -98,22 +99,16 @@ export function LifeStory() {
 
   const b = BEATS[active];
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
-      <div className="lg:sticky lg:top-28 lg:h-[min(560px,calc(100vh-9rem))] lg:self-start">
-        <div className="relative flex h-full min-h-[380px] flex-col items-center justify-center overflow-hidden rounded-3xl border border-line bg-night-2/70 p-8">
-          <div
-            aria-hidden
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{
-              opacity: b.life === 'alive' ? 1 : 0.25,
-              background: 'radial-gradient(420px circle at 50% 42%, rgb(91 227 169 / 0.10), transparent 70%)',
-            }}
-          />
-          <p className="relative font-mono text-[13px] text-dim">
-            {b.time} · gen {String(b.gen).padStart(2, '0')}
-          </p>
-          <div className="relative mt-4">
-            <FamilyFace gen={b.gen} life={b.life} mood={b.mood} instincts={b.instincts} size={184} />
+    <div className="grid gap-6 overflow-x-clip lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+      <div className="sticky top-[68px] z-20 lg:top-28 lg:h-[min(560px,calc(100vh-9rem))] lg:self-start">
+        <div className="relative flex items-center gap-4 overflow-hidden [contain:paint] rounded-2xl border border-line bg-night-2/95 p-4 backdrop-blur-md lg:h-full lg:min-h-[380px] lg:flex-col lg:justify-center lg:gap-0 lg:p-8">
+          <div className="relative shrink-0 lg:order-2 lg:mt-4">
+            <div className="lg:hidden">
+              <FamilyFace gen={b.gen} life={b.life} mood={b.mood} instincts={b.instincts} size={84} />
+            </div>
+            <div className="hidden lg:block">
+              <FamilyFace gen={b.gen} life={b.life} mood={b.mood} instincts={b.instincts} size={184} />
+            </div>
             <AnimatePresence>
               {b.title === 'Trial' && (
                 <motion.div
@@ -121,33 +116,42 @@ export function LifeStory() {
                   animate={{ scale: 1, rotate: -6, opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 460, damping: 20 }}
-                  className="absolute -right-10 top-6"
+                  className="absolute -right-6 top-2 lg:-right-10 lg:top-6"
                 >
-                  <Verdict v="convicted" className="text-[13px]" />
+                  <span className="relative z-10 inline-flex">
+                    <Verdict v="convicted" className="text-[11px] lg:text-[13px]" />
+                  </span>
+                  <PixelMoment kind="convicted" delay={120} />
                 </motion.div>
               )}
+              {b.title === 'Inheritance' && <PixelMoment key={active} kind="instinct" delay={200} />}
             </AnimatePresence>
           </div>
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={active}
-              initial={reduce ? false : { opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="relative mt-6 max-w-xs text-center font-display text-[21px] italic leading-snug text-moon/90"
-            >
-              {b.caption}
-            </motion.p>
-          </AnimatePresence>
-          <ol className="relative mt-8 flex gap-2" aria-hidden>
+          <div className="min-w-0 lg:contents">
+            <p className="font-mono text-[13px] text-mist lg:order-1">
+              {b.time}, gen {b.gen}
+            </p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={active}
+                initial={reduce ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="relative mt-1 font-display text-[17px] leading-snug text-silver sm:text-[19px] lg:order-3 lg:mt-6 lg:max-w-xs lg:text-center lg:text-[21px]"
+              >
+                {b.caption}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+          <ol className="relative mt-8 hidden gap-2 lg:order-4 lg:flex" aria-hidden>
             {BEATS.map((x, i) => (
-              <li key={x.title} className={`h-1 w-8 rounded-full transition-colors ${i <= active ? 'bg-life' : 'bg-white/10'}`} />
+              <li key={x.title} className={`h-1 w-8 rounded-full transition-colors ${i <= active ? 'bg-life' : 'bg-night-4'}`} />
             ))}
           </ol>
         </div>
       </div>
 
-      <ol className="space-y-6 lg:py-[18vh]">
+      <ol className="space-y-5 lg:space-y-6 lg:py-[18vh]">
         {BEATS.map((x, i) => (
           <li
             key={x.title}
@@ -155,8 +159,8 @@ export function LifeStory() {
             ref={(el) => {
               refs.current[i] = el;
             }}
-            className={`rounded-2xl border p-7 transition-colors duration-500 ${
-              i === active ? 'border-line-strong bg-night-2/80' : 'border-line lg:border-transparent'
+            className={`rounded-xl border p-5 transition-colors sm:p-7 duration-300 ${
+              i === active ? 'border-line-strong bg-night-2' : 'border-line lg:border-transparent'
             }`}
           >
             <div className="flex items-baseline justify-between gap-4">
@@ -166,8 +170,8 @@ export function LifeStory() {
               </h3>
               <span className="font-mono text-[12px] text-dim">{x.time}</span>
             </div>
-            <p className="mt-4 text-[16px] leading-relaxed text-mist">{x.body}</p>
-            <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night/80 px-3.5 py-2.5 font-mono text-[12.5px] text-moon/85">
+            <p className="mt-4 text-[16.5px] leading-relaxed text-silver">{x.body}</p>
+            <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night px-3.5 py-2.5 font-mono text-[13px] text-silver">
               {x.code}
             </code>
           </li>

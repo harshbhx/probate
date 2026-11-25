@@ -1,6 +1,44 @@
-# Probate design system v3: Night Court (DESIGN.md)
+# Probate design system v4: Night Court, unslopped (DESIGN.md)
 
 v3 (Nov 25) makes both sites read like a shipped product rather than a demo. v2 replaced the v1 light "register" design. Tokens live in `packages/tokens` and both apps import them; this file explains why things look the way they do and the rules for changing them.
+
+## 00. The unslop rule (v4, Nov 25)
+
+Every user-facing component, on the landing page, the docs and the live site, must pass the [unslop](https://github.com/heydamir/unslop) checklist by Damir Sokolovsky (CC BY 4.0) before it ships. v4 ran unslop's audit over v3, found light slop, and fixed it in polish mode, keeping the v3 palette, type and layout.
+
+**Direction** (unslop's five lines):
+
+- **Product:** Harsh's email agent that lives one day per Fly.io Sprite, and a court that decides what its child inherits, shown to hackathon judges and developers.
+- **Character:** grave, exact, a little tender.
+- **World:** a night court and a family register: ledger paper, seals, gilt and ink.
+- **Moments:** the trial page (verdicts, stamps, the will in the dead generation's words) and the living generation's face.
+- **Signature:** the family faces. The refused-inheritance red tick in the seal is their partner and appears nowhere else.
+
+**What the audit found, and the fix:**
+
+| Sign | Where | Fix |
+| --- | --- | --- |
+| Pill badge above the headline | landing hero | removed; the announcement bar already says it |
+| Grid lines behind the hero | landing hero | removed |
+| Italic used for emphasis | hero sublines, epitaphs, glosses, life story | roman, colour for hierarchy |
+| Looping marquee | landing quotes | four still quotes in a ruled grid |
+| Bento grid | why Sprites | a ruled list of reasons, evidence beside each |
+| Coloured list icons | feature rows | muted text colour, 1.5 stroke |
+| Radial glow behind content | life story portrait | removed |
+| Text set with opacity (`moon/90`) | live site, try the court | the `silver` text role |
+| Centered stacked hero, blurred words, tickers | live home | left-aligned split with the living generation as the bright element, one fade on load |
+| Motion on scroll and on loop | tracing beam, register beam, curve draw-on, progress bars | still |
+| Hue gradient on a chart line | learning curve | one life-coloured line, one accent per chart |
+| Glow on the verdict stamp, hover scale on heatmap cells | live site | flat stamp, hairline ring on hover |
+| Padded numbers (`GEN 08`) | register | `Gen 8` |
+| Controls on a 12px radius | live site buttons and inputs | 8px; cards stay 12px, windows 16px |
+| Trailing periods on one-line captions | landing | removed |
+
+Kept on purpose: the living dot's ping and the faces' blink (they are live), the verdict stamp slamming in once (it explains a conviction), and the ask-an-ancestor answer arriving word by word (it answers the person who asked).
+
+**Pixel moments** (v5, extended in v6, `packages/moments`): one-shot effects made with [pixelfx](https://github.com/patch-gg/pixelfx) (MIT), recoloured to the court's palette. Each marks one turn in a generation's life: a red thud behind the verdict stamp when a conviction lands, a green shield on a stamp the court did not convict (an attack held, quieter than the red), a gold burst when the family learns an instinct (also on the newest instinct on the Instincts page), a pale soul rising from a dead generation's face on its page, and a gold portal under the newest living generation's face on Home. They play once, when the thing first scrolls into view, only at those moments, and never under reduced motion, so they pass the unslop rule: motion that explains what just happened. The landing hero stays as it is, one orchestrated headline reveal, with no pixel moment added to it.
+
+**Diagrams** in the docs are drawn with [stack-diagram](https://github.com/caru-ini/stack-diagram) (MIT), following its steps; see `apps/site/content/docs/guides/diagrams.mdx` and `design/diagrams/`.
 
 ## 0. What v3 changed, and the rules behind it
 
@@ -164,3 +202,24 @@ Same tokens and type, built with Fumadocs (Next.js, static export) and served fr
 - The Courthouse serves `apps/web/dist` with an SPA fallback, so the site and API share one origin on the Sprite.
 - Before you call UI work done: `make build`, `make sim`, `make serve`, then screenshot at 1280 and 390 px and run the axe check. Viewport screenshots are more trustworthy than full-page ones, which can stitch tiles badly.
 - The v1 static mockups in `design/pages/` are kept for history only.
+
+## 12. v7: the lit courtroom (landing), slower moments, calmer live site
+
+Harsh's feedback on v6: the pixel effects were too fast and busy, the landing page read as a generic dark SaaS template, and he reviews on his phone. v7 keeps the Night Court tokens and the unslop rules and changes the landing's point of view.
+
+**Landing (`apps/site`).** One object and one moment in the first screen. The object is a court docket (`components/landing/docket.tsx`): "In the matter of the estate of Ada", four convicted, none held, four approved, with real stamps. It replaces the browser-window mock with its fake `localhost` address; product shots elsewhere sit in a quiet titled frame ("Instincts", "simulated") with no address. The moment is the headline: "every night." scrambles into place once and turns gilt. A still gilt lamp (a gradient, not an animation) falls from above, the courtroom. Then the story in order: a day, a will, a trial, a child (sticky portrait that stays pinned on phones as the five steps scroll), the real code checks, instincts and the record, four evidence numbers that count up once, the lineage, why Sprites, FAQ. Type is larger and the secondary text one step brighter on phones. Numbers still come from the simulated run, and the page says so under the hero.
+
+**Patterns used** (MIT; written from their published behaviour, no installer run, see `apps/site/components/fx/NOTICE.md`): React Bits "Decrypted Text" (`Scramble`), Aceternity UI "Spotlight" (`Spotlight`) and "Sticky Scroll Reveal" (the life story), Magic UI "Blur Fade" (`Reveal`, section headings only) and "Number Ticker" (`CountUp`, evidence numbers), Aceternity "Bento Grid" (product tiles). Looked at and left out because they loop or shout: React Bits Aurora, Particles, Splash Cursor; Aceternity Lamp, Background Beams; Magic UI Marquee, Animated Beam on the landing.
+
+**Pixel moments.** Everything plays at about 0.6x speed; `birth` is half size and 70% opacity. See `packages/moments/README.md`.
+
+**Live site (`apps/web`).** Body and caption text up one step (13 to 14 px, 12 to 13 px), 48 px tap targets on the mobile tab bar and full-width hero buttons on phones, footer links with taller targets, a slightly longer rise on page change, and a pulsing skeleton that stops under reduced motion.
+
+### 12a. v7 round 2: richer landing, big words, MCP
+
+- **Header:** a floating pill (seal and wordmark, sections, search, source, one action) that gains blur and a hairline once you scroll. On phones the pill keeps the lockup, search and a menu button, and the menu opens as a card with 56 px rows set in the display face.
+- **Big words:** the footer closes with "Probate" set edge to edge in gilt (SVG text with `textLength`, so it fills any width) fading out toward a cropped baseline. A pinned statement mid-page ("An agent that forgets nothing can be fooled by anything...") lights up word by word as you scroll.
+- **More patterns, each doing a job:** Scroll Stack (the three verdicts as cards that cover each other), Text Reveal (the statement), Spotlight Card (the docket, the will steps, the quotes, the product tiles; a pointer-following light, so it does nothing on touch), Magnet (the hero button leans toward a mouse), Scroll Progress (a gilt line along the top), and the lineage film now follows your scroll instead of a timer. "From the record" replaces testimonials with real text the simulation produced.
+- **Still true:** nothing loops on its own, nothing moves except in answer to scrolling or the pointer, and reduced motion shows every statement and card in place.
+- **References studied:** the landing pages of Tarang FM (scroll stack cards, text reveal, dial sign-off, one section rhythm of kicker, title, line) and Ratchet (a long arc of numbered chapters, spotlight bento cards, a lamp and beams over the closing, "proof over promise" copy rules), both Harsh's own, adapted to the courtroom identity. Copy is not reused.
+- **MCP:** `packages/mcp` is a read-only MCP server over the Courthouse's public API (see its README).

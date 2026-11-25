@@ -31,6 +31,7 @@
     "react-dom": "^19.3.1",
     "kinfaces": "*",
     "@probate/tokens": "*",
+    "@probate/moments": "*",
     "zod": "^4.6.7"
   },
   "devDependencies": {

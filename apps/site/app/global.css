@@ -78,11 +78,6 @@ html > body[data-scroll-locked] {
   text-underline-offset: 3px;
 }
 
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
 /* Code comments: the theme's grey is under 4.5:1 on our cards. */
 .dark [style*="#6a737d" i] {
   --shiki-dark: #9aa3b5 !important;
@@ -183,4 +178,10 @@ html > body[data-scroll-locked] {
   #nd-page a[data-card] {
     transition: none;
   }
+}
+
+/* Decorative layers (the hero lamp, one-shot pixel moments) must never widen the page on a phone. */
+html,
+body {
+  overflow-x: clip;
 }
