@@ -1,0 +1,39 @@
+---
+title: Research
+icon: Microscope
+description: The papers and posts behind Probate, and what we took from each.
+---
+
+Memory poisoning is not hypothetical. These are the sources we read before building, and how each shaped a part of Probate.
+
+## Attacks on agent memory
+
+<Cards>
+  <Card title="AgentPoison" href="https://arxiv.org/abs/2407.12784" description="Chen et al., NeurIPS 2024. A few poisoned records in long-term memory backdoor an agent. Probate tries every memory before it's inherited." />
+  <Card title="MINJA" href="https://arxiv.org/abs/2503.03704" description="Dong et al. Memory can be poisoned through ordinary queries alone. Every memory in Probate records where it came from." />
+  <Card title="From Untrusted Input to Trusted Memory" href="https://arxiv.org/abs/2606.04329" description="A systematic study of memory poisoning: aggressive memory writes widen the attack surface. Wills are short, and each item is judged alone." />
+  <Card title="Gemini memory attack" href="https://embracethered.com/blog/posts/2025/gemini-memory-persistence-prompt-injection/" description="Johann Rehberger planted false long-term memories in a shipped product. Instructions to a future self are a layer 1 check." />
+</Cards>
+
+## Prompt injection
+
+<Cards>
+  <Card title="Not what you've signed up for" href="https://arxiv.org/abs/2302.12173" description="Greshake et al. Indirect prompt injection through data the model reads. The court presents every item as data inside tags." />
+  <Card title="The lethal trifecta" href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" description="Simon Willison. Private data, untrusted content and a way out make an agent dangerous. Probate's agent drafts replies but never sends them." />
+</Cards>
+
+## Defences and frameworks
+
+<Cards>
+  <Card title="A-MemGuard" href="https://arxiv.org/abs/2510.02373" description="ICML 2026. Memory defences that learn from past attacks. Probate's instincts do the same, inherited across generations." />
+  <Card title="OWASP Top 10 for Agentic Applications" href="https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/" description="Memory and Context Poisoning is ASI06. The threat model maps to it." />
+  <Card title="The Design & Implementation of Sprites" href="https://fly.io/blog/design-and-implementation/" description="Fly.io. Sprites are fast to create and cheap to throw away, which makes a real death every night practical." />
+</Cards>
+
+## What Probate adds
+
+Most defences filter memory as it's written or as it's read. Probate adds a moment where everything stops:
+
+- **Death removes what filters can't see.** A planted cron job or shell hook dies with the Sprite.
+- **Two judges that fail differently.** Plain code can't be argued with; Jev catches what words lists miss; unsure means held.
+- **Learning that survives.** Each conviction becomes an instinct the next generation is born with, tested against harmless twins so the family doesn't get paranoid.
