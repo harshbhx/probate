@@ -121,6 +121,25 @@ class Settings:
     judge_bad_keys_per_ip: int = field(
         default_factory=lambda: int(_env("PROBATE_JUDGE_BAD_KEYS_PER_IP", "8"))
     )
+    # Judge mailroom (POST /api/judge/mail): real mail to the family inbox, as the Friend or the Stranger.
+    judge_mail_per_ip_minute: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_MAIL_PER_IP_MINUTE", "2"))
+    )
+    judge_mail_per_ip_hour: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_MAIL_PER_IP_HOUR", "10"))
+    )
+    judge_mail_per_hour: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_MAIL_PER_HOUR", "30"))
+    )
+    judge_mail_per_day: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_MAIL_PER_DAY", "100"))
+    )
+    judge_mail_max_pending: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_MAIL_MAX_PENDING", "4"))
+    )
+    judge_mail_owner_digests_per_day: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_MAIL_OWNER_DIGESTS_PER_DAY", "3"))
+    )
     # Outgoing webhooks (docs/WEBHOOKS.md). Subscriptions are operator-only.
     webhook_urls: list[str] = field(
         default_factory=lambda: [

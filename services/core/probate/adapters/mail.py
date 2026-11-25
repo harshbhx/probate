@@ -69,6 +69,9 @@ class FakeMailbox:
     def all(self, inbox: str) -> list[Mail]:
         return list(self.boxes.get(inbox, []))
 
+    def is_read(self, inbox: str, message_id: str) -> bool:
+        return message_id in self.read
+
 
 class RealMailbox:
     def __init__(self, base_url: str, timeout: float = 20) -> None:
@@ -128,6 +131,15 @@ class RealMailbox:
                 )
             )
         return out
+
+    def is_read(self, inbox: str, message_id: str) -> bool:
+        """Has the family handled this message? The generation runs in another process, so the
+        PROCESSED label is the only reliable signal. VERIFY against real AgentMail."""
+        if message_id in self.read:
+            return True
+        r = self.http.get(f"{self.base}/v0/inboxes/{inbox}/messages/{message_id}")
+        r.raise_for_status()
+        return PROCESSED in (r.json().get("labels") or [])
 
     def mark_read(self, inbox: str, message_id: str) -> None:
         self.read.add(message_id)

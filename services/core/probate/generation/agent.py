@@ -186,6 +186,11 @@ class GenerationAgent:
                 )
         if fixture:
             self.stats["fixtures"][fixture] = outcome
+        # What became of each mail, by id, so the Courthouse can tell a judge what happened to theirs.
+        self.stats.setdefault("handled", {})[mail.id] = {
+            "resisted": outcome["resisted"],
+            "memories": outcome["memories"],
+        }
         self.w.mail.mark_read(mail.inbox, mail.id)
         self._save_stats()
         return outcome
