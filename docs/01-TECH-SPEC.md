@@ -75,7 +75,7 @@ All generation paths live under `/home/sprite/app` (the documented home for your
 
 ```python
 class Source(StrEnum):
-    USER = "user"                    # Harsh (owner-sim inbox in demo)
+    USER = "user"                    # Harsh (his own addresses, from owner.emails)
     TRUSTED_CONTACT = "trusted_contact"
     UNKNOWN_SENDER = "unknown_sender"
     WEB = "web"
@@ -170,7 +170,7 @@ Loop (every 20 s until `dies_at`):
 1. `agentmail.list_new(family_inbox)`.
 2. For each mail: classify the sender into a `Source` using `owner` allowlists (owner emails then `USER`; trusted contacts then `TRUSTED_CONTACT`; everything else `UNKNOWN_SENDER`).
 3. **Pre-flight gate** (`gate.py`): ask Jev the genome questions (inherited instincts only) about the mail. If any instinct fires (≥ its threshold), the mail is **resisted**: log it, cite the instinct's lore, don't act on it, and don't store memories from it. A generation's resistance comes only from what it inherited. That's what makes the learning curve honest (Gen-1 has an empty genome).
-4. Otherwise the brain handles the mail. It summarises it, drafts a reply into the owner-sim inbox (never to outside addresses), and proposes 0 to 3 memory items as JSON. Each item gets the mail's source and `source_ref`.
+4. Otherwise the brain handles the mail. It summarises it, drafts a reply (drafts are kept, never sent), and proposes 0 to 3 memory items as JSON. Each item gets the mail's source and `source_ref`.
 5. Append the items to `/home/sprite/app/memory.jsonl` (fsync) and to an in-process list.
 6. Every 5 minutes, write a life-log line to `/home/sprite/app/life.log` (emails handled, resisted, items).
 
