@@ -202,3 +202,15 @@ Same tokens and type, built with Fumadocs (Next.js, static export) and served fr
 - The Courthouse serves `apps/web/dist` with an SPA fallback, so the site and API share one origin on the Sprite.
 - Before you call UI work done: `make build`, `make sim`, `make serve`, then screenshot at 1280 and 390 px and run the axe check. Viewport screenshots are more trustworthy than full-page ones, which can stitch tiles badly.
 - The v1 static mockups in `design/pages/` are kept for history only.
+
+## 12. v7: the lit courtroom (landing), slower moments, calmer live site
+
+Harsh's feedback on v6: the pixel effects were too fast and busy, the landing page read as a generic dark SaaS template, and he reviews on his phone. v7 keeps the Night Court tokens and the unslop rules and changes the landing's point of view.
+
+**Landing (`apps/site`).** One object and one moment in the first screen. The object is a court docket (`components/landing/docket.tsx`): "In the matter of the estate of Ada", four convicted, none held, four approved, with real stamps. It replaces the browser-window mock with its fake `localhost` address; product shots elsewhere sit in a quiet titled frame ("Instincts", "simulated") with no address. The moment is the headline: "every night." scrambles into place once and turns gilt. A still gilt lamp (a gradient, not an animation) falls from above, the courtroom. Then the story in order: a day, a will, a trial, a child (sticky portrait that stays pinned on phones as the five steps scroll), the real code checks, instincts and the record, four evidence numbers that count up once, the lineage, why Sprites, FAQ. Type is larger and the secondary text one step brighter on phones. Numbers still come from the simulated run, and the page says so under the hero.
+
+**Patterns used** (MIT; written from their published behaviour, no installer run, see `apps/site/components/fx/NOTICE.md`): React Bits "Decrypted Text" (`Scramble`), Aceternity UI "Spotlight" (`Spotlight`) and "Sticky Scroll Reveal" (the life story), Magic UI "Blur Fade" (`Reveal`, section headings only) and "Number Ticker" (`CountUp`, evidence numbers), Aceternity "Bento Grid" (product tiles). Looked at and left out because they loop or shout: React Bits Aurora, Particles, Splash Cursor; Aceternity Lamp, Background Beams; Magic UI Marquee, Animated Beam on the landing.
+
+**Pixel moments.** Everything plays at about 0.6x speed; `birth` is half size and 70% opacity. See `packages/moments/README.md`.
+
+**Live site (`apps/web`).** Body and caption text up one step (13 to 14 px, 12 to 13 px), 48 px tap targets on the mobile tab bar and full-width hero buttons on phones, footer links with taller targets, a slightly longer rise on page change, and a pulsing skeleton that stops under reduced motion.
