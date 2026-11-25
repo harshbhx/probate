@@ -6,6 +6,7 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import type { MDXComponents } from 'mdx/types';
 import { Verdict } from './verdict';
 import { Face, FamilyStrip } from './family';
+import { Diagram } from './diagram';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -22,6 +23,7 @@ export function getMDXComponents(components?: MDXComponents) {
     Verdict,
     Face,
     FamilyStrip,
+    Diagram,
     ...components,
   } satisfies MDXComponents;
 }

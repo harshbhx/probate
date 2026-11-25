@@ -5,6 +5,14 @@ description: One command takes the family live on Sprites, this site live on Clo
 
 ## What goes where
 
+<Diagram
+  src="/diagrams/deploy.webp"
+  width={1520}
+  height={1322}
+  alt="Deploy diagram. From Harsh's laptop, make ship pushes to GitHub, deploys the Courthouse to Fly.io Sprites with scripts/deploy.py, and deploys the landing page and docs to Cloudflare Workers with wrangler. After that, the Courthouse creates one Generation Sprite a day by itself."
+  caption="Dashed lines happen once, when you run make ship. The gold line is what the Courthouse does by itself every day after that."
+/>
+
 | Part | Hosted on | Deployed by |
 | --- | --- | --- |
 | The Courthouse and the live-family site | Fly.io Sprites (`probate-courthouse`) | `scripts/deploy.py` |
