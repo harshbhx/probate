@@ -1,0 +1,52 @@
+// Cloudflare Worker "probate-edge": the public front door for the Courthouse API.
+// Reads are served from KV snapshots; only real actions wake the Fly Sprite. See docs/EDGE.md.
+//
+// Nothing here is a secret. Secrets are set with `wrangler secret put` (see README.md):
+//   ORIGIN_URL         required. The Sprite URL, e.g. https://probate-courthouse-xxxx.sprites.app
+//   ORIGIN_AUTH_TOKEN  optional. Bearer token, only if the Sprite URL is private (auth = "sprite")
+// Do not also list ORIGIN_URL under "vars": a secret and a var of the same name collide.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "probate-edge",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-20",
+
+  // Not deployed unless a route (or workers.dev) is enabled. The default below publishes on
+  // https://probate-edge.<your-subdomain>.workers.dev.
+  "workers_dev": true,
+  // To serve from your own hostname instead, uncomment and edit (zone must be on Cloudflare):
+  // "workers_dev": false,
+  // "routes": [
+  //   { "pattern": "api.example.com", "custom_domain": true }
+  // ],
+
+  "vars": {
+    // Browser origins allowed by CORS. Comma separated. `https://*.example.com` matches subdomains.
+    "ALLOWED_ORIGINS": "https://probate-site.example.workers.dev",
+    // "on_demand": the Sprite sleeps; idle reads are served from snapshots (default).
+    // "always_on": the Sprite free-runs; only the short base TTLs apply.
+    "ORIGIN_MODE": "on_demand",
+    "READ_TIMEOUT_MS": "10000", // give a cold Sprite this long when there is no snapshot to show
+    "SLOW_MS": "2500", // with a snapshot, answer stale after this long instead of waiting
+    "WRITE_TIMEOUT_MS": "20000", // total budget for a write, including cold-start retries
+    "WRITE_RETRIES": "2",
+    "IDLE_TTL_S": "900", // minimum TTL for reads while the Sprite is believed idle
+    "AWAKE_WINDOW_S": "1200", // how long after a write the Sprite counts as awake
+    "STALE_MAX_AGE_S": "604800" // oldest snapshot ever served as stale (7 days)
+  },
+
+  // Create once with `npx wrangler kv namespace create SNAPSHOTS`, then paste the printed id here.
+  // The all-zero id is a placeholder: it works for `wrangler dev` and `deploy --dry-run` only.
+  "kv_namespaces": [{ "binding": "SNAPSHOTS", "id": "00000000000000000000000000000000" }],
+
+  // Workers rate limiting bindings. The numbers are the limits; periods may only be 10 or 60.
+  // namespace_id values are arbitrary integers you choose, unique per limit within the account.
+  "ratelimits": [
+    { "name": "RL_READ_IP", "namespace_id": "41001", "simple": { "limit": 120, "period": 60 } },
+    { "name": "RL_WRITE_IP", "namespace_id": "41002", "simple": { "limit": 6, "period": 60 } },
+    { "name": "RL_WRITE_GLOBAL", "namespace_id": "41003", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_ORIGIN_READ_GLOBAL", "namespace_id": "41004", "simple": { "limit": 60, "period": 60 } }
+  ],
+
+  "observability": { "enabled": true }
+}
