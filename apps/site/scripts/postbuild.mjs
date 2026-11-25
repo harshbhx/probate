@@ -67,7 +67,8 @@ const FONT_LINKS = FONTS.map((u) => `<link rel="preload" href="${u}" as="font" t
 
 // ---- 1-3, 5 per page
 const KEEP_INLINE = new Map(); // base64 sha256 -> script text kept inline
-const RE_SCRIPT = /<script((?:\s[^>]*)?)>([\s\S]*?)<\/script>/g;
+// Tolerant of case and of whitespace or attributes in the closing tag (`</SCRIPT >`), so no inline script slips past the CSP step.
+const RE_SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script\s*[^>]*>/gi;
 const RE_MOVE = /^\s*(\(self\.__next_f|self\.__next_f|\(globalThis\["TURBOPACK"\])/;
 const MARK = '\u0000MOVED\u0000';
 let outlined = 0;
