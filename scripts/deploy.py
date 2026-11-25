@@ -74,6 +74,10 @@ def step(msg: str) -> None:
 
 
 def main() -> None:
+    # The progress lines use arrows; a Windows console defaults to a code page that cannot print them.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--name", default="probate-courthouse")
     ap.add_argument("--check", action="store_true", help="validate config and bundle, then stop")
