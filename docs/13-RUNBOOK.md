@@ -7,8 +7,8 @@ For Harsh and any agent operating the live family. Commands use `make`, the `spr
 One-time, on Harsh's laptop:
 
 1. `gh auth login` (GitHub), `npx wrangler login` (Cloudflare, for the landing page and docs), and get a Sprites API token from the Sprites dashboard.
-2. In the Sprites dashboard, connect each provider under Connectors (Jev/TypeSafe, Box, Pinecone, AgentMail, ElevenLabs, Ollama, Anthropic) and note each connection ID.
-3. Create four AgentMail inboxes: the family's, plus owner, friend and stranger test senders.
+2. In the Sprites dashboard, connect each provider under Connectors (Jev/TypeSafe, Box, Pinecone, AgentMail, ElevenLabs, Ollama, Anthropic) and note each connection ID. Add a Custom API connector named `cloudflare` for `https://api.cloudflare.com` with a Cloudflare API token that can send email.
+3. Create three AgentMail inboxes: the family's, plus friend and stranger test senders. In Cloudflare, turn on Email Service for `dualmindlab.tech` and verify the family inbox as a destination address, so Harsh's test emails can reach it.
 4. `cp services/core/.env.example services/core/.env` and fill it in. `cp config/owner.example.yaml config/owner.yaml` and fill in the real allowlists. Both files are gitignored.
 5. `make deploy-check` validates the config and builds the bundle without touching anything.
 6. `make ship` runs tests and lint, builds the site, creates the public GitHub repo, pushes `main`, then runs `scripts/deploy.py`, which:
