@@ -6,7 +6,7 @@ const withMDX = createMDX();
 const config = {
   output: 'export',
   reactStrictMode: true,
-  transpilePackages: ['@probate/faces'],
+  transpilePackages: ['kinfaces'],
 };
 
 export default withMDX(config);

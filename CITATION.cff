@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite it as below."
+title: "Probate"
+abstract: "A personal agent family on Fly.io Sprites: each generation dies at midnight and a two-layer court decides what its child inherits."
+type: software
+authors:
+  - family-names: Bhanushali
+    given-names: Harsh
+    alias: harshbhx
+repository-code: "https://github.com/harshbhx/probate"
+url: "https://github.com/harshbhx/probate"
+version: "0.1.0"
+license: MIT
+date-released: "2026-11-25"
+keywords:
+  - agent memory poisoning
+  - Fly.io Sprites
+  - Hacksgiving 2026

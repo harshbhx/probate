@@ -10,7 +10,7 @@ import type { GenCard } from "../../lib/api";
 import { countdown, cx, day, pct } from "../../lib/format";
 import { useNow } from "../../lib/hooks";
 import { BorderBeam } from "../fx/BorderBeam";
-import { FamilyFace } from "@probate/faces";
+import { FamilyFace } from "kinfaces/react";
 
 export function Lineage({ gens }: { gens: GenCard[] }) {
   const scroller = useRef<HTMLDivElement>(null);

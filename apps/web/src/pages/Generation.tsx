@@ -7,7 +7,8 @@ import { useApi, useNow, useTitle } from "../lib/hooks";
 import { BorderBeam } from "../components/fx/BorderBeam";
 import { TextGenerate } from "../components/fx/TextGenerate";
 import { Seal } from "../components/ui/Seal";
-import { FamilyFace, inheritedChange } from "@probate/faces";
+import { FamilyFace } from "kinfaces/react";
+import { inheritedChange } from "kinfaces";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { ErrorState, PageSkeleton } from "../components/ui/States";
 

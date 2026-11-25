@@ -5,7 +5,8 @@
 // born wearing it. Beneath, the share of tricks resisted climbs. Reduced motion shows the end.
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { FaceGlyph, type Mood } from '@probate/faces';
+import { FaceGlyph } from 'kinfaces/react';
+import type { Mood } from 'kinfaces';
 
 type Gen = { name: string; resisted: number; convicted?: boolean };
 

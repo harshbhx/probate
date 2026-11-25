@@ -4,7 +4,7 @@
 @import 'fumadocs-openapi/css/preset.css';
 @import '@fontsource-variable/newsreader/opsz.css';
 @import '@fontsource-variable/newsreader/opsz-italic.css';
-@import '@probate/faces/faces.css';
+@import 'kinfaces/faces.css';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
 

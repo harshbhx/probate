@@ -1,4 +1,4 @@
-import { FamilyFace } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
 import { Spotlight } from './spotlight';
 
 function Title({ children }: { children: React.ReactNode }) {

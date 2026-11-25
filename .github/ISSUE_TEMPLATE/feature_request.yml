@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest an improvement or a new attack for the suite
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: If it touches the court, say which layer and how it fails closed.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checks
+      options:
+        - label: I read AGENTS.md and the idea does not need a secret in the repository.
+          required: true

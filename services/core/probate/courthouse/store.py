@@ -21,7 +21,7 @@ class Store:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.db = sqlite3.connect(str(path), check_same_thread=False)
         self.db.row_factory = sqlite3.Row
-        self.db.executescript(SCHEMA.read_text())
+        self.db.executescript(SCHEMA.read_text(encoding="utf-8"))
 
     def q(self, sql: str, *args) -> list[sqlite3.Row]:
         return list(self.db.execute(sql, args))

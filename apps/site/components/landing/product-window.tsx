@@ -5,7 +5,8 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Lock } from 'lucide-react';
-import { FamilyFace, type Mood } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
+import type { Mood } from 'kinfaces';
 // The shots come from a local simulated run (scripts: docs/04-DESIGN.md), so the address says so.
 const host = 'localhost:8080';
 
