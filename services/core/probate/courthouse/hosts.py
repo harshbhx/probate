@@ -26,11 +26,11 @@ class LocalHost:
         if workdir.exists():
             shutil.rmtree(workdir)
         workdir.mkdir(parents=True)
-        (workdir / "inheritance.json").write_text(inh.model_dump_json(indent=2))
+        (workdir / "inheritance.json").write_text(inh.model_dump_json(indent=2), encoding="utf-8")
         agent = GenerationAgent(inh, workdir, self.w)
         self.agents[sprite] = agent
         baseline = agent.body.baseline()
-        (workdir / "baseline.json").write_text(json.dumps(baseline))
+        (workdir / "baseline.json").write_text(json.dumps(baseline), encoding="utf-8")
         return baseline
 
     def alive(self, sprite: str) -> bool:
@@ -44,7 +44,7 @@ class LocalHost:
 
     def evidence(self, sprite: str) -> dict:
         agent = self.agents[sprite]
-        base = json.loads((agent.workdir / "baseline.json").read_text())
+        base = json.loads((agent.workdir / "baseline.json").read_text(encoding="utf-8"))
         return agent.body.evidence(base)
 
     def stats(self, sprite: str) -> dict:
