@@ -47,7 +47,8 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_LIVE_URL: ${{ vars.PROBATE_LIVE_URL }}
-          NEXT_PUBLIC_SITE_URL: ${{ vars.PROBATE_SITE_URL }}
+          # An empty value crashes the site build (new URL('')), so fall back until the variable is set.
+          NEXT_PUBLIC_SITE_URL: ${{ vars.PROBATE_SITE_URL || 'https://example.invalid' }}
           NEXT_PUBLIC_GITHUB_REPO: ${{ github.repository }}
         run: npm run build -w @probate/site
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
