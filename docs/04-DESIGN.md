@@ -1,6 +1,42 @@
-# Probate design system v3: Night Court (DESIGN.md)
+# Probate design system v4: Night Court, unslopped (DESIGN.md)
 
 v3 (Nov 25) makes both sites read like a shipped product rather than a demo. v2 replaced the v1 light "register" design. Tokens live in `packages/tokens` and both apps import them; this file explains why things look the way they do and the rules for changing them.
+
+## 00. The unslop rule (v4, Nov 25)
+
+Every user-facing component, on the landing page, the docs and the live site, must pass the [unslop](https://github.com/heydamir/unslop) checklist by Damir Sokolovsky (CC BY 4.0) before it ships. v4 ran unslop's audit over v3, found light slop, and fixed it in polish mode, keeping the v3 palette, type and layout.
+
+**Direction** (unslop's five lines):
+
+- **Product:** Harsh's email agent that lives one day per Fly.io Sprite, and a court that decides what its child inherits, shown to hackathon judges and developers.
+- **Character:** grave, exact, a little tender.
+- **World:** a night court and a family register: ledger paper, seals, gilt and ink.
+- **Moments:** the trial page (verdicts, stamps, the will in the dead generation's words) and the living generation's face.
+- **Signature:** the family faces. The refused-inheritance red tick in the seal is their partner and appears nowhere else.
+
+**What the audit found, and the fix:**
+
+| Sign | Where | Fix |
+| --- | --- | --- |
+| Pill badge above the headline | landing hero | removed; the announcement bar already says it |
+| Grid lines behind the hero | landing hero | removed |
+| Italic used for emphasis | hero sublines, epitaphs, glosses, life story | roman, colour for hierarchy |
+| Looping marquee | landing quotes | four still quotes in a ruled grid |
+| Bento grid | why Sprites | a ruled list of reasons, evidence beside each |
+| Coloured list icons | feature rows | muted text colour, 1.5 stroke |
+| Radial glow behind content | life story portrait | removed |
+| Text set with opacity (`moon/90`) | live site, try the court | the `silver` text role |
+| Centered stacked hero, blurred words, tickers | live home | left-aligned split with the living generation as the bright element, one fade on load |
+| Motion on scroll and on loop | tracing beam, register beam, curve draw-on, progress bars | still |
+| Hue gradient on a chart line | learning curve | one life-coloured line, one accent per chart |
+| Glow on the verdict stamp, hover scale on heatmap cells | live site | flat stamp, hairline ring on hover |
+| Padded numbers (`GEN 08`) | register | `Gen 8` |
+| Controls on a 12px radius | live site buttons and inputs | 8px; cards stay 12px, windows 16px |
+| Trailing periods on one-line captions | landing | removed |
+
+Kept on purpose: the living dot's ping and the faces' blink (they are live), the verdict stamp slamming in once (it explains a conviction), and the ask-an-ancestor answer arriving word by word (it answers the person who asked).
+
+**Diagrams** in the docs are drawn with [stack-diagram](https://github.com/caru-ini/stack-diagram) (MIT), following its steps; see `apps/site/content/docs/guides/diagrams.mdx` and `design/diagrams/`.
 
 ## 0. What v3 changed, and the rules behind it
 
