@@ -164,7 +164,7 @@ const csp = [
   `font-src 'self'`,
   // The footer asks the live family who is alive. The Cloudflare tag manager (Zaraz) that the zone injects
   // sends Google Analytics hits from the browser, so its hosts are allowed here too.
-  `connect-src 'self'${live ? ` ${live}` : ''} https://stats.g.doubleclick.net https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com`,
+  `connect-src 'self'${live ? ` ${live}` : ''} https://stats.g.doubleclick.net https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com/ads/ga-audiences`,
   `media-src 'self'`,
   `manifest-src 'self'`,
   `worker-src 'self' blob:`,
