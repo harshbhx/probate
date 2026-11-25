@@ -191,3 +191,64 @@ body {
 #hacksgiving-2026 > button {
   color: var(--color-mist);
 }
+
+/* Glossary words: a dotted underline; hover, focus or tap shows the meaning (components/gloss.tsx). */
+.gloss-word {
+  all: unset;
+  cursor: help;
+  color: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in oklab, var(--color-gilt) 70%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+.gloss-word:hover,
+.gloss-word[data-popup-open] {
+  text-decoration-style: solid;
+}
+.gloss-word:focus-visible {
+  outline: 2px solid var(--color-gilt);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.gloss-card {
+  max-width: min(20rem, calc(100vw - 24px));
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 10px;
+  background: var(--color-fd-popover);
+  color: var(--color-fd-popover-foreground);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+  transform-origin: var(--transform-origin);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.gloss-card[data-starting-style],
+.gloss-card[data-ending-style] {
+  opacity: 0;
+  transform: translateY(2px);
+}
+.gloss-term {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gilt);
+}
+.gloss-def {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.gloss-more {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-fd-muted-foreground);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.gloss-more:hover {
+  color: var(--color-fd-foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gloss-card { transition: none; }
+}
