@@ -31,6 +31,7 @@ from probate.adapters.sprites import SpritesAPI
 from probate.common.bundle import INSTALL, make_bundle
 
 ENV_FILE = ROOT / "services" / "core" / ".env"
+URL_FILE = ROOT / ".data" / "courthouse-url.txt"
 REQUIRED = ["PROBATE_SPRITES_TOKEN", "PROBATE_ADMIN_TOKEN", "PROBATE_CONNECTIONS"]
 LIVE = {
     "PROBATE_FAKE": "0",
@@ -112,6 +113,8 @@ def main() -> None:
     for _ in range(30):
         try:
             if httpx.get(f"{url}/healthz", timeout=10).status_code == 200:
+                URL_FILE.parent.mkdir(exist_ok=True)
+                URL_FILE.write_text(url + "\n")  # ship.sh links the docs site to it
                 print(f"\nCourthouse is live: {url}")
                 return
         except httpx.HTTPError:
