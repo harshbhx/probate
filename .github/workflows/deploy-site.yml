@@ -42,7 +42,7 @@ jobs:
       - uses: ./.github/actions/setup-web
       - name: Check the family faces and types
         run: |
-          npm test -w @probate/faces
+          npm test -w kinfaces
           npm run lint -w @probate/site
       - name: Build
         env:

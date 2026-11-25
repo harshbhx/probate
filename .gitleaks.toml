@@ -5,6 +5,6 @@ title = "probate gitleaks config"
 useDefault = true
 
 [[allowlists]]
-description = "Obviously fake keys in Courthouse test fixtures"
+description = "Obviously fake keys in Courthouse and edge Worker test fixtures"
 targetRules = ["generic-api-key"]
-paths = ['''services/core/tests/.*''']
+paths = ['''services/core/tests/.*''', '''apps/edge/test/.*''']
