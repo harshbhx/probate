@@ -1,0 +1,10 @@
+{
+  "name": "@probate/tokens",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Probate's design tokens (Night Court v3), shared by the live site and the landing + docs.",
+  "exports": {
+    "./theme.css": "./theme.css",
+    "./base.css": "./base.css"
+  }
+}

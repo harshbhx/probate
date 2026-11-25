@@ -1,0 +1,42 @@
+/* Base rules every Probate surface shares. Import after tailwindcss and theme.css. */
+@layer base {
+  html {
+    background: var(--color-night);
+    color-scheme: dark;
+  }
+  body {
+    background: var(--color-night);
+    color: var(--color-moon);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: rgb(217 180 106 / 0.28);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gilt);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
