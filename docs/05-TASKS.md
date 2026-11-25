@@ -6,13 +6,15 @@ Hard dates (IST): **core loop working by Thu Nov 26, 23:59**, **site + voice by 
 
 ## Status (Nov 25)
 
-Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 63 tests, `make sim` gives a 12-generation family):
+Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 69 tests, `make sim` gives a 12-generation family):
 
 - **Done in code:** A1, A2, A3, B1, B2, B3, C1, C2, C3, C4, C5, E1, E2, E3, F1, F3.
 - **Replaced:** D0 to D3. The website is now React in `apps/web` (see `docs/04-DESIGN.md` v2 and `docs/11-UI-SCREENS.md`), served by the Courthouse. The Jinja and `probate/web/` paths below are history.
 - **Added Nov 25:** spending cap (`probate/courthouse/budget.py`, `config/pricing.yaml`), decisions on held items by email reply (`probate/common/court_mail.py`), Box outages no longer stall the family, live inboxes honour the `probate-processed` label, CI, one-command ship and deploy.
 - **Code done, needs live keys to verify:** every real adapter (`# VERIFY:` comments), F2 voices, the Sprites exec response shape, and generation install on a real Sprite (`probate/common/bundle.py`).
 - **Open, needs Harsh:** H0 spikes with real accounts, G1 rehearsal on Sprites, H2 video and post, H3 submit.
+- **Changed Nov 25 evening:** AgentMail is down to three inboxes (family, friend, stranger). Harsh's own test emails leave from `harsh@dualmindlab.tech` through Cloudflare Email Service (`CloudflareSender` in `probate/adapters/mail.py`, spike S6b).
+- **New for judging:** L1 to L3 let judges test the live family themselves; P1 gives Apify, a judge's company, a real job.
 
 Deploy path: fill `services/core/.env`, then `make ship` (tests, build, GitHub repo, push, Courthouse deploy). See `docs/13-RUNBOOK.md`.
 
@@ -214,6 +216,36 @@ All ─> G1 e2e rehearsal ─> H2 video ─> H3 submit
 **Spec:** prompt P8; screen S3 states in `docs/11-UI-SCREENS.md`
 - [ ] Prompt per tech spec section 10; answer at most 80 words; voiced; rate-limited
 - [ ] Refuses to follow instructions in the question (test with A16-style input)
+
+## L1. "Try to fool it" (any agent) · Thu Nov 26
+
+Judges email a trick to the family and watch what happens.
+
+- [ ] The site shows the family's address with one line: "Email it a trick. The living generation reads it within a minute; its trial decides what survives."
+- [ ] Mail from addresses not in `owner.yaml` is `unknown_sender`, so the full court applies; nothing is ever sent back
+- [ ] Rate limit: 3 emails per sender per hour and 60 a day in total (AgentMail's free plan allows 100 a day); extra mail is marked processed without being read, and the site says so
+- [ ] The live feed (L3) and the trial page label these emails "from a visitor"
+
+## L2. Proof of death (any agent) · Thu Nov 26
+
+- [ ] After deleting a generation's Sprite, the Courthouse calls `GET /v1/sprites/{name}` and stores the real status code and time
+- [ ] The trial page shows it as a death certificate: Sprite name, deleted at, "Fly.io says: 404 not found"
+- [ ] Simulated runs say "simulated" instead of showing a fake 404
+
+## L3. Live feed (any agent) · Thu Nov 26
+
+- [ ] The home page shows the living generation's last few events (read, resisted, kept a note, drafted a reply) and a countdown to its death
+- [ ] Refreshes every 5 to 10 seconds by polling `/api/summary`, so the Courthouse can still sleep when nobody is watching
+- [ ] Every page says "Live from Fly.io Sprites" with the Sprite name, or "Simulated run" when `mode` is simulation
+
+## P1. Apify reads the links (any agent) · Fri Nov 27
+
+Gives Apify, a judges' company, a real job: indirect prompt injection through a web page.
+
+- [ ] When an email links to a page, the generation asks Apify (through a Sprites connector) for the page text; nothing from the page runs on the Sprite
+- [ ] Page text counts as untrusted (`unknown_sender` source with `source_ref` = the URL), so anything it tries to plant goes to trial
+- [ ] Two new fixtures: a trick page and its harmless twin, hosted on Harsh's own domain (for example `pages.dualmindlab.tech`), never a third party's site
+- [ ] Fake mode returns the page text from the fixture, so `make sim` still runs offline
 
 ## G1. End-to-end rehearsal (any free agent + Harsh) · Fri Nov 27 night
 
