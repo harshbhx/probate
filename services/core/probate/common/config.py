@@ -76,8 +76,12 @@ class Settings:
     demo_cooldown_seconds: int = field(
         default_factory=lambda: int(_env("PROBATE_DEMO_COOLDOWN_SECONDS", "120"))
     )
-    demo_ip_per_hour: int = field(default_factory=lambda: int(_env("PROBATE_DEMO_IP_PER_HOUR", "3")))
-    demo_max_per_day: int = field(default_factory=lambda: int(_env("PROBATE_DEMO_MAX_PER_DAY", "30")))
+    demo_ip_per_hour: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_IP_PER_HOUR", "3"))
+    )
+    demo_max_per_day: int = field(
+        default_factory=lambda: int(_env("PROBATE_DEMO_MAX_PER_DAY", "30"))
+    )
     demo_daily_budget_usd: float = field(
         default_factory=lambda: float(_env("PROBATE_DEMO_DAILY_BUDGET_USD", "2"))
     )
@@ -88,6 +92,27 @@ class Settings:
     # A real birth spends time creating the Sprite and installing code before the life starts.
     demo_birth_allowance: int = field(
         default_factory=lambda: int(_env("PROBATE_DEMO_BIRTH_ALLOWANCE_SECONDS", "120"))
+    )
+    # Judge key: one shared secret that lets a judge PLAY (start a life, attack the family) while the
+    # read-only pages stay open. It is not an admin credential (docs/13-RUNBOOK.md section 6).
+    judge_key: str = field(default_factory=lambda: _env("PROBATE_JUDGE_KEY"))
+    require_key_for_play_env: str = field(
+        default_factory=lambda: _env("PROBATE_REQUIRE_KEY_FOR_PLAY").strip()
+    )
+    judge_lives_per_hour: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_LIVES_PER_HOUR", "6"))
+    )
+    judge_daily_budget_usd: float = field(
+        default_factory=lambda: float(_env("PROBATE_JUDGE_DAILY_BUDGET_USD", "5"))
+    )
+    judge_attacks_per_hour: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_ATTACKS_PER_HOUR", "60"))
+    )
+    judge_attacks_per_ip_minute: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_ATTACKS_PER_IP_MINUTE", "6"))
+    )
+    judge_bad_keys_per_ip: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_BAD_KEYS_PER_IP", "8"))
     )
     web_dist: Path = field(
         default_factory=lambda: Path(
@@ -101,6 +126,13 @@ class Settings:
             self.lifespan_seconds = self.demo_lifespan_seconds
             self.suite_per_life = self.demo_suite_per_life
             self.gap_seconds = 0
+
+    @property
+    def require_key_for_play(self) -> bool:
+        """Default on for a real on-demand Courthouse; PROBATE_REQUIRE_KEY_FOR_PLAY=0/1 overrides."""
+        if self.require_key_for_play_env:
+            return self.require_key_for_play_env == "1"
+        return self.on_demand and not self.fake
 
     @property
     def on_demand(self) -> bool:
