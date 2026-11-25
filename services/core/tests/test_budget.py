@@ -75,3 +75,15 @@ def test_births_stop_at_the_cap_but_the_living_finish(clock):
     cfg.budget_usd = 100  # raising the budget lets the family go on
     assert sched.step(T0 + timedelta(seconds=63)) == "born:2"
     assert views.summary(store)["resting"] is None
+
+
+def test_pause_lets_the_living_finish_but_stops_births(clock):
+    _cfg, store, _family, sched = clock
+    assert sched.step(T0) == "born:1"
+    store.set_setting("paused", "1")
+    assert sched.step(T0 + timedelta(seconds=30)) == "living:1"
+    assert sched.step(T0 + timedelta(seconds=61)) == "died:1"  # dies and is tried while paused
+    assert store.generation(1).state == "tried"
+    assert sched.step(T0 + timedelta(seconds=62)) == "paused"
+    store.set_setting("paused", "0")
+    assert sched.step(T0 + timedelta(seconds=63)) == "born:2"
