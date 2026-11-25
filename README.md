@@ -144,11 +144,29 @@ make help      # everything else
 4. Sign in once: `gh auth login` and `npx wrangler login`.
 5. `make ship`: it runs the checks, pushes to GitHub, deploys the Courthouse to Sprites and the landing page and docs to Cloudflare, and links the two sites.
 
+## Client libraries
+
+Two small typed clients for the Courthouse public API, with no dependencies beyond `httpx` (Python). Neither is published to a registry yet; install from a checkout.
+
+```ts
+import { ProbateClient } from "probate-client"; // packages/client
+const trial = await new ProbateClient({ baseUrl: "http://localhost:8080" }).latestTrial();
+```
+
+```python
+from probate_client import ProbateClient  # packages/client-py
+trial = ProbateClient("http://localhost:8080").latest_trial()
+```
+
+Both cover `summary`, `generation`, `trial`, `latest_trial`, `genome`, `evidence`, `health`, `ask` and `events`. `events` polls `/api/events`, which is a JSON list rather than a stream. Details and limits: [`packages/client`](packages/client/README.md), [`packages/client-py`](packages/client-py/README.md).
+
 ## Repository
 
 ```
 apps/web/          the live family site (React 19, Vite, Tailwind v4), served by the Courthouse
 apps/site/         landing page and docs (Fumadocs on Next.js, static export), on Cloudflare Workers
+packages/client/   typed TypeScript client for the public API (not published yet)
+packages/client-py/ typed Python client, sync and async (not published yet)
 packages/faces/    each generation's face, inherited with one change per child
 packages/tokens/   Night Court design tokens, shared by both sites
 services/core/     the Courthouse, the court and the generation agent (Python, FastAPI)

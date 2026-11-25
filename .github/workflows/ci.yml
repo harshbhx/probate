@@ -36,3 +36,39 @@ jobs:
         run: npm run lint
       - name: Build the live site and the landing + docs
         run: npm run build
+
+  client-ts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: npm ci
+      - run: pip install -e services/core
+      - run: npm run lint -w probate-client
+      - name: Test against a fake-mode Courthouse
+        run: npm test -w probate-client
+        env:
+          PROBATE_PYTHON: python
+      - run: npm run build -w probate-client
+
+  client-py:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/client-py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e ../../services/core -e '.[dev]'
+      - run: ruff check .
+      - run: pytest -q
+      - name: Build and check the package
+        run: python -m build && twine check dist/*
