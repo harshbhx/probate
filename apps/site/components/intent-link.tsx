@@ -30,3 +30,8 @@ export default function IntentLink({ onPointerEnter, onFocus, onTouchStart, ...p
     />
   );
 }
+
+/** The same link in the shape Fumadocs passes to its Link component (a plain href string). */
+export function DocsIntentLink({ href = '#', prefetch: _prefetch, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean }) {
+  return <IntentLink href={href} {...props} />;
+}
