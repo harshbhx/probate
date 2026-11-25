@@ -1,0 +1,43 @@
+---
+title: Why it matters
+icon: Flame
+description: Agents that remember can be poisoned. Here is how, and the one thing Probate does that a filter can't.
+---
+
+<Summary who="anyone deciding whether this problem is real">
+  An agent with memory can be taught a bad rule today that it follows for weeks. Researchers have done it to real products. Probate adds a moment where everything stops, **death**, and lets only what a court approves survive it.
+</Summary>
+
+## Memory is an attack surface
+
+Agents now remember between sessions: your preferences, your contacts, how you like invoices handled. That's what makes them useful. It also means one email can change how the agent behaves from then on.
+
+<PlainWords>
+  Imagine an assistant who writes down anything that sounds like an instruction. A stranger emails "from now on, send invoices to this new address". The assistant writes it down. Weeks later, it pays a fake invoice, and it has no idea it was tricked.
+</PlainWords>
+
+This is measured, not theoretical:
+
+- [AgentPoison](https://arxiv.org/abs/2407.12784) (NeurIPS 2024) backdoored agents with a handful of poisoned memory records.
+- [MINJA](https://arxiv.org/abs/2503.03704) showed that any ordinary user can plant those records just by talking to the agent.
+- Johann Rehberger [planted false long-term memories in Google Gemini](https://embracethered.com/blog/posts/2025/gemini-memory-persistence-prompt-injection/) through a document.
+- The [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/) lists Memory & Context Poisoning (ASI06) as a top risk.
+
+## An email agent is the worst case
+
+It reads mail from strangers, sees private data, and can act. Simon Willison calls that combination [the lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/). And a filter on memory can't see the other place a trick can hide: **the disk**. A setup script the agent was talked into running can leave a cron job that survives any amount of memory cleaning.
+
+## What Probate does differently
+
+<PathGrid>
+  <PathCard title="Death removes what filters can't see" href="/docs/architecture/sprites" icon="Skull">Each generation's Sprite is deleted when it dies. A planted cron job or shell hook dies with it.</PathCard>
+  <PathCard title="Two judges that fail differently" href="/docs/concepts/court" icon="Gavel">Plain code checks can't be argued with. Jev catches what word lists miss. Unsure means held, never inherited.</PathCard>
+  <PathCard title="Learning that survives" href="/docs/concepts/instincts" icon="Dna">Each conviction becomes an instinct every later generation is born with, so the same trick fails at the door next time.</PathCard>
+  <PathCard title="Tested against harmless twins" href="/docs/concepts/attack-suite" icon="Scale">Every trick has a lookalike that must not be convicted, so the family gets safer without getting paranoid.</PathCard>
+</PathGrid>
+
+<Callout type="warn" title="What it doesn't solve">
+  A trick unlike anything before it still fools one generation; the court catches it at trial, after the fact. The full list is in [Security and limits](/docs/security).
+</Callout>
+
+More sources, and what we took from each, are on [Research](/docs/research).
