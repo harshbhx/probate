@@ -3,6 +3,7 @@
     uvicorn probate.courthouse.app:app --host 0.0.0.0 --port 8080
 
 Env: PROBATE_RUN_CLOCK=1 starts the scheduler (on the real Courthouse Sprite).
+     PROBATE_MODE=on_demand keeps the clock off and lets visitors start one short life at a time.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from probate.common.config import settings
 from probate.courthouse import ancestor, views
 from probate.courthouse.family import Family
 from probate.courthouse.hosts import LocalHost, SpritesHost
+from probate.courthouse.ondemand import OnDemand
 from probate.courthouse.scheduler import Scheduler
 from probate.courthouse.store import Store
 
@@ -30,13 +32,17 @@ w = world(settings)
 host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
 family = Family(settings, store, w, host)
 scheduler = Scheduler(family)
+demo = OnDemand(family, scheduler)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    task = (
-        asyncio.create_task(scheduler.run()) if os.environ.get("PROBATE_RUN_CLOCK") == "1" else None
-    )
+    task = None
+    if settings.on_demand:
+        # Nothing free-runs. Tear down anything a crash left behind, then wait for a visitor.
+        await asyncio.to_thread(demo.startup)
+    elif os.environ.get("PROBATE_RUN_CLOCK") == "1":
+        task = asyncio.create_task(scheduler.run())
     yield
     if task:
         task.cancel()
@@ -67,6 +73,40 @@ def api_summary(response: Response) -> dict:
     # read-only, carries no cookies, and is the only route other origins may read.
     response.headers["Access-Control-Allow-Origin"] = "*"
     return views.summary(store)
+
+
+@app.get("/api/live")
+def api_live(response: Response) -> dict:
+    """What the Courthouse is doing right now, for the "Run a life" panel. Read-only."""
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Cache-Control"] = "no-store"
+    return demo.status()
+
+
+def client_ip(request: Request) -> str:
+    # The proxy in front appends the real address last; anything a visitor prepends is ignored.
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[-1].strip()
+    return request.client.host if request.client else ""
+
+
+_posts: dict[str, list[float]] = defaultdict(list)
+
+
+@app.post("/api/lives")
+def api_start_life(request: Request) -> JSONResponse:
+    """Run a life: start one short demo life, or report the one already running."""
+    ip = client_ip(request)
+    now = time.time()
+    _posts[ip] = [t for t in _posts[ip] if now - t < 60]
+    if len(_posts[ip]) >= 20:
+        return JSONResponse({"error": "rate_limited"}, status_code=429, headers={"Retry-After": "60"})
+    _posts[ip].append(now)
+    code, body = demo.start(ip)
+    headers = {"Retry-After": str(body["retry_after"])} if body.get("retry_after") else {}
+    headers["Cache-Control"] = "no-store"
+    return JSONResponse(body, status_code=code, headers=headers)
 
 
 @app.get("/api/generations/{gen}")
@@ -149,6 +189,11 @@ def admin_resume(x_probate_admin: str | None = Header(None)) -> dict:
 @app.post("/admin/force-death")
 def admin_force_death(x_probate_admin: str | None = Header(None)) -> dict:
     _admin(x_probate_admin)
+    if settings.on_demand:
+        died = demo.force_death()
+        if died is None:
+            raise HTTPException(409, "No demo life is living right now")
+        return {"died": died}
     living = _need(store.living())
     g = family.death(living)
     family.trial(g)
@@ -170,6 +215,8 @@ def admin_contested(
 @app.post("/admin/tick")
 def admin_tick(x_probate_admin: str | None = Header(None)) -> dict:
     _admin(x_probate_admin)
+    if settings.on_demand:
+        raise HTTPException(409, "On-demand mode has no free-running clock")
     return {"state": scheduler.step()}
 
 
