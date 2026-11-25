@@ -54,6 +54,15 @@ class Settings:
         default_factory=lambda: _env("PROBATE_STRANGER_INBOX", "probate-stranger@agentmail.to")
     )
     brain: str = field(default_factory=lambda: _env("PROBATE_BRAIN", "ollama:gpt-oss:120b"))
+    # Tried in order when the brain fails, e.g. "groq:openai/gpt-oss-120b,anthropic:claude-haiku-5-5".
+    # VERIFY in spike S8: model names available on each account.
+    brain_fallbacks: list[str] = field(
+        default_factory=lambda: [
+            b.strip()
+            for b in _env("PROBATE_BRAIN_FALLBACKS", "anthropic:claude-haiku-5-5").split(",")
+            if b.strip()
+        ]
+    )
     budget_usd: float = field(default_factory=lambda: float(_env("PROBATE_BUDGET_USD", "20")))
     web_dist: Path = field(
         default_factory=lambda: Path(
