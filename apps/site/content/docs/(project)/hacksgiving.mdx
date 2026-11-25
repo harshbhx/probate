@@ -1,0 +1,70 @@
+---
+title: Hacksgiving 2026
+icon: Trophy
+status: new
+description: How Probate meets the rules, and the real job each judge's product does in it.
+---
+
+Probate is an entry in [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 2026: build a personal agent that runs on a Sprite and uses at least one Sprites connector.
+
+## The two rules
+
+<PathGrid>
+  <PathCard title="Runs on a Sprite" href="/docs/architecture/sprites" icon="Server">Every generation lives and dies on its own Sprite. The Courthouse is a Sprite too.</PathCard>
+  <PathCard title="Uses Sprites connectors" href="/docs/architecture/connectors" icon="Plug">Every outside service goes through the connector gateway. No key lives on any Sprite.</PathCard>
+</PathGrid>
+
+## Each judge's product has a real job
+
+<Partners>
+  <Partner name="Fly.io Sprites" judge="Scott Johnston" icon="Server">A computer for every life, really deleted at death so disk backdoors die with it; connectors; the Courthouse, which sleeps between visitors.</Partner>
+  <Partner name="TypeSafe Jev" judge="Daniel Gafni" icon="Gavel">Layer 2 of the court, with a confidence on every answer, and every inherited instinct.</Partner>
+  <Partner name="Box" judge="Carter Rabasa" icon="Archive">The family archive as readable files: wills, verdicts, quarantine, obituaries and the genome.</Partner>
+  <Partner name="Pinecone" judge="Asaf Ashirov" icon="Search">Ancestral memory: approved will items, searched with citations.</Partner>
+  <Partner name="Ollama Cloud" judge="Michael Chiang" icon="Brain">The brain of every generation.</Partner>
+  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In progress: reading the pages that emails link to, so a trick hidden on a web page goes to trial too.</Partner>
+</Partners>
+
+Also used: AgentMail (three inboxes), Cloudflare (Email Service for Harsh's own test emails; Workers for this site), ElevenLabs (voices) and Anthropic (backup brain and instinct writing).
+
+## What to look at
+
+The full walkthrough is on [For judges](/docs/for-judges). In short:
+
+<Steps>
+<Step>
+
+**The live register.** Every generation, how it died, and the learning curve on one timeline.
+
+</Step>
+<Step>
+
+**A trial.** Open the latest one: each will item with its source, what the code checks found, what Jev scored, and the verdict. "Found on the body" shows what the disk held before deletion.
+
+</Step>
+<Step>
+
+**The evidence page.** Every trick and harmless twin for every generation, and the honest limits.
+
+</Step>
+<Step>
+
+**Try to fool it** (coming before submission). Email the family a trick and watch the living generation handle it, then see the verdict at its trial.
+
+</Step>
+</Steps>
+
+## Timeline
+
+| Date (IST) | What happens |
+| --- | --- |
+| Nov 23 to 25 | Specs, the court, the simulation, both sites |
+| Nov 25 to 26 | Real Sprites, connectors and the first live generations |
+| Nov 27 | Live judging features and the Apify link reader |
+| **Sat Nov 28** | Submission |
+| Mon Nov 30, 1:30 PM | Entries close (midnight PST, Nov 29) |
+| Tue Dec 1 | Winners announced; the family stays alive until then |
+
+<Callout title="Built fresh this week">
+  Everything here was written during Hacksgiving week by Harsh Bhanushali, with AI coding assistants. The attack suite was inspired by his earlier red-team project, Kavach; no code was reused.
+</Callout>

@@ -1,0 +1,20 @@
+{
+  "title": "Guide",
+  "description": "What Probate is and how it works",
+  "icon": "BookOpen",
+  "root": true,
+  "pages": [
+    "---[Flag]Start here---",
+    "index",
+    "why-it-matters",
+    "quickstart",
+    "for-judges",
+    "results",
+    "---[Route]How it works---",
+    "journey",
+    "...concepts",
+    "proof",
+    "---[Network]Architecture---",
+    "...architecture"
+  ]
+}

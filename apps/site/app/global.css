@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-openapi/css/preset.css';
 @import '@fontsource-variable/newsreader/opsz.css';
 @import '@fontsource-variable/newsreader/opsz-italic.css';
 @import 'kinfaces/faces.css';
@@ -29,6 +30,13 @@
   --color-fd-accent-foreground: #edeff3;
   --color-fd-ring: #d9b46a;
   --color-fd-overlay: rgb(0 0 0 / 0.6);
+  /* Callouts and API method badges use the palette too: gilt for notes, the verdict colours
+     for warnings, errors and success. Nothing blue. */
+  --color-fd-info: #d9b46a;
+  --color-fd-idea: #d9b46a;
+  --color-fd-warning: #f2a93b;
+  --color-fd-error: #ff6b6b;
+  --color-fd-success: #5be3a9;
 }
 .dark #nd-sidebar {
   --color-fd-muted: #14161b;
@@ -83,4 +91,96 @@ html > body[data-scroll-locked] {
 
 .prose :where(h1, h2, h3, h4) code {
   overflow-wrap: anywhere;
+}
+
+
+/* ---------------------------------------------------------------- docs, v2
+   A reading room, not a dashboard: one accent (gilt), hairline rules, quiet surfaces. */
+
+/* Reading rhythm: a touch larger and looser than the default. */
+#nd-page .prose {
+  font-size: 15.5px;
+  line-height: 1.75;
+}
+#nd-page .prose :where(h2):not(:where(.not-prose *)) {
+  margin-top: 2.6em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--color-line);
+}
+#nd-page .prose > :where(h2:first-child) {
+  border-top: 0;
+  padding-top: 0;
+}
+#nd-page .prose :where(h3):not(:where(.not-prose *)) {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+#nd-page h1 + p {
+  color: var(--color-silver);
+}
+
+/* Tables: a framed card with a quiet header row. */
+#nd-page .prose :where(table):not(:where(.not-prose *)) {
+  font-size: 14px;
+}
+#nd-page .prose :where(thead th):not(:where(.not-prose *)) {
+  background: var(--color-night-3);
+  color: var(--color-silver);
+  font-weight: 500;
+}
+
+/* Inline code: small, rounded, never louder than the text around it. */
+#nd-page .prose :where(:not(pre) > code):not(:where(.not-prose *)) {
+  border: 1px solid var(--color-line);
+  background: var(--color-night-3);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+  font-size: 0.86em;
+  color: var(--color-moon);
+}
+
+/* Code blocks sit on the second surface with a hairline. */
+#nd-page figure.shiki {
+  background: var(--color-night-2);
+  border-color: var(--color-line);
+}
+
+/* Cards: the border warms to gilt on hover; nothing moves. */
+#nd-page a[data-card] {
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+#nd-page a[data-card]:hover {
+  border-color: rgb(217 180 106 / 0.45);
+  background: var(--color-night-3);
+}
+#nd-page a[data-card] svg {
+  color: var(--color-gilt);
+}
+
+/* Sidebar: the active page gets a gilt rule, not a filled pill. */
+#nd-sidebar a[data-active='true'] {
+  color: var(--color-moon);
+  background: transparent;
+  box-shadow: inset 2px 0 0 var(--color-gilt);
+  border-radius: 0 6px 6px 0;
+}
+#nd-sidebar p {
+  letter-spacing: 0.01em;
+}
+
+/* Navbar tabs: gilt underline on the active one. */
+#nd-nav [data-active='true'] {
+  color: var(--color-moon);
+}
+
+/* Images zoom on click; keep them framed when inline in prose. */
+#nd-page .prose :where(img):not(:where(.not-prose *)) {
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-page a[data-card] {
+    transition: none;
+  }
 }

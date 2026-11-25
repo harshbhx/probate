@@ -1,0 +1,7 @@
+{
+  "title": "Reference",
+  "description": "The HTTP API, the CLI and file formats",
+  "icon": "Braces",
+  "root": true,
+  "pages": ["...reference"]
+}

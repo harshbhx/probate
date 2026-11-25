@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8">{{BASE}}
+<style>
+{{SEAL_CSS}}
+.stage { position: relative; width: 1200px; height: 520px; }
+.lock { position: absolute; left: 0; right: 0; top: 108px; display: flex; justify-content: center; align-items: center; gap: 26px; }
+.lock .mark { width: 104px; height: 104px; }
+.word { font-size: 104px; line-height: 1; opacity: 0; }
+.tag { position: absolute; left: 0; right: 0; top: 262px; text-align: center; font-size: 30px; color: var(--silver); opacity: 0; }
+.tag b { font-weight: 400; color: var(--moon); }
+.rule { position: absolute; left: 270px; width: 660px; top: 400px; height: 1px; background: var(--line2); transform-origin: left; transform: scaleX(0); }
+.gen { position: absolute; top: 372px; width: 56px; height: 56px; margin-left: -28px; }
+.gen > div { position: absolute; inset: 0; opacity: 0; }
+.foot { position: absolute; left: 0; right: 0; top: 462px; text-align: center; font-size: 16px; color: var(--mist); opacity: 0; }
+</style></head><body>
+<div class="stage">
+  <div class="lock"><div class="mark">{{SEAL}}</div><span class="word serif">Probate</span></div>
+  <p class="tag serif"><b>My agent dies every night.</b> A court decides what its child inherits.</p>
+  <div class="rule"></div>
+  <div class="gen" style="left:330px"><div class="g1a">{{FACE:1-alive-idle}}</div><div class="g1s">{{FACE:1-sealed-idle}}</div></div>
+  <div class="gen" style="left:438px"><div class="g2a">{{FACE:2-alive-idle}}</div><div class="g2s">{{FACE:2-sealed-idle}}</div></div>
+  <div class="gen" style="left:546px"><div class="g3a">{{FACE:3-alive-idle}}</div><div class="g3s">{{FACE:3-sealed-idle}}</div></div>
+  <div class="gen" style="left:654px"><div class="g4a">{{FACE:4-alive-idle}}</div><div class="g4s">{{FACE:4-sealed-idle}}</div></div>
+  <div class="gen" style="left:762px"><div class="g5a">{{FACE:5-alive-idle}}</div><div class="g5s">{{FACE:5-sealed-idle}}</div></div>
+  <div class="gen" style="left:870px"><div class="g6a">{{FACE:6-alive-idle}}</div></div>
+  <p class="foot">A personal email agent on Fly.io Sprites, built for Hacksgiving 2026</p>
+</div>
+<script>
+{{SEAL_JS}}
+// 1. The register line, then a family: each child is born as its parent is sealed.
+A('.rule', [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 100, 900, 'cubic-bezier(.65,0,.35,1)');
+for (let g = 1; g <= 6; g++) {
+  const born = 500 + (g - 1) * 330;
+  pop(`.g${g}a`, born, 360);
+  if (g < 6) { fadeTo(`.g${g}a`, born + 330, 0, 260); fadeIn(`.g${g}s`, born + 330, 260); }
+}
+// 2. The seal draws, the name and the promise arrive. The family stays underneath.
+drawSeal(2700);
+rise('.word', 4500, 700, 14);
+rise('.tag', 5100, 700, 10);
+fadeIn('.foot', 5700, 600);
+</script></body></html>

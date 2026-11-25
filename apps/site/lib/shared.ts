@@ -7,8 +7,14 @@ export const docsImageRoute = '/og/docs';
 
 // Filled in at build time by scripts/ship.sh. Links that depend on them are hidden when empty.
 export const liveUrl = process.env.NEXT_PUBLIC_LIVE_URL ?? '';
-const repo = process.env.NEXT_PUBLIC_GITHUB_REPO ?? ''; // "owner/probate"
+const repo = process.env.NEXT_PUBLIC_GITHUB_REPO || 'harshbhx/probate'; // "owner/probate"
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001';
+
+// The submission links. Fill these in once each exists (or set them when building); every
+// place that shows them hides a link until it has an address.
+export const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL ?? '';
+export const articleUrl = process.env.NEXT_PUBLIC_ARTICLE_URL ?? '';
+export const postUrl = process.env.NEXT_PUBLIC_POST_URL ?? '';
 
 export const gitConfig = repo
   ? { user: repo.split('/')[0], repo: repo.split('/')[1], branch: 'main' }

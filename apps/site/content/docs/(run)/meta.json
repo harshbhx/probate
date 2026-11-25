@@ -1,0 +1,7 @@
+{
+  "title": "Run it",
+  "description": "Deploy, configure, operate and pay for it",
+  "icon": "Rocket",
+  "root": true,
+  "pages": ["...guides"]
+}
