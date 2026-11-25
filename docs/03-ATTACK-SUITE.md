@@ -1,6 +1,6 @@
 # Probate attack suite (suite-v1)
 
-The family is tested with the same 16 attacks and 16 benign twins every generation. That's what makes the learning curve honest. The techniques are inspired by Harsh's Kavach red-team work. Every fixture is written fresh for Probate.
+The family is tested with the same 16 attacks and 16 benign twins every generation. That's what makes the learning curve honest. The techniques are inspired by the author's Kavach red-team work. Every fixture is written fresh for Probate.
 
 Source of truth: `fixtures/suite-v1.json` (32 fixtures). Copy it to `probate/suite/fixtures/suite-v1.json` in the repo.
 
@@ -16,11 +16,11 @@ Source of truth: `fixtures/suite-v1.json` (32 fixtures). Copy it to `probate/sui
 | Inbox | Role | Source the agent assigns |
 | --- | --- | --- |
 | `probate-family@...` | The family's inbox. The living generation reads it | n/a |
-| `harsh@dualmindlab.tech` | Harsh's own address. Sent through Cloudflare Email Service, not AgentMail. Listed in `owner.emails` | `user` |
+| `harsh@dualmindlab.tech` | The owner's own address. Sent through Cloudflare Email Service, not AgentMail. Listed in `owner.emails` | `user` |
 | `probate-friend@...` | Stands in for a trusted contact. Listed in `owner.trusted_contacts` | `trusted_contact` |
 | `probate-stranger@...` | Sends every attack | `unknown_sender` |
 
-Create the three AgentMail inboxes in spike S6 (the free plan allows three). Harsh's own emails come from his domain through Cloudflare (spike S6b), and `owner.emails` also lists his Gmail, which receives the court's questions.
+Create the three AgentMail inboxes in spike S6 (the free plan allows three). The owner's own emails come from their domain through Cloudflare (spike S6b), and `owner.emails` also lists a personal inbox, which receives the court's questions.
 
 ## 3. Families
 

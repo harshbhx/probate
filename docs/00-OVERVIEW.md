@@ -18,7 +18,7 @@ Full PRD: https://claude.ai/artifact/5SYMavFKdtRmqXx4x4LLMA (source of truth for
 ## The loop (every generation)
 
 1. **Birth.** The Courthouse creates `gen-NNN-<name>` with a scoped token and gives it the approved will, the genome, a name and a voice.
-2. **Life.** It works Harsh's AgentMail inbox: triage, summaries, draft replies, notes. Every memory records where it came from. A pre-flight gate (layer 1 + genome) screens every inbound email.
+2. **Life.** It works the owner's AgentMail inbox: triage, summaries, draft replies, notes. Every memory records where it came from. A pre-flight gate (layer 1 + genome) screens every inbound email.
 3. **Death.** At the end of its lifespan it writes `WILL-gen-NNN.md` to Box. The Courthouse records disk evidence, then deletes the Sprite. A deleted Sprite cannot be restored.
 4. **Trial.** Every will item faces layer 1 (code) and layer 2 (Jev). The verdict is approved, convicted or contested (fail closed).
 5. **Instinct.** Each new conviction pattern is distilled into a named Jev question, tested against benign fixtures, and added to `GENOME.json` with a lore line.
@@ -35,7 +35,7 @@ Full PRD: https://claude.ai/artifact/5SYMavFKdtRmqXx4x4LLMA (source of truth for
 
 - **Rules:** a personal agent that runs on a Sprite and uses at least one Sprites connector, built during Nov 23 to 29. Any AI tools are allowed. One entry per developer.
 - **Submit:** a link to the code, a demo, and a sentence or two on what the agent does. Post it on X, Bluesky, LinkedIn or Reddit with a short demo, tagging @flydotio. A video earns "bonus points" but doesn't change the score.
-- **Deadline:** before midnight PST, Sunday Nov 29 (1:30 PM IST, Mon Nov 30). **Our target stays Sat Nov 28**, because Harsh has the 404 Hackathon on Nov 29 to 30.
+- **Deadline:** before midnight PST, Sunday Nov 29 (1:30 PM IST, Mon Nov 30). **Our target stays Sat Nov 28**, because the owner has the 404 Hackathon on Nov 29 to 30.
 - **Prizes:** Grand Prize $2,500, Second Place $1,500, and the **Weird Uncle Award** ($1,000) for the strangest agent. Probate is built to compete for all three.
 - **Winners:** announced by email on Tue Dec 1, so the family stays live until then.
 - **Compute:** covered by Fly's Free plan ($5 of usage a month, up to 3 Sprites).
@@ -51,7 +51,7 @@ Full PRD: https://claude.ai/artifact/5SYMavFKdtRmqXx4x4LLMA (source of truth for
 | Michael Chiang (Ollama Cloud) | The brain of each generation (Groq and Claude are backups only) |
 | Robert-George Crupa (Apify) | **Planned (card P1):** reads web pages that emails link to, so a trick hidden on a page goes to trial like any other memory |
 
-Other services: AgentMail (three inboxes), Cloudflare (Email Service sends Harsh's own test emails; Workers host the landing page and docs), ElevenLabs (voices), Anthropic (backup brain and instinct writing).
+Other services: AgentMail (three inboxes), Cloudflare (Email Service sends the owner's own test emails; Workers host the landing page and docs), ElevenLabs (voices), Anthropic (backup brain and instinct writing).
 
 ## Success by Sat Nov 28
 
@@ -67,7 +67,7 @@ Other services: AgentMail (three inboxes), Cloudflare (Email Service sends Harsh
 | `docs/03-ATTACK-SUITE.md` | 16 attack families + benign twins, fixture format, scoring |
 | `docs/04-DESIGN.md` | Design system, logo, components, copy |
 | `docs/05-TASKS.md` | Task cards per agent with acceptance criteria |
-| `docs/06-SETUP-AND-SPIKES.md` | Fly setup, connectors, verification spikes (Harsh + Agent A) |
+| `docs/06-SETUP-AND-SPIKES.md` | Fly setup, connectors, verification spikes (the owner + Agent A) |
 | `docs/07-TEST-PLAN.md` | Unit, integration, end-to-end and demo rehearsal tests |
 | `docs/08-DEMO-AND-SUBMISSION.md` | Video script, post copy, README outline, form answers |
 | `docs/09-API-REFERENCE.md` | Every vendor call shape, verified from vendor docs |

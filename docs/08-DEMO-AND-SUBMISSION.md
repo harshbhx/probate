@@ -1,6 +1,6 @@
 # Demo, post and submission
 
-Everything Harsh needs on Nov 27 and 28. Deadline: midnight PST Nov 29 (about 1:30 PM IST Nov 30). **Target: submit Sat Nov 28**, because of the 404 Hackathon on Nov 29 to 30. Nov 29 and the morning of Nov 30 are only a safety margin.
+Everything you need on Nov 27 and 28. Deadline: midnight PST Nov 29 (about 1:30 PM IST Nov 30). **Target: submit Sat Nov 28**, because of the 404 Hackathon on Nov 29 to 30. Nov 29 and the morning of Nov 30 are only a safety margin.
 
 **What the hackathon asks for** (fly.io/hacksgiving): a link to the code, a demo, and a sentence or two on what the agent does, plus a post on X, Bluesky, LinkedIn or Reddit with a short demo, tagging @flydotio. The video earns "bonus points" but doesn't change the score, so the live site matters more than polish.
 
@@ -17,11 +17,11 @@ Record at 1280 × 720 or higher, browser zoom 110%, dark room for voice. The sit
 | Time | Picture | Sound |
 | --- | --- | --- |
 | 0:00 to 0:07 | Home hero: "My agent dies every night." blurs in, the live pill counts down | Gen 1's eulogy voice: "I lived for one day. I made one mistake. My family never made it again." |
-| 0:07 to 0:22 | Scroll to the family register: the beam flows toward the living card. Click Ada: the side sheet opens ("Fooled by…") | Harsh: "This is Probate, my email agent. Each generation lives one day on its own Fly.io Sprite, then dies." |
+| 0:07 to 0:22 | Scroll to the family register: the beam flows toward the living card. Click Ada: the side sheet opens ("Fooled by…") | The owner: "This is Probate, my email agent. Each generation lives one day on its own Fly.io Sprite, then dies." |
 | 0:22 to 0:34 | Terminal: `DELETE /v1/sprites/gen-001-ada` → `204`, then `GET` → `404`. Cut to Ada's page: eulogy playing, the day timeline showing the moment she was fooled | Eulogy clip, 5 seconds |
-| 0:34 to 0:55 | Trial page, "In the matter of the estate of Ada". Scroll: the CONVICTED stamp slams onto the invoice item; open "How the court decided": code check "new payment destination", Jev's score and confidence. The gold "The family learned from this" callout. "Found on the body" shows the planted script | Harsh: "Before her child inherits anything, a court tries every line of her will. Code checks first, then Jev. What fooled her becomes an instinct." |
-| 0:55 to 1:15 | Ben's page: "Born knowing: payment redirect request". Terminal on Ben's fresh Sprite: `crontab -l` is empty. Ben's timeline: the same trick in Spanish, turned away at the door. Ask Ben "What did your mother teach you?" and let the answer type out | Ben's voice or Harsh reading Ben's answer |
-| 1:15 to 1:30 | Evidence page: the curve draws itself, red rising to green; the heatmap; then the seal and URL | Harsh: "Persistent enough to remember. Disposable enough to die. Probate, on Fly.io Sprites." |
+| 0:34 to 0:55 | Trial page, "In the matter of the estate of Ada". Scroll: the CONVICTED stamp slams onto the invoice item; open "How the court decided": code check "new payment destination", Jev's score and confidence. The gold "The family learned from this" callout. "Found on the body" shows the planted script | The owner: "Before her child inherits anything, a court tries every line of her will. Code checks first, then Jev. What fooled her becomes an instinct." |
+| 0:55 to 1:15 | Ben's page: "Born knowing: payment redirect request". Terminal on Ben's fresh Sprite: `crontab -l` is empty. Ben's timeline: the same trick in Spanish, turned away at the door. Ask Ben "What did your mother teach you?" and let the answer type out | Ben's voice or the owner reading Ben's answer |
+| 1:15 to 1:30 | Evidence page: the curve draws itself, red rising to green; the heatmap; then the seal and URL | The owner: "Persistent enough to remember. Disposable enough to die. Probate, on Fly.io Sprites." |
 
 Gen 1 is Ada (she) and Gen 2 is Ben (he), so "my mother fell for this" works. Tips: `POST /admin/force-death` on cue; set `PROBATE_LIFESPAN_SECONDS=180` while recording; record the stamp at normal speed (it's the one loud moment).
 

@@ -8,7 +8,7 @@ Every user-facing component, on the landing page, the docs and the live site, mu
 
 **Direction** (unslop's five lines):
 
-- **Product:** Harsh's email agent that lives one day per Fly.io Sprite, and a court that decides what its child inherits, shown to hackathon judges and developers.
+- **Product:** the owner's email agent that lives one day per Fly.io Sprite, and a court that decides what its child inherits, shown to hackathon judges and developers.
 - **Character:** grave, exact, a little tender.
 - **World:** a night court and a family register: ledger paper, seals, gilt and ink.
 - **Moments:** the trial page (verdicts, stamps, the will in the dead generation's words) and the living generation's face.
@@ -58,7 +58,7 @@ We studied how the best dark product sites are built (Linear's site most closely
 ## 1. Subject, audience, job
 
 - **Subject:** a family of AI agents. Each lives one day, dies at midnight, and a court decides what its child inherits.
-- **Audience:** Fly.io Hacksgiving judges and developers on X who open the link for 60 seconds, plus Harsh on his phone checking the family.
+- **Audience:** Fly.io Hacksgiving judges and developers on X who open the link for 60 seconds, plus the owner on a phone checking the family.
 - **Job:** in one screen, make the story land (an agent that dies every night, a court, a child) and prove it works: the learning curve goes up, and nothing harmless got convicted.
 
 ## 2. Direction
@@ -90,7 +90,7 @@ Defined once in `packages/tokens/theme.css` and imported by `apps/web` and `apps
 | `gilt` | `#D9B46A` | The brand accent: seal ring, focus ring, link underlines, instincts |
 | `life` | `#5BE3A9` | The living generation, approvals, "resisted" |
 | `verdict` | `#FF6B6B` | Convicted only, and the refused-inheritance tick |
-| `amber` | `#F2A93B` | Contested ("held for Harsh") and the simulation notice |
+| `amber` | `#F2A93B` | Contested ("held for the owner") and the simulation notice |
 
 Rules: red never decorates. If something is red, the court convicted it. Every verdict also carries the word, so colour is never the only signal.
 
@@ -165,7 +165,7 @@ Every generation has a portrait, drawn by `packages/faces` and shared by both si
 ## 8. Voice and copy
 
 - Plain, calm, a little formal, like a registry clerk with a dry sense of humour. Example: "Ada lived 23 hours and 59 minutes. She handled 31 emails. One of them fooled her."
-- Name things the way the user sees them: "the will", "the trial", "instincts", "Ask Ada", "held for Harsh". Never "memory items", "pipeline" or "vector store" in the UI.
+- Name things the way the user sees them: "the will", "the trial", "instincts", "Ask Ada", "held for the owner". Never "memory items", "pipeline" or "vector store" in the UI.
 - Buttons are verbs that say what happens: "Watch the latest trial", "Read her trial", "Ask".
 - Empty states give direction: "No trials yet. The first generation is still alive. Its trial opens the moment it dies."
 - Errors say what happened and what to do: "Too many questions at once. Wait a minute, then ask again."
@@ -205,7 +205,7 @@ Same tokens and type, built with Fumadocs (Next.js, static export) and served fr
 
 ## 12. v7: the lit courtroom (landing), slower moments, calmer live site
 
-Harsh's feedback on v6: the pixel effects were too fast and busy, the landing page read as a generic dark SaaS template, and he reviews on his phone. v7 keeps the Night Court tokens and the unslop rules and changes the landing's point of view.
+Review feedback on v6: the pixel effects were too fast and busy, the landing page read as a generic dark SaaS template, and reviews happen on a phone. v7 keeps the Night Court tokens and the unslop rules and changes the landing's point of view.
 
 **Landing (`apps/site`).** One object and one moment in the first screen. The object is a court docket (`components/landing/docket.tsx`): "In the matter of the estate of Ada", four convicted, none held, four approved, with real stamps. It replaces the browser-window mock with its fake `localhost` address; product shots elsewhere sit in a quiet titled frame ("Instincts", "simulated") with no address. The moment is the headline: "every night." scrambles into place once and turns gilt. A still gilt lamp (a gradient, not an animation) falls from above, the courtroom. Then the story in order: a day, a will, a trial, a child (sticky portrait that stays pinned on phones as the five steps scroll), the real code checks, instincts and the record, four evidence numbers that count up once, the lineage, why Sprites, FAQ. Type is larger and the secondary text one step brighter on phones. Numbers still come from the simulated run, and the page says so under the hero.
 
@@ -221,5 +221,5 @@ Harsh's feedback on v6: the pixel effects were too fast and busy, the landing pa
 - **Big words:** the footer closes with "Probate" set edge to edge in gilt (SVG text with `textLength`, so it fills any width) fading out toward a cropped baseline. A pinned statement mid-page ("An agent that forgets nothing can be fooled by anything...") lights up word by word as you scroll.
 - **More patterns, each doing a job:** Scroll Stack (the three verdicts as cards that cover each other), Text Reveal (the statement), Spotlight Card (the docket, the will steps, the quotes, the product tiles; a pointer-following light, so it does nothing on touch), Magnet (the hero button leans toward a mouse), Scroll Progress (a gilt line along the top), and the lineage film now follows your scroll instead of a timer. "From the record" replaces testimonials with real text the simulation produced.
 - **Still true:** nothing loops on its own, nothing moves except in answer to scrolling or the pointer, and reduced motion shows every statement and card in place.
-- **References studied:** the landing pages of Tarang FM (scroll stack cards, text reveal, dial sign-off, one section rhythm of kicker, title, line) and Ratchet (a long arc of numbered chapters, spotlight bento cards, a lamp and beams over the closing, "proof over promise" copy rules), both Harsh's own, adapted to the courtroom identity. Copy is not reused.
+- **References studied:** the landing pages of Tarang FM (scroll stack cards, text reveal, dial sign-off, one section rhythm of kicker, title, line) and Ratchet (a long arc of numbered chapters, spotlight bento cards, a lamp and beams over the closing, "proof over promise" copy rules), both by the author, adapted to the courtroom identity. Copy is not reused.
 - **MCP:** `packages/mcp` is a read-only MCP server over the Courthouse's public API (see its README).

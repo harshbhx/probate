@@ -48,6 +48,6 @@ Checklist (tick in `NOTES.md` with timestamps):
 ## 6. Before submission
 
 - [ ] `ruff check`, `ruff format --check`, `pytest -q` green
-- [ ] `git log` shows only Harsh as author and committer, one file per commit, no AI co-author lines
+- [ ] `git log` shows only the maintainer as author and committer, one file per commit, no AI co-author lines
 - [ ] No secret in the repo: run `gitleaks detect` or `trufflehog filesystem .`
 - [ ] README numbers match `/evidence`

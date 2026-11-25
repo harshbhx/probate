@@ -1,14 +1,14 @@
 # Setup and verification spikes
 
-Do this first, on Wed Nov 25. Harsh does the account and dashboard steps (only he can). Agent A writes and runs the spike scripts in `scripts/`. Record every finding in `docs/SPIKE-RESULTS.md` (endpoint shapes, timings, gotchas), but **never** keys or tokens.
+Do this first, on Wed Nov 25. You (the owner) do the account and dashboard steps; nobody else can. Agent A writes and runs the spike scripts in `scripts/`. Record every finding in `docs/SPIKE-RESULTS.md` (endpoint shapes, timings, gotchas), but **never** keys or tokens.
 
-## 1. Account (Harsh)
+## 1. Account (the owner)
 
 1. Sign up at https://fly.io/app/sign-up?s=hacksgiving.
 2. Add a card. That unlocks the larger Sprites credit; without one, the credit is tiny and expires quickly. Check the current amount on the billing page and write it in `SPIKE-RESULTS.md`.
 3. Install the CLIs: `flyctl`, and the `sprite` CLI if offered (see https://docs.sprites.dev). Run `sprite org auth`.
 
-## 2. Connectors (Harsh, in the dashboard)
+## 2. Connectors (the owner, in the dashboard)
 
 Fly dashboard → your org → **Sprites → Connectors → Add connector**. For each one: add the key or sign in, then under access turn **off** "Allow all sprites" and allow by name prefix: `courthouse` and `gen-`.
 
@@ -18,7 +18,7 @@ Fly dashboard → your org → **Sprites → Connectors → Add connector**. For
 | Box | Box sign-in (read and write) | The family archive in `/Probate/` |
 | Pinecone | Pinecone API key; create index `probate-ancestry` | Ancestral memory |
 | AgentMail | AgentMail API key | Family, friend-sim and stranger inboxes (three, the free plan) |
-| Custom API `cloudflare` | Cloudflare API token with Email Sending permission, upstream `https://api.cloudflare.com` | Harsh's own test emails, from `harsh@dualmindlab.tech` |
+| Custom API `cloudflare` | Cloudflare API token with Email Sending permission, upstream `https://api.cloudflare.com` | The owner's own test emails, from `harsh@dualmindlab.tech` |
 | ElevenLabs | ElevenLabs API key | Eulogies and ancestor answers |
 | Ollama Cloud | Ollama account key | The brain |
 | Anthropic | Anthropic key (Claude for Startups credits) | Brain fallback and distillation |
