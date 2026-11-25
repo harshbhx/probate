@@ -1,12 +1,9 @@
-import Link from 'next/link';
+import Link from '@/components/intent-link';
 import { ArrowRight } from 'lucide-react';
 import { FamilyFace } from 'kinfaces/react';
 import { Bento } from '@/components/landing/bento';
 import { Docket } from '@/components/landing/docket';
-import { LifeStory } from '@/components/landing/life-story';
-import { LineageFilm } from '@/components/landing/lineage-film';
 import { ProductWindow } from '@/components/landing/product-window';
-import { TryCourt } from '@/components/landing/try-court';
 import { CountUp } from '@/components/fx/CountUp';
 import { Reveal } from '@/components/fx/Reveal';
 import { Scramble } from '@/components/fx/Scramble';
@@ -15,7 +12,7 @@ import { SpotlightCard } from '@/components/fx/SpotlightCard';
 import { Magnet } from '@/components/fx/Magnet';
 import { TextReveal } from '@/components/fx/TextReveal';
 import { Quotes } from '@/components/landing/quotes';
-import { VerdictStack } from '@/components/landing/verdict-stack';
+import { LifeStory, LineageFilm, TryCourt, VerdictStack } from '@/components/landing/deferred';
 import { LinksHub } from '@/components/landing/links-hub';
 import { githubUrl, liveUrl } from '@/lib/shared';
 
@@ -226,6 +223,7 @@ function Hero() {
 
 const PARTS = [
   { name: 'Fly.io Sprites', role: 'a computer for each life' },
+  { name: 'Ollama Cloud', role: 'the brain' },
   { name: 'Jev by TypeSafe', role: 'the judge' },
   { name: 'AgentMail', role: 'each inbox' },
   { name: 'Box', role: 'the archive' },
@@ -240,7 +238,7 @@ function BuiltOn() {
         <h2 id="built" className="text-[14px] text-mist">
           What the family runs on
         </h2>
-        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4 lg:grid-cols-7">
           {PARTS.map((p) => (
             <li key={p.name} className="border-l border-line-strong pl-4">
               <div className="text-[17px] font-medium tracking-[-0.01em] text-moon">{p.name}</div>

@@ -6,6 +6,8 @@ const withMDX = createMDX();
 const config = {
   output: 'export',
   reactStrictMode: true,
+  // The stylesheet (about 27 KB compressed) goes into each page's HTML instead of a render-blocking request.
+  experimental: { inlineCss: true },
   transpilePackages: ['kinfaces', '@probate/moments'],
 };
 
