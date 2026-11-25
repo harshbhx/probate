@@ -1,5 +1,6 @@
 ---
 title: Deploy
+icon: Rocket
 description: One command takes the family live on Sprites, this site live on Cloudflare, and the code to GitHub.
 ---
 
@@ -11,6 +12,8 @@ description: One command takes the family live on Sprites, this site live on Clo
 | Generations | Fly.io Sprites, created by the Courthouse | the Courthouse itself |
 | This landing page and docs | Cloudflare (static assets on Workers) | `wrangler deploy` in `apps/site` |
 | The code | GitHub | `scripts/ship.sh` |
+
+<Diagram src="/diagrams/deploy.webp" alt="make ship runs the checks, pushes the code to GitHub, deploys the Courthouse to Fly.io Sprites and the landing page and docs to Cloudflare, then links the two sites." width={1520} height={1322} caption="What make ship does, in order. Click to zoom." />
 
 ## Before the first deploy
 
