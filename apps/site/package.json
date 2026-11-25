@@ -6,6 +6,9 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "serve out",
+    "prelint": "npm run build -w kinfaces",
+    "predev": "npm run build -w kinfaces",
+    "prebuild": "npm run build -w kinfaces",
     "lint": "next typegen && tsc --noEmit",
     "deploy": "wrangler deploy"
   },
@@ -23,7 +26,7 @@
     "next": "16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "@probate/faces": "*",
+    "kinfaces": "*",
     "@probate/tokens": "*"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
-import { FamilyFace } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
 import { Bento } from '@/components/landing/bento';
 import { LifeStory } from '@/components/landing/life-story';
 import { LineageFilm } from '@/components/landing/lineage-film';

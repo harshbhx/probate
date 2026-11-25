@@ -4,7 +4,8 @@
 // door, die, stand trial and pass on what it learned.
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { FamilyFace, type Life, type Mood } from '@probate/faces';
+import { FamilyFace } from 'kinfaces/react';
+import type { Life, Mood } from 'kinfaces';
 import { Verdict } from '@/components/verdict';
 
 type Beat = {
