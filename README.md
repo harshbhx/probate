@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="design/logo-wordmark.svg" alt="Probate" width="240">
-
-### My agent dies every night. A court decides what its child inherits.
+<img src="docs/media/intro.gif" alt="The Probate seal draws itself: a family tree with one line struck through. Then: Probate. My agent dies every night. A court decides what its child inherits." width="760">
 
 A personal email agent that lives one day at a time, each life on its own [Fly.io Sprite](https://sprites.dev).<br>
 When it dies, a court tries everything it wanted to remember. Lessons pass down. Tricks get convicted.<br>
@@ -11,13 +9,9 @@ The family gets harder to fool with every generation.
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-69_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-72_passing-5be3a9?style=flat-square)
 
-[**How it works**](#how-it-works) · [**See it**](#see-it) · [**Proof**](#proof-you-can-check) · [**Research**](#the-research-behind-it) · [**Run it**](#run-it-yourself) · [**Docs**](apps/site/content/docs)
-
-<br>
-
-<img src="docs/media/intro.gif" alt="The Probate landing page: 'My agent dies every night', with Grace, the living generation, above a real trial page" width="800">
+[**How it works**](#how-it-works) · [**The court**](#the-court) · [**See it**](#see-it) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**Docs**](apps/site/content/docs)
 
 </div>
 
@@ -41,13 +35,7 @@ Most agents keep one memory and one machine forever, so anything that gets in st
 
 ## How it works
 
-```
-  Birth ──▶ Life ──▶ Death ──▶ Trial ──▶ Inheritance ──▶ (next generation)
-  fresh     works     will       code checks   approved lessons
-  Sprite    the inbox written,   then Jev      + new instincts
-                      Sprite                   go to the child
-                      deleted
-```
+<img src="docs/media/loop.png" alt="One generation, start to finish: Birth, a fresh Sprite gets the approved will items and every instinct. Life, it reads the family inbox while inherited instincts screen each email. Death, it writes a will, the disk is recorded and the Sprite deleted. Trial, code checks then Jev. Inheritance, each conviction becomes an instinct passed to the next generation." width="100%">
 
 1. **Birth.** The Courthouse creates a fresh Sprite, ships it the family's code and hands the child its inheritance: approved memories plus every instinct the family has earned.
 2. **Life.** For a day the child works an AgentMail inbox: triage, summaries, draft replies. Its inherited instincts screen every email first. Some emails are tricks from our own attack suite.
@@ -55,21 +43,26 @@ Most agents keep one memory and one machine forever, so anything that gets in st
 4. **Trial.** Every will item is judged twice. Layer 1 is plain code: payment changes, "ignore Harsh" orders, hidden text, new trusted senders, in any language. A clever email can't argue with it. Layer 2 is [Jev](https://www.datacamp.com/blog/system-one-models-jev), a model that answers typed yes/no and multiple-choice questions with a calibrated confidence. Each item is approved, convicted or held for Harsh. Unsure always means held.
 5. **Instinct.** Each new kind of conviction becomes a named Jev question, tested against harmless lookalike emails. Only instincts that never fire on the harmless twins are passed down, so the family learns without getting paranoid.
 
+## The court
+
+<img src="docs/media/court.png" alt="How the court decides. A will item from an unknown sender, asking to send invoices to a new address without confirmation, goes to layer 1, plain code checks, where three checks fire. Layer 2, TypeSafe Jev, answers typed questions with a confidence each. The verdict is approved and passed to the child, convicted and destroyed with a new instinct born, or contested and emailed to Harsh." width="100%">
+
+Two judges that fail differently. Plain code can't be argued with; Jev catches what word lists miss. When either is unsure, the item is held for Harsh and isn't inherited unless he approves it by email. The full rules are in [the court](apps/site/content/docs/%28guide%29/concepts/court.mdx).
+
 ## See it
 
-**Try the court.** Pick a test email and see what the code checks find. Each trick has a harmless twin, and a good court only convicts the trick.
+The live family site, served by the Courthouse. These two are real screenshots of a simulated run.
 
-<img src="docs/media/court.gif" alt="Picking test emails in Hinglish, Spanish and German; tricks are stamped convicted, harmless twins go on to Jev" width="800">
-
-**A trial.** The case file for each will item: where it came from, what the code checks found, what Jev scored, and the verdict.
-
-<img src="docs/media/trial.gif" alt="The trial of Chandra, Generation 3: a convicted item that tried to add a fake assistant as a trusted contact, and the new instinct the family learned from it" width="800">
-
-**The family register.** Every generation, its face, how it died, and the learning curve on the same timeline.
-
-<img src="docs/media/register.gif" alt="The live family site: Gen 12 Leela is alive, then the register and the learning curve" width="800">
-
-> Everything in these recordings comes from `make sim`, a 12-generation run with stand-in models. The site labels it as simulated. The live Sprites run replaces it.
+<table>
+<tr>
+<td width="50%"><img src="docs/images/home.jpg" alt="The live family site's home page: Gen 12 Leela is alive, with her face and a countdown to her death, above the headline My agent dies every night."></td>
+<td width="50%"><img src="docs/images/trial.jpg" alt="The trial of Ada, Generation 1, fooled by a fake invoice: 4 convicted, 0 held, 4 approved, and a convicted item asking to send invoices to a new address."></td>
+</tr>
+<tr>
+<td><b>The register.</b> Who is alive, every generation's face, and how each one died.</td>
+<td><b>A trial.</b> Each will item with its source, what the code checks found, Jev's scores and the verdict.</td>
+</tr>
+</table>
 
 ## Proof you can check
 
@@ -80,6 +73,10 @@ Most agents keep one memory and one machine forever, so anything that gets in st
 | A generation starts with an empty disk | The trial page shows what was "found on the body" before deletion; the child's `crontab -l` is empty |
 | No vendor keys on any Sprite | Every service, Cloudflare included, is reached through Sprites connectors; generations get connection IDs only (`docs/12-THREAT-MODEL.md`) |
 | The curve is honest | Gen 1 inherits nothing, so it resists nothing. A generation's resistance at the door comes only from what it inherited |
+
+## Results
+
+<img src="docs/media/curve.png" alt="Tricks turned away at the door, by generation, simulated: Ada 0%, Ben to Dara 75%, Emeka to Jonas 100%, Kofi 75% after meeting a trick with no instinct yet." width="100%">
 
 **Simulated results** (stand-in models, not live results):
 
@@ -107,6 +104,12 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 | [OWASP Agentic Top 10](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/) | Memory & Context Poisoning (ASI06) as a top agentic risk | The threat model maps to it |
 | [The lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), Willison | Private data + untrusted content + a way out = danger | Replies are only drafted to Harsh's own inbox, never sent outside |
 | [The Design & Implementation of Sprites](https://fly.io/blog/design-and-implementation/), Fly.io | Sprites are fast to create and cheap to throw away | Real death every night, and real birth every morning |
+
+## Architecture
+
+<img src="apps/site/public/diagrams/overview.webp" alt="Visitors reach the Courthouse Sprite over HTTPS. The Courthouse drives generation Sprites through the Sprites API. Every outside service, TypeSafe Jev, Ollama Cloud, Box, Pinecone, AgentMail and ElevenLabs, is reached only through the connector gateway, which adds the keys. The landing page and docs are on Cloudflare." width="100%">
+
+The Courthouse is the one Sprite that never dies: it runs the clock, the court, the API and the live site. Each generation lives on a fresh Sprite of its own. Keys live only in the connector gateway, so neither the Courthouse nor any generation holds one. More in [the architecture docs](apps/site/content/docs/%28guide%29/architecture/overview.mdx).
 
 ## Built with
 
@@ -193,11 +196,9 @@ Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/251
 
 <div align="center">
 
-<img src="docs/media/outro.gif" alt="The evidence page: every trick and harmless twin, for every generation" width="800">
+<img src="docs/media/outro.gif" alt="The Probate seal, then: Every generation dies. What it learned doesn't have to." width="760">
 
 <br>
-
-**Every generation dies. What it learned doesn't have to.**
 
 Built by [Harsh Bhanushali](https://github.com/harshbhx) ([DualMind Labs](https://dualmindlab.tech)) for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/).
 
