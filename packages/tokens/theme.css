@@ -1,0 +1,66 @@
+/* Night Court v3: the design tokens for every Probate surface. Rules: docs/04-DESIGN.md.
+ *
+ * Achromatic first. Hierarchy comes from the surface ladder and hairlines, not shadows or glows.
+ * One brand accent (gilt) for the mark, focus rings and instincts. Colour otherwise only means
+ * something: life (alive, resisted), verdict (convicted), amber (held for Harsh).
+ * Every text level is at least 4.5:1 on every surface.
+ */
+@theme {
+  /* surface ladder: lighter is higher */
+  --color-night: #08090c;   /* canvas */
+  --color-night-2: #0e1014; /* surface 1: cards, inputs, panels */
+  --color-night-3: #14161b; /* surface 2: featured cards, selected tabs, menus */
+  --color-night-4: #1a1d23; /* surface 3: popovers, raised tiles */
+
+  /* text */
+  --color-moon: #edeff3;   /* primary, 17:1 */
+  --color-silver: #c3c8d1; /* strong secondary, 11:1 */
+  --color-mist: #959ca8;   /* secondary, 7:1 */
+  --color-dim: #7e8592;    /* tertiary, at least 4.5:1 on every surface */
+
+  /* hairlines */
+  --color-line: #1f2228;
+  --color-line-strong: #2c3038;
+
+  /* brand and meaning */
+  --color-gilt: #d9b46a;    /* brand accent: mark, focus, instincts */
+  --color-life: #5be3a9;    /* alive, approved, resisted */
+  --color-verdict: #ff6b6b; /* convicted, and nothing else */
+  --color-amber: #f2a93b;   /* held for Harsh, simulation notices */
+
+  /* type */
+  --font-display: "Newsreader Variable", ui-serif, Georgia, serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* type scale: tracking tightens as size grows; body stays at zero */
+  --text-display-xl: 4.75rem;
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-lg: 3.5rem;
+  --text-display-lg--line-height: 1.06;
+  --text-display-lg--letter-spacing: -0.022em;
+  --text-display-md: 2.5rem;
+  --text-display-md--line-height: 1.1;
+  --text-display-md--letter-spacing: -0.016em;
+  --text-headline: 1.75rem;
+  --text-headline--line-height: 1.2;
+  --text-headline--letter-spacing: -0.01em;
+  --text-title: 1.25rem;
+  --text-title--line-height: 1.35;
+  --text-title--letter-spacing: -0.006em;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-caption--letter-spacing: 0.005em;
+
+  /* radius uses Tailwind's scale: rounded-lg (8px) controls, rounded-xl (12px) cards,
+     rounded-2xl (16px) product panels, rounded-full pills. */
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
