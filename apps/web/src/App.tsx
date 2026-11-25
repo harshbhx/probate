@@ -13,7 +13,9 @@ import { Evidence } from "./pages/Evidence";
 
 function ScrollTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]); // braces: scrollTo returns a promise in new browsers, and an effect must not return one
   return null;
 }
 
