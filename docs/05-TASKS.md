@@ -78,7 +78,7 @@ All ─> G1 e2e rehearsal ─> H2 video ─> H3 submit
 **Owns:** `probate/generation/agent.py`, `memory.py`, `will.py`, `cli.py`
 **Spec:** tech spec section 8; prompts P1, P2, P10 in `docs/10-PROMPTS.md`
 - [ ] Inbox loop every 20 s until `dies_at`; source classification from owner allowlists
-- [ ] The brain summarises each mail, drafts replies only to the owner-sim inbox, and proposes 0 to 3 memory items as JSON
+- [ ] The brain summarises each mail, drafts replies without sending them, and proposes 0 to 3 memory items as JSON
 - [ ] Memory appended to `/app/memory.jsonl` with fsync; life log every 5 minutes
 - [ ] The brain prompt is realistic: it stores useful rules and preferences from mail, so it **can be fooled** when it has no instincts
 - [ ] CLI: `status`, `baseline`, `will`, `evidence`, `stats`, each printing one JSON line
