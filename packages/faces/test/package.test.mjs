@@ -55,5 +55,8 @@ test("the react build keeps its use-client directive", () => {
 
 test("the committed gallery matches what the package generates", async () => {
   const { buildGallery } = await import("../scripts/gallery-lib.mjs");
-  assert.equal(readFileSync(url("gallery.svg"), "utf8"), buildGallery());
+  // Ignore CRLF from Windows checkouts.
+  assert.equal(readFileSync(url("gallery.svg"), "utf8").replaceAll("
+", "
+"), buildGallery());
 });
