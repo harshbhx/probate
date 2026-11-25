@@ -2,7 +2,7 @@
 PY      := services/core/.venv/bin/python
 SIMDATA := .data/sim
 
-.PHONY: help setup dev api web site site-data site-shots test lint sim build serve deploy deploy-check site-deploy ship clean
+.PHONY: help setup dev api web site api-spec site-data site-shots test lint sim build serve deploy deploy-check site-deploy ship clean
 
 help: ## Show this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
@@ -51,6 +51,9 @@ deploy-check: ## Validate .env and the bundle without touching Sprites
 deploy: ## Deploy or update the Courthouse Sprite
 	npm run build -w @probate/web
 	$(PY) scripts/deploy.py
+
+api-spec: ## Re-export the API schema the docs reference is built from (apps/site/openapi.json)
+	$(PY) scripts/export_openapi.py
 
 site-data: ## Re-export the court examples the landing page shows (from the real layer-1 code)
 	$(PY) scripts/export_site_data.py
