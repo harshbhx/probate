@@ -40,7 +40,12 @@ OPERATION_IDS = {
     ("post", "/admin/force-death"): "force-death",
     ("post", "/admin/contested/{item_id}"): "decide",
     ("post", "/admin/tick"): "tick",
+    ("post", "/api/judge/mail"): "send-mail",
+    ("get", "/api/judge/mail"): "list-mail",
+    ("get", "/admin/judge/mail"): "judge-mail-audit",
 }
+# Judge-key routes: documented in the Judges tag, authenticated by X-Probate-Key.
+JUDGE_ROUTES = {"/api/judge/mail"}
 
 READS = {
     "/healthz": "/healthz",
@@ -134,9 +139,24 @@ def build() -> dict:
         "name": "X-Probate-Admin",
         "description": "PROBATE_ADMIN_TOKEN from the Courthouse's .env",
     }
+    spec["components"]["securitySchemes"]["judge"] = {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Probate-Key",
+        "description": "The shared judge key from the submission text (PROBATE_JUDGE_KEY). No admin route accepts it.",
+    }
+    # Only documented routes appear in the reference (the rest of the judge-play routes are not listed).
+    spec["paths"] = {
+        path: ops
+        for path, ops in spec["paths"].items()
+        if all((method, path) in OPERATION_IDS for method in ops)
+    }
     for path, ops in spec["paths"].items():
         for method, op in ops.items():
             op["operationId"] = OPERATION_IDS[(method, path)]
+        if path in JUDGE_ROUTES:
+            for op in ops.values():
+                op["security"] = [{"judge": []}]
         if path.startswith("/admin/"):
             for op in ops.values():
                 op["security"] = [{"admin": []}]

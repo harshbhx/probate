@@ -5,6 +5,8 @@
 owner:
   name: Harsh Bhanushali
   emails: [harshbhx@gmail.com, harsh@dualmindlab.tech]
+  # The friend inbox (PROBATE_FRIEND_INBOX) must be here for the judge mailroom's Friend persona to
+  # count as a trusted contact. The stranger inbox must NOT be listed.
   trusted_contacts: [probate-friend@agentmail.example]
   payment_destinations: []        # real allowlisted payment emails / UPI IDs go only in the private file
   domains: [dualmindlab.tech]

@@ -1,1 +1,1 @@
-{ "title": "HTTP API", "icon": "Webhook", "pages": ["index", "family", "ancestors", "admin", "health"] }
+{ "title": "HTTP API", "icon": "Webhook", "pages": ["index", "family", "ancestors", "judges", "admin", "health"] }

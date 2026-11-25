@@ -55,6 +55,8 @@ Base `https://api.sprites.dev/v1`, header `Authorization: Bearer $SPRITES_TOKEN`
 | Labels | Update labels on a message (mark `probate-processed`) |
 | SDK | `pip install agentmail`; `AgentMail().inboxes.messages.send(inbox_id, to=..., subject=..., text=..., headers=...)` |
 
+The judge mailroom (`POST /api/judge/mail`) sends with the same Send call from the friend or stranger inbox to the family inbox, with `headers: {"X-Probate-Origin": "judge-mailroom"}`, and checks 'read' by reading the message's labels for `probate-processed`. Both are Spike items: whether AgentMail keeps the custom header, how fast the label appears, and delivery latency are unverified.
+
 Use `extracted_text` (not raw text) as the body the agent sees. Store `X-Probate-Fixture` from `headers` for scoring only. Spike S6 confirms custom headers survive delivery.
 
 ## 4a. Cloudflare Email Service (via a custom-API connector named `cloudflare`)

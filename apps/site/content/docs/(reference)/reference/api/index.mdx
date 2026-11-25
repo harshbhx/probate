@@ -13,7 +13,7 @@ description: The Courthouse's JSON API. Every read is public; every write except
 <Terms>
   <Term name="Base URL">The Courthouse's Sprite URL, e.g. `https://probate-courthouse-….sprites.app`. Locally, `http://localhost:8080` (`make api` or `make dev`).</Term>
   <Term name="Format">JSON in and out. Errors are `{"detail": "…"}` with a 4xx status.</Term>
-  <Term name="Auth">None for reads and for asking an ancestor. Admin routes need the `X-Probate-Admin` header set to `PROBATE_ADMIN_TOKEN`.</Term>
+  <Term name="Auth">None for reads and for asking an ancestor. Admin routes need the `X-Probate-Admin` header set to `PROBATE_ADMIN_TOKEN`. The judge mailroom needs the shared `X-Probate-Key` judge key, which no admin route accepts.</Term>
   <Term name="CORS">Only `GET /api/summary` may be read from other origins, so the landing page can show who is alive.</Term>
   <Term name="Rate limits">Asking an ancestor: 10 questions a minute per visitor, then `429`.</Term>
   <Term name="Mode">`/healthz` and `/api/summary` say `live` or `simulation`. Simulated data is labelled wherever it's shown.</Term>
@@ -25,6 +25,7 @@ description: The Courthouse's JSON API. Every read is public; every write except
   <PathCard title="Family" href="/docs/reference/api/family/summary" icon="Users">The register, a generation's life, trials, the genome, the evidence and the event feed.</PathCard>
   <PathCard title="Ancestors" href="/docs/reference/api/ancestors/ask" icon="MessageCircle">Ask a dead generation a question.</PathCard>
   <PathCard title="Admin" href="/docs/reference/api/admin/pause" icon="KeyRound">Pause and resume births, force a death, decide held items, run the clock once.</PathCard>
+  <PathCard title="Judges" href="/docs/reference/api/judges/send-mail" icon="Mail">Needs the judge key. Send a real email to the family as the Friend or the Stranger and follow it to its verdict.</PathCard>
   <PathCard title="Health" href="/docs/reference/api/health/health" icon="HeartPulse">Is the Courthouse awake, and who is alive.</PathCard>
 </PathGrid>
 
