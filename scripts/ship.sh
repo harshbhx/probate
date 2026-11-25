@@ -47,9 +47,11 @@ npm run lint --silent
 say "Building both sites"
 npm run build --silent
 
-say "Committing anything left over"
-git add -A
-git diff --cached --quiet || git commit -q -m "Prepare release"
+say "Checking the working tree is clean"
+if [ -n "$(git status --porcelain)" ]; then
+  git status --short
+  die "The working tree has uncommitted changes. Commit them on a branch (with a PR) first, then re-run."
+fi
 
 # ---------------------------------------------------------------- 2. GitHub
 OWNER="$(gh api user -q .login)"
