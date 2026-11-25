@@ -1,6 +1,7 @@
 // Docs building blocks: the pieces that make a page easy to scan before you read it.
 // Night Court rules: one accent (gilt), hairlines, verdict colours only for meaning.
 import type { ReactNode } from 'react';
+import { GLOSSARY, glossAnchor } from '@/lib/glossary';
 import Link from 'next/link';
 import { icons } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -211,4 +212,17 @@ export function Partner({ name, judge, icon, children }: { name: string; judge?:
 
 export function Partners({ children }: { children: ReactNode }) {
   return <div className="not-prose my-6 grid overflow-hidden rounded-xl border border-line bg-line [gap:1px] sm:grid-cols-2 [&>*]:bg-night-2">{children}</div>;
+}
+
+/** The glossary words not written out on the Glossary page itself, from lib/glossary.ts. */
+export function MoreTerms() {
+  return (
+    <Terms>
+      {GLOSSARY.filter((e) => e.more).map((e) => (
+        <Term key={e.term} name={e.term} id={glossAnchor(e.term)}>
+          {e.def}
+        </Term>
+      ))}
+    </Terms>
+  );
 }
