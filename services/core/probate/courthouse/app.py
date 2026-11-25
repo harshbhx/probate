@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import hmac
+import ipaddress
 import json
 import logging
 import os
@@ -52,6 +53,12 @@ async def lifespan(_: FastAPI):
         log.error(
             "PROBATE_REQUIRE_KEY_FOR_PLAY is on but PROBATE_JUDGE_KEY is unset, a dev default, "
             "shorter than 20 characters or equal to the admin token: play is refused until fixed"
+        )
+    if 0 < len(settings.edge_token) < _EDGE_TOKEN_MIN:
+        log.error(
+            "PROBATE_EDGE_TOKEN is shorter than %d characters and is ignored: visitor addresses "
+            "are NOT taken from the edge",
+            _EDGE_TOKEN_MIN,
         )
     hooks.sync_env()
     hooks.kick()  # deliver anything a restart left in the queue
@@ -140,7 +147,34 @@ def api_live(request: Request, response: Response) -> dict:
     return out
 
 
+EDGE_TOKEN_HEADER = "x-probate-edge"
+EDGE_IP_HEADER = "x-probate-client-ip"
+_EDGE_TOKEN_MIN = 16
+
+
+def _edge_client_ip(request: Request) -> str | None:
+    """The visitor's address as reported by our own edge Worker, or None.
+
+    Only when PROBATE_EDGE_TOKEN is configured and the request proves it came through the edge by
+    sending the same token. Anything else (no token configured, missing or wrong token, a value
+    that is not an IP literal) returns None and the caller uses the ordinary rule."""
+    token = settings.edge_token
+    if len(token) < _EDGE_TOKEN_MIN:
+        return None
+    sent = request.headers.get(EDGE_TOKEN_HEADER)
+    if not sent or not hmac.compare_digest(sent.encode("utf-8"), token.encode("utf-8")):
+        return None
+    try:
+        return str(ipaddress.ip_address(request.headers.get(EDGE_IP_HEADER, "").strip()))
+    except ValueError:
+        return None
+
+
 def client_ip(request: Request) -> str:
+    """The one place a visitor's address is decided. Every per-address limit goes through here."""
+    edge = _edge_client_ip(request)
+    if edge:
+        return edge
     # The proxy in front appends the real address last; anything a visitor prepends is ignored.
     fwd = request.headers.get("x-forwarded-for", "")
     if fwd:
@@ -339,7 +373,7 @@ def api_ask(gen: int, body: Ask, request: Request) -> JSONResponse:
     """A dead generation answers in at most 80 words, from its own will and verdicts, with a voice
     when ElevenLabs is connected. The question is treated as data: it can't give the ancestor orders.
     Returns `429` after 10 questions a minute."""
-    ip = request.client.host if request.client else ""
+    ip = client_ip(request)
     now = time.time()
     _asks[ip] = [t for t in _asks[ip] if now - t < 60]
     if len(_asks[ip]) >= 10:
