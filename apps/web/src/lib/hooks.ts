@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "./api";
+import { api, type Live } from "./api";
 
 export function useApi<T>(path: string | null, refreshMs?: number) {
   const [data, setData] = useState<T | null>(null);
@@ -60,4 +60,69 @@ export function useTitle(title: string | null) {
   useEffect(() => {
     document.title = title ? `${title} · Probate` : "Probate · My agent dies every night";
   }, [title]);
+}
+
+export type LiveView = {
+  live: Live | null;
+  /** The Courthouse can't be asked for a life (static preview, or it is unreachable). */
+  unavailable: boolean;
+  starting: boolean;
+  /** A one-off note about the last click (rate limit, refusal). */
+  notice: string | null;
+  start: () => Promise<void>;
+};
+
+const ACTIVE = ["waking", "living", "on_trial"];
+
+/** Polls GET /api/live (every 2 s while a life runs, else every 10 s) and starts lives. */
+export function useLive(): LiveView {
+  const [live, setLive] = useState<Live | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const active = !!live && ACTIVE.includes(live.state);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/live", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok || typeof data?.state !== "string") throw new Error("no live endpoint");
+      setLive(data as Live);
+      setUnavailable(false);
+    } catch {
+      setUnavailable(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const id = setInterval(load, active ? 2000 : 10000);
+    return () => clearInterval(id);
+  }, [load, active]);
+
+  const start = useCallback(async () => {
+    setStarting(true);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/lives", { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (typeof body?.state !== "string") {
+        setUnavailable(true); // a static preview answers 503 (or 404) with no state
+        return;
+      }
+      setLive(body as Live);
+      if (body.error === "rate_limited") {
+        const mins = Math.max(1, Math.ceil((body.retry_after ?? 60) / 60));
+        setNotice(`You've run a few lives already. Try again in about ${mins} ${mins === 1 ? "minute" : "minutes"}.`);
+      } else if (body.error === "unavailable") {
+        setNotice("The Courthouse isn't taking requests right now.");
+      }
+    } catch {
+      setNotice("Couldn't reach the Courthouse. Try again in a moment.");
+    } finally {
+      setStarting(false);
+    }
+  }, []);
+
+  return { live, unavailable, starting, notice, start };
 }

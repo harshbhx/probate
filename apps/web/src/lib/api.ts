@@ -113,6 +113,32 @@ export type Evidence = {
   rows: EvidenceRow[];
 };
 
+export type LiveState =
+  | "continuous"
+  | "idle"
+  | "waking"
+  | "living"
+  | "on_trial"
+  | "cooling_down"
+  | "budget_exhausted"
+  | "paused";
+
+// GET /api/live and the body of POST /api/lives (services/core/probate/courthouse/ondemand.py).
+export type Live = {
+  on_demand: boolean;
+  state: LiveState;
+  can_start: boolean;
+  lifespan_seconds?: number;
+  cooldown_seconds?: number;
+  gen?: { gen: number; name: string; dies_at: string | null } | null;
+  seconds_left?: number | null;
+  retry_after?: number | null;
+  last_life?: { gen: number; name: string; state: string; ended_at: string | null; trial_gen: number | null } | null;
+  message?: string | null;
+  error?: string;
+  started?: boolean;
+};
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
