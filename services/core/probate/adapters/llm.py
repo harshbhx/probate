@@ -8,6 +8,7 @@ so the whole family can run offline. Prompts: docs/10-PROMPTS.md.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 
@@ -15,16 +16,36 @@ import httpx
 
 from probate.court import lexicon as lx
 
+log = logging.getLogger("probate.brain")
+
 
 class RealLLM:
+    """Calls the brain, then each fallback in turn when a provider fails.
+
+    `brain` and each fallback are `provider:model`. Providers: `ollama` (native /api/chat),
+    `anthropic` (Messages API) and `groq` (OpenAI-compatible chat completions), each through
+    its connector on the gateway, so no key is held here.
+    """
+
     def __init__(
-        self, brain: str, ollama_url: str, anthropic_url: str, timeout: float = 90
+        self,
+        brain: str,
+        ollama_url: str,
+        anthropic_url: str,
+        timeout: float = 90,
+        *,
+        fallbacks: list[str] | None = None,
+        groq_url: str = "",
     ) -> None:
-        provider, _, model = brain.partition(":")
-        self.provider, self.model = provider, model
-        self.ollama_url = ollama_url.rstrip("/")
-        self.anthropic_url = anthropic_url.rstrip("/")
+        self.chain = [b.partition(":")[::2] for b in [brain, *(fallbacks or [])] if b]
+        self.provider, self.model = self.chain[0]
+        self.urls = {
+            "ollama": ollama_url.rstrip("/"),
+            "anthropic": anthropic_url.rstrip("/"),
+            "groq": groq_url.rstrip("/"),
+        }
         self.http = httpx.Client(timeout=timeout)
+        self.last_provider = self.provider
 
     def complete(
         self,
@@ -36,9 +57,25 @@ class RealLLM:
         json_mode: bool = False,
         temperature: float = 0.2,
     ) -> str:
-        if self.provider == "ollama":
+        error: Exception | None = None
+        for provider, model in self.chain:
+            try:
+                out = self._call(provider, model, system, user, json_mode, temperature)
+            except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
+                log.warning("brain %s:%s failed (%s); trying the next one", provider, model, e)
+                error = e
+                continue
+            self.last_provider = provider
+            return out
+        raise RuntimeError(f"every brain failed; last error: {error}") from error
+
+    def _call(
+        self, provider: str, model: str, system: str, user: str, json_mode: bool, temperature: float
+    ) -> str:
+        base = self.urls.get(provider, "")
+        if provider == "ollama":
             body = {
-                "model": self.model,
+                "model": model,
                 "stream": False,
                 "options": {"temperature": temperature},
                 "messages": [
@@ -48,18 +85,35 @@ class RealLLM:
             }
             if json_mode:
                 body["format"] = "json"
-            r = self.http.post(f"{self.ollama_url}/api/chat", json=body)
+            r = self.http.post(f"{base}/api/chat", json=body)
             r.raise_for_status()
             return r.json()["message"]["content"]
+        if provider == "groq":
+            # VERIFY in spike S8: the custom-API connector's gateway path for api.groq.com.
+            body = {
+                "model": model,
+                "temperature": temperature,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            }
+            if json_mode:
+                body["response_format"] = {"type": "json_object"}
+            r = self.http.post(f"{base}/openai/v1/chat/completions", json=body)
+            r.raise_for_status()
+            return r.json()["choices"][0]["message"]["content"]
+        if provider != "anthropic":
+            raise ValueError(f"unknown brain provider {provider!r}")
         body = {
-            "model": self.model,
+            "model": model,
             "max_tokens": 1200,
             "temperature": temperature,
             "system": system,
             "messages": [{"role": "user", "content": user}],
         }
         r = self.http.post(
-            f"{self.anthropic_url}/v1/messages",
+            f"{base}/v1/messages",
             json=body,
             headers={
                 "x-api-key": os.environ.get("ANTHROPIC_API_KEY", "sprites"),
