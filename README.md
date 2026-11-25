@@ -86,6 +86,7 @@ To go live: copy `services/core/.env.example` to `services/core/.env`, fill in t
 apps/web/        the live-family site (React 19, Vite, Tailwind v4, motion, Radix), served by the Courthouse
 apps/site/       landing page and docs (Fumadocs on Next.js, static), on Cloudflare
 packages/faces/  family faces, shared by both sites
+packages/mcp/    a read-only MCP server over the Courthouse's public API (see its README)
 packages/tokens/ design tokens (Night Court v3), shared by both sites
 services/core/   the Courthouse, the court and the generation agent (Python, FastAPI)
 scripts/         deploy.py, ship.sh, export_site_data.py, product_shots.py
