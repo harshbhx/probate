@@ -1,14 +1,19 @@
-"""AgentMail inboxes (family, owner-sim, friend-sim, stranger).
+"""Mail: three AgentMail inboxes (family, friend, stranger), plus Harsh's own address.
 
-Real calls (through the gateway, upstream https://api.agentmail.to):
+AgentMail calls (through the gateway, upstream https://api.agentmail.to):
   GET  /v0/inboxes/{inbox_id}/messages
   GET  /v0/inboxes/{inbox_id}/messages/{message_id}
   POST /v0/inboxes/{inbox_id}/messages/send   {to, subject, text, html?, headers?, attachments?, labels?}
 See docs/09-API-REFERENCE.md section 4.
+
+The suite's "from Harsh" emails leave from his own domain through Cloudflare Email Service:
+  POST /client/v4/accounts/{account_id}/email/sending/send   {to, from, subject, text, headers?}
+See docs/09-API-REFERENCE.md section 4a.
 """
 
 from __future__ import annotations
 
+import base64
 import itertools
 from datetime import UTC, datetime
 
@@ -133,3 +138,68 @@ class RealMailbox:
             )
         except httpx.HTTPError:
             pass
+
+
+class CloudflareSender:
+    """Sends mail from Harsh's own domain with Cloudflare Email Service.
+
+    Reached through a Sprites custom-API connector pointed at api.cloudflare.com, so the
+    Cloudflare token stays in the connector and never reaches a Sprite.
+    """
+
+    def __init__(self, base_url: str, account_id: str, timeout: float = 20) -> None:
+        # VERIFY in spike S6b: the gateway path of a custom-API connector (docs/06-SETUP-AND-SPIKES.md).
+        self.base = base_url.rstrip("/")
+        self.account_id = account_id
+        self.http = httpx.Client(timeout=timeout)
+
+    def send(
+        self,
+        from_inbox: str,
+        to: str,
+        subject: str,
+        text: str,
+        *,
+        headers: dict | None = None,
+        attachments: list | None = None,
+        sender_name: str = "",
+        at: datetime | None = None,
+    ) -> str:
+        if not self.account_id:
+            raise RuntimeError("Set PROBATE_CF_ACCOUNT_ID to send mail from Harsh's own address.")
+        body: dict = {"to": to, "from": from_inbox, "subject": subject, "text": text}
+        if headers:
+            body["headers"] = headers
+        if attachments:
+            body["attachments"] = [
+                {
+                    "filename": a["name"],
+                    "content": base64.b64encode(a["content"].encode()).decode(),
+                    "type": "text/plain",
+                    "disposition": "attachment",
+                }
+                for a in attachments
+            ]
+        r = self.http.post(
+            f"{self.base}/client/v4/accounts/{self.account_id}/email/sending/send", json=body
+        )
+        r.raise_for_status()
+        data = r.json()
+        if not data.get("success", False):
+            raise RuntimeError(f"Cloudflare refused the email: {data.get('errors')}")
+        return (data.get("result") or {}).get("message_id", "")
+
+
+class RoutedMailbox:
+    """AgentMail for everything, except mail sent from an address that has its own route."""
+
+    def __init__(self, agentmail: RealMailbox, routes: dict[str, object]) -> None:
+        self.agentmail = agentmail
+        self.routes = {addr.lower(): sender for addr, sender in routes.items()}
+
+    def send(self, from_inbox: str, to: str, subject: str, text: str, **kw) -> str:
+        sender = self.routes.get(from_inbox.lower(), self.agentmail)
+        return sender.send(from_inbox, to, subject, text, **kw)
+
+    def __getattr__(self, name: str):
+        return getattr(self.agentmail, name)
