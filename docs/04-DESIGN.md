@@ -214,3 +214,12 @@ Harsh's feedback on v6: the pixel effects were too fast and busy, the landing pa
 **Pixel moments.** Everything plays at about 0.6x speed; `birth` is half size and 70% opacity. See `packages/moments/README.md`.
 
 **Live site (`apps/web`).** Body and caption text up one step (13 to 14 px, 12 to 13 px), 48 px tap targets on the mobile tab bar and full-width hero buttons on phones, footer links with taller targets, a slightly longer rise on page change, and a pulsing skeleton that stops under reduced motion.
+
+### 12a. v7 round 2: richer landing, big words, MCP
+
+- **Header:** a floating pill (seal and wordmark, sections, search, source, one action) that gains blur and a hairline once you scroll. On phones the pill keeps the lockup, search and a menu button, and the menu opens as a card with 56 px rows set in the display face.
+- **Big words:** the footer closes with "Probate" set edge to edge in gilt (SVG text with `textLength`, so it fills any width) fading out toward a cropped baseline. A pinned statement mid-page ("An agent that forgets nothing can be fooled by anything...") lights up word by word as you scroll.
+- **More patterns, each doing a job:** Scroll Stack (the three verdicts as cards that cover each other), Text Reveal (the statement), Spotlight Card (the docket, the will steps, the quotes, the product tiles; a pointer-following light, so it does nothing on touch), Magnet (the hero button leans toward a mouse), Scroll Progress (a gilt line along the top), and the lineage film now follows your scroll instead of a timer. "From the record" replaces testimonials with real text the simulation produced.
+- **Still true:** nothing loops on its own, nothing moves except in answer to scrolling or the pointer, and reduced motion shows every statement and card in place.
+- **References studied:** the landing pages of Tarang FM (scroll stack cards, text reveal, dial sign-off, one section rhythm of kicker, title, line) and Ratchet (a long arc of numbered chapters, spotlight bento cards, a lamp and beams over the closing, "proof over promise" copy rules), both Harsh's own, adapted to the courtroom identity. Copy is not reused.
+- **MCP:** `packages/mcp` is a read-only MCP server over the Courthouse's public API (see its README).
