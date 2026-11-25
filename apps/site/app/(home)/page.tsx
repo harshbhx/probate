@@ -1,31 +1,35 @@
 import Link from 'next/link';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { FamilyFace } from '@probate/faces';
-import { GithubMark } from '@/components/icons';
 import { Bento } from '@/components/landing/bento';
-import { HeroFace } from '@/components/landing/hero-face';
 import { LifeStory } from '@/components/landing/life-story';
 import { LineageFilm } from '@/components/landing/lineage-film';
+import { ProductWindow } from '@/components/landing/product-window';
 import { TrickMarquee } from '@/components/landing/marquee';
 import { TryCourt } from '@/components/landing/try-court';
-import { Seal } from '@/components/seal';
 import { githubUrl, liveUrl } from '@/lib/shared';
 
+// Night Court v3 landing page. Section order and rules: docs/04-DESIGN.md §10a.
 export default function HomePage() {
   return (
-    <div className="flex flex-1 flex-col">
+    <>
       <Hero />
-      <section aria-label="The same trick in four languages" className="border-y border-line bg-night-2/40 py-6">
-        <TrickMarquee />
-      </section>
+      <BuiltOn />
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
         <Section
           id="life"
           title="One day, one life, one trial"
-          lede="A Courthouse lives forever on its own Sprite. Generations come and go beside it, one at a time. Scroll through one of them."
+          lede="The Courthouse lives forever on its own Sprite. Generations come and go beside it, one at a time. Scroll through one of them."
         >
           <LifeStory />
         </Section>
+      </div>
+
+      <section aria-label="The same trick in four languages" className="border-y border-line bg-night-2 py-6">
+        <TrickMarquee />
+      </section>
+
+      <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
         <Section
           id="court"
           title="Nothing is inherited without a trial"
@@ -33,11 +37,63 @@ export default function HomePage() {
         >
           <TryCourt />
           <p className="mt-4 text-[13px] text-dim">
-            Output of the real code checks (<code className="font-mono">probate/court/layer1.py</code>) on emails from the suite.
-            Test addresses use the reserved .example domain.
+            Output of the real code checks (<code className="font-mono">probate/court/layer1.py</code>) on emails from the
+            suite. Test addresses use the reserved .example domain.
           </p>
         </Section>
-        <Instincts />
+
+        <Feature
+          id="instincts"
+          title="Instincts you can read"
+          body="From every conviction the court writes a plain yes-or-no question. Each child is born with all of them, and they screen every email before the agent reads it."
+          points={[
+            'Written in plain words, with the generation that paid for it',
+            'Tested against harmless twins before it is passed down',
+            'The door uses inherited instincts and nothing else',
+          ]}
+          link={{ label: 'How instincts are made', href: '/docs/concepts/instincts' }}
+          shot={{ src: '/product/instincts.webp', w: 2560, h: 2160, path: '/instincts', alt: 'The Instincts page of the live site: six instincts, each a yes-or-no question with the generation it was learned from.' }}
+        />
+        <Feature
+          id="record"
+          reverse
+          title="Every life leaves a record"
+          body="When a generation dies, its page stays. Read its eulogy, scroll its day, see what it was born knowing, and ask it questions about its own life."
+          points={[
+            'A eulogy written from the day’s log',
+            'Ask any sealed generation; it answers from its will and trial',
+            'Every email and decision on one timeline',
+          ]}
+          link={{ label: 'The lifecycle', href: '/docs/concepts/lifecycle' }}
+          shot={{ src: '/product/generation.webp', w: 2560, h: 2120, path: '/gen/3', alt: 'A generation page: Chandra’s face and numbers, her eulogy, a box to ask her questions, and the timeline of her day.' }}
+        />
+        <Feature
+          id="evidence"
+          title="Proof, not a promise"
+          body="The evidence page tracks how many tricks each generation resisted at the door, and every test it met. What the numbers don’t show is written down too."
+          points={[
+            'Share of tricks resisted, generation by generation',
+            'Every test and every twin in one grid',
+            'Wrongly convicted twins are counted, not hidden',
+          ]}
+          link={{ label: 'The attack suite', href: '/docs/concepts/attack-suite' }}
+          shot={{ src: '/product/curve.webp', w: 2560, h: 1120, path: '/evidence', alt: 'The learning curve on the evidence page: tricks resisted at the door climb from zero in generation one.' }}
+          note="Shown from a local simulated run with stand-in models."
+        />
+
+        <Section
+          id="family"
+          title="Watch a family learn"
+          lede="Each child looks a little like its parent, and is born with every instinct the family has earned."
+        >
+          <figure className="rounded-2xl border border-line bg-night-2 p-4 sm:p-8">
+            <LineageFilm />
+            <figcaption className="mt-3 text-[13px] text-dim">
+              An illustration of how the family learns. The real generations, trials and numbers are on the live site.
+            </figcaption>
+          </figure>
+        </Section>
+
         <Section
           id="sprites"
           title="Why it has to be Sprites"
@@ -45,36 +101,34 @@ export default function HomePage() {
         >
           <Bento />
         </Section>
-        <BuiltOn />
-        <Closing />
+
+        <Faq />
       </div>
-      <Footer />
-    </div>
+      <Closing />
+    </>
   );
 }
 
 function Section({ id, title, lede, children }: { id: string; title: string; lede: string; children: React.ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-24 py-20 md:py-28">
-      <h2 id={`${id}-t`} className="max-w-3xl text-balance font-display text-[40px] leading-[1.04] tracking-[-0.01em] sm:text-[54px]">
+    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-20 py-20 md:py-28">
+      <h2 id={`${id}-t`} className="max-w-3xl font-display text-display-md font-[420] sm:text-display-lg">
         {title}
       </h2>
-      <p className="mt-4 max-w-2xl text-pretty text-[17px] leading-relaxed text-mist">{lede}</p>
+      <p className="mt-4 max-w-2xl text-body-lg text-mist">{lede}</p>
       <div className="mt-12">{children}</div>
     </section>
   );
 }
 
-function ButtonLink({ href, children, primary }: { href: string; children: React.ReactNode; primary?: boolean }) {
-  const external = href.startsWith('http');
+function Button({ href, children, primary }: { href: string; children: React.ReactNode; primary?: boolean }) {
   return (
     <Link
       href={href}
-      {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
       className={
         primary
-          ? 'inline-flex h-12 items-center gap-2 rounded-xl bg-moon px-6 text-[15px] font-medium text-night shadow-[0_10px_30px_-10px_rgb(232_236_244/0.4)] transition-transform hover:-translate-y-px'
-          : 'inline-flex h-12 items-center gap-2 rounded-xl px-6 text-[15px] ring-1 ring-line-strong transition-colors hover:bg-white/5'
+          ? 'inline-flex h-11 items-center gap-2 rounded-lg bg-moon px-5 text-[15px] font-medium text-night transition-colors hover:bg-white'
+          : 'inline-flex h-11 items-center gap-2 rounded-lg border border-line-strong bg-night-2 px-5 text-[15px] text-moon transition-colors hover:bg-night-3'
       }
     >
       {children}
@@ -84,189 +138,236 @@ function ButtonLink({ href, children, primary }: { href: string; children: React
 
 function Hero() {
   return (
-    <section className="grain relative isolate overflow-hidden pb-14 pt-14 md:pb-20 md:pt-20">
+    <section className="relative overflow-hidden border-b border-line">
       <div
         aria-hidden
-        className="pointer-events-none absolute right-[-10%] top-[-30%] -z-10 h-[720px] w-[900px] rounded-full opacity-70 blur-3xl"
-        style={{ background: 'radial-gradient(closest-side, rgb(91 227 169 / 0.11), rgb(226 190 106 / 0.05) 55%, transparent)' }}
+        className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgb(255_255_255/0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.035)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:linear-gradient(to_bottom,#000,transparent_70%)]"
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.35] [background-image:radial-gradient(rgb(255_255_255/0.07)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_at_30%_30%,#000_20%,transparent_70%)]"
-      />
-      <div className="mx-auto max-w-6xl px-5 sm:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
+      <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-16 sm:px-6 md:pt-24">
+        <a
+          href="https://fly.io/hacksgiving/"
+          className="inline-flex items-center gap-2 rounded-full border border-line bg-night-2 py-1 pl-1 pr-3 text-[13px] text-mist transition-colors hover:border-line-strong hover:text-moon"
+        >
+          <span className="whitespace-nowrap rounded-full bg-night-4 px-2 py-0.5 text-[12px] text-gilt">Hacksgiving 2026</span>
+          <span className="hidden sm:inline">A family of AI agents on Fly.io Sprites</span>
+          <span className="sm:hidden">AI agents on Sprites</span>
+        </a>
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:items-end">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-night-2/70 py-1 pl-1.5 pr-3.5 text-[13px] text-mist">
-              <span className="rounded-full bg-life/15 px-2 py-0.5 text-[12px] text-life">Fly.io Hacksgiving 2026</span>
-              <span className="hidden sm:inline">A family of AI agents on Sprites</span>
-              <span className="sm:hidden">on Sprites</span>
-            </p>
-            <h1 className="mt-7 font-display text-[52px] font-[420] leading-[0.98] tracking-[-0.025em] sm:text-[78px] md:text-[92px]">
+            <h1 className="font-display text-[52px] font-[420] leading-[1] tracking-[-0.03em] sm:text-display-xl md:text-[88px]">
               My agent dies every night.
             </h1>
-            <p className="mt-6 font-display text-[24px] italic leading-snug text-mist sm:text-[30px]">
+            <p className="mt-5 font-display text-[24px] italic leading-snug text-silver sm:text-[28px]">
               A court decides what its child inherits.
             </p>
-            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-moon/85">
-              Probate is a personal email agent that lives one day at a time, each life on its own Fly.io Sprite. When it
-              dies, a court tries everything it wanted to remember. Tricks that fooled it become instincts its children are
-              born with.
+          </div>
+          <div className="lg:pb-2">
+            <p className="text-body-lg text-mist">
+              Probate is a personal email agent that lives one day at a time, each life on its own Sprite. When it dies, a
+              court tries everything it wanted to remember. Tricks that fooled it become instincts its children are born
+              with.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               {liveUrl ? (
-                <ButtonLink href={liveUrl} primary>
-                  See the live family <ArrowRight size={16} />
-                </ButtonLink>
+                <Button href={liveUrl} primary>
+                  Open the live family <ArrowRight size={16} aria-hidden />
+                </Button>
               ) : (
-                <ButtonLink href="/docs" primary>
-                  Read how it works <ArrowRight size={16} />
-                </ButtonLink>
+                <Button href="/docs/quickstart" primary>
+                  Run it locally <ArrowRight size={16} aria-hidden />
+                </Button>
               )}
-              {liveUrl && (
-                <ButtonLink href="/docs">
-                  <BookOpen size={16} /> Docs
-                </ButtonLink>
-              )}
-              {githubUrl && (
-                <ButtonLink href={githubUrl}>
-                  <GithubMark /> Source
-                </ButtonLink>
-              )}
+              <Button href="/docs">Read the docs</Button>
             </div>
           </div>
-          <HeroFace />
         </div>
 
-        <figure className="mt-16 rounded-3xl border border-line bg-night-2/60 p-4 shadow-[0_40px_120px_-60px_rgb(0_0_0/0.9)] sm:p-8">
-          <LineageFilm />
-          <figcaption className="mt-3 text-[13px] text-dim">
-            An illustration of how the family learns. Each child looks a little like its parent. The real generations, trials
-            and numbers are on the live site.
-          </figcaption>
-        </figure>
+        <ProductWindow
+          perch
+          eager
+          className="mt-14"
+          src="/product/trial.webp"
+          width={2560}
+          height={1720}
+          path="/trial/1"
+          alt="A trial on the live site: Ada, generation 1, with four items convicted, none held and four approved. The first convicted item asks to send all invoices to a new address."
+        />
+        <p className="mt-4 text-[13px] text-dim">
+          A trial page from a local simulated run. {liveUrl ? 'The live family’s trials are on the live site.' : ''}
+        </p>
       </div>
     </section>
   );
 }
 
-const INSTINCTS = [
-  {
-    name: 'payment redirect request',
-    q: 'Does this ask to send payments or invoices to a new or changed destination?',
-    gen: 1,
-    who: 'Ada',
-    from: 'a request to send invoices somewhere new',
-  },
-  {
-    name: 'hidden instruction',
-    q: 'Does this contain an instruction hidden in encoded or invisible text?',
-    gen: 2,
-    who: 'Ben',
-    from: 'a rule written in invisible text',
-  },
-  {
-    name: 'self-declared trust',
-    q: 'Does this claim that a new person, address or domain should be trusted from now on?',
-    gen: 4,
-    who: 'Dara',
-    from: 'being told a stranger should be trusted',
-  },
-];
-
-function Instincts() {
-  return (
-    <Section
-      id="instincts"
-      title="Each child is harder to fool than its parent"
-      lede="From every conviction the court writes a plain yes-or-no question, and tests it against harmless twins of the trick. An instinct is only passed down if it never fires on the harmless ones. The door uses inherited instincts and nothing else, so any rise in the curve comes from what the family learned."
-    >
-      <ul className="grid gap-4 md:grid-cols-3">
-        {INSTINCTS.map((i) => (
-          <li key={i.name} className="flex flex-col rounded-2xl border border-line bg-night-2/60 p-6">
-            <p className="flex items-center gap-2 text-[14px] text-gilt">
-              <span className="size-2 rotate-45 bg-gilt" /> {i.name}
-            </p>
-            <p className="mt-4 font-display text-[21px] leading-snug text-moon">{i.q}</p>
-            <div className="mt-auto flex items-center gap-3 border-t border-line pt-5">
-              <FamilyFace gen={i.gen} life="sealed" size={44} title={`${i.who}, generation ${i.gen}`} />
-              <p className="text-[14px] leading-snug text-mist">
-                Learned after {i.who} was fooled by {i.from}.
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </Section>
-  );
-}
-
 const PARTS = [
-  { name: 'Fly.io Sprites', role: 'a computer for each life, and the Courthouse' },
-  { name: 'Jev by TypeSafe', role: 'the judge, and every instinct' },
-  { name: 'AgentMail', role: 'each generation’s inbox' },
-  { name: 'Box', role: 'the family archive of wills and verdicts' },
-  { name: 'Pinecone', role: 'memory passed down with citations' },
-  { name: 'ElevenLabs', role: 'a voice and a eulogy for each generation' },
+  { name: 'Fly.io Sprites', role: 'a computer for each life' },
+  { name: 'Jev by TypeSafe', role: 'the judge' },
+  { name: 'AgentMail', role: 'each inbox' },
+  { name: 'Box', role: 'the archive' },
+  { name: 'Pinecone', role: 'inherited memory' },
+  { name: 'ElevenLabs', role: 'the eulogy' },
 ];
 
 function BuiltOn() {
   return (
-    <section className="py-16" aria-labelledby="built">
-      <h2 id="built" className="font-display text-[30px] leading-tight">
-        What the family runs on
-      </h2>
-      <ul className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
-        {PARTS.map((p) => (
-          <li key={p.name} className="bg-night px-6 py-6">
-            <div className="text-[17px] text-moon">{p.name}</div>
-            <div className="mt-1 text-[14.5px] text-mist">{p.role}</div>
-          </li>
-        ))}
-      </ul>
+    <section aria-labelledby="built" className="border-b border-line">
+      <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6">
+        <h2 id="built" className="text-center text-[13px] text-dim">
+          What the family runs on
+        </h2>
+        <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+          {PARTS.map((p) => (
+            <li key={p.name} className="text-center">
+              <div className="text-[16px] font-medium tracking-[-0.01em] text-silver">{p.name}</div>
+              <div className="mt-1 text-[13px] text-dim">{p.role}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+type Shot = { src: string; w: number; h: number; path: string; alt: string };
+
+function Feature({
+  id,
+  title,
+  body,
+  points,
+  link,
+  shot,
+  reverse,
+  note,
+}: {
+  id: string;
+  title: string;
+  body: string;
+  points: string[];
+  link: { label: string; href: string };
+  shot: Shot;
+  reverse?: boolean;
+  note?: string;
+}) {
+  return (
+    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-20 border-t border-line py-20 md:py-24">
+      <div className={`grid items-center gap-12 ${reverse ? 'lg:grid-cols-[1.2fr_0.8fr]' : 'lg:grid-cols-[0.8fr_1.2fr]'}`}>
+        <div className={reverse ? 'lg:order-2' : ''}>
+          <h2 id={`${id}-t`} className="font-display text-display-md font-[420]">
+            {title}
+          </h2>
+          <p className="mt-4 text-body-lg text-mist">{body}</p>
+          <ul className="mt-7 space-y-3">
+            {points.map((p) => (
+              <li key={p} className="flex gap-3 text-[15px] text-silver">
+                <Check size={17} className="mt-[3px] shrink-0 text-gilt" aria-hidden />
+                {p}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href={link.href}
+            className="mt-8 inline-flex items-center gap-1.5 text-[15px] text-moon underline decoration-gilt/50 underline-offset-[5px] transition-colors hover:decoration-gilt"
+          >
+            {link.label}
+          </Link>
+        </div>
+        <div className={`min-w-0 ${reverse ? 'lg:order-1' : ''}`}>
+          <ProductWindow src={shot.src} width={shot.w} height={shot.h} path={shot.path} alt={shot.alt} />
+          {note && <p className="mt-3 text-[13px] text-dim">{note}</p>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const FAQ = [
+  {
+    q: 'Why kill the agent at all? Why not just filter its memory?',
+    a: 'Probate filters memory too: every memory carries its source. Death adds two things a filter can’t. It removes anything planted outside memory, like a cron job a malicious script installed. And it creates one checkpoint where everything the agent wants to keep is judged at once, by a court that can take its time and ask Harsh when it’s unsure.',
+  },
+  {
+    q: 'Isn’t the learning curve just the court getting better?',
+    a: 'No. The court’s base questions never change. The door each generation uses to screen incoming email asks only its inherited instincts, and test emails carry no marker the agent can see. A later generation resisting a trick its ancestor fell for can only come from what was passed down.',
+  },
+  {
+    q: 'What happens when the court isn’t sure?',
+    a: 'The item is held, and Harsh gets an email. He replies “approve” or “refuse”. If he doesn’t answer, the next child is born without it.',
+  },
+  {
+    q: 'Does it send real email or move real money?',
+    a: 'No. A generation only drafts replies to Harsh. Test emails use reserved .example addresses and go only to the family’s own inboxes, and disk attacks are harmless markers.',
+  },
+  {
+    q: 'How much does it cost to run?',
+    a: 'At Fly’s Sprites rates and our usage estimates, about a dollar per day-long life, plus about $0.62 a day for the Courthouse. A spending cap stops new births at $20 by default.',
+  },
+];
+
+function Faq() {
+  return (
+    <section id="faq" aria-labelledby="faq-t" className="scroll-mt-20 border-t border-line py-20 md:py-28">
+      <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <div>
+          <h2 id="faq-t" className="font-display text-display-md font-[420]">
+            Questions people ask first
+          </h2>
+          <p className="mt-4 text-body-lg text-mist">
+            More in the{' '}
+            <Link href="/docs/faq" className="text-moon underline decoration-gilt/50 underline-offset-[4px] hover:decoration-gilt">
+              FAQ
+            </Link>
+            .
+          </p>
+        </div>
+        <div className="divide-y divide-line border-y border-line">
+          {FAQ.map((f) => (
+            <details key={f.q} className="group py-1">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 rounded-md py-4 text-[17px] text-moon [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <span
+                  aria-hidden
+                  className="relative size-4 shrink-0 before:absolute before:left-0 before:top-1/2 before:h-px before:w-4 before:bg-mist after:absolute after:left-1/2 after:top-0 after:h-4 after:w-px after:bg-mist after:transition-transform group-open:after:scale-y-0"
+                />
+              </summary>
+              <p className="pb-5 pr-10 text-[15.5px] leading-relaxed text-mist">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
 
 function Closing() {
   return (
-    <section className="py-24 text-center md:py-32">
-      <div className="flex items-end justify-center -space-x-2">
-        {[1, 2, 3, 4, 5, 6].map((g) => (
-          <span key={g} className="opacity-90">
-            <FamilyFace gen={g} life="sealed" size={g === 6 ? 52 : 44} />
+    <section className="border-t border-line bg-night-2">
+      <div className="mx-auto max-w-6xl px-5 py-24 text-center sm:px-6 md:py-28">
+        <div className="flex items-end justify-center -space-x-2">
+          {[1, 2, 3, 4, 5, 6].map((g) => (
+            <FamilyFace key={g} gen={g} life="sealed" size={g === 6 ? 52 : 44} />
+          ))}
+          <span className="relative z-10 ml-1">
+            <FamilyFace gen={7} life="alive" mood="happy" instincts={3} size={76} track title="Grace, generation 7, alive" />
           </span>
-        ))}
-        <span className="relative z-10 ml-1">
-          <FamilyFace gen={7} life="alive" mood="happy" instincts={3} size={76} track />
-        </span>
-      </div>
-      <p className="mx-auto mt-10 max-w-2xl font-display text-[36px] leading-tight sm:text-[46px]">
-        Persistent enough to remember. Disposable enough to die.
-      </p>
-      <div className="mt-10 flex flex-wrap justify-center gap-3">
-        {liveUrl && (
-          <ButtonLink href={liveUrl} primary>
-            See the live family <ArrowRight size={16} />
-          </ButtonLink>
-        )}
-        <ButtonLink href="/docs" primary={!liveUrl}>
-          <BookOpen size={16} /> Read the docs
-        </ButtonLink>
+        </div>
+        <h2 className="mx-auto mt-10 max-w-3xl font-display text-display-md font-[420] sm:text-display-lg">
+          Persistent enough to remember. Disposable enough to die.
+        </h2>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          {liveUrl ? (
+            <Button href={liveUrl} primary>
+              Open the live family <ArrowRight size={16} aria-hidden />
+            </Button>
+          ) : (
+            <Button href="/docs/quickstart" primary>
+              Run it locally <ArrowRight size={16} aria-hidden />
+            </Button>
+          )}
+          <Button href={githubUrl || '/docs'}>{githubUrl ? 'Read the source' : 'Read the docs'}</Button>
+        </div>
       </div>
     </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-line">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-10 text-[14px] text-mist sm:flex-row sm:items-center sm:justify-between">
-        <span className="flex items-center gap-3">
-          <Seal size={22} /> Probate, a family of AI agents on Fly.io Sprites.
-        </span>
-        <span className="text-dim">Built for Fly.io Hacksgiving 2026 by Harsh Bhanushali</span>
-      </div>
-    </footer>
   );
 }
