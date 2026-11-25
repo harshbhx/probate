@@ -28,10 +28,14 @@ node tools/render.mjs holy/divine-shield --sheet --no-actor --opts '{"palette":[
 ```
 
 then cut each sheet's grid into one horizontal strip (frame size and count are in the sheet's JSON). The lifecycle
-strips keep every 2nd frame (`death`, `resisted`, 15 fps) or every 3rd (`birth`, 10 fps), end before the trailing
+strips keep every 2nd frame (`death`, `resisted`) or every 3rd (`birth`), end before the trailing
 empty frames, and are quantized to 8 to 12 colours (about 24 KB each, `birth` about 49 KB because it is wider).
 `death` and `birth` adapt Sprite Fusion effects, already credited in `NOTICE-pixelfx.md`. The strips live in
 `apps/web/public/moments/` only; the site does not use the new ones.
+
+Playback (v7): everything plays at about 0.6x speed (`convicted` and `instinct` 18 fps, `death` and `resisted` 9 fps,
+`birth` 6 fps). `birth` is also drawn at half size (`scale={0.5}` on Home) and at 70% opacity, because it was the
+busiest moment. The table lives in `src/index.tsx`.
 
 Rules (docs/04-DESIGN.md): each moment plays once, only when it means something, never loops, and never plays
 under reduced motion.
