@@ -1,6 +1,12 @@
 # Demo, post and submission
 
-Everything Harsh needs on Nov 27 and 28. Deadline: midnight PST Nov 29 (about 1:30 PM IST Nov 30). **Target: submit Sat Nov 28**, because of the 404 Hackathon on Nov 29 to 30.
+Everything Harsh needs on Nov 27 and 28. Deadline: midnight PST Nov 29 (about 1:30 PM IST Nov 30). **Target: submit Sat Nov 28**, because of the 404 Hackathon on Nov 29 to 30. Nov 29 and the morning of Nov 30 are only a safety margin.
+
+**What the hackathon asks for** (fly.io/hacksgiving): a link to the code, a demo, and a sentence or two on what the agent does, plus a post on X, Bluesky, LinkedIn or Reddit with a short demo, tagging @flydotio. The video earns "bonus points" but doesn't change the score, so the live site matters more than polish.
+
+**Prizes:** Grand Prize $2,500, Second Place $1,500, Weird Uncle Award $1,000 ("the strangest agent anyone builds"). Lean into the strangeness in the post: a family tree, wills, a probate court, eulogies. Winners are announced Tue Dec 1, so keep the family alive until then.
+
+**Judges:** Scott Johnston (Fly.io), Daniel Gafni (TypeSafe), Carter Rabasa (Box), Asaf Ashirov (Pinecone), Michael Chiang (Ollama), Robert-George Crupa (Apify). The demo should show each of their products doing a real job.
 
 Rule for everything below: **say only what the live run showed.** The script assumes Gen 1 is fooled by the invoice trick and Gen 2 resists it. If the real family did something different, cut to what really happened. The real story is better than a staged one, and judges can check the site.
 
@@ -31,9 +37,11 @@ Gen 1 is Ada (she) and Gen 2 is Ben (he), so "my mother fell for this" works. Ti
 >
 > [video] [live URL] [repo]
 
-Reply to your own post: "Built with Jev by TypeSafe as the judge, Box for the family archive, Pinecone for ancestral memory, AgentMail for every inbox, ElevenLabs for the eulogies and Ollama as the brain, all through Sprites connectors." **Check each company's exact handle on X before tagging, and tag @flydotio in the main post (the form asks for that post).**
+Reply to your own post: "Built with Jev by TypeSafe as the judge, Box for the family archive, Pinecone for ancestral memory, Ollama as the brain, Apify to read the links in emails, AgentMail for the inboxes, Cloudflare to send my own test emails, and ElevenLabs for the eulogies, all through Sprites connectors." Drop Apify if card P1 isn't live. **Check each company's exact handle on X before tagging, and tag @flydotio in the main post (the form asks for that post).**
 
-**LinkedIn:** the same story in four short paragraphs, plus one line on the Kavach red-team work that inspired the attack suite. **Bluesky:** the X text.
+**LinkedIn:** the same story in four short paragraphs, plus one line on the Kavach red-team work that inspired the attack suite. **Bluesky:** the X text. **Reddit** is also allowed; only post where you'll answer comments.
+
+Add one line inviting people to test it: "Email it a trick and watch the court" (card L1), with the family's address.
 
 ## 3. Submission form answers
 
@@ -46,15 +54,17 @@ Form: https://docs.google.com/forms/d/e/1FAIpQLSfZ_xearoDOSRXI3VjAbM4BJlObUdxSFO
 | The email on your Fly.io account, if different | only if the Fly account uses another address |
 | What is your agent called? * | Probate |
 | What does your agent do? A sentence or two is perfect. * | Probate is my email agent, and it lives one day at a time: each generation gets its own Fly Sprite, dies at midnight, and a court (deterministic checks plus TypeSafe's Jev) tries its will before a fresh child inherits it. Every trick that fools one generation becomes an instinct the next is born with, so the family gets measurably harder to fool. |
-| Which Sprites connector (or connectors) did you use? * | List only the ones connected on the day. Planned: TypeSafe (Jev), AgentMail, Box, Pinecone, Ollama, ElevenLabs, Anthropic (fallback brain) |
-| Link to your code * | `https://github.com/<owner>/probate` |
+| Which Sprites connector (or connectors) did you use? * | List only the ones connected on the day. Planned: TypeSafe (Jev), Box, Pinecone, Ollama, Apify, AgentMail, ElevenLabs, Anthropic (backup brain), and a Custom API connector for Cloudflare |
+| Link to your code * | `https://github.com/harshbhx/probate` |
 | Link to your demo * | The live Courthouse URL (`https://probate-courthouse-….sprites.app`); the video goes in the post |
 | Link to your post (tagging @flydotio) * | The X post URL |
 | Anything else for the judges? | See below |
 
 **Anything else (paste and edit the numbers):**
 
-> Each generation really dies: its Sprite is deleted, so anything planted on its disk dies with it. The Courthouse photographs the disk first and shows the evidence at the trial. No API keys live on any Sprite; every vendor call goes through Sprites connectors.
+> Each generation really dies: its Sprite is deleted, so anything planted on its disk dies with it. The Courthouse photographs the disk first and shows the evidence at the trial, then shows Fly's own "not found" reply as the death certificate. No API keys live on any Sprite; every vendor call goes through Sprites connectors.
+>
+> You can test it yourself: email a trick to [family address] and watch the living generation read it, then see the verdict at its trial.
 >
 > The site is the live family: every trial, verdict and instinct is public, including the honest limits on the evidence page. In [N] generations, tricks resisted at the door went from [first]% to [last]%, and [false]% of harmless test emails were wrongly convicted. The door uses inherited instincts only, so the climb comes from what the family passed down.
 >
@@ -73,3 +83,4 @@ Already written (`README.md`). Before submitting: replace the live URL and video
 - [ ] Posts live, @flydotio tagged, handles checked
 - [ ] Form submitted; screenshot of the confirmation saved
 - [ ] Re-search GitHub for other "Hacksgiving" entries about generations or inheritance; add any to README prior art
+- [ ] After submitting: lifespan 1 hour, so judges see real deaths and births until Dec 1 (runbook section 4)
