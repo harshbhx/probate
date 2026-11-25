@@ -11,6 +11,7 @@ import {
 } from 'fumadocs-ui/layouts/notebook/page';
 import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
+import { glossComponents } from '@/components/glossify';
 import { OpenAPIPage } from '@/components/api-page';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
@@ -49,6 +50,8 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
+            // Hard words show their meaning on hover; not on the glossary itself.
+            ...(page.slugs.join('/') === 'glossary' ? {} : glossComponents(new Set())),
             // this allows you to link to other pages with relative file paths
             a: createRelativeLink(source, page),
           })}
