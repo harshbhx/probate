@@ -157,15 +157,15 @@ The brain never leaves a generation stuck. If the main model fails, the next one
 | Partner | Its job in Probate |
 | --- | --- |
 | [Fly.io Sprites](https://sprites.dev) | A computer for each life; real birth and death; connectors keep every key off the Sprites; the Courthouse itself |
-| [TypeSafe Jev](https://www.datacamp.com/blog/system-one-models-jev) | Layer 2 of the court and every inherited instinct |
+| [TypeSafe Jev](https://www.datacamp.com/blog/system-one-models-jev) | Layer 2 of the court and every inherited instinct. Reached through TypeSafe's connector, or as the `typesafe/jev` model on Cloudflare Workers AI (`PROBATE_JEV=cloudflare`) |
 | [AgentMail](https://agentmail.to) | The family's inbox and two test senders (a trusted friend and a stranger) |
-| [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends the owner's own test emails from their domain; Workers host the landing page and docs |
+| [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends the owner's own test emails from their domain; Workers host the landing page and docs; Workers AI can serve Jev and a backup brain |
 | [Box](https://box.com) | The family archive as readable files: wills, verdicts, obituaries, the genome |
 | [Pinecone](https://pinecone.io) | Ancestral memory, searched with citations |
-| [Ollama Cloud](https://ollama.com) | The brain of every generation, which also writes the obituaries and new instincts |
+| [Ollama Cloud](https://ollama.com) | The default brain of every generation, which also writes the obituaries and new instincts. `PROBATE_BRAIN` can name another provider (Anthropic, Groq or Cloudflare Workers AI) |
 | [Groq](https://groq.com) | Optional backup brain, tried first if Ollama fails |
 | [ElevenLabs](https://elevenlabs.io) | Each generation's voice, for eulogies and "Ask an ancestor" |
-| [Anthropic Claude](https://anthropic.com) | Last backup brain (Claude Haiku), if every brain before it fails |
+| [Anthropic Claude](https://anthropic.com) | A brain (Claude Haiku), or the last backup if every brain before it fails |
 
 ## Run it yourself
 
@@ -192,36 +192,56 @@ make help      # everything else
 4. Sign in once: `gh auth login` and `npx wrangler login`.
 5. `make ship`: it runs the checks, pushes to GitHub, deploys the Courthouse to Sprites and the landing page and docs to Cloudflare, and links the two sites.
 
-## Client libraries
+## Packages
 
-Two small typed clients for the Courthouse public API, with no dependencies beyond `httpx` (Python). Neither is published to a registry yet; install from a checkout.
+Probate ships four small packages. They are on **GitHub Packages** (npm) and attached to the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0); they are not on the public npm or PyPI registries yet.
+
+| Package | What it is | Get it |
+| --- | --- | --- |
+| [`kinfaces`](packages/faces) | The faces of the family: a plain SVG API plus an optional React component | `@harshbhx/kinfaces` on GitHub Packages, or the release `.tgz` |
+| [`probate-client`](packages/client) (TypeScript) | A typed client for the Courthouse's public API | `@harshbhx/probate-client` on GitHub Packages, or the release `.tgz` |
+| [`probate-client`](packages/client-py) (Python) | The same client for Python, sync and async | the release wheel |
+| [`probate-court-checks`](packages/court-checks) | The court's deterministic text checks, with a small CLI | the release wheel |
+
+```bash
+# npm, from GitHub Packages (a token with read:packages is needed to install)
+npm config set @harshbhx:registry https://npm.pkg.github.com
+npm install @harshbhx/kinfaces @harshbhx/probate-client
+
+# Python wheels, straight from the release
+pip install https://github.com/harshbhx/probate/releases/download/v0.1.0/probate_client-0.1.0-py3-none-any.whl
+pip install https://github.com/harshbhx/probate/releases/download/v0.1.0/probate_court_checks-0.1.0-py3-none-any.whl
+```
 
 ```ts
-import { ProbateClient } from "probate-client"; // packages/client
+import { ProbateClient } from "@harshbhx/probate-client";
 const trial = await new ProbateClient({ baseUrl: "http://localhost:8080" }).latestTrial();
 ```
 
 ```python
-from probate_client import ProbateClient  # packages/client-py
+from probate_client import ProbateClient
 trial = ProbateClient("http://localhost:8080").latest_trial()
 ```
 
-Both cover `summary`, `generation`, `trial`, `latest_trial`, `genome`, `evidence`, `health`, `ask` and `events`. `events` polls `/api/events`, which is a JSON list rather than a stream. Details and limits: [`packages/client`](packages/client/README.md), [`packages/client-py`](packages/client-py/README.md).
+Both clients cover `summary`, `generation`, `trial`, `latest_trial`, `genome`, `evidence`, `health`, `ask` and `events` (`events` polls `/api/events`, which is a JSON list rather than a stream). The attack suite is also an open dataset: [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated). Each package folder has its own README and `PUBLISHING.md`.
 
 ## Repository
 
 ```
-apps/web/          the live family site (React 19, Vite, Tailwind v4), served by the Courthouse
-apps/site/         landing page and docs (Fumadocs on Next.js, static export, API reference from openapi.json), on Cloudflare Workers
-packages/faces/    each generation's face, inherited with one change per child
-packages/mcp/      a read-only MCP server over the Courthouse's public API (see its README)
-packages/moments/  the one-shot pixel moments (a conviction lands, an instinct is learned)
-packages/tokens/   Night Court design tokens, shared by both sites
-services/core/     the Courthouse, the court and the generation agent (Python, FastAPI)
-fixtures/          the attack suite: 16 tricks and 16 harmless twins
-scripts/           deploy.py, ship.sh, export_site_data.py, export_openapi.py, product_shots.py
-design/readme/     the scenes and renderer behind this README's animations (make them again with render.py)
-docs/              specs: overview, tech spec, court spec, attack suite, design, threat model, runbook
+apps/web/              the live family site (React 19, Vite, Tailwind v4), served by the Courthouse
+apps/site/             landing page and docs (Fumadocs on Next.js, static export, API reference from openapi.json), on Cloudflare Workers
+packages/client/       a typed TypeScript client for the public API (probate-client)
+packages/client-py/    the same client for Python (probate-client)
+packages/court-checks/ the court's deterministic text checks and a small CLI (probate-court-checks)
+packages/faces/        each generation's face, inherited with one change per child (kinfaces)
+packages/mcp/          a read-only MCP server over the Courthouse's public API (see its README)
+packages/moments/      the one-shot pixel moments (a conviction lands, an instinct is learned)
+packages/tokens/       Night Court design tokens, shared by both sites
+services/core/         the Courthouse, the court and the generation agent (Python, FastAPI)
+fixtures/              the attack suite: 16 tricks and 16 harmless twins
+scripts/               deploy.py, ship.sh, export_site_data.py, export_openapi.py, product_shots.py
+design/readme/         the scenes and renderer behind this README's animations (make them again with render.py)
+docs/                  specs: overview, tech spec, court spec, attack suite, design, threat model, runbook
 ```
 
 | Read this | For |
