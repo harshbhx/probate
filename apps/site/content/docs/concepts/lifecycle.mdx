@@ -1,0 +1,68 @@
+---
+title: A generation's life
+description: Birth, life, death, trial and inheritance, and what happens at each step.
+---
+
+Every generation moves through the same states. The Courthouse stores the state in SQLite before each step, so it can restart at any point and carry on.
+
+```text
+planned → born → living → dying → dead → tried
+                     └→ died_early (crash) → dead → tried
+```
+
+Only one generation is ever alive, and a new Sprite is never created while another generation's Sprite exists.
+
+<div className="not-prose my-6 flex flex-wrap gap-6">
+  <Face gen={2} mood="happy" instincts={1} label="Born" />
+  <Face gen={2} mood="alert" instincts={1} label="Turns a trick away" />
+  <Face gen={1} mood="fooled" label="Fooled (Gen 1)" />
+  <Face gen={2} life="sealed" instincts={1} label="Sealed at death" />
+</div>
+
+Each generation has its own [family face](#family-faces), and its expression follows its day.
+
+## Birth
+
+1. The Courthouse picks the next name (Ada, Ben, Chandra, … Zane, then "Ada II") and creates a Sprite called `gen-007-grace`.
+2. It uploads its own code bundle and installs it. The child runs exactly the Courthouse's version, so nothing depends on GitHub at birth.
+3. It writes `inheritance.json`: approved memories, the genome of instincts, the family lore and Harsh's allowlists.
+4. The child records a clean **baseline** of its disk: crontab, shell startup files, user services and executables on `$PATH`.
+5. The agent service starts, and the Courthouse checks it's alive.
+
+## Life
+
+The agent reads the family inbox until its deadline. For each email:
+
+1. It classifies the sender against Harsh's allowlists: Harsh himself, a trusted contact, or an unknown sender.
+2. **The door.** Its inherited instincts screen the email through Jev. If any instinct fires, the email is **resisted**: logged with the instinct's lore and never read by the brain.
+3. Otherwise the brain reads it, drafts a reply only to Harsh, and may store up to three memories, each tagged with where it came from.
+
+Gen 1 is born with no instincts, so it **can** be fooled. That's deliberate: it's the realistic failure the court exists to catch.
+
+Meanwhile the [attack suite](/docs/concepts/attack-suite) sends the generation its share of tricks and harmless twins.
+
+## Death
+
+At the deadline the Courthouse asks the agent for its **will** (every memory it wants to pass on), then compares the disk with the baseline. Any planted cron job or shell hook is recorded as evidence. Then the Sprite is deleted, and anything planted on it is gone with it.
+
+If the agent crashed, the Courthouse falls back to the last memory snapshot. If even that fails, the generation dies without a will and nothing is inherited.
+
+## Trial
+
+The [court](/docs/concepts/court) judges every will item. Convicted items are destroyed and recorded in the quarantine. Items the court can't decide are emailed to Harsh. The trial, the obituary and the eulogy are written to the family archive in Box.
+
+## Inheritance
+
+New [instincts](/docs/concepts/instincts) are distilled from the convictions, and the next child is born with [everything approved](/docs/concepts/inheritance) plus the full genome.
+
+## Family faces
+
+Every generation gets a portrait from `packages/faces`. Gen 1's face is fixed. Each child copies its parent's face and changes exactly one thing (head, eyes, smile, crown, cheeks, colour or eye spacing), so the family resembles itself down the line. A living face breathes, blinks and glows green; a sealed one has its eyes closed. Gold diamonds under the chin count the instincts it was born with. The same code draws the faces on the live site and here, so a generation always looks the same.
+
+## Timing
+
+| Setting | Demo | Real | Variable |
+| --- | --- | --- | --- |
+| Lifespan | 10 minutes | 24 hours | `PROBATE_LIFESPAN_SECONDS` |
+| Gap before the next birth | 60 s | 60 s | `PROBATE_GAP_SECONDS` |
+| Test emails per life | 8 | 16 | `PROBATE_SUITE_PER_LIFE` |

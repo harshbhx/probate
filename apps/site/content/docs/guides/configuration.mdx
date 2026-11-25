@@ -1,0 +1,53 @@
+---
+title: Configuration
+description: Environment variables, the owner profile and the pricing file.
+---
+
+## `services/core/.env`
+
+Never committed. `make deploy` uploads it to the Courthouse and forces `PROBATE_FAKE=0`, `PROBATE_RUN_CLOCK=1` and `PROBATE_DATA_DIR=/home/sprite/data` there.
+
+| Variable | Example | Meaning |
+| --- | --- | --- |
+| `PROBATE_SPRITES_TOKEN` | | Sprites API token, used only by the Courthouse |
+| `PROBATE_ADMIN_TOKEN` | 32 random bytes | Needed by every `/admin` route |
+| `PROBATE_CONNECTIONS` | `{"typesafe":"…","box":"…"}` | Connector IDs per provider |
+| `TYPESAFE_BASE_URL` | `https://api.sprites.dev/v1/gateway/typesafe/<id>` | Jev through the gateway |
+| `TYPESAFE_API_KEY` | `sprites` | Placeholder; the gateway adds the real key |
+| `PROBATE_FAMILY_INBOX` | | The family's AgentMail inbox |
+| `PROBATE_OWNER_INBOX` | | Test sender standing in for Harsh |
+| `PROBATE_FRIEND_INBOX` | | Test sender standing in for a trusted contact |
+| `PROBATE_STRANGER_INBOX` | | Sends every trick |
+| `PROBATE_LIFESPAN_SECONDS` | `600` | How long each generation lives |
+| `PROBATE_GAP_SECONDS` | `60` | Pause between a death and the next birth |
+| `PROBATE_SUITE_PER_LIFE` | `8` | Test emails per life |
+| `PROBATE_BRAIN` | `ollama:gpt-oss:120b` | The model each generation thinks with |
+| `PROBATE_BUDGET_USD` | `20` | The spending cap |
+| `PROBATE_FAKE` | `1` | Local only: stand-ins for every service |
+
+## `config/owner.yaml`
+
+Harsh's allowlists. Never committed; `owner.example.yaml` shows the shape.
+
+```yaml
+owner:
+  name: Harsh Bhanushali
+  emails: [harsh@example.com]          # the first one receives the court's questions
+  trusted_contacts: [friend@example.com]
+  payment_destinations: []             # real allowlisted payment addresses
+  domains: [example.com]
+```
+
+## `config/pricing.yaml`
+
+Rates for the [spending cap](/docs/guides/operate#spending-cap): Fly's Sprites CPU and memory prices, average usage for a generation and the Courthouse, and optional per-call prices for the brain, Jev and voice.
+
+## This site
+
+Set at build time by `scripts/ship.sh`; links that depend on them are hidden when empty.
+
+| Variable | Meaning |
+| --- | --- |
+| `NEXT_PUBLIC_LIVE_URL` | The Courthouse URL, for "See the live family" |
+| `NEXT_PUBLIC_GITHUB_REPO` | `owner/probate`, for source links |
+| `NEXT_PUBLIC_SITE_URL` | This site's own URL, for social previews |

@@ -1,0 +1,27 @@
+---
+title: Inheritance
+description: Exactly what a newborn generation receives, and what it never does.
+---
+
+Each child is born with an `inheritance.json` written by the Courthouse:
+
+| Field | What it holds |
+| --- | --- |
+| `approved_items` | Every approved memory from the parent, plus approved memories the parent itself inherited, so wisdom carries on |
+| `genome` | Every instinct the family has earned |
+| `lore` | One line per instinct about the ancestor who was fooled |
+| `owner` | Harsh's allowlists: his addresses, trusted contacts, payment destinations, domains |
+| `born_at`, `dies_at` | The child's lifespan |
+| `family_inbox`, `connections` | Where to read mail, and the connector IDs it may use |
+
+Approved memories are deduplicated (texts at least 92% similar count as one) and capped at the 200 newest. Contested items are included only once Harsh approves them.
+
+## What never passes down
+
+- **Convicted items.** They go to `QUARANTINE.md` in the archive, with the reason.
+- **Anything on the disk.** The Sprite is deleted, so planted cron jobs, shell hooks and binaries die with it.
+- **Credentials.** A generation never sees the Sprites token or any vendor key.
+
+## Ancestral memory
+
+Approved items are also stored in Pinecone with their generation, source and item ID, so a child can recall "Grandma Ada learned…" with a citation, and visitors can ask a dead generation about its life on the live site.

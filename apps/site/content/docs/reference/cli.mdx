@@ -1,0 +1,44 @@
+---
+title: Commands
+description: Make targets, scripts and the generation's own command line.
+---
+
+## Make
+
+| Command | Does |
+| --- | --- |
+| `make setup` | Python virtualenv and npm workspaces |
+| `make sim` | Simulate 12 generations offline into `.data/sim` |
+| `make dev` | API on `:8080` and the live site on `:5173`, with hot reload |
+| `make api` / `make web` | One of the two |
+| `make site` | This docs site on `:3001` |
+| `make test` | Python tests |
+| `make lint` | Ruff and TypeScript for every app |
+| `make build` | Build the live site and this site |
+| `make serve` | The built live site and API on `:8080` |
+| `make deploy-check` | Validate `.env` and the bundle, change nothing |
+| `make deploy` | Deploy or update the Courthouse on Sprites |
+| `make site-deploy` | Build and deploy this site to Cloudflare |
+| `make ship` | Everything: checks, GitHub, Sprites, Cloudflare |
+| `make clean` | Remove local data and build output |
+
+## Scripts
+
+| Script | Does |
+| --- | --- |
+| `scripts/deploy.py [--name NAME] [--check]` | Deploy the Courthouse to a Sprite |
+| `scripts/ship.sh [repo-name]` | What `make ship` runs |
+| `python -m probate.courthouse.simulate --generations N` | The simulator behind `make sim` |
+
+## On a generation
+
+The Courthouse controls a generation only through these commands, run with the Sprites exec API. Each prints one line of JSON.
+
+| Command | Prints |
+| --- | --- |
+| `python -m probate.generation.cli status` | Whether the agent is alive, and its counts |
+| `… cli baseline` | Records the clean disk at birth |
+| `… cli will` | Writes the will and returns how many items it holds |
+| `… cli evidence` | What changed on the disk since birth |
+| `… cli stats` | Emails handled, tricks met and resisted, per test email |
+| `… cli log` | The day's timeline |
