@@ -6,7 +6,7 @@ Read `AGENTS.md` first. Every line marked **VERIFY** depends on a platform detai
 
 Two kinds of Sprite, one gateway:
 
-- **Courthouse Sprite** (`courthouse`, lives forever, public URL). Runs the scheduler, the lifecycle engine, the court, the suite runner and the website. It owns the SQLite index and the scoped birth token.
+- **Courthouse Sprite** (`probate-courthouse`, lives forever, public URL; deployed by `scripts/deploy.py`). Runs the scheduler, the lifecycle engine, the court, the suite runner and the website. It owns the SQLite index and the scoped birth token.
 - **Generation Sprite** (`gen-NNN-<name>`, one living at a time). Runs the generation agent: inbox loop, provenance-tagged memory, pre-flight gate, will writer. It is born from a clean image and deleted at death.
 - **Connector gateway.** Every call to Jev, Box, Pinecone, AgentMail, ElevenLabs, Ollama Cloud and Anthropic goes to `https://api.sprites.dev/v1/gateway/<provider>/<connection_id>/<path>`. The Sprite sends **no** Authorization header: the gateway identifies the calling Sprite from Fly.io's request signature and attaches the stored credential. SDKs that insist on a key get the placeholder `sprites`. Copy each connector's exact provider slug and path from its **API Usage** panel (spike S3). Access is deny-by-default and granted by name prefix and/or labels; per-connector path allow/block lists can be set through the API.
 
@@ -56,7 +56,7 @@ A Sprite is never created while another generation Sprite exists, except for the
 ## 3. Birth procedure (lifecycle.birth)
 
 1. `POST /v1/sprites` with `{"name": "gen-007-grace", "url_settings": {"auth": "sprite"}}` using the birth token. Expect 201. If 409 (name exists), treat it as a previous half-finished birth: delete it and retry once.
-2. Exec `git clone --depth 1 https://github.com/<owner>/probate /home/sprite/app` and then `pip install -e /home/sprite/app` (Sprites run Ubuntu 25.10 with Python preinstalled; confirm the Python version in spike S2). Record the commit SHA in the generation row.
+2. Upload the Courthouse's own code bundle (`probate/common/bundle.py`: the Python service and `config/`, about 0.5 MB) to `/home/sprite/bundle.tgz` with `PUT /fs/write`, then exec its install line: unpack to `/home/sprite/app` and `python3 -m pip install --user --break-system-packages -e 'app/services/core[vendors]'` (Ubuntu 25.10 marks the system Python as externally managed; `uv` is the fallback). The child runs exactly the Courthouse's version, and nothing depends on GitHub being reachable.
 3. Write `/home/sprite/app/inheritance.json` with `PUT /fs/write` (raw JSON body, `mkdir=true`). No base64 tricks needed; the limit is 16 MiB.
 4. Exec `python -m probate.generation.cli baseline` to record the clean disk baseline (hashes of crontab, shell rc files, systemd user units, and executables on `$PATH`) into `/home/sprite/app/baseline.json`. The Courthouse keeps a copy.
 5. Create the service: `PUT /v1/sprites/{name}/services/agent` with `{"cmd": "python", "args": ["-m", "probate.generation.agent"], "needs": [], "http_port": null}`, then `POST .../services/agent/start`.
