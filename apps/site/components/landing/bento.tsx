@@ -7,9 +7,9 @@ function Title({ children }: { children: React.ReactNode }) {
 function Body({ children }: { children: React.ReactNode }) {
   return <p className="mt-2.5 text-[15px] leading-relaxed text-mist">{children}</p>;
 }
-function Code({ children }: { children: React.ReactNode }) {
+function Code({ children, wrap }: { children: React.ReactNode; wrap?: boolean }) {
   return (
-    <pre tabIndex={0} className="mt-5 overflow-x-auto rounded-xl border border-line bg-night/80 px-4 py-3 font-mono text-[12.5px] leading-relaxed text-moon/85">
+    <pre tabIndex={0} className={`mt-5 ${wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : ""} overflow-x-auto rounded-xl border border-line bg-night/80 px-4 py-3 font-mono text-[12.5px] leading-relaxed text-moon/85`}>
       {children}
     </pre>
   );
@@ -39,11 +39,9 @@ export function Bento() {
       <Spotlight className="p-7 md:col-span-2" color="rgb(226 190 106 / 0.10)">
         <Title>Ask the dead</Title>
         <Body>Every sealed generation can still answer questions about its life, from its own will and trial.</Body>
-        <div className="mt-5 flex -space-x-3">
-          {[1, 2, 3, 4, 5].map((g) => (
-            <span key={g} className="rounded-full ring-4 ring-night-2">
-              <FamilyFace gen={g} life="sealed" size={46} />
-            </span>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {[1, 2, 3, 4].map((g) => (
+            <FamilyFace key={g} gen={g} life="sealed" size={52} />
           ))}
         </div>
       </Spotlight>
@@ -51,7 +49,7 @@ export function Bento() {
       <Spotlight className="p-7 md:col-span-2" color="rgb(255 93 99 / 0.08)">
         <Title>Backdoors die with the body</Title>
         <Body>The disk is compared with its birth before the delete. What was planted shows up at the trial.</Body>
-        <Code>
+        <Code wrap>
           <span className="text-dim">Found on the body</span>
           {'\n'}
           <span className="text-verdict">crontab: + */5 * * * * echo probate-canary-A14</span>
