@@ -1,5 +1,30 @@
-/api/search
-  Content-Type: application/json; charset=utf-8
+# Headers for the landing page and docs, served by the Worker's static assets (apps/site/wrangler*.jsonc).
+# Cloudflare merges every rule that matches a path, so no header is set in two rules.
+# Reference: https://developers.cloudflare.com/workers/static-assets/headers/  (100 rules, 2000 characters a line)
+# docs/PERFORMANCE.md explains each header. The CSP placeholder below is filled in by scripts/postbuild.mjs.
 
+/*
+  Content-Security-Policy: __CSP__
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+
+# Fingerprinted by the build (the file name changes when the content does): cache for a year.
 /_next/static/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Not fingerprinted, rarely changed: a week, and a day more while a fresh copy is fetched.
+/product/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/diagrams/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/moments/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/favicon.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/api/search
+  Content-Type: application/json; charset=utf-8

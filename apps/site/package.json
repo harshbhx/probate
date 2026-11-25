@@ -9,6 +9,7 @@
     "prelint": "npm run build -w kinfaces",
     "predev": "npm run build -w kinfaces",
     "prebuild": "npm run build -w kinfaces",
+    "postbuild": "node scripts/postbuild.mjs",
     "lint": "next typegen && tsc --noEmit",
     "deploy": "wrangler deploy"
   },
