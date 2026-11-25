@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from probate.adapters.archive import BoxArchive, LocalArchive
-from probate.adapters.jev import FakeJev, RealJev
+from probate.adapters.jev import CloudflareJev, FakeJev, RealJev
 from probate.adapters.llm import FakeLLM, RealLLM
 from probate.adapters.mail import CloudflareSender, FakeMailbox, RealMailbox, RoutedMailbox
 from probate.adapters.vectors import FakeVectors, PineconeVectors
@@ -44,7 +44,11 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
         )
     else:
         _WORLD = World(
-            jev=RealJev(cfg.gateway("typesafe")),
+            jev=(
+                CloudflareJev(cfg.gateway("cloudflare"), cfg.cf_account_id)
+                if cfg.jev_provider == "cloudflare"
+                else RealJev(cfg.gateway("typesafe"))
+            ),
             llm=RealLLM(
                 cfg.brain,
                 cfg.gateway("ollama"),

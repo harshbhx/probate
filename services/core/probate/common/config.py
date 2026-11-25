@@ -53,6 +53,9 @@ class Settings:
     stranger_inbox: str = field(
         default_factory=lambda: _env("PROBATE_STRANGER_INBOX", "probate-stranger@agentmail.to")
     )
+    # Which route reaches Jev: "typesafe" (the TypeSafe connector) or "cloudflare" (the model
+    # `typesafe/jev` on Workers AI through the cloudflare connector, billed by Cloudflare).
+    jev_provider: str = field(default_factory=lambda: _env("PROBATE_JEV", "typesafe").lower())
     brain: str = field(default_factory=lambda: _env("PROBATE_BRAIN", "ollama:gpt-oss:120b"))
     # Tried in order when the brain fails, e.g. "groq:openai/gpt-oss-120b,anthropic:claude-haiku-5-5".
     # VERIFY in spike S8: model names available on each account.

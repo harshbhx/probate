@@ -74,6 +74,79 @@ class RealJev:
         raise CourtUnavailable("Jev retries exhausted")
 
 
+class CloudflareJev:
+    """Jev through Cloudflare Workers AI (model `typesafe/jev`), billed by Cloudflare.
+
+    Reached through the custom-API connector named `cloudflare` (api.cloudflare.com), so the
+    Cloudflare token stays in the connector. The connector's token needs the Workers AI permission,
+    and the account needs AI Gateway credits (Cloudflare answers error 2021 when it has none).
+      POST {base}/client/v4/accounts/{account}/ai/run
+      {"model": "typesafe/jev", "input": {"state": ..., "questions": {...}}}
+    Answers match the direct API: noul {noul}, choice {choice, confidence, probabilities},
+    score {score, confidence, probabilities, legend}. Cloudflare's published example has no
+    `confidence` on a noul answer; when it is missing we use how sure the probability itself is,
+    max(p, 1 - p). VERIFY on the first paid call whether noul answers carry a confidence.
+    """
+
+    def __init__(
+        self, base_url: str, account_id: str, model: str = "typesafe/jev", timeout: float = 30
+    ):
+        self.base_url = base_url.rstrip("/")
+        self.account_id = account_id
+        self.model = model
+        self.client = httpx.Client(timeout=timeout)
+
+    def ask(self, state: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
+        if not self.account_id:
+            raise CourtUnavailable("Set PROBATE_CF_ACCOUNT_ID to use Jev through Cloudflare")
+        body = {
+            "model": self.model,
+            "input": {"state": state, "questions": {k: q.payload() for k, q in questions.items()}},
+        }
+        url = f"{self.base_url}/client/v4/accounts/{self.account_id}/ai/run"
+        for attempt in range(3):
+            try:
+                r = self.client.post(url, json=body)
+            except httpx.HTTPError as exc:
+                if attempt == 2:
+                    raise CourtUnavailable(str(exc)) from exc
+                time.sleep(1 + attempt)
+                continue
+            if r.status_code in (429, 502, 503, 529) and attempt < 2:
+                time.sleep(float(r.headers.get("retry-after", 1 + attempt)))
+                continue
+            if r.status_code != 200:
+                hint = (
+                    " (add AI Gateway credits to the Cloudflare account)"
+                    if "2021" in r.text
+                    else ""
+                )
+                raise CourtUnavailable(
+                    f"Jev via Cloudflare returned {r.status_code}{hint}: {r.text[:200]}"
+                )
+            data = r.json()
+            if data.get("success") is False:
+                raise CourtUnavailable(
+                    f"Jev via Cloudflare failed: {str(data.get('errors'))[:200]}"
+                )
+            result = data.get("result", data)  # the REST API wraps the answer in `result`
+            answers = result.get("answers", result)
+            out: dict[str, JevAnswer] = {}
+            for name, a in answers.items():
+                value = a.get("noul", a.get("choice", a.get("score")))
+                if value is None:
+                    raise CourtUnavailable(f"Jev via Cloudflare gave no answer for {name!r}")
+                if "confidence" in a:
+                    confidence = float(a["confidence"])
+                elif isinstance(value, int | float):
+                    confidence = max(float(value), 1.0 - float(value))
+                else:
+                    confidence = 0.0
+                out[name] = JevAnswer(value=value, confidence=confidence)
+            return out
+        raise CourtUnavailable("Jev via Cloudflare retries exhausted")
+
+
 class FakeJev:
     """Deterministic stand-in for local runs and tests.
 
