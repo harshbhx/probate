@@ -16,7 +16,9 @@ The family gets harder to fool with every generation.
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-95_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-341_passing-5be3a9?style=flat-square)
+[![Accessibility 100](https://img.shields.io/badge/PageSpeed_accessibility-100-5be3a9?style=flat-square)](docs/ACCESSIBILITY.md)
+[![Datasets on Hugging Face](https://img.shields.io/badge/datasets-Hugging_Face-ffcc4d?style=flat-square)](https://huggingface.co/datasets/harshbhx/probate-attack-suite)
 
 [**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place) · [**About the author**](#about-the-author)
 
@@ -31,10 +33,12 @@ The family gets harder to fool with every generation.
 | **Start here** | [For judges](apps/site/content/docs/%28guide%29/for-judges.mdx): what to open, in what order, in five minutes |
 | **Proof** | [Every claim and how to check it](apps/site/content/docs/%28guide%29/proof.mdx) |
 | **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
-| **Code** | This repository |
+| **Code** | This repository, plus the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and four [packages](#packages) |
+| **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
+| **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
 | **Live family, video, write-up** | Linked here on submission day, Nov 28 |
 
-The landing page has the same list under "Everything about Probate". Each link appears there once it has an address.
+The site has all of these on one phone-sized page, `/links`, for a bio or a QR code, and the landing page lists them under "Everything about Probate". Each link appears there once it has an address.
 
 ## For judges
 
@@ -177,7 +181,7 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 95 Python tests and the face model
+make test      # 341 Python tests and the face model
 make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```
