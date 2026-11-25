@@ -1,0 +1,123 @@
+<!doctype html><html><head><meta charset="utf-8">{{BASE}}
+<style>
+.stage { position: relative; width: 1200px; height: 640px; }
+h1 { position: absolute; left: 64px; top: 42px; font-size: 38px; opacity: 0; }
+.sub { position: absolute; left: 64px; top: 92px; font-size: 16px; color: var(--mist); opacity: 0; }
+.frame { position: absolute; left: 318px; top: 168px; width: 452px; height: 430px; border: 1px solid var(--line2); border-radius: 18px; opacity: 0; }
+.frame p { position: absolute; left: 20px; top: -10px; padding: 0 8px; background: var(--night); font: 12px 'Geist Mono', monospace; color: var(--gilt); }
+.zone { position: absolute; font: 12px 'Geist Mono', monospace; color: var(--dim); opacity: 0; }
+.node { position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 1px solid var(--line2); background: var(--night2);
+  display: flex; align-items: center; justify-content: center; color: var(--silver); opacity: 0; }
+.node svg { width: 24px; height: 24px; }
+.node.seal { border: 0; background: none; } .node.seal svg { width: 56px; height: 56px; }
+.node.gen { border: 0; background: none; } .node.gen > div { position: absolute; inset: 0; opacity: 0; } .node.gen svg { width: 56px; height: 56px; }
+.node.key { color: var(--gilt); border-color: rgb(217 180 106 / .5); }
+.lbl { position: absolute; width: 220px; margin-left: -110px; text-align: center; opacity: 0; }
+.lbl b { display: block; font: 400 19px 'Newsreader', serif; color: var(--moon); }
+.lbl span { display: block; margin-top: 3px; font-size: 12.5px; color: var(--mist); line-height: 1.35; }
+.lbl .dk { position: relative; display: inline-block; font: 12.5px 'Geist Mono', monospace; color: var(--silver); }
+.lbl .dk i { position: absolute; left: -2px; right: -2px; top: 52%; height: 1.5px; background: var(--verdict); transform: scaleX(0); transform-origin: left; }
+.lbl .dl { color: var(--verdict); font: 12px 'Geist Mono', monospace; }
+.svc { position: absolute; left: 872px; width: 290px; display: flex; align-items: center; gap: 12px; opacity: 0; }
+.svc .ic { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--night2); display: flex; align-items: center; justify-content: center; color: var(--mist); position: relative; }
+.svc .ic svg { width: 18px; height: 18px; }
+.svc .hl { position: absolute; inset: -1px; border-radius: 10px; border: 1px solid var(--gilt); opacity: 0; }
+.svc b { font-weight: 500; font-size: 15px; color: var(--moon); }
+.svc span { display: block; font-size: 12.5px; color: var(--mist); }
+svg.wires { position: absolute; left: 0; top: 0; }
+.w { fill: none; stroke: var(--line2); stroke-width: 1.25; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.tag { position: absolute; font: 11.5px 'Geist Mono', monospace; color: var(--dim); opacity: 0; }
+.dot { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; opacity: 0; offset-rotate: 0deg; }
+.grey { background: var(--silver); }
+.gold { background: var(--gilt); box-shadow: 0 0 0 3px rgb(217 180 106 / .18); }
+.foot { position: absolute; left: 64px; top: 606px; font-size: 13px; color: var(--dim); opacity: 0; }
+</style></head><body>
+<div class="stage">
+  <h1 class="serif">Where everything runs</h1>
+  <p class="sub">Every key lives in the Sprites connector gateway. No Sprite holds one.</p>
+
+  <p class="zone z1" style="left:64px;top:176px">outside</p>
+  <div class="frame"><p>Fly.io Sprites</p></div>
+  <p class="zone z3" style="left:872px;top:176px">reached only through the gateway</p>
+
+  <svg class="wires" width="1200" height="640">
+    <path class="w w1" pathLength="1" d="M178 290 H 300 V 270 H 420"/>
+    <path class="w w2" pathLength="1" d="M450 302 V 452"/>
+    <path class="w w3" pathLength="1" d="M480 480 H 600 V 390 H 652"/>
+    <path class="w w4" pathLength="1" d="M480 270 H 600 V 360 H 652"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 226 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 282 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 338 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 394 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 450 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 506 H 868"/>
+    <path class="w w5" pathLength="1" d="M708 375 H 812 V 562 H 868"/>
+    <path class="w w6" pathLength="1" d="M150 552 V 620 H 842 V 450 H 868"/>
+  </svg>
+
+  <div class="node n-vis" style="left:150px;top:290px">{{ICON:Globe}}</div>
+  <div class="lbl l-vis" style="left:150px;top:328px"><b>Visitors</b><span>open the live family site</span></div>
+  <div class="node n-har" style="left:150px;top:474px">{{ICON:User}}</div>
+  <div class="lbl l-har" style="left:150px;top:512px"><b>Harsh</b><span>decides held items by email</span></div>
+
+  <div class="node seal n-ct" style="left:450px;top:270px">{{SEAL}}</div>
+  <div class="lbl l-ct" style="left:450px;top:204px"><b>Courthouse</b><span>never dies</span></div>
+  <div class="node gen n-gen" style="left:450px;top:480px"><div class="ga">{{FACE:7-alive-idle}}</div><div class="gs">{{FACE:7-sealed-idle}}</div><div class="gb">{{FACE:8-alive-idle}}</div></div>
+  <div class="lbl l-gen" style="left:450px;top:518px"><span class="dk">gen-007-grace<i></i></span> <span class="dl">deleted</span><span>one Sprite per life</span></div>
+  <div class="lbl l-gen2" style="left:450px;top:518px"><span class="dk">gen-008-hiro</span><span>born with 5 instincts</span></div>
+  <div class="node key n-key" style="left:680px;top:375px">{{ICON:KeyRound}}</div>
+  <div class="lbl l-key" style="left:680px;top:414px"><b>Connector gateway</b><span>adds the key on the way out</span></div>
+
+  <p class="tag t-https" style="left:226px;top:270px">HTTPS</p>
+  <p class="tag t-api" style="left:462px;top:368px">Sprites API</p>
+  <p class="tag t-nokey" style="left:508px;top:494px">no keys</p>
+
+  <div class="svc s1" style="top:208px"><span class="ic">{{ICON:Gavel}}<i class="hl h1"></i></span><div><b>TypeSafe Jev</b><span>the judge</span></div></div>
+  <div class="svc s2" style="top:264px"><span class="ic">{{ICON:Brain}}<i class="hl h2"></i></span><div><b>Ollama Cloud</b><span>the brain</span></div></div>
+  <div class="svc s3" style="top:320px"><span class="ic">{{ICON:Archive}}<i class="hl h3"></i></span><div><b>Box</b><span>the family archive</span></div></div>
+  <div class="svc s4" style="top:376px"><span class="ic">{{ICON:Search}}<i class="hl h4"></i></span><div><b>Pinecone</b><span>ancestral memory</span></div></div>
+  <div class="svc s5" style="top:432px"><span class="ic">{{ICON:Inbox}}<i class="hl h5"></i></span><div><b>AgentMail</b><span>the inboxes</span></div></div>
+  <div class="svc s6" style="top:488px"><span class="ic">{{ICON:AudioLines}}<i class="hl h6"></i></span><div><b>ElevenLabs</b><span>the voices</span></div></div>
+  <div class="svc s7" style="top:544px"><span class="ic">{{ICON:Cloud}}<i class="hl h7"></i></span><div><b>Cloudflare</b><span>Harsh&rsquo;s own test emails</span></div></div>
+
+  <div class="dot grey d1" style="offset-path: path('M178 290 H 300 V 270 H 420')"></div>
+  <div class="dot grey d2" style="offset-path: path('M450 302 V 452')"></div>
+  <div class="dot grey d3" style="offset-path: path('M480 480 H 600 V 390 H 652')"></div>
+  <div class="dot gold d4" style="offset-path: path('M708 375 H 812 V 282 H 868')"></div>
+  <div class="dot grey d5" style="offset-path: path('M480 270 H 600 V 360 H 652')"></div>
+  <div class="dot gold d6" style="offset-path: path('M708 375 H 812 V 226 H 868')"></div>
+</div>
+<script>
+rise('h1', 100, 700, 10); rise('.sub', 350, 700, 8);
+fadeIn('.z1, .z3', 600, 500); fadeIn('.frame', 650, 600);
+pop('.n-vis', 800); fadeIn('.l-vis', 900); pop('.n-har', 950); fadeIn('.l-har', 1050);
+pop('.n-ct', 1000); fadeIn('.l-ct', 1100); pop('.n-key', 1200); fadeIn('.l-key', 1300);
+for (let i = 1; i <= 7; i++) rise(`.s${i}`, 1100 + i * 90, 400, 6);
+draw('.w1, .w4, .w5, .w6', 1500, 900); draw('.w2, .w3', 1700, 700);
+
+// A visitor opens the site.
+fadeIn('.t-https', 2300, 300);
+fadeIn('.d1', 2500, 100); along('.d1', 2500, 800); fadeTo('.d1', 3300, 0, 120);
+// The Courthouse gives birth: a fresh Sprite for Grace.
+fadeIn('.t-api', 3400, 300);
+fadeIn('.d2', 3500, 100); along('.d2', 3500, 650); fadeTo('.d2', 4150, 0, 100);
+A('.n-gen', [{ opacity: 1 }], 4100, 10); pop('.ga', 4150, 400); fadeIn('.l-gen', 4250, 400);
+A('.l-gen .dl', [{ opacity: 0 }], 0, 1);
+// Grace calls her brain: no key leaves the Sprite; the gateway adds it.
+fadeIn('.t-nokey', 4900, 300);
+fadeIn('.d3', 5000, 100); along('.d3', 5000, 800);
+A('.n-key', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 5780, 360, 'ease-out');
+fadeTo('.d3', 5800, 0, 100); fadeIn('.d4', 5850, 100); along('.d4', 5850, 750); fadeTo('.d4', 6600, 0, 120);
+fadeIn('.h2', 6550, 200); fadeTo('.h2', 7400, 0, 500);
+// After a death, the Courthouse asks the judge.
+fadeIn('.d5', 7100, 100); along('.d5', 7100, 800); fadeTo('.d5', 7900, 0, 100);
+A('.n-key', [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 7880, 360, 'ease-out');
+fadeIn('.d6', 7950, 100); along('.d6', 7950, 750); fadeTo('.d6', 8700, 0, 120);
+fadeIn('.h1', 8650, 200); fadeTo('.h1', 9500, 0, 500);
+// Grace dies; her Sprite is deleted. Hiro is born.
+fadeTo('.ga', 8900, 0, 300); fadeIn('.gs', 8900, 300);
+A('.l-gen .dk i', [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 9100, 300, 'ease-in-out');
+A('.l-gen .dl', [{ opacity: 0 }, { opacity: 1 }], 9300, 300);
+fadeTo('.l-gen', 9900, 0, 300); fadeTo('.gs', 9900, 0, 300);
+pop('.gb', 10050, 400); fadeIn('.l-gen2', 10150, 400);
+</script></body></html>
