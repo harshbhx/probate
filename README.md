@@ -17,7 +17,7 @@ The family gets harder to fool with every generation.
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
 ![Tests](https://img.shields.io/badge/tests-95_passing-5be3a9?style=flat-square)
 
-[**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place)
+[**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place) · [**More by Harsh**](#about-the-author)
 
 </div>
 
@@ -253,7 +253,7 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 - When Jev is unsure, the item is held for Harsh. That costs him a little time, on purpose.
 - Test emails go only to our own inboxes, and disk attacks are harmless canary files.
 
-Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/2510.02373) (memory screening by consensus). The attack suite is inspired by Kavach, Harsh's earlier red-team project; no code was reused.
+Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/2510.02373) (memory screening by consensus). The attack suite is inspired by [Kavach](https://github.com/harshbhx/kavach), Harsh's earlier red-team project; no code was reused.
 
 <br>
 
@@ -263,19 +263,29 @@ Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/251
 
 <br>
 
-Built by [Harsh Bhanushali](https://github.com/harshbhx) ([DualMind Labs](https://dualmindlab.tech)) for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/).
+Built by [Harsh Bhanushali](#about-the-author) for [Fly.io Hacksgiving 2026](https://fly.io/hacksgiving/).
 
 </div>
 
 ## About the author
 
-**Harsh Bhanushali** builds AI agents, and the tools that keep them safe. He is the founder of [DualMind Labs](https://dualmindlab.tech), where he and Rishi Bangroiya build DualMind Arena, and a B.Tech student at Parul University.
+**Harsh Bhanushali** is a B.Tech student at Parul University who builds AI agents, and the guards that stop them being fooled. He built Probate in one week for Fly.io Hacksgiving 2026.
 
-- **Probate** (this repo): an agent family that dies every night, so poisoned memories can't survive it. Built in one week for Fly.io Hacksgiving 2026.
-- **Tarang FM**: a live AI radio station on Sarvam Bulbul. It won the Sarvam Bulbul Build Challenge.
-- **Kavach**: a red-team project that attacks agents with tricks like the ones in Probate's attack suite. No code from it is used here.
+[GitHub @harshbhx](https://github.com/harshbhx) · [harshbhx@gmail.com](mailto:harshbhx@gmail.com)
 
-Questions, ideas or a job that fits: [harsh@dualmindlab.tech](mailto:harsh@dualmindlab.tech) · [GitHub](https://github.com/harshbhx)
+<details>
+<summary><b>See Harsh's other projects</b></summary>
+
+<br>
+
+| Project | What it is | Recognition |
+| --- | --- | --- |
+| [**Ratchet**](https://github.com/harshbhx/ratchet) | License-clean distillation on open models. A small NVIDIA Nemotron model answers first; a larger teacher answers only when the small one is unsure, and the small one learns from it. | Built for the Nebius x NVIDIA Global AI Hackathon |
+| [**Kavach**](https://github.com/harshbhx/kavach) | Armour for agents that can act. Red-team agents attack a tool-using support bot, and blue-team agents harden it. Probate's attack suite was inspired by it, with no code shared. | Built for the HiDevs Agent-to-Agent Hackathon |
+| [**Tarang FM**](https://github.com/harshbhx/tarang-fm) | A live AI radio station, voiced with Sarvam Bulbul. | Won the Sarvam Bulbul Build Challenge |
+| [**Halo**](https://github.com/harshbhx/halo) | A phone app for people with face blindness. When the camera is sure who someone is, an earbud whispers their name and how you know them. | Second place, Devpost Build With AI: Basics |
+
+</details>
 
 ---
 
