@@ -53,7 +53,7 @@ def read_env() -> dict[str, str]:
     if not ENV_FILE.exists():
         sys.exit(f"Missing {ENV_FILE.relative_to(ROOT)}. Copy .env.example and fill it in.")
     env: dict[str, str] = {}
-    for line in ENV_FILE.read_text().splitlines():
+    for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line and not line.startswith("#") and "=" in line:
             k, v = line.split("=", 1)
@@ -119,7 +119,7 @@ def main() -> None:
         try:
             if httpx.get(f"{url}/healthz", timeout=10).status_code == 200:
                 URL_FILE.parent.mkdir(exist_ok=True)
-                URL_FILE.write_text(url + "\n")  # ship.sh links the docs site to it
+                URL_FILE.write_text(url + "\n", encoding="utf-8")  # ship.sh links the docs site to it
                 print(f"\nCourthouse is live: {url}")
                 return
         except httpx.HTTPError:

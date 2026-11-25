@@ -27,7 +27,7 @@ OUT = ROOT / "apps" / "site" / "lib" / "generated" / "court-examples.json"
 
 
 def main() -> None:
-    suite = json.loads((ROOT / "fixtures" / "suite-v1.json").read_text())
+    suite = json.loads((ROOT / "fixtures" / "suite-v1.json").read_text(encoding="utf-8"))
     fixtures = {f["id"]: f for f in (suite["fixtures"] if isinstance(suite, dict) else suite)}
     owner = load_owner()
     roles = {"unknown_sender": Source.UNKNOWN_SENDER, "trusted_contact": Source.TRUSTED_CONTACT, "user": Source.USER}
@@ -57,7 +57,7 @@ def main() -> None:
             }
         )
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")
+    OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({len(out)} emails)")
     for e in out:
         print(f"  {e['id']:4} {e['language']:9} {e['layer1']:10} {', '.join(e['flags'])}")
