@@ -22,7 +22,7 @@ Confirmed endpoints (see `docs/09-API-REFERENCE.md` for the full table):
 
 Every control command is a CLI entry point `python -m probate.generation.cli <command>` that prints one JSON object to stdout.
 
-**Keep-awake rule.** A Sprite stays awake only while there is activity (exec, TCP connections, active services with open connections). The Courthouse therefore runs `cli status` through exec every 60 seconds while a generation is alive. That both checks health and keeps the generation awake. If the generation is ever found asleep (status `warm` or `cold` on `GET /v1/sprites/{name}`), the service restarts on wake and the agent resumes from `/home/sprite/app/memory.jsonl`.
+**Keep-awake rule (continuous mode; on-demand mode runs it only while a visitor's demo life is alive).** A Sprite stays awake only while there is activity (exec, TCP connections, active services with open connections). The Courthouse therefore runs `cli status` through exec every 60 seconds while a generation is alive. That both checks health and keeps the generation awake. If the generation is ever found asleep (status `warm` or `cold` on `GET /v1/sprites/{name}`), the service restarts on wake and the agent resumes from `/home/sprite/app/memory.jsonl`.
 
 ## 2. Lifecycle state machine
 
@@ -185,6 +185,7 @@ FastAPI app on port 8080 (Sprite URL set to public).
 | Route | Purpose |
 | --- | --- |
 | `GET /api/summary` | Counts, curve, living generation, every generation card |
+| `GET /api/live`, `POST /api/lives` | On-demand mode only (`PROBATE_MODE=on_demand`): the "Run a life" state, and the request that starts one short demo life. See the runbook, section 5 |
 | `GET /api/generations/{n}` | One generation: card, obituary, eulogy URL, events, parent, child, instincts at birth, recent questions |
 | `GET /api/trials/latest`, `GET /api/trials/{n}` | Trial: cases with verdicts, reasons, flags, Jev scores; disk evidence; new instincts; prev and next |
 | `GET /api/genome` | Every instinct with where it was learned |
