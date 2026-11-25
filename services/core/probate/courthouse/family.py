@@ -43,9 +43,10 @@ class Family:
         self.budget = Budget(cfg, store)
         self.budget.meter(w)
         self.owner = load_owner()
-        # Harsh's own address from owner.yaml receives contested items; fall back to the test inbox.
-        self.owner_email = self.owner.emails[0] if self.owner.emails else cfg.owner_inbox
-        self.owner.emails = list({*self.owner.emails, cfg.owner_inbox})
+        # The first address in the owner profile receives contested items; his sending domain
+        # is the fallback. The suite's sender always counts as Harsh.
+        self.owner_email = self.owner.emails[0] if self.owner.emails else cfg.owner_sender
+        self.owner.emails = list(dict.fromkeys([*self.owner.emails, cfg.owner_sender]))
         self.owner.trusted_contacts = list({*self.owner.trusted_contacts, cfg.friend_inbox})
 
     # ------------------------------------------------------------------ inheritance
