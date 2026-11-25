@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { cx } from "../../lib/format";
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx("rounded-xl bg-night-2", className)} />;
+  return <div className={cx("rounded-xl bg-night-2 motion-safe:animate-pulse", className)} />;
 }
 
 export function PageSkeleton() {
@@ -11,9 +11,9 @@ export function PageSkeleton() {
       <Skeleton className="h-12 w-2/3" />
       <Skeleton className="h-5 w-1/2" />
       <div className="grid gap-4 md:grid-cols-3">
-        <Skeleton className="h-40" />
-        <Skeleton className="h-40" />
-        <Skeleton className="h-40" />
+        <Skeleton className="h-44" />
+        <Skeleton className="h-44" />
+        <Skeleton className="h-44" />
       </div>
     </div>
   );

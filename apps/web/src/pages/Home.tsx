@@ -71,7 +71,7 @@ export function Home({ summary }: { summary: Summary | null }) {
                   </div>
                   <div className="card p-4 sm:p-6">
                     <LearningCurve gens={summary.generations} />
-                    <p className="mt-2 flex items-center gap-2 px-2 text-[13px] text-mist">
+                    <p className="mt-2 flex items-center gap-2 px-2 text-[14px] text-mist">
                       <span className="size-2 rotate-45 bg-gilt" /> born with a new instinct
                     </p>
                   </div>
@@ -114,23 +114,23 @@ function Hero({ summary }: { summary: Summary | null }) {
             <p className="mt-5 font-display text-[24px] leading-snug text-silver sm:text-[28px]">
               A court decides what its child inherits.
             </p>
-            <p className="mt-6 max-w-xl text-[16px] leading-relaxed text-mist">
+            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-mist">
               Probate is Harsh's email agent. It lives one day at a time, each life on its own Fly.io Sprite. When it dies,
               a court tries everything it wanted to remember, and tricks that fooled it become instincts its children are
               born with.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               {summary?.latest_trial && (
                 <Link
                   to={`/trial/${summary.latest_trial}`}
-                  className="inline-flex h-11 items-center gap-2 rounded-lg bg-moon px-5 text-[15px] font-medium text-night transition-colors hover:bg-white"
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-moon px-5 text-[16px] font-medium sm:w-auto text-night transition-colors hover:bg-white"
                 >
                   Watch the latest trial <ArrowRight size={16} aria-hidden />
                 </Link>
               )}
               <a
                 href="#how"
-                className="inline-flex h-11 items-center rounded-lg border border-line-strong bg-night-2 px-5 text-[15px] transition-colors hover:bg-night-3"
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg border border-line-strong bg-night-2 px-5 text-[16px] sm:w-auto transition-colors hover:bg-night-3"
               >
                 How it works
               </a>
@@ -148,7 +148,7 @@ function Hero({ summary }: { summary: Summary | null }) {
               { v: c.attacks_resisted, l: `tricks resisted of ${c.attacks_met}` },
             ].map((s) => (
               <div key={s.l} className="flex flex-col-reverse bg-night-2 px-5 py-5">
-                <dt className="mt-2 text-[13px] text-mist">{s.l}</dt>
+                <dt className="mt-2 text-[14px] text-mist">{s.l}</dt>
                 <dd className="font-display text-[36px] leading-none tabular">{s.v}</dd>
               </div>
             ))}
@@ -179,8 +179,8 @@ function Living({ summary }: { summary: Summary | null }) {
       to={`/gen/${g.gen}`}
       className="card group relative flex flex-col items-center p-8 text-center transition-colors hover:border-line-strong"
     >
-      <span className="absolute left-5 top-5 font-mono text-[12px] text-dim">Gen {g.gen}</span>
-      <span className="absolute right-5 top-5 flex items-center gap-2 text-[13px] text-life">
+      <span className="absolute left-5 top-5 font-mono text-[13px] text-dim">Gen {g.gen}</span>
+      <span className="absolute right-5 top-5 flex items-center gap-2 text-[14px] text-life">
         <span className="relative flex size-2" aria-hidden>
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-life opacity-60" />
           <span className="relative inline-flex size-2 rounded-full bg-life" />
@@ -264,13 +264,13 @@ function HowItWorks({ summary }: { summary: Summary }) {
           <ol className="space-y-6">
             {STEPS.map((s, i) => (
               <li key={s.title} className="relative">
-                <span className="absolute -left-10 top-6 flex size-6 items-center justify-center rounded-full border border-line-strong bg-night font-mono text-[11px] text-mist md:-left-14">
+                <span className="absolute -left-10 top-6 flex size-6 items-center justify-center rounded-full border border-line-strong bg-night font-mono text-[12px] text-mist md:-left-14">
                   {i + 1}
                 </span>
                 <SpotlightCard className="p-6" as="div">
                   <h3 className="font-display text-[30px] leading-none">{s.title}</h3>
                   <p className="mt-3 text-[15px] leading-relaxed text-mist">{s.body}</p>
-                  <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night/80 px-3.5 py-2.5 font-mono text-[13px] text-silver">
+                  <code className="mt-5 block overflow-x-auto rounded-lg border border-line bg-night/80 px-3.5 py-2.5 font-mono text-[14px] text-silver">
                     {s.code}
                   </code>
                 </SpotlightCard>

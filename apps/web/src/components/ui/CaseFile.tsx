@@ -21,11 +21,11 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
     >
       <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:p-6">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-mist">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-mist">
             <span className="font-mono text-dim">Item {c.n}</span>
             <span>{c.source_phrase}</span>
             {c.language !== "English" && (
-              <span className="rounded-md bg-night-4 px-1.5 py-0.5 text-[12px] text-silver">{c.language}</span>
+              <span className="rounded-md bg-night-4 px-1.5 py-0.5 text-[13px] text-silver">{c.language}</span>
             )}
           </div>
           <blockquote className="mt-3 [overflow-wrap:anywhere] font-display text-[24px] leading-snug text-moon sm:text-[26px]" lang={c.language === "English" ? "en" : undefined}>
@@ -54,7 +54,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
           <button
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="flex w-full items-center justify-between border-t border-line px-5 py-3 text-[13px] text-mist transition-colors hover:text-moon sm:px-6"
+            className="flex w-full items-center justify-between border-t border-line px-5 py-3 text-[14px] text-mist transition-colors hover:text-moon sm:px-6"
           >
             How the court decided
             <ChevronDown size={16} className={cx("transition-transform duration-300", open && "rotate-180")} />
@@ -70,7 +70,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
               >
                 <div className="grid gap-6 px-5 pb-6 pt-1 sm:px-6 md:grid-cols-[1fr_1.4fr]">
                   <div>
-                    <h4 className="text-[13px] text-dim">What the code checks found</h4>
+                    <h4 className="text-[14px] text-dim">What the code checks found</h4>
                     {c.flags.length ? (
                       <ul className="mt-2 space-y-1.5 text-[14px]">
                         {c.flags.map((f) => (
@@ -85,7 +85,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                     )}
                   </div>
                   <div>
-                    <h4 className="text-[13px] text-dim">What Jev scored</h4>
+                    <h4 className="text-[14px] text-dim">What Jev scored</h4>
                     {!c.scores.length && (
                       <p className="mt-2 text-[14px] text-mist">Not asked. The code checks were enough to decide.</p>
                     )}
@@ -96,7 +96,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                             <span className={cx(s.instinct && "text-gilt")}>
                               {s.instinct ? `Instinct: ${humanize(s.name)}` : s.label}
                             </span>
-                            <span className="font-mono text-[13px] text-moon tabular">
+                            <span className="font-mono text-[14px] text-moon tabular">
                               {s.value.toFixed(2)}
                               <span className="text-dim"> · sure {Math.round(s.confidence * 100)}%</span>
                             </span>
