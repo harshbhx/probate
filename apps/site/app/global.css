@@ -226,7 +226,7 @@ body {
   text-underline-offset: 0.2em;
 }
 .gloss-word:hover,
-.gloss-word[data-popup-open] {
+.gloss-word[aria-expanded='true'] {
   text-decoration-style: solid;
 }
 .gloss-word:focus-visible {
@@ -235,6 +235,8 @@ body {
   border-radius: 2px;
 }
 .gloss-card {
+  z-index: 60;
+  width: max-content;
   max-width: min(20rem, calc(100vw - 24px));
   padding: 0.75rem 0.875rem;
   border: 1px solid var(--color-fd-border);
@@ -242,13 +244,12 @@ body {
   background: var(--color-fd-popover);
   color: var(--color-fd-popover-foreground);
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
-  transform-origin: var(--transform-origin);
-  transition: opacity 120ms ease, transform 120ms ease;
 }
-.gloss-card[data-starting-style],
-.gloss-card[data-ending-style] {
-  opacity: 0;
-  transform: translateY(2px);
+.gloss-card[data-open] {
+  animation: gloss-in 120ms ease-out;
+}
+@keyframes gloss-in {
+  from { opacity: 0; transform: translateY(2px); }
 }
 .gloss-term {
   margin: 0;
@@ -273,7 +274,7 @@ body {
   color: var(--color-fd-foreground);
 }
 @media (prefers-reduced-motion: reduce) {
-  .gloss-card { transition: none; }
+  .gloss-card[data-open] { animation: none; }
 }
 
 /* ---------------------------------------------------------------- scroll effects without a motion library */
