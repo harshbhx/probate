@@ -162,7 +162,9 @@ const csp = [
   `style-src 'self' 'unsafe-inline'`, // React and the scroll effects write style="" attributes, which cannot be hashed
   `img-src 'self' data: blob:`,
   `font-src 'self'`,
-  `connect-src 'self'${live ? ` ${live}` : ''}`, // the footer asks the live family who is alive
+  // The footer asks the live family who is alive. The Cloudflare tag manager (Zaraz) that the zone injects
+  // sends Google Analytics hits from the browser, so its hosts are allowed here too.
+  `connect-src 'self'${live ? ` ${live}` : ''} https://stats.g.doubleclick.net https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com`,
   `media-src 'self'`,
   `manifest-src 'self'`,
   `worker-src 'self' blob:`,
