@@ -7,6 +7,7 @@ import type { ApiError, Summary, Trial as TrialT } from "../lib/api";
 import { cx, day, humanize } from "../lib/format";
 import { useApi, useTitle } from "../lib/hooks";
 import { CaseFile } from "../components/ui/CaseFile";
+import { FamilyFace } from "@probate/faces";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
 
@@ -62,7 +63,8 @@ export function Trial({ mode }: { mode?: string }) {
       <header className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-end">
         <div>
           <p className="font-mono text-[13px] text-dim">In the matter of the estate of</p>
-          <h1 className="mt-3 font-display text-[64px] leading-[0.95] tracking-tight sm:text-[88px]">
+          <h1 className="mt-3 flex items-center gap-5 font-display text-[64px] leading-[0.95] tracking-tight sm:text-[88px]">
+            <FamilyFace gen={g.gen} life="sealed" instincts={g.genome_size_at_birth} size={84} className="shrink-0" />
             {g.name}
           </h1>
           <p className="mt-3 text-[17px] text-mist">

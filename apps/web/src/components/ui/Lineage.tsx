@@ -10,6 +10,7 @@ import type { GenCard } from "../../lib/api";
 import { countdown, cx, day, pct } from "../../lib/format";
 import { useNow } from "../../lib/hooks";
 import { BorderBeam } from "../fx/BorderBeam";
+import { FamilyFace } from "@probate/faces";
 
 export function Lineage({ gens }: { gens: GenCard[] }) {
   const scroller = useRef<HTMLDivElement>(null);
@@ -69,7 +70,7 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
       aria-label={`Open Gen ${g.gen} ${g.name}`}
     >
       {g.alive && <BorderBeam />}
-      <div className="flex w-full items-center justify-between">
+      <div className="flex w-full items-start justify-between">
         <span className="font-mono text-[11px] text-dim">GEN {String(g.gen).padStart(2, "0")}</span>
         <span
           className={cx(
@@ -78,10 +79,18 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
           )}
         />
       </div>
+      <div className="-mb-1 mt-1">
+        <FamilyFace
+          gen={g.gen}
+          life={g.alive ? "alive" : "sealed"}
+          instincts={g.genome_size_at_birth}
+          size={58}
+        />
+      </div>
       {refused && (
         <span title="The court refused part of the parent's will" className="absolute -left-[9px] top-[30px] h-3 w-[3px] rotate-[28deg] rounded-full bg-verdict" />
       )}
-      <div className="mt-4 font-display text-[30px] leading-none">{g.name}</div>
+      <div className="mt-2 font-display text-[30px] leading-none">{g.name}</div>
       <div className={cx("mt-1.5 text-[12.5px]", g.alive ? "text-life" : "text-mist")}>
         {g.alive ? (left > 0 ? <span className="font-mono tabular">dies in {countdown(left)}</span> : "alive") : `${day(g.born_at)}, sealed`}
       </div>
@@ -89,11 +98,7 @@ function GenNode({ g, refused, onOpen }: { g: GenCard; refused: boolean; onOpen:
         {g.alive ? "Working through Harsh's inbox right now." : g.epitaph}
       </p>
       <div className="mt-4 flex w-full items-center justify-between">
-        <div className="flex flex-wrap gap-1" aria-label={`${g.genome_size_at_birth} instincts at birth`}>
-          {Array.from({ length: g.genome_size_at_birth }).map((_, k) => (
-            <span key={k} className="size-1.5 rotate-45 bg-gilt" />
-          ))}
-        </div>
+        <span className="text-[12px] text-dim">{g.genome_size_at_birth ? `${g.genome_size_at_birth} instincts` : "no instincts"}</span>
         {g.resistance !== null && (
           <span className="font-mono text-[12px] text-moon/90 tabular">{pct(g.resistance)}</span>
         )}
@@ -137,6 +142,14 @@ function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
               >
                 <div className="flex items-start justify-between">
                   <div>
+                    <FamilyFace
+                      gen={g.gen}
+                      life={g.alive ? "alive" : "sealed"}
+                      instincts={g.genome_size_at_birth}
+                      track={g.alive}
+                      size={88}
+                      className="mb-4"
+                    />
                     <div className="font-mono text-[12px] text-dim">GENERATION {g.gen}</div>
                     <Dialog.Title className="mt-2 font-display text-5xl leading-none">{g.name}</Dialog.Title>
                   </div>

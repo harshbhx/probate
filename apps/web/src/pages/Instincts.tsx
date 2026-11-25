@@ -3,6 +3,7 @@ import type { Instinct } from "../lib/api";
 import { cx, sentence } from "../lib/format";
 import { useApi, useTitle } from "../lib/hooks";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
+import { FamilyFace } from "@probate/faces";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, ErrorState, PageSkeleton } from "../components/ui/States";
 
@@ -40,8 +41,9 @@ export function Instincts({ mode }: { mode?: string }) {
                     <span className="size-2 rotate-45 bg-gilt" /> since Gen {i.added_in_gen}
                   </span>
                   {i.learned_from && (
-                    <Link to={`/trial/${i.learned_from.gen}`} className="text-[13px] text-mist hover:text-moon">
+                    <Link to={`/trial/${i.learned_from.gen}`} className="flex items-center gap-2 text-[13px] text-mist hover:text-moon">
                       learned from {i.learned_from.name}
+                      <FamilyFace gen={i.learned_from.gen} life="sealed" size={30} />
                     </Link>
                   )}
                 </div>

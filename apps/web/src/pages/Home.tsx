@@ -12,6 +12,7 @@ import { Lineage } from "../components/ui/Lineage";
 import { LearningCurve } from "../components/ui/LearningCurve";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, PageSkeleton, SectionHead } from "../components/ui/States";
+import { FamilyFace } from "@probate/faces";
 import { useTitle } from "../lib/hooks";
 
 export function Home({ summary }: { summary: Summary | null }) {
@@ -116,7 +117,24 @@ function Hero({ summary }: { summary: Summary | null }) {
             </span>
           )}
         </motion.div>
-        <h1 className="mt-10 font-display text-[54px] leading-[0.98] tracking-[-0.02em] sm:text-[84px] md:text-[104px]">
+        {summary?.living && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 18 }}
+            className="mt-8 flex justify-center"
+          >
+            <FamilyFace
+              gen={summary.living.gen}
+              life="alive"
+              instincts={summary.living.genome_size_at_birth}
+              track
+              size={112}
+              title={`${summary.living.name}, generation ${summary.living.gen}, alive`}
+            />
+          </motion.div>
+        )}
+        <h1 className="mt-8 font-display text-[54px] leading-[0.98] tracking-[-0.02em] sm:text-[84px] md:text-[104px]">
           <BlurText text="My agent dies" className="block" />
           <BlurText text="every night." className="block" delay={0.25} />
         </h1>
