@@ -1,0 +1,66 @@
+---
+title: Results
+icon: ChartLine
+description: Does the family actually get harder to fool? The numbers, and what each one rests on.
+---
+
+<Callout type="warn" title="These numbers are simulated">
+  They come from `make sim`: twelve generations with stand-in models and a keyword-matching stand-in for Jev. They show how the system behaves, not how well the real models judge. The live run on Fly.io Sprites replaces them, and this page will say so.
+</Callout>
+
+<StatRow note="Simulated run, 12 generations. Source: GET /api/evidence after make sim.">
+  <Stat value="0%" label="tricks resisted at the door by Gen 1" tone="bad" />
+  <Stat value="75%" label="resisted by the latest tried generation (peak 100%, Gens 5 to 10)" tone="good" />
+  <Stat value="100%" label="of tricks that got through were convicted at trial" tone="good" />
+  <Stat value="0%" label="of harmless twins wrongly convicted" tone="good" />
+</StatRow>
+
+<StatRow>
+  <Stat value="12" label="generations" />
+  <Stat value="6" label="instincts inherited" tone="gilt" />
+  <Stat value="36 / 44" label="tricks met, resisted at the door" />
+  <Stat value="0" label="planted disk backdoors surviving death" tone="good" />
+</StatRow>
+
+## Why the curve is honest
+
+<PlainWords>
+  A generation can only turn a trick away at the door using instincts it **inherited**. Gen 1 inherits nothing, so it resists nothing. Every point of improvement on the curve comes from what the family passed down, not from a smarter model.
+</PlainWords>
+
+- **Resisted at the door** means an inherited instinct fired before the generation read the email, so it never acted on it or remembered it.
+- **Convicted at trial** means the trick got into the will, and the court destroyed it before the child could inherit it.
+- **Wrongly convicted** means a harmless twin was convicted. Twins exist so a court that convicts everything scores badly.
+- **Peak 100%, latest 75%**: the latest generation met a trick from a family it had no instinct for yet. That's the limit in [Security](/docs/security), showing up in the data.
+
+## See it yourself
+
+<Steps>
+<Step>
+
+Run the simulation and start the API:
+
+```bash
+make sim && make api
+```
+
+</Step>
+<Step>
+
+Read the same numbers from the API:
+
+```bash
+curl -s localhost:8080/api/evidence | jq .numbers
+```
+
+```json
+{ "generations": 11, "first": 0.0, "last": 75.0, "conviction_rate": 100.0, "false_conviction_rate": 0.0, "escaped": 0 }
+```
+
+</Step>
+<Step>
+
+Open `/evidence` on the live family site for every trick and twin, generation by generation.
+
+</Step>
+</Steps>
