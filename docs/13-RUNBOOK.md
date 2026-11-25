@@ -87,3 +87,25 @@ Set `PROBATE_MODE=on_demand` in `services/core/.env` and run `make deploy`. The 
 **Cost behaviour.** Idle: Sprites asleep; the Courthouse Sprite is only billed while it is awake serving requests. During a life: the Courthouse (while ticking) and one generation Sprite are awake for about the lifespan plus birth and trial time, then stop. The estimate behind the caps is `config/pricing.yaml`, charged as before.
 
 **Unverified until a real run.** The claims that a Sprite "sleeps for free and wakes on request" and "wakes take 100 to 500 ms" come from the Sprites docs as quoted in `docs/09-API-REFERENCE.md`; nobody here has measured them. During the first smoke test: (1) with nothing running, note `GET /v1/sprites/probate-courthouse` status after 5 minutes of no requests (expect `warm` or `cold`, not `running`); (2) time `curl -w '%{time_total}' $URL/api/live` against the sleeping Courthouse and again straight after; (3) after one demo life, confirm no `gen-*` Sprites remain (`sprite list --prefix gen-`) and that the Courthouse status falls back to `warm`/`cold` within a few minutes; (4) compare Fly billing for the Sprites over an hour idle against an hour with five demo lives.
+
+## 6. The judge key (real run)
+
+One long random shared key lets judges play; everything read-only stays public. Generate it, put it in the Courthouse environment and in the submission text. Never commit it.
+
+```
+openssl rand -base64 32 | tr -d '=+/' | cut -c1-40     # example way to make one
+```
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `PROBATE_JUDGE_KEY` | unset | The shared key. At least 20 characters, not a dev default, not equal to `PROBATE_ADMIN_TOKEN` |
+| `PROBATE_REQUIRE_KEY_FOR_PLAY` | `1` in real on-demand mode, else `0` | When on, `POST /api/lives` without a valid `X-Probate-Key` is 401. If on but the key is unusable, play answers 503 and the Courthouse logs an error at startup. Attacks always need the key |
+| `PROBATE_JUDGE_LIVES_PER_HOUR` | 6 | The key's own lives per hour (replaces the per-address limit for judges) |
+| `PROBATE_JUDGE_DAILY_BUDGET_USD` | 5 | Estimated spend per UTC day for lives and attacks started with the key (replaces `PROBATE_DEMO_DAILY_BUDGET_USD` for judges). The total `PROBATE_BUDGET_USD`, the cooldown and the admin pause still apply |
+| `PROBATE_JUDGE_ATTACKS_PER_HOUR` | 60 | Attack previews per hour on the key |
+| `PROBATE_JUDGE_ATTACKS_PER_IP_MINUTE` | 6 | Attack previews per address per minute |
+| `PROBATE_JUDGE_BAD_KEYS_PER_IP` | 8 | Wrong keys per address per 10 minutes before that address is refused (429) |
+
+**Disable or enable instantly** (admin token): `POST /admin/judge/disable` makes play, attacks and `GET /api/judge/status` answer 403 `key_disabled`; `POST /admin/judge/enable` restores them. The switch survives restarts. **Rotate:** set a new `PROBATE_JUDGE_KEY`, restart the Courthouse, update the submission text. **Audit:** `GET /admin/judge/attacks` (admin token) lists the newest 500 previews: hashed address, an 80-character excerpt, verdict and flags.
+
+**What an attack does.** `POST /api/attacks` runs the court's layer 1 code checks and, if they find nothing, layer 2 (the judge model through the existing gateway; a stand-in in fake mode) on the text as a will item. The code path is given no mailbox, no Sprites host and no archive, so it cannot send email, reach a generation's agent or write a will. The only outbound call is the court's own judge call. Queueing the text into the living generation's next trial was left out on purpose: the living agent writes its will on its own Sprite, and injecting an item would race that write and mix untrusted text into real state. A claim to be Harsh is judged as a stranger, since it cannot be verified from text. The judge key is not logged or echoed, is compared in constant time, and is not accepted by any `/admin` route.

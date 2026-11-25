@@ -45,6 +45,13 @@ The landing page has the same list under "Everything about Probate". Each link a
 
 Only one life runs at a time, everyone sees the same one, and there is a cooldown and a spending cap, so if the button is greyed out, read the note on the panel. Browsing the family, trials, instincts and evidence never needs a life: it all comes from recorded history.
 
+**Play with the judge key.** On the real site, starting a life and attacking the family need one shared key, so a stray visitor cannot spend the budget. It is in the submission text (it is deliberately not in this repository). Open **For judges** (`/judges`, also linked from the home page and the footer), paste the key once (it stays in your tab's session storage only, never in the address bar), and two controls unlock:
+
+1. **Run a life**, with the judge's own small quota (shown on the page).
+2. **Attack the family**: write a trick as an email would carry it (up to 600 characters, as a stranger, a friend, or someone claiming to be Harsh) and the real court tries it. You get a verdict (convicted, contested or approved), what the code checks found, what the judge model scored, and what would happen next. This is a sandboxed trial preview: nothing is emailed, nothing reaches the living family, and your text does not become part of its will. Convicted items would be destroyed; approved items would pass to the child.
+
+The key is a shared secret, not an admin credential: it cannot reach any admin route and the operator can switch it off at once. API: send it as the `X-Probate-Key` header (`POST /api/lives`, `POST /api/attacks`, `GET /api/judge/status`). Placeholder only: `X-Probate-Key: <judge key from the submission>`.
+
 **What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the Jev verdicts, and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
 
 ## The problem
