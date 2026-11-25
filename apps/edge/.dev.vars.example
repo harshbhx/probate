@@ -1,0 +1,3 @@
+# Copy to .dev.vars for `wrangler dev` (gitignored). Never commit real values.
+ORIGIN_URL=http://127.0.0.1:8080
+# ORIGIN_AUTH_TOKEN=
