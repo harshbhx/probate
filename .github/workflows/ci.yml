@@ -12,7 +12,7 @@ jobs:
         working-directory: services/core
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: pip install -e '.[dev]'
@@ -28,7 +28,7 @@ jobs:
         working-directory: packages/court-checks
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: pip install -e '.[dev]'
@@ -60,7 +60,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: npm ci
@@ -79,7 +79,7 @@ jobs:
         working-directory: packages/client-py
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: pip install -e ../../services/core -e '.[dev]'
