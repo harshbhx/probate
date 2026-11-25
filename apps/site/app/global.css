@@ -185,3 +185,9 @@ html,
 body {
   overflow-x: clip;
 }
+
+/* Docs banner: the library draws its close button at half strength, which is hard to see; keep it
+   clear of the text (the banner carries pe-12 for it) and at a readable contrast. */
+#hacksgiving-2026 > button {
+  color: var(--color-mist);
+}
