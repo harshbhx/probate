@@ -4,12 +4,13 @@ Six coding agents (A to F) plus Harsh (H). Each card lists what it owns, what it
 
 Hard dates (IST): **core loop working by Thu Nov 26, 23:59**, **site + voice by Fri Nov 27, 20:00**, **submission Sat Nov 28**.
 
-## Status (Nov 25, end of day)
+## Status (Nov 25)
 
-Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 45 tests, `make sim` gives a 12-generation family):
+Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 63 tests, `make sim` gives a 12-generation family):
 
 - **Done in code:** A1, A2, A3, B1, B2, B3, C1, C2, C3, C4, C5, E1, E2, E3, F1, F3.
 - **Replaced:** D0 to D3. The website is now React in `apps/web` (see `docs/04-DESIGN.md` v2 and `docs/11-UI-SCREENS.md`), served by the Courthouse. The Jinja and `probate/web/` paths below are history.
+- **Added Nov 25:** spending cap (`probate/courthouse/budget.py`, `config/pricing.yaml`), decisions on held items by email reply (`probate/common/court_mail.py`), Box outages no longer stall the family, live inboxes honour the `probate-processed` label, CI, one-command ship and deploy.
 - **Code done, needs live keys to verify:** every real adapter (`# VERIFY:` comments), F2 voices, the Sprites exec response shape, and generation install on a real Sprite (`probate/common/bundle.py`).
 - **Open, needs Harsh:** H0 spikes with real accounts, G1 rehearsal on Sprites, H2 video and post, H3 submit.
 

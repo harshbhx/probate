@@ -67,7 +67,7 @@ Full model: `docs/12-THREAT-MODEL.md`.
 make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the site on :5173
-make test      # 45 Python tests
+make test      # 63 Python tests
 make help      # everything else
 ```
 
