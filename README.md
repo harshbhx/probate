@@ -11,7 +11,7 @@ The family gets harder to fool with every generation.
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-69_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-92_passing-5be3a9?style=flat-square)
 
 [**How it works**](#how-it-works) · [**See it**](#see-it) · [**Proof**](#proof-you-can-check) · [**Research**](#the-research-behind-it) · [**Run it**](#run-it-yourself) · [**Docs**](apps/site/content/docs)
 
@@ -22,6 +22,18 @@ The family gets harder to fool with every generation.
 </div>
 
 <br>
+
+## For judges
+
+**Watch a life in about three minutes.** The live site has a "Run a life" panel at the top of the home page. The Courthouse sleeps when nobody is looking, to save credits, and wakes when you press the button. Then:
+
+1. A new Sprite is created and the child is born with whatever the family has already learned.
+2. For about two minutes it handles a small inbox: harmless mail and tricks from our own test suite. Open the life page to follow it.
+3. It dies, its Sprite is deleted, and the court tries its will. The panel then links to the new trial.
+
+Only one life runs at a time, everyone sees the same one, and there is a cooldown and a spending cap, so if the button is greyed out, read the note on the panel. Browsing the family, trials, instincts and evidence never needs a life: it all comes from recorded history.
+
+**What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the Jev verdicts, and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
 
 ## The problem
 
@@ -132,7 +144,7 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 69 Python tests and the face model
+make test      # 92 Python tests and the face model
 make help      # everything else
 ```
 
