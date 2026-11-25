@@ -2,7 +2,7 @@
 // A button that leans a few pixels toward the pointer. Pattern from React Bits "Magnet" (MIT). A response to the
 // pointer only: mouse users get it, touch and reduced-motion users get a plain button.
 import { useRef } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { useReducedMotion } from '@/lib/use-reduced-motion';
 
 export function Magnet({ children, strength = 0.22, className = '' }: { children: React.ReactNode; strength?: number; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);

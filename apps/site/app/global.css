@@ -11,6 +11,29 @@
 @import '@probate/tokens/theme.css';
 @import '@probate/tokens/base.css';
 
+/* Fallback faces sized to match the web fonts (metrics from the font files), so the swap when Geist and Newsreader
+   arrive moves no line of text. */
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial'), local('Arimo'), local('Helvetica');
+  size-adjust: 104.76%;
+  ascent-override: 95.9%;
+  descent-override: 28.2%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Newsreader Fallback';
+  src: local('Georgia'), local('Gelasio'), local('Times New Roman');
+  size-adjust: 96.1%;
+  ascent-override: 76.5%;
+  descent-override: 27.6%;
+  line-gap-override: 0%;
+}
+@theme {
+  --font-display: 'Newsreader Variable', 'Newsreader Fallback', ui-serif, Georgia, serif;
+  --font-sans: 'Geist Variable', 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
+}
+
 /* Fumadocs, recoloured to Night Court v3. The site is dark only. */
 .dark {
   --color-fd-background: #08090c;
@@ -251,4 +274,36 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .gloss-card { transition: none; }
+}
+
+/* ---------------------------------------------------------------- scroll effects without a motion library */
+
+/* Section headings fade up once (components/fx/Reveal.tsx flips data-in). Only when motion is welcome, so
+   reduced-motion visitors never see them hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0s),
+      transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0s);
+  }
+  .reveal[data-in] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The pinned statement: words start in --color-unlit (4.5:1 or better on the canvas, so the text passes contrast
+   before it is lit) and move toward their lit colour as --p goes from 0 to 1. */
+:root {
+  --color-unlit: #757c89; /* 4.75:1 on --color-night */
+}
+.lit-word {
+  color: color-mix(in srgb, var(--lit, var(--color-moon)) calc(var(--p, 0) * 100%), var(--color-unlit));
+}
+@media (prefers-reduced-motion: reduce) {
+  .lit-word {
+    --p: 1;
+  }
 }
