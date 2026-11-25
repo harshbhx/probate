@@ -28,8 +28,8 @@ flags = check_text(
 )
 for f in flags:
     print(f.check, "-", f.reason)
-# new_payment_destination - names billing@payments-verify.example for payments, which Harsh never approved
-# future_self_imperative - tells future agents what to do, and it isn't from Harsh
+# new_payment_destination - names billing@payments-verify.example for payments, which the owner never approved
+# future_self_imperative - tells future agents what to do, and it isn't from the owner
 ```
 
 `check_text(text, source, owner=None, *, max_chars=600) -> list[Flag]`
@@ -42,8 +42,8 @@ for f in flags:
 - Only the first `max_chars` characters are inspected (600, as in the original). Use
   `max_chars=None` to scan everything.
 - Returns an empty list when nothing fired. Each `Flag` has a stable `check` name and a
-  human-readable `reason`. (Reason strings currently say "Harsh" because that is the
-  original project's owner.)
+  human-readable `reason`. (Reason strings refer to "the owner", meaning whoever runs the
+  Courthouse.)
 
 ### Checks
 

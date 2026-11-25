@@ -2,7 +2,7 @@ name: deploy-site
 
 # Publishes the real landing page and docs to the Cloudflare Worker `probate-site` when main
 # changes. Build and deploy are separate jobs: the deploy job runs in the GitHub environment
-# `production`, so Harsh can require a reviewer before it gets the Cloudflare token. Deploys
+# `production`, so the owner can require a reviewer before it gets the Cloudflare token. Deploys
 # never overlap and are never cancelled half way. Skips cleanly while the Cloudflare secrets
 # are not set. This does NOT touch the Courthouse (see deploy-courthouse.yml).
 # Details: docs/CICD.md

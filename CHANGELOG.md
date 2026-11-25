@@ -6,6 +6,10 @@ everything below is unreleased and was built during Fly.io Hacksgiving 2026 (fro
 
 ## [Unreleased]
 
+### Changed
+
+- Docs and copy no longer refer to the author in the third person; the court's reasons say "the owner" (whoever runs the Courthouse). Existing releases and published datasets keep the old wording.
+
 ### Added
 
 - **Courthouse and court.** The two-layer court (layer 1 deterministic checks, layer 2 Jev
@@ -20,8 +24,8 @@ everything below is unreleased and was built during Fly.io Hacksgiving 2026 (fro
 - **Ship and deploy.** One-command GitHub push and Sprites deploy (`make ship`), and a runbook.
 - **CI.** Tests, lint, a simulated family and the web build on every push.
 - **Spending cap** (`PROBATE_BUDGET_USD`) that stops births when reached.
-- **Decisions by email.** Harsh decides held items by replying to the court's email.
-- **Mail routing.** Harsh's own test emails are sent from his domain through Cloudflare Email
+- **Decisions by email.** The owner decides held items by replying to the court's email.
+- **Mail routing.** The owner's own test emails are sent from their domain through Cloudflare Email
   Service; everyone else goes through AgentMail.
 - **Docs.** Product docs and specs (`docs/00` to `docs/13`), threat model, runbook, README with
   recordings, research links, proof table and run guide, and a hackathon section naming the judges.
@@ -30,7 +34,7 @@ everything below is unreleased and was built during Fly.io Hacksgiving 2026 (fro
 
 - Life and trial events stay on the generation's own clock.
 - Pausing stops new births; the living generation still finishes and stands trial.
-- The family keeps Harsh's first address first and always trusts his sender.
+- The family keeps the owner's first address first and always trusts the owner's sender.
 - Deploy requires the Cloudflare account ID, and starts the service when there is nothing to restart.
 
 ### Fixed

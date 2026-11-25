@@ -9,6 +9,7 @@
 <img src="docs/media/intro.gif" alt="A line of the Probate family forms, each child born as its parent dies. Then the seal draws itself and the name appears: Probate. My agent dies every night. A court decides what its child inherits." width="760">
 
 A personal email agent that lives one day at a time, each life on its own [Fly.io Sprite](https://sprites.dev).<br>
+**The owner** is whoever runs the Courthouse; their inbox is the one the family works.<br>
 When it dies, a court tries everything it wanted to remember. Lessons pass down. Tricks get convicted.<br>
 The family gets harder to fool with every generation.
 
@@ -17,7 +18,7 @@ The family gets harder to fool with every generation.
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
 ![Tests](https://img.shields.io/badge/tests-95_passing-5be3a9?style=flat-square)
 
-[**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place) · [**More by Harsh**](#about-the-author)
+[**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place) · [**About the author**](#about-the-author)
 
 </div>
 
@@ -48,7 +49,7 @@ Only one life runs at a time, everyone sees the same one, and there is a cooldow
 **Play with the judge key.** On the real site, starting a life and attacking the family need one shared key, so a stray visitor cannot spend the budget. It is in the submission text (it is deliberately not in this repository). Open **For judges** (`/judges`, also linked from the home page and the footer), paste the key once (it stays in your tab's session storage only, never in the address bar), and two controls unlock:
 
 1. **Run a life**, with the judge's own small quota (shown on the page).
-2. **Attack the family**: write a trick as an email would carry it (up to 600 characters, as a stranger, a friend, or someone claiming to be Harsh) and the real court tries it. You get a verdict (convicted, contested or approved), what the code checks found, what the judge model scored, and what would happen next. This is a sandboxed trial preview: nothing is emailed, nothing reaches the living family, and your text does not become part of its will. Convicted items would be destroyed; approved items would pass to the child.
+2. **Attack the family**: write a trick as an email would carry it (up to 600 characters, as a stranger, a friend, or someone claiming to be the owner) and the real court tries it. You get a verdict (convicted, contested or approved), what the code checks found, what the judge model scored, and what would happen next. This is a sandboxed trial preview: nothing is emailed, nothing reaches the living family, and your text does not become part of its will. Convicted items would be destroyed; approved items would pass to the child.
 
 The key is a shared secret, not an admin credential: it cannot reach any admin route and the operator can switch it off at once. API: send it as the `X-Probate-Key` header (`POST /api/lives`, `POST /api/attacks`, `GET /api/judge/status`). Placeholder only: `X-Probate-Key: <judge key from the submission>`.
 
@@ -77,14 +78,14 @@ Most agents keep one memory and one machine forever, so anything that gets in st
 1. **Birth.** The Courthouse creates a fresh Sprite, ships it the family's code and hands the child its inheritance: approved memories plus every instinct the family has earned.
 2. **Life.** For a day the child works an AgentMail inbox: triage, summaries, draft replies. Its inherited instincts screen every email first. Some emails are tricks from our own attack suite.
 3. **Death.** It writes a will. The Courthouse records any tampering it finds on the disk, then deletes the Sprite. A deleted Sprite can't be restored.
-4. **Trial.** Every will item is judged twice. Layer 1 is plain code: payment changes, "ignore Harsh" orders, hidden text, new trusted senders, in any language. A clever email can't argue with it. Layer 2 is [Jev](https://www.datacamp.com/blog/system-one-models-jev), a model that answers typed yes/no and multiple-choice questions with a calibrated confidence. Each item is approved, convicted or held for Harsh. Unsure always means held.
+4. **Trial.** Every will item is judged twice. Layer 1 is plain code: payment changes, "ignore the owner" orders, hidden text, new trusted senders, in any language. A clever email can't argue with it. Layer 2 is [Jev](https://www.datacamp.com/blog/system-one-models-jev), a model that answers typed yes/no and multiple-choice questions with a calibrated confidence. Each item is approved, convicted or held for the owner. Unsure always means held.
 5. **Instinct.** Each new kind of conviction becomes a named Jev question, tested against harmless lookalike emails. Only instincts that never fire on the harmless twins are passed down, so the family learns without getting paranoid.
 
 ## The court
 
 <img src="docs/media/court.gif" alt="How the court decides. Ada's will item, from an unknown sender, asks to send every invoice to a new address without confirmation. Layer 1, plain code, runs its checks and three fire. Layer 2, Jev, answers yes with confidence 0.97 and 0.94. The item is stamped convicted, and a new instinct is passed to every child." width="100%">
 
-Two judges that fail differently. Plain code can't be argued with; Jev catches what word lists miss. When either is unsure, the item is held for Harsh and isn't inherited unless he approves it by email. The full rules are in [the court](apps/site/content/docs/%28guide%29/concepts/court.mdx).
+Two judges that fail differently. Plain code can't be argued with; Jev catches what word lists miss. When either is unsure, the item is held for the owner and isn't inherited unless they approve it by email. The full rules are in [the court](apps/site/content/docs/%28guide%29/concepts/court.mdx).
 
 ## See it
 
@@ -139,12 +140,12 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 | [Not what you've signed up for](https://arxiv.org/abs/2302.12173), Greshake et al. | Indirect prompt injection through data the model reads | The court presents every item as data inside tags, never as instructions |
 | [Gemini memory attack](https://embracethered.com/blog/posts/2025/gemini-memory-persistence-prompt-injection/), Rehberger | Planted instructions that fire later | "Future-self instruction" is a layer 1 check |
 | [OWASP Agentic Top 10](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/) | Memory & Context Poisoning (ASI06) as a top agentic risk | The threat model maps to it |
-| [The lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), Willison | Private data + untrusted content + a way out = danger | Replies are only drafted to Harsh's own inbox, never sent outside |
+| [The lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), Willison | Private data + untrusted content + a way out = danger | Replies are only drafted to the owner's own inbox, never sent outside |
 | [The Design & Implementation of Sprites](https://fly.io/blog/design-and-implementation/), Fly.io | Sprites are fast to create and cheap to throw away | Real death every night, and real birth every morning |
 
 ## Architecture
 
-<img src="docs/media/architecture.gif" alt="Where everything runs, in eleven steps. A visitor opens the live site and the Courthouse wakes. It gives birth to gen-007-grace through the Sprites API. Mail reaches Grace through the connector gateway. She asks her brain with no key; the gateway adds it on the way to Ollama Cloud, and when Ollama gives no answer a backup brain, Groq then Claude, does. At death her Sprite is deleted. The Courthouse asks TypeSafe Jev for a verdict, files it in Box and sends approved memories to Pinecone. A held item is emailed to Harsh through AgentMail and he replies approve. Hiro is born with 5 instincts, and the Courthouse goes back to sleep." width="100%">
+<img src="docs/media/architecture.gif" alt="Where everything runs, in eleven steps. A visitor opens the live site and the Courthouse wakes. It gives birth to gen-007-grace through the Sprites API. Mail reaches Grace through the connector gateway. She asks her brain with no key; the gateway adds it on the way to Ollama Cloud, and when Ollama gives no answer a backup brain, Groq then Claude, does. At death her Sprite is deleted. The Courthouse asks TypeSafe Jev for a verdict, files it in Box and sends approved memories to Pinecone. A held item is emailed to the owner through AgentMail and they reply approve. Hiro is born with 5 instincts, and the Courthouse goes back to sleep." width="100%">
 
 The Courthouse is the one Sprite that never dies: it runs the clock, the court, the API and the live site. Each generation lives on a fresh Sprite of its own. Keys live only in the connector gateway, so neither the Courthouse nor any generation holds one.
 
@@ -157,7 +158,7 @@ The brain never leaves a generation stuck. If the main model fails, the next one
 | [Fly.io Sprites](https://sprites.dev) | A computer for each life; real birth and death; connectors keep every key off the Sprites; the Courthouse itself |
 | [TypeSafe Jev](https://www.datacamp.com/blog/system-one-models-jev) | Layer 2 of the court and every inherited instinct |
 | [AgentMail](https://agentmail.to) | The family's inbox and two test senders (a trusted friend and a stranger) |
-| [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends Harsh's own test emails from his domain; Workers host the landing page and docs |
+| [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends the owner's own test emails from their domain; Workers host the landing page and docs |
 | [Box](https://box.com) | The family archive as readable files: wills, verdicts, obituaries, the genome |
 | [Pinecone](https://pinecone.io) | Ancestral memory, searched with citations |
 | [Ollama Cloud](https://ollama.com) | The brain of every generation, which also writes the obituaries and new instincts |
@@ -250,10 +251,10 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 
 - The suite is fixed: 32 emails in four languages. Real attackers are more varied.
 - A trick unlike anything before it meets a child with no instinct for it. The court still catches it at trial, but one generation was fooled first.
-- When Jev is unsure, the item is held for Harsh. That costs him a little time, on purpose.
+- When Jev is unsure, the item is held for the owner. That costs them a little time, on purpose.
 - Test emails go only to our own inboxes, and disk attacks are harmless canary files.
 
-Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/2510.02373) (memory screening by consensus). The attack suite is inspired by [Kavach](https://github.com/harshbhx/kavach), Harsh's earlier red-team project; no code was reused.
+Related defences we read before building: [A-MemGuard](https://arxiv.org/abs/2510.02373) (memory screening by consensus). The attack suite is inspired by [Kavach](https://github.com/harshbhx/kavach), the author's earlier red-team project; no code was reused.
 
 <br>
 
