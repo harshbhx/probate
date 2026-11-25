@@ -180,6 +180,8 @@ make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```
 
+**Webhooks.** The Courthouse can POST signed JSON events (`life.started`, `life.died`, `trial.finished`, `instinct.learned`, `life.failed`) to URLs the operator subscribes. See [`docs/WEBHOOKS.md`](docs/WEBHOOKS.md).
+
 **Go live on Fly.io**
 
 1. Create the Sprites connectors (TypeSafe, AgentMail, Box, Pinecone, Ollama, ElevenLabs, Anthropic, a Custom API connector named `cloudflare`, and optionally one named `groq`) in the Fly dashboard and allow only Sprites named `courthouse` and `gen-`. Steps in [`docs/06-SETUP-AND-SPIKES.md`](docs/06-SETUP-AND-SPIKES.md).
