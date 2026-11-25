@@ -13,7 +13,7 @@ import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
@@ -62,7 +62,10 @@ def healthz() -> dict:
 
 
 @app.get("/api/summary")
-def api_summary() -> dict:
+def api_summary(response: Response) -> dict:
+    # The landing page on Cloudflare shows who is alive right now. The summary is public and
+    # read-only, carries no cookies, and is the only route other origins may read.
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return views.summary(store)
 
 
