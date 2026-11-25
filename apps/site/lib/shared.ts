@@ -7,7 +7,7 @@ export const docsImageRoute = '/og/docs';
 
 // Filled in at build time by scripts/ship.sh. Links that depend on them are hidden when empty.
 export const liveUrl = process.env.NEXT_PUBLIC_LIVE_URL ?? '';
-const repo = process.env.NEXT_PUBLIC_GITHUB_REPO ?? ''; // "owner/probate"
+const repo = process.env.NEXT_PUBLIC_GITHUB_REPO || 'harshbhx/probate'; // "owner/probate"
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001';
 
 export const gitConfig = repo
