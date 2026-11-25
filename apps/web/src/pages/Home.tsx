@@ -6,6 +6,7 @@ import { BlurText } from "../components/fx/BlurText";
 import { NumberTicker } from "../components/fx/NumberTicker";
 import { TracingBeam } from "../components/fx/TracingBeam";
 import { SpotlightCard } from "../components/fx/SpotlightCard";
+import { RunLife } from "../components/ui/RunLife";
 import { LivePill } from "../components/ui/LivePill";
 import { Lineage } from "../components/ui/Lineage";
 import { LearningCurve } from "../components/ui/LearningCurve";
@@ -20,6 +21,7 @@ export function Home({ summary }: { summary: Summary | null }) {
     <>
       <Hero summary={summary} />
       <Page flush className="pt-10 md:pt-14">
+        <RunLife summary={summary} />
         {!summary ? (
           <PageSkeleton />
         ) : summary.generations.length === 0 ? (
