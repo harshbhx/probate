@@ -1,13 +1,14 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Gavel, MessageCircleQuestion, Send, Volume2 } from "lucide-react";
 import { api, type ApiError, type GenerationDetail } from "../lib/api";
 import { clock, countdown, cx, day, humanize } from "../lib/format";
-import { useApi, useNow, useTitle } from "../lib/hooks";
+import { useApi, useInView, useNow, useTitle } from "../lib/hooks";
 import { BorderBeam } from "../components/fx/BorderBeam";
 import { TextGenerate } from "../components/fx/TextGenerate";
 import { Seal } from "../components/ui/Seal";
 import { FamilyFace, inheritedChange } from "@probate/faces";
+import { PixelMoment } from "@probate/moments";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { ErrorState, PageSkeleton } from "../components/ui/States";
 
@@ -55,14 +56,16 @@ export function Generation({ mode }: { mode?: string }) {
               <Seal size={30} />
             </div>
             <div className="mt-6 flex justify-center">
-              <FamilyFace
-                gen={g.gen}
-                life={g.alive ? "alive" : "sealed"}
-                instincts={g.genome_size_at_birth}
-                track={g.alive}
-                size={150}
-                title={`${g.name}'s family face`}
-              />
+              <DeathMark dead={!g.alive}>
+                <FamilyFace
+                  gen={g.gen}
+                  life={g.alive ? "alive" : "sealed"}
+                  instincts={g.genome_size_at_birth}
+                  track={g.alive}
+                  size={150}
+                  title={`${g.name}'s family face`}
+                />
+              </DeathMark>
             </div>
             <h1 className="mt-6 font-display text-[76px] leading-[0.9] tracking-tight">{g.name}</h1>
             <p className={cx("mt-3 text-[15px]", g.alive ? "text-life" : "text-mist")}>
@@ -174,6 +177,18 @@ export function Generation({ mode }: { mode?: string }) {
         </div>
       </div>
     </Page>
+  );
+}
+
+// A dead generation's face. The first time it scrolls into view a pale soul rises from it, once
+// (pixelfx, @probate/moments); nothing plays for a living generation or under reduced motion.
+function DeathMark({ dead, children }: { dead: boolean; children: ReactNode }) {
+  const { ref, inView } = useInView<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="relative inline-flex">
+      {children}
+      {dead && inView && <PixelMoment kind="death" scale={1} delay={300} />}
+    </span>
   );
 }
 
