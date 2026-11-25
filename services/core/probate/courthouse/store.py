@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -21,18 +22,23 @@ class Store:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.db = sqlite3.connect(str(path), check_same_thread=False)
         self.db.row_factory = sqlite3.Row
+        # One connection is shared by request threads, the life thread and the webhook worker.
+        # Interleaving statements on it fails with "another row available", so serialise.
+        self.lock = threading.RLock()
         self.db.executescript(SCHEMA.read_text(encoding="utf-8"))
 
     def q(self, sql: str, *args) -> list[sqlite3.Row]:
-        return list(self.db.execute(sql, args))
+        with self.lock:
+            return list(self.db.execute(sql, args))
 
     def one(self, sql: str, *args) -> sqlite3.Row | None:
         rows = self.q(sql, *args)
         return rows[0] if rows else None
 
     def x(self, sql: str, *args) -> None:
-        self.db.execute(sql, args)
-        self.db.commit()
+        with self.lock:
+            self.db.execute(sql, args)
+            self.db.commit()
 
     # settings
     def get_setting(self, key: str, default: str = "") -> str:
