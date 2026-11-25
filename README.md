@@ -165,6 +165,21 @@ docs/              specs: overview, tech spec, court spec, attack suite, design,
 | [`docs/12-THREAT-MODEL.md`](docs/12-THREAT-MODEL.md) | Assets, attackers, defences, honest limits |
 | [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md) | Deploy, operate, recover |
 
+## Hacksgiving 2026
+
+Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 2026: a personal agent that runs on Sprites and uses Sprites connectors for every outside service.
+
+| Judges' company | Its job in Probate |
+| --- | --- |
+| Fly.io | A Sprite for every life, real deletion at death, connectors, and the Courthouse |
+| TypeSafe | Jev is the court's second layer and every inherited instinct |
+| Box | The family archive |
+| Pinecone | Ancestral memory |
+| Ollama | The brain of every generation |
+| Apify | In progress: reading the pages that emails link to, so tricks hidden on the web go to trial too |
+
+**Coming before submission:** judges can email the family a trick and watch it handled live; each trial shows Fly's own "not found" reply as proof the Sprite was deleted; the home page shows a live feed of the living generation.
+
 ## Limits
 
 - The suite is fixed: 32 emails in four languages. Real attackers are more varied.
