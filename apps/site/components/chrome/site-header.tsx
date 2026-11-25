@@ -2,7 +2,7 @@
 // The header is a floating pill: seal and wordmark on the left, the sections in the middle, search, source and one
 // primary action on the right. It lifts off the page (blur and a hairline) once you scroll. On phones the pill
 // keeps the lockup, search and a menu button, and the menu opens as a card beneath it with big tap targets.
-import Link from 'next/link';
+import Link from '@/components/intent-link';
 import { useEffect, useState } from 'react';
 import { ArrowRight, Menu, Search, X } from 'lucide-react';
 import { useSearchContext } from 'fumadocs-ui/contexts/search';

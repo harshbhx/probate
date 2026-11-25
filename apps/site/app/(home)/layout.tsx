@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/intent-link';
 import { SiteFooter } from '@/components/chrome/site-footer';
 import { ScrollProgress } from '@/components/fx/ScrollProgress';
 import { SiteHeader } from '@/components/chrome/site-header';

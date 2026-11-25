@@ -1,5 +1,5 @@
 // The site footer: brand and promise, three link columns, live status, and the fine print.
-import Link from 'next/link';
+import Link from '@/components/intent-link';
 import { FamilyFace } from 'kinfaces/react';
 import { Seal } from '@/components/seal';
 import { BigWord } from '@/components/fx/BigWord';

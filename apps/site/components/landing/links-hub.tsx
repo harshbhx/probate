@@ -1,6 +1,6 @@
 // "Everything about Probate": the one list of links judges and readers need, in the same order
 // everywhere (form, posts, README). A link without an address is left out, not shown broken.
-import Link from 'next/link';
+import Link from '@/components/intent-link';
 import { ArrowUpRight, BookOpen, ClipboardCheck, Code2, FileText, Gavel, Play, Radio, Trophy } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { articleUrl, githubUrl, liveUrl, postUrl, videoUrl } from '@/lib/shared';
