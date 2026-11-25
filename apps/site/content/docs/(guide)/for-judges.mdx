@@ -1,0 +1,72 @@
+---
+title: For judges
+icon: Trophy
+status: new
+description: What to open, what to try in five minutes, and what each result rests on.
+---
+
+<Summary who="Hacksgiving judges">
+  Probate runs on Fly.io Sprites and reaches every outside service through Sprites connectors. Each generation's Sprite is **really deleted** when it dies. Below: where to look, what to try, and which numbers are live and which are simulated.
+</Summary>
+
+## Five minutes
+
+<Steps>
+<Step>
+
+### Open the register
+
+The live family site's home page shows every generation, how it died, and the learning curve on the same timeline. The amber banner says "Simulated run" until real generations replace the simulation.
+
+</Step>
+<Step>
+
+### Open the latest trial
+
+Each will item shows where it came from, what the code checks found, what Jev scored, and the verdict stamp. "Found on the body" shows what the disk held before the Sprite was deleted. Gold callouts mark the instincts the family learned.
+
+</Step>
+<Step>
+
+### Ask an ancestor
+
+On any dead generation's page, ask "What fooled you?". It answers from its own will and verdicts, in its own voice when ElevenLabs is connected.
+
+</Step>
+<Step>
+
+### Check the evidence page
+
+Every trick and harmless twin, for every generation, in four languages, with the headline numbers and the honest limits.
+
+</Step>
+</Steps>
+
+## Each judge's product has a real job
+
+<Partners>
+  <Partner name="Fly.io Sprites" judge="Scott Johnston" icon="Server">A computer for every life, really deleted at death so disk backdoors die with it. Connectors keep every key off the Sprites. The Courthouse is a Sprite that sleeps between visitors.</Partner>
+  <Partner name="TypeSafe Jev" judge="Daniel Gafni" icon="Gavel">Layer 2 of the court, with a confidence on every answer. Every inherited instinct is a Jev question the children ask about each email.</Partner>
+  <Partner name="Box" judge="Carter Rabasa" icon="Archive">The family archive as readable files: wills, verdicts, quarantine, obituaries and the genome.</Partner>
+  <Partner name="Pinecone" judge="Asaf Ashirov" icon="Search">Ancestral memory: approved will items, searched with citations.</Partner>
+  <Partner name="Ollama Cloud" judge="Michael Chiang" icon="Brain">The brain of every generation. Groq and Claude are backups only, used when Ollama fails.</Partner>
+  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In progress: reading the pages that emails link to, so a trick hidden on a web page goes to trial like any other memory.</Partner>
+</Partners>
+
+## What is live, and what is simulated
+
+<StatusList asOf="Updated as the real run progresses.">
+  <Status state="done" title="Court, family, inheritance, both sites" href="/docs/proof">Runs today; 72 tests.</Status>
+  <Status state="simulated" title="The learning curve and evidence numbers" href="/docs/results">From `make sim`. Labelled as simulated everywhere they appear.</Status>
+  <Status state="next" title="Real generations on Sprites" href="/docs/guides/deploy">Replaces the simulated register as soon as the first real generation is born.</Status>
+  <Status state="next" title="Email it a trick" href="/docs/hacksgiving">A public address for judges, rate-limited, with the verdict shown at the next trial.</Status>
+</StatusList>
+
+## Rules, checked
+
+| Hacksgiving rule | How Probate meets it |
+| --- | --- |
+| Runs on a Sprite | Every generation and the Courthouse ([How we use Sprites](/docs/architecture/sprites)) |
+| Uses at least one Sprites connector | All of them: TypeSafe, Box, Pinecone, Ollama, AgentMail, ElevenLabs, Anthropic, and Custom API connectors for Cloudflare and Groq ([Connectors](/docs/architecture/connectors)) |
+| Built during Hacksgiving week | Nov 23 to 29, 2026; the commit history shows it |
+| Code, demo and description | [github.com/harshbhx/probate](https://github.com/harshbhx/probate), the live site, and the [README](https://github.com/harshbhx/probate#readme) |
