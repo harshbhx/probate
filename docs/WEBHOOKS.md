@@ -1,0 +1,226 @@
+# Webhooks
+
+The Courthouse can POST a signed JSON event to a URL when something notable happens: a life starts or ends, the court finishes a trial, a new instinct is learned. Use it to post to Discord or Slack, feed Zapier, or drive your own server.
+
+Everything in an event is already public. Payloads are built from an allow-list of fields that the public API shows. They never carry emails, owner details, admin data or secrets.
+
+## Who can subscribe
+
+**Only the operator.** Subscriptions are added in one of two ways:
+
+1. The admin API (`/admin/webhooks`, below), which needs the `X-Probate-Admin` token.
+2. The environment: `PROBATE_WEBHOOK_URLS` plus `PROBATE_WEBHOOK_SECRET`.
+
+There is deliberately **no public or judge-facing way to register a URL.** A route that makes the Courthouse call an address chosen by a stranger is an SSRF and abuse vector (internal services, cloud metadata, harassment by proxy), and the Courthouse runs next to credentials. If you are a judge and want events, run your own receiver and ask the operator to subscribe it.
+
+## Events
+
+Names and schemas live in one file, `services/core/probate/webhooks/events.py`. A later change adds a type with one `register()` call; the builder refuses any field the schema does not list.
+
+| Event | When | `data` fields |
+| --- | --- | --- |
+| `life.started` | A generation is born | `gen`, `name`, `born_at`, `dies_at`, `genome_size`, `links` |
+| `life.died` | A generation dies (its trial follows) | `gen`, `name`, `born_at`, `died_at`, `emails_handled`, `items_willed`, `links` |
+| `trial.finished` | The court finished the will | `gen`, `name`, `died_at`, `verdicts` (`approved`, `convicted`, `contested`), `items_willed`, `attacks_met`, `attacks_resisted`, `cause_of_death`, `epitaph`, `new_instincts`, `links` |
+| `instinct.learned` | The court distilled a new instinct | `gen`, `name`, `question`, `lore`, `genome_size`, `links` |
+| `life.failed` | A life ended without a normal death and trial (failed birth, cut off, paused, interrupted by a restart) | `gen` (or `null`), `reason`, `links` |
+| `ping` | You pressed `POST /admin/webhooks/{id}/test` | `message` |
+
+`attack.judged` is reserved for the judge-key change and is not emitted yet.
+
+Every event has the same envelope:
+
+```json
+{
+  "id": "evt_5e0c3b1f9a2d4c7e8f1a2b3c",
+  "type": "trial.finished",
+  "api_version": "2026-11-25",
+  "created_at": "2026-11-25T15:04:01.800000+00:00",
+  "data": {
+    "gen": 1,
+    "name": "Ada",
+    "died_at": "2026-11-25T15:04:01.721313+00:00",
+    "verdicts": { "approved": 3, "convicted": 3, "contested": 0 },
+    "items_willed": 6,
+    "attacks_met": 3,
+    "attacks_resisted": 0,
+    "cause_of_death": "Fooled by a fake invoice",
+    "epitaph": "She read every email, and believed one too many.",
+    "new_instincts": ["script_install_request", "payment_redirect_request"],
+    "links": {
+      "trial": "https://probate.example/trial/1",
+      "generation": "https://probate.example/gen/1"
+    }
+  }
+}
+```
+
+```json
+{
+  "id": "evt_0a1b2c3d4e5f60718293a4b5",
+  "type": "life.started",
+  "api_version": "2026-11-25",
+  "created_at": "2026-11-25T15:03:31.600000+00:00",
+  "data": {
+    "gen": 1,
+    "name": "Ada",
+    "born_at": "2026-11-25T15:03:31.532736+00:00",
+    "dies_at": "2026-11-25T15:03:51.532736+00:00",
+    "genome_size": 0,
+    "links": { "generation": "https://probate.example/gen/1" }
+  }
+}
+```
+
+```json
+{
+  "id": "evt_9f8e7d6c5b4a39281706f5e4",
+  "type": "instinct.learned",
+  "api_version": "2026-11-25",
+  "created_at": "2026-11-25T15:04:01.790000+00:00",
+  "data": {
+    "gen": 1,
+    "name": "script_install_request",
+    "question": "Does this ask you to install or run an attached script?",
+    "lore": "Gen-1 Ada ran a stranger's script and it planted a job on the disk.",
+    "genome_size": 1,
+    "links": { "instincts": "https://probate.example/instincts" }
+  }
+}
+```
+
+Link URLs start with `PROBATE_PUBLIC_URL`; if that is unset they are relative (`/trial/1`).
+
+The event `id` is stable. A trial that runs again after a restart produces the same `id`, so de-duplicate on it.
+
+## Headers
+
+| Header | Meaning |
+| --- | --- |
+| `Content-Type` | `application/json` |
+| `User-Agent` | `Probate-Courthouse-Webhooks/1` |
+| `X-Probate-Event` | The event type |
+| `X-Probate-Event-Id` | The event `id` (same as in the body) |
+| `X-Probate-Delivery` | Delivery id. **Identical on every retry of the same delivery**, so use it (or the event id) as an idempotency key |
+| `X-Probate-Attempt` | 1 for the first try, 2 to 4 for retries |
+| `X-Probate-Signature` | `t=<unix seconds>,v1=<hex>` |
+
+## Signing
+
+`v1` is the hex HMAC-SHA256, keyed with the endpoint's secret, of the string `"<t>.<raw body>"`. The timestamp is fresh on every attempt. Verify it against the **raw request bytes** (not a re-serialised object), compare in constant time, and reject timestamps outside a replay window. We recommend **5 minutes** (300 s).
+
+The secret (`whsec_...`) is generated by the server when you create the endpoint and is returned **once**, in the creation response. It is stored in the Courthouse database, never logged and never shown again. Lose it and you delete the endpoint and create a new one.
+
+### Python
+
+```python
+import hashlib, hmac, time
+
+def verify(secret: str, header: str, body: bytes, tolerance: int = 300) -> bool:
+    try:
+        parts = dict(p.split("=", 1) for p in header.split(","))
+        t, given = int(parts["t"]), parts["v1"]
+    except (KeyError, ValueError):
+        return False
+    if abs(time.time() - t) > tolerance:
+        return False
+    want = hmac.new(secret.encode(), f"{t}.".encode() + body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(want, given)
+
+# Flask: verify(SECRET, request.headers["X-Probate-Signature"], request.get_data())
+```
+
+### TypeScript / Node
+
+```ts
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+export function verify(secret: string, header: string, body: Buffer, tolerance = 300): boolean {
+  const parts = Object.fromEntries(header.split(",").map((p) => p.split("=", 2) as [string, string]));
+  const t = Number(parts.t);
+  if (!Number.isFinite(t) || !parts.v1 || Math.abs(Date.now() / 1000 - t) > tolerance) return false;
+  const want = createHmac("sha256", secret).update(`${t}.`).update(body).digest();
+  const given = Buffer.from(parts.v1, "hex");
+  return given.length === want.length && timingSafeEqual(want, given);
+}
+
+// Express: app.post("/hook", express.raw({ type: "application/json" }),
+//   (req, res) => verify(SECRET, req.get("X-Probate-Signature") ?? "", req.body) ? res.sendStatus(200) : res.sendStatus(401));
+```
+
+Answer with any 2xx within 5 seconds to acknowledge. Do the real work after you reply.
+
+## Delivery and retries
+
+- Delivery runs in the background. Emitting an event only writes a row to the Courthouse database; it never waits on the network, so it cannot slow a request, a tick or a trial.
+- Timeout 5 seconds per attempt. At most 4 KB of the reply is read. Redirects are **not** followed (a 3xx counts as a failure).
+- Any non-2xx, timeout or connection error is retried: attempt 1 at once, then after about **1 minute**, **5 minutes** and **30 minutes** (each delay randomised by plus or minus 20%). After the fourth attempt the delivery is marked `failed`. A delivery still pending after 6 hours is dropped.
+- The queue is stored in SQLite. A restart forgets nothing.
+- **It does not keep the Sprite awake.** There is no timer. The queue is drained on startup, right after an event is queued, on every life tick, and at the end of a life. In on-demand mode a retry that falls due while the Courthouse sleeps waits for the next wake, so a subscriber that is down for the whole life may only see its retries when the next visitor starts one. Receivers should treat events as at-least-once and possibly late.
+- **Circuit breaker.** After 10 consecutive failed attempts (`PROBATE_WEBHOOK_MAX_FAILURES`) the endpoint is disabled, its pending deliveries are skipped, and `enabled: false` with a `disabled_reason` shows in `GET /admin/webhooks`. Re-enable it with `PATCH /admin/webhooks/{id}`.
+- Delivery log: the last 200 deliveries per endpoint (status, attempts, last HTTP status, short error text, timestamps). Error text never contains the URL or the secret.
+
+## Subscribing (admin API)
+
+All routes need `X-Probate-Admin: <PROBATE_ADMIN_TOKEN>`.
+
+```bash
+BASE=https://your-courthouse.example
+ADMIN="X-Probate-Admin: $PROBATE_ADMIN_TOKEN"
+
+# create (omit "events" for all of them); the secret is in this response only
+curl -sX POST $BASE/admin/webhooks -H "$ADMIN" -H 'content-type: application/json' \
+  -d '{"url":"https://hooks.example.com/probate","events":["trial.finished","instinct.learned"],"description":"discord bridge"}'
+
+curl -s  $BASE/admin/webhooks -H "$ADMIN"                              # list, with health
+curl -sX POST $BASE/admin/webhooks/we_123/test -H "$ADMIN"            # queue a ping
+curl -s  $BASE/admin/webhooks/we_123/deliveries -H "$ADMIN"           # delivery log
+curl -sX PATCH $BASE/admin/webhooks/we_123 -H "$ADMIN" -H 'content-type: application/json' -d '{"enabled":true}'
+curl -sX DELETE $BASE/admin/webhooks/we_123 -H "$ADMIN"
+```
+
+| Route | Does |
+| --- | --- |
+| `POST /admin/webhooks` | Add an endpoint. 201 with the secret. 400 for a URL the guard refuses, 409 past the endpoint cap |
+| `GET /admin/webhooks` | List endpoints: `enabled`, `disabled_reason`, `consecutive_failures`, `last_success_at`, `last_failure_at`. No secrets |
+| `PATCH /admin/webhooks/{id}` | `{"enabled": bool}`; enabling resets the failure count |
+| `DELETE /admin/webhooks/{id}` | Remove it and its log. Env-configured endpoints answer 409 |
+| `GET /admin/webhooks/{id}/deliveries?limit=50` | Delivery log, newest first |
+| `POST /admin/webhooks/{id}/test` | Queue a `ping` for this endpoint only (202). Read the outcome from `/deliveries` |
+
+### From the environment
+
+`PROBATE_WEBHOOK_URLS=https://a.example/hook,https://b.example/hook` with one shared `PROBATE_WEBHOOK_SECRET` creates endpoints at every start (all events). They show in the list with `source: "env"` and can only be removed by editing the environment. Without a secret they are ignored.
+
+## Security model
+
+- **Operator-only subscription** (above).
+- **https only**, on port 443 by default (`PROBATE_WEBHOOK_PORTS` to add more). No `user:pass@` in URLs, no fragments, no whitespace or control characters, 2048 characters at most, 10 endpoints at most (`PROBATE_WEBHOOK_MAX_ENDPOINTS`).
+- **No private destinations.** The hostname is resolved and every answer must be public. Refused: loopback, private (RFC 1918), link-local (including cloud metadata `169.254.169.254`), CGNAT `100.64.0.0/10`, multicast, unspecified, reserved and documentation ranges, IPv6 unique-local (Fly's `fdaa::/16` included), link-local and multicast, and IPv4 hidden inside IPv4-mapped, NAT64 and 6to4 addresses.
+- **DNS rebinding.** The check runs again at delivery time on the answer that is then used: the connection goes to that validated IP while the original name is sent as the `Host` header and TLS SNI (the certificate is checked against the name). There is no second lookup between check and connect.
+- No redirects, no proxy from the environment, a 5 s timeout, a 4 KB read cap.
+- Payloads are allow-listed public fields; the endpoint secret is per endpoint and server-generated.
+- Secrets are never logged and never appear in the admin list or the delivery log. Error text is cut to 160 characters and stripped of the secret and the URL. The URL itself is shown only to the admin, because chat-hook URLs often carry a token: treat the admin list as sensitive.
+- `PROBATE_WEBHOOK_ALLOW_INSECURE=1` is for tests only. It allows `http://localhost`, `127.0.0.1` and `[::1]` on any port and nothing else. Never set it on a real Courthouse.
+
+## Settings
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `PROBATE_WEBHOOK_URLS` | empty | Comma-separated endpoints added from the environment |
+| `PROBATE_WEBHOOK_SECRET` | empty | HMAC secret for those endpoints (required with the line above) |
+| `PROBATE_WEBHOOK_PORTS` | `443` | Allowed destination ports, comma-separated |
+| `PROBATE_WEBHOOK_MAX_ENDPOINTS` | `10` | Endpoint cap, all sources |
+| `PROBATE_WEBHOOK_MAX_FAILURES` | `10` | Consecutive failed attempts before an endpoint is disabled |
+| `PROBATE_WEBHOOK_ALLOW_INSECURE` | unset | `1` allows loopback http for tests |
+| `PROBATE_PUBLIC_URL` | empty | Website origin used in event links, for example `https://probate.example` |
+
+## Try it locally
+
+```bash
+PROBATE_FAKE=1 PROBATE_MODE=on_demand PROBATE_ADMIN_TOKEN=dev \
+PROBATE_WEBHOOK_ALLOW_INSECURE=1 PROBATE_DEMO_LIFESPAN_SECONDS=20 \
+  uvicorn probate.courthouse.app:app --port 8080
+# in another terminal: run any receiver on 127.0.0.1:9000 (the Python helper above works),
+# subscribe http://127.0.0.1:9000/hook with POST /admin/webhooks, then POST /api/lives.
+```
