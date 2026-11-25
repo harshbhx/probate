@@ -39,6 +39,26 @@ One generation is always alive, so a short life costs the same per hour as a lon
 
 The worst case, two Sprites each busy on a full CPU with 2 GB all day, is about $4 a day.
 
+## Staying on the Free plan
+
+The Free plan's $5 covers the whole of Hacksgiving with room to spare, as long as the family runs in [on-demand mode](/docs/guides/operate#on-demand-mode) while judges visit, or is paused when no one is watching.
+
+Fly's calculator with 3 Sprites, 35 awake hours each, half a CPU and 1 GB comes to about $4.30 of CPU and memory, plus well under $1 of disk: right at the $5 line. Probate needs far less, because a generation's Sprite is deleted at death and only the Courthouse keeps a disk.
+
+| Step | Family awake | Estimate |
+| --- | --- | --- |
+| Smoke test, 2-minute lives | 30 minutes | $0.04 |
+| Proof run, 12 generations with 10-minute lives | 2.2 hours | $0.15 |
+| Judging in on-demand mode, 30 "Run a life" demos a day for two days | about 5 hours | $0.34 |
+| Visitors waking a sleeping Courthouse | about 10 hours | $0.26 |
+| **Total** | about 25 Sprite-hours | **about $0.80** |
+
+Each row assumes the Courthouse plus one living generation at the rates in `config/pricing.yaml`: half a CPU and 1 GB for a generation, a quarter of a CPU and 0.75 GB for the Courthouse. That is $0.067 an hour while a life is running. A demo life (2 minutes, plus birth and trial) keeps both awake for about 5 minutes, so it costs about half a cent.
+
+<Callout type="warn" title="Keep the caps under $5">
+  In continuous mode the family costs about $1.60 a day, so three days nonstop use up the Free plan. Set `PROBATE_BUDGET_USD=4`: the cap counts everything spent since the family began, and births stop before the plan runs out. In on-demand mode, `PROBATE_DEMO_DAILY_BUDGET_USD` (default `2`) also caps each day. Judging runs into December, which starts with a fresh $5.
+</Callout>
+
 ## Everything else
 
 | Service | Plan | Enough for Probate? |
@@ -83,6 +103,8 @@ The live site shows the estimate on the evidence page, and `GET /api/summary` re
 | `PROBATE_LIFESPAN_SECONDS` | 600 | 120 | 180 | 3600 |
 | `PROBATE_GAP_SECONDS` | 60 | 20 | 20 | 60 |
 | `PROBATE_SUITE_PER_LIFE` | 8 | 4 | 4 | 8 |
-| `PROBATE_BUDGET_USD` | 20 | 3 | 5 | 10 |
+| `PROBATE_BUDGET_USD` | 20 | 4 | 4 | 4 |
+
+The cap counts everything the family has spent so far, not one run, so set it once for the month. `4` keeps the family on the Free plan.
 
 `POST /admin/pause` stops births between sessions, and `POST /admin/force-death` ends a life early. See [Operate the family](/docs/guides/operate).

@@ -15,7 +15,7 @@ The family gets harder to fool with every generation.
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-92_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-95_passing-5be3a9?style=flat-square)
 
 [**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place)
 
@@ -137,7 +137,7 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 
 ## Architecture
 
-<img src="docs/media/architecture.gif" alt="Where everything runs. A visitor reaches the Courthouse over HTTPS. The Courthouse gives birth to gen-007-grace through the Sprites API. Grace calls her brain with no key; the connector gateway adds it on the way to Ollama Cloud. After a death the Courthouse asks TypeSafe Jev through the gateway. Grace dies, her Sprite is deleted, and gen-008-hiro is born with 5 instincts. Box, Pinecone, AgentMail, ElevenLabs and Cloudflare are also reached only through the gateway." width="100%">
+<img src="docs/media/architecture.gif" alt="Where everything runs, in eleven steps. A visitor opens the live site and the Courthouse wakes. It gives birth to gen-007-grace through the Sprites API. Mail reaches Grace through the connector gateway. She asks her brain with no key; the gateway adds it on the way to Ollama Cloud, and when Ollama gives no answer a backup brain, Groq then Claude, does. At death her Sprite is deleted. The Courthouse asks TypeSafe Jev for a verdict, files it in Box and sends approved memories to Pinecone. A held item is emailed to Harsh through AgentMail and he replies approve. Hiro is born with 5 instincts, and the Courthouse goes back to sleep." width="100%">
 
 The Courthouse is the one Sprite that never dies: it runs the clock, the court, the API and the live site. Each generation lives on a fresh Sprite of its own. Keys live only in the connector gateway, so neither the Courthouse nor any generation holds one.
 
@@ -168,7 +168,7 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 92 Python tests and the face model
+make test      # 95 Python tests and the face model
 make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```

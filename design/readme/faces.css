@@ -1,0 +1,12 @@
+/* Family faces: the only motion is life (breathing, blinking, a glint) and the mood pop. */
+@keyframes pf-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+@keyframes pf-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes pf-glint { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes pf-pop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+.pf-breathe { animation: pf-breathe 3.6s ease-in-out infinite; }
+.pf-blink { animation: pf-blink 4.6s ease-in-out infinite; }
+.pf-glint { animation: pf-glint 2.4s ease-in-out infinite; }
+.pf-pop { animation: pf-pop 0.35s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .pf-breathe, .pf-blink, .pf-glint, .pf-pop { animation: none !important; }
+}

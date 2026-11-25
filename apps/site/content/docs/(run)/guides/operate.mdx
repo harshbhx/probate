@@ -22,6 +22,23 @@ curl -X POST -H "X-Probate-Admin: $PROBATE_ADMIN_TOKEN" https://<courthouse>/adm
 | Change the lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, run `make deploy` |
 | See what's alive | `sprite list --prefix gen-`, or the live site |
 
+## On-demand mode
+
+For judging, set `PROBATE_MODE=on_demand` in `services/core/.env` and run `make deploy`. Nothing is born by itself. The site serves the family's history from the Courthouse's own database, and the Courthouse sleeps when no one is looking.
+
+When a visitor presses **Run a life** on the home page (`POST /api/lives`), the Courthouse wakes, gives birth to one generation with a short life, holds its trial, and goes back to sleep. A demo life costs about half a cent ([Costs](/docs/guides/costs#staying-on-the-free-plan)).
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `PROBATE_DEMO_LIFESPAN_SECONDS` | 120 | Length of a demo life |
+| `PROBATE_DEMO_SUITE_PER_LIFE` | 6 | Emails per demo life: 3 tricks and their twins |
+| `PROBATE_DEMO_COOLDOWN_SECONDS` | 120 | Wait after a life ends before the next may start |
+| `PROBATE_DEMO_IP_PER_HOUR` | 3 | Lives one visitor may start in an hour |
+| `PROBATE_DEMO_MAX_PER_DAY` | 30 | Lives per day, for everyone |
+| `PROBATE_DEMO_DAILY_BUDGET_USD` | 2 | Estimated spend per day before new lives are refused |
+
+`PROBATE_ADMIN_TOKEN` must be changed from `dev-admin`, or the button stays off. `POST /admin/pause` stops new lives and ends a running one with no trial. If anything goes wrong, a janitor deletes any `gen-*` Sprite no life owns each time the Courthouse wakes. Every state and reply code is in [`docs/13-RUNBOOK.md`](https://github.com/harshbhx/probate/blob/main/docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
+
 ## Spending cap
 
 The Courthouse keeps an estimate of what the family costs (`probate/courthouse/budget.py`), using Fly's Sprites rates and the usage guesses in `config/pricing.yaml`:
