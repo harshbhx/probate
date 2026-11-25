@@ -36,6 +36,8 @@ Every user-facing component, on the landing page, the docs and the live site, mu
 
 Kept on purpose: the living dot's ping and the faces' blink (they are live), the verdict stamp slamming in once (it explains a conviction), and the ask-an-ancestor answer arriving word by word (it answers the person who asked).
 
+**Pixel moments** (v5, `packages/moments`): two one-shot effects made with [pixelfx](https://github.com/patch-gg/pixelfx) (MIT), recoloured to the court's palette. A red thud behind the verdict stamp when a conviction lands, and a gold burst when the family learns an instinct. They play once, only at those two moments, and never under reduced motion, so they pass the unslop rule: motion that explains what just happened.
+
 **Diagrams** in the docs are drawn with [stack-diagram](https://github.com/caru-ini/stack-diagram) (MIT), following its steps; see `apps/site/content/docs/guides/diagrams.mdx` and `design/diagrams/`.
 
 ## 0. What v3 changed, and the rules behind it
