@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ArrowRight, Gavel } from "lucide-react";
@@ -10,7 +11,8 @@ import { LearningCurve } from "../components/ui/LearningCurve";
 import { Page, SimBanner } from "../components/ui/Shell";
 import { Empty, PageSkeleton, SectionHead } from "../components/ui/States";
 import { FamilyFace } from "@probate/faces";
-import { useNow, useTitle } from "../lib/hooks";
+import { PixelMoment } from "@probate/moments";
+import { useInView, useNow, useTitle } from "../lib/hooks";
 import { countdown } from "../lib/format";
 
 export function Home({ summary }: { summary: Summary | null }) {
@@ -185,14 +187,16 @@ function Living({ summary }: { summary: Summary | null }) {
         </span>
         alive
       </span>
-      <FamilyFace
-        gen={g.gen}
-        life="alive"
-        instincts={g.genome_size_at_birth}
-        track
-        size={132}
-        title={`${g.name}, generation ${g.gen}, alive`}
-      />
+      <BirthMark>
+        <FamilyFace
+          gen={g.gen}
+          life="alive"
+          instincts={g.genome_size_at_birth}
+          track
+          size={132}
+          title={`${g.name}, generation ${g.gen}, alive`}
+        />
+      </BirthMark>
       <div className="mt-4 font-display text-[40px] leading-none">{g.name}</div>
       {left > 0 && <div className="mt-3 font-mono text-[14px] text-life tabular">dies in {countdown(left)}</div>}
       <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-mist">
@@ -200,6 +204,18 @@ function Living({ summary }: { summary: Summary | null }) {
         Harsh's inbox right now.
       </p>
     </Link>
+  );
+}
+
+// The newest living generation's face. The first time it scrolls into view a gold portal opens under it, once
+// (pixelfx, @probate/moments): the child was just born. Nothing plays under reduced motion.
+function BirthMark({ children }: { children: ReactNode }) {
+  const { ref, inView } = useInView<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="relative inline-flex">
+      {children}
+      {inView && <PixelMoment kind="birth" scale={1} delay={250} />}
+    </span>
   );
 }
 
