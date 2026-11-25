@@ -29,6 +29,10 @@ class Scheduler:
             gap = (now - self.last_tick).total_seconds()
             self.family.budget.charge_courthouse(min(max(gap, 0), 4 * TICK_SECONDS))
         self.last_tick = now
+        try:
+            self.family.read_court_replies()
+        except Exception:
+            log.warning("reading court replies failed; will retry next tick", exc_info=True)
         if self.store.get_setting("paused", "0") == "1":
             return "paused"
         living = self.store.living()

@@ -54,7 +54,9 @@ def test_meter_charges_only_billable_calls(clock):
         jev = object()
         voice = object()
 
-    w = Budget(cfg, store, Pricing(per_call={"brain": 0.5, "jev": 0, "voice_per_1k_chars": 0})).meter(W())
+    w = Budget(
+        cfg, store, Pricing(per_call={"brain": 0.5, "jev": 0, "voice_per_1k_chars": 0})
+    ).meter(W())
     assert w.llm.complete("x") == "ok"
     assert w.llm.name == "llm"
     assert float(store.get_setting("budget_spent_usd")) == pytest.approx(0.5)

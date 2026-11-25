@@ -16,6 +16,8 @@ import httpx
 
 from probate.common.models import Mail
 
+PROCESSED = "probate-processed"
+
 
 class FakeMailbox:
     """In-memory mail system shared by everyone in one process."""
@@ -99,7 +101,9 @@ class RealMailbox:
         out = []
         for m in r.json().get("messages", []):
             mid = m.get("message_id") or m.get("id")
-            if mid in self.read:
+            # Each tick runs in a new process and the inbox outlives every generation, so the
+            # label is the only memory of what the family has already handled.
+            if mid in self.read or PROCESSED in (m.get("labels") or []):
                 continue
             full = self.http.get(f"{self.base}/v0/inboxes/{inbox}/messages/{mid}").json()
             sender = full.get("from", "")
@@ -125,7 +129,7 @@ class RealMailbox:
         try:
             self.http.patch(
                 f"{self.base}/v0/inboxes/{inbox}/messages/{message_id}",
-                json={"add_labels": ["probate-processed"]},
+                json={"add_labels": [PROCESSED]},
             )
         except httpx.HTTPError:
             pass

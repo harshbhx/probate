@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from probate.adapters.llm import primary_concept
-from probate.common import prompts
+from probate.common import court_mail, prompts
 from probate.common.models import Category, Inheritance, Mail, MemoryItem, Source
 from probate.court.distill import concept_map
 from probate.generation.body import Body
@@ -191,7 +191,12 @@ class GenerationAgent:
         return outcome
 
     def tick(self) -> int:
-        mails = self.w.mail.list_new(self.inh.family_inbox)
+        # Harsh's replies to the court are the Courthouse's to read, not this generation's.
+        mails = [
+            m
+            for m in self.w.mail.list_new(self.inh.family_inbox)
+            if not court_mail.is_court_mail(m.subject)
+        ]
         for mail in mails:
             self.handle(mail)
         return len(mails)

@@ -30,7 +30,7 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | See what's alive | `sprite list --prefix gen-` (generations are named `gen-007-grace`) or the home page |
 | Pause the family | `POST /admin/pause` (finishes the current life, then waits) |
 | Force a death now (for the video) | `POST /admin/force-death` |
-| Approve or refuse a contested item | `POST /admin/contested/{item_id}?decision=approve` (or `refuse`). Email replies are not wired up yet |
+| Approve or refuse a contested item | Reply "approve" or "refuse" to the court's email, or `POST /admin/contested/{item_id}?decision=approve` (or `refuse`) |
 | Change lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, then `POST .../services/courthouse/restart` |
 | Watch logs | `GET .../services/courthouse/logs?lines=200` |
 | Deploy new code | `make deploy`. The next generation born gets the new code; the living one finishes its life on the old code |
