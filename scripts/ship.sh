@@ -70,7 +70,7 @@ LIVE_URL=""
 SITE_URL="$(cat "$STATE/site-url.txt" 2>/dev/null || true)"
 if [ -f services/core/.env ]; then
   say "Deploying the Courthouse to Sprites"
-  VITE_DOCS_URL="$SITE_URL" npm run build -w @probate/web --silent
+  VITE_DOCS_URL="$SITE_URL" VITE_REPO_URL="https://github.com/$GH_REPO" npm run build -w @probate/web --silent
   "$PY" scripts/deploy.py
   LIVE_URL="$(cat "$STATE/courthouse-url.txt" 2>/dev/null || true)"
 else
@@ -96,7 +96,7 @@ if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] || (cd apps/site && npx wrangler whoami 2>
     say "Linking the two sites"
     deploy_site "$SITE_URL"
     if [ -n "$LIVE_URL" ]; then
-      VITE_DOCS_URL="$SITE_URL" npm run build -w @probate/web --silent
+      VITE_DOCS_URL="$SITE_URL" VITE_REPO_URL="https://github.com/$GH_REPO" npm run build -w @probate/web --silent
       "$PY" scripts/deploy.py
     fi
   fi

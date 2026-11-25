@@ -1,14 +1,17 @@
-// Floating glass navigation (pattern after Aceternity "Floating Navbar"), footer and page frame.
+// Product header (sticky, full width, hairline), mobile tab bar, footer and page frame.
+// Rules: docs/04-DESIGN.md, Night Court v3.
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "motion/react";
+import { BookOpen } from "lucide-react";
 import { cx } from "../../lib/format";
 import type { Summary } from "../../lib/api";
 import { Seal } from "./Seal";
 import { LivePill } from "./LivePill";
 
-// Set at build time by scripts/ship.sh once the docs site is deployed.
+// Set at build time by scripts/ship.sh once the docs site and repo exist. Links hide when empty.
 const DOCS_URL: string = import.meta.env.VITE_DOCS_URL ?? "";
+const REPO_URL: string = import.meta.env.VITE_REPO_URL ?? "";
 
 const LINKS = [
   { to: "/", label: "Family", end: true },
@@ -20,25 +23,27 @@ const LINKS = [
 export function Nav({ summary }: { summary: Summary | null }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 12);
+    const on = () => setScrolled(window.scrollY > 4);
     on();
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
   return (
-    <header className="fixed inset-x-0 top-3 z-50 px-3 sm:top-4">
-      <nav
-        aria-label="Main"
-        className={cx(
-          "glass mx-auto flex h-14 max-w-5xl items-center gap-2 rounded-2xl px-2.5 pl-3.5 transition-shadow duration-300",
-          scrolled && "shadow-[0_12px_40px_-12px_rgb(0_0_0/0.7)]",
-        )}
-      >
-        <Link to="/" className="mr-auto flex items-center gap-2.5 rounded-lg pr-2">
-          <Seal size={28} />
-          <span className="font-display text-[22px] leading-none tracking-tight">Probate</span>
+    <header
+      className={cx(
+        "sticky top-0 z-50 border-b bg-night/80 backdrop-blur-md transition-colors",
+        scrolled ? "border-line" : "border-transparent",
+      )}
+    >
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:rounded-md focus:bg-night-3 focus:px-3 focus:py-2">
+        Skip to content
+      </a>
+      <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center gap-1 px-4 sm:px-6">
+        <Link to="/" className="mr-6 flex items-center gap-2.5 rounded-md">
+          <Seal size={26} />
+          <span className="font-display text-[21px] leading-none tracking-[-0.01em]">Probate</span>
         </Link>
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-0.5 md:flex">
           {LINKS.map((l) => (
             <li key={l.to}>
               <NavLink
@@ -46,7 +51,7 @@ export function Nav({ summary }: { summary: Summary | null }) {
                 end={l.end}
                 className={({ isActive }) =>
                   cx(
-                    "relative rounded-lg px-3 py-2 text-[14px] transition-colors",
+                    "relative rounded-md px-3 py-2 text-[14px] transition-colors",
                     isActive ? "text-moon" : "text-mist hover:text-moon",
                   )
                 }
@@ -56,7 +61,7 @@ export function Nav({ summary }: { summary: Summary | null }) {
                     {isActive && (
                       <motion.span
                         layoutId="nav-pill"
-                        className="absolute inset-0 rounded-lg bg-white/[0.06] ring-1 ring-white/[0.08]"
+                        className="absolute inset-0 rounded-md bg-night-3"
                         transition={{ type: "spring", stiffness: 420, damping: 34 }}
                       />
                     )}
@@ -67,12 +72,17 @@ export function Nav({ summary }: { summary: Summary | null }) {
             </li>
           ))}
         </ul>
-        {DOCS_URL && (
-          <a href={DOCS_URL} className="hidden rounded-lg px-3 py-2 text-[14px] text-mist transition-colors hover:text-moon md:block">
-            Docs
-          </a>
-        )}
-        {summary?.living && <LivePill gen={summary.living} compact />}
+        <div className="ml-auto flex items-center gap-2">
+          {DOCS_URL && (
+            <a
+              href={DOCS_URL + "/docs"}
+              className="hidden h-9 items-center gap-2 rounded-md px-3 text-[14px] text-mist transition-colors hover:text-moon sm:inline-flex"
+            >
+              <BookOpen size={15} aria-hidden /> Docs
+            </a>
+          )}
+          {summary?.living && <LivePill gen={summary.living} compact />}
+        </div>
       </nav>
     </header>
   );
@@ -112,7 +122,7 @@ export function MobileTabs() {
 export function SimBanner({ mode }: { mode?: string }) {
   if (mode !== "simulation") return null;
   return (
-    <div className="mx-auto mb-8 flex max-w-6xl items-start gap-3 rounded-xl border border-amber/25 bg-amber/[0.06] px-4 py-3 text-[14px] text-amber/90">
+    <div className="mx-auto mb-8 flex max-w-6xl items-start gap-3 rounded-lg border border-amber/25 bg-amber/[0.06] px-4 py-3 text-[14px] text-amber">
       <span className="mt-1.5 inline-block size-1.5 shrink-0 rounded-full bg-amber" />
       <p>
         Simulated run. These generations ran in a local simulation with stand-in models, so the numbers show how
@@ -128,31 +138,76 @@ export function Page({ children, className, flush = false }: { children: ReactNo
       id="main"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className={cx("mx-auto max-w-6xl px-4 pb-24 sm:px-6", flush ? "pt-0" : "pt-24 md:pt-36", className)}
+      transition={{ duration: 0.3 }}
+      className={cx("mx-auto max-w-6xl px-4 pb-24 sm:px-6", flush ? "pt-0" : "pt-10 md:pt-16", className)}
     >
       {children}
     </motion.main>
   );
 }
 
+type FootLink = { label: string; href: string; internal?: boolean };
+
 export function Footer() {
+  const cols: { title: string; links: FootLink[] }[] = [
+    {
+      title: "The family",
+      links: LINKS.map((l) => ({ label: l.label, href: l.to, internal: true })),
+    },
+    {
+      title: "Learn",
+      links: DOCS_URL
+        ? [
+            { label: "How it works", href: DOCS_URL + "/docs" },
+            { label: "The court", href: DOCS_URL + "/docs/concepts/court" },
+            { label: "Instincts", href: DOCS_URL + "/docs/concepts/instincts" },
+            { label: "Architecture", href: DOCS_URL + "/docs/architecture/overview" },
+          ]
+        : [{ label: "Evidence", href: "/evidence", internal: true }],
+    },
+    {
+      title: "Project",
+      links: [
+        ...(REPO_URL ? [{ label: "Source on GitHub", href: REPO_URL }] : []),
+        ...(DOCS_URL ? [{ label: "Security model", href: DOCS_URL + "/docs/security" }] : []),
+        { label: "Fly.io Hacksgiving", href: "https://fly.io/hacksgiving/" },
+      ],
+    },
+  ];
   return (
-    <footer className="border-t border-line pb-20 md:pb-0">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 text-[14px] text-mist sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Seal size={22} />
-          <span>Probate, the family of Harsh's agents. Every generation lives on its own Fly.io Sprite.</span>
+    <footer className="border-t border-line bg-night pb-24 md:pb-0">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="max-w-xs">
+          <Link to="/" className="inline-flex items-center gap-2.5 rounded-md">
+            <Seal size={24} />
+            <span className="font-display text-[20px] leading-none">Probate</span>
+          </Link>
+          <p className="mt-4 text-[14px] leading-relaxed text-mist">
+            Harsh's email agent. It lives one day on its own Fly.io Sprite, then a court decides what its child inherits.
+          </p>
         </div>
-        <p className="text-dim">
-          {DOCS_URL && (
-            <>
-              <a href={DOCS_URL} className="text-mist hover:text-moon">How it works</a>
-              <span aria-hidden> · </span>
-            </>
-          )}
-          Built for Fly.io Hacksgiving 2026 by Harsh Bhanushali
-        </p>
+        {cols.map((c) => (
+          <nav key={c.title} aria-label={c.title}>
+            <h2 className="text-[13px] font-medium text-moon">{c.title}</h2>
+            <ul className="mt-4 space-y-2.5">
+              {c.links.map((l) => (
+                <li key={l.label}>
+                  {l.internal ? (
+                    <Link to={l.href} className="text-[14px] text-mist transition-colors hover:text-moon">{l.label}</Link>
+                  ) : (
+                    <a href={l.href} className="text-[14px] text-mist transition-colors hover:text-moon">{l.label}</a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </div>
+      <div className="border-t border-line">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-[13px] text-dim sm:flex-row sm:justify-between">
+          <span>Built by Harsh Bhanushali for Fly.io Hacksgiving 2026.</span>
+          <span>Every generation lives on its own Sprite. No keys live on a generation.</span>
+        </div>
       </div>
     </footer>
   );

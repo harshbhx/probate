@@ -10,8 +10,8 @@ export function LivePill({ gen, compact = false }: { gen: GenCard; compact?: boo
     <Link
       to={`/gen/${gen.gen}`}
       className={cx(
-        "group inline-flex items-center gap-2.5 rounded-xl border border-life/20 bg-life/[0.06] text-[13px] transition-colors hover:border-life/40",
-        compact ? "h-10 px-3" : "h-11 px-4",
+        "group inline-flex items-center gap-2.5 rounded-full border border-life/25 bg-life/[0.07] text-[13px] transition-colors hover:border-life/40",
+        compact ? "h-9 px-3" : "h-10 px-4",
       )}
     >
       <span className="relative flex size-2">
