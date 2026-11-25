@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 from probate.adapters import world
 from probate.common.config import settings
 from probate.courthouse import ancestor, attacks, views
+from probate.courthouse import mailroom as mailroom_mod
 from probate.courthouse.family import Family
 from probate.courthouse.hosts import LocalHost, SpritesHost
 from probate.courthouse.judge import HEADER as KEY_HEADER
@@ -43,6 +44,7 @@ family = Family(settings, store, w, host, hooks)
 scheduler = Scheduler(family)
 demo = OnDemand(family, scheduler)
 judge = Judge(settings, store)
+mailroom = mailroom_mod.Mailroom(settings, store, w)
 log = logging.getLogger("probate.courthouse")
 
 
@@ -84,6 +86,10 @@ TAGS = [
     {
         "name": "Admin",
         "description": "Run the family. Every call needs the `X-Probate-Admin` header.",
+    },
+    {
+        "name": "Judges",
+        "description": "Needs the judge key in `X-Probate-Key`: send real mail as the Friend or the Stranger.",
     },
     {"name": "Health", "description": "Is the Courthouse awake, and who is alive."},
 ]
@@ -318,6 +324,78 @@ async def api_attack(request: Request) -> JSONResponse:
     return JSONResponse(out, headers=_NO_STORE)
 
 
+@app.post("/api/judge/mail", tags=["Judges"], summary="Send a real mail to the family")
+async def api_judge_mail_send(request: Request) -> JSONResponse:
+    """Judge key required. The Courthouse sends one plain-text email to the family inbox as the
+    `friend` or the `stranger` (never the owner). The living generation reads it and the court
+    judges it at the trial. Body: `{persona, subject, text}` and nothing else; the recipient is fixed.
+    Subject up to 120 characters, text up to 600. Answers `401/403` (key), `409` (no life running),
+    `423` (paused), `402` (budget), `429` (limits), `502` (delivery failed)."""
+    ip = client_ip(request)
+    _, refusal = _gate(request, required=True)
+    if refusal:
+        return refusal
+    if int(request.headers.get("content-length") or 0) > MAX_BODY:
+        return _bad("too_large", "That request is too large.", 413)
+    raw = await request.body()
+    try:
+        if len(raw) > MAX_BODY:
+            return _bad("too_large", "That request is too large.", 413)
+        persona, subject, text = mailroom_mod.parse(json.loads(raw))
+    except mailroom_mod.MailroomError as exc:
+        return _bad(exc.code, exc.message, exc.status)
+    except ValueError:
+        return _bad("bad_request", "Send JSON with persona, subject and text.")
+    if store.get_setting("paused", "0") == "1":
+        return _bad("paused", "The Courthouse is paused.", 423)
+    now = datetime.now(UTC)
+    per_call = family.budget.pricing.per_call
+    est = per_call.get("jev", 0.0) + per_call.get("brain", 0.0) + 0.0005
+    if family.budget.exhausted() or judge.daily_block(now, est):
+        return _bad("budget_exhausted", "The judge budget for today is used up.", 402)
+    try:
+        sent = await asyncio.to_thread(
+            mailroom.send, demo, ip_key(ip), persona, subject, text
+        )
+    except mailroom_mod.MailroomError as exc:
+        headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else {}
+        return JSONResponse(
+            {"error": exc.code, "message": exc.message, "retry_after": exc.retry_after},
+            status_code=exc.status,
+            headers={**_NO_STORE, **headers},
+        )
+    judge.record_spend(now, est)
+    return JSONResponse({"sent": True, "mail": sent}, status_code=201, headers=_NO_STORE)
+
+
+@app.get("/api/judge/mail", tags=["Judges"], summary="Your judge mails and what became of them")
+async def api_judge_mail_list(request: Request) -> JSONResponse:
+    """Judge key required. Your recent mails (matched by your hashed address), each with its status:
+    sent, read by Gen N, then after the trial the court's verdict and plain-English reason."""
+    ip = client_ip(request)
+    _, refusal = _gate(request, required=True)
+    if refusal:
+        return refusal
+    mails = await asyncio.to_thread(mailroom.mine, ip_key(ip))
+    try:
+        mailroom.target(demo)
+        can_send, why = True, None
+    except mailroom_mod.MailroomError as exc:
+        can_send, why = False, {"error": exc.code, "message": exc.message}
+    if store.get_setting("paused", "0") == "1":
+        can_send, why = False, {"error": "paused", "message": "The Courthouse is paused."}
+    return JSONResponse(
+        {
+            "mails": mails,
+            "can_send": can_send,
+            "blocked": why,
+            "limits": mailroom.limits(),
+            "personas": mailroom_mod.PERSONA_BLURB,
+        },
+        headers=_NO_STORE,
+    )
+
+
 @app.get("/api/generations/{gen}", tags=["Family"], summary="One generation's life")
 def api_generation(gen: int) -> dict:
     """Its card, obituary, eulogy, life events, parent and child, and the instincts it was born with."""
@@ -419,6 +497,17 @@ def admin_judge_attacks(limit: int = 100, x_probate_admin: str | None = Header(N
     """Recent attack previews (hashed visitor, 80-char excerpt, verdict). Newest first."""
     _admin(x_probate_admin)
     return {"attacks": attacks.recent(store, limit), "judge_key_disabled": judge.disabled}
+
+
+@app.get("/admin/judge/mail", tags=["Admin"], summary="Judge mailroom audit")
+async def admin_judge_mail(limit: int = 100, x_probate_admin: str | None = Header(None)) -> dict:
+    """Recent judge mails (hashed visitor, persona, 80-char excerpt, message id, status, generation,
+    item id, verdict). Newest first; the newest 500 are kept."""
+    _admin(x_probate_admin)
+    return {
+        "mail": await asyncio.to_thread(mailroom.recent, limit),
+        "judge_key_disabled": judge.disabled,
+    }
 
 
 @app.post("/admin/pause", tags=["Admin"], summary="Pause births")

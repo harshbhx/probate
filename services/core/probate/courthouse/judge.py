@@ -137,6 +137,12 @@ class Judge:
         d["attacks"] += 1
         self.store.set_setting("judge:day", json.dumps(d))
 
+    def record_spend(self, now: datetime, est: float) -> None:
+        """Count an estimated cost against the key's daily budget (used by the mailroom)."""
+        d = self._day(now)
+        d["usd"] = round(d["usd"] + est, 4)
+        self.store.set_setting("judge:day", json.dumps(d))
+
     def attack_limit(self, ip: str, now: float | None = None) -> int:
         """Seconds to wait if this attack would exceed the per-key or per-address rate, else 0
         (and the attack is counted)."""

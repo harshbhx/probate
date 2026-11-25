@@ -113,6 +113,26 @@ CREATE TABLE IF NOT EXISTS judge_attacks (
   flags       TEXT NOT NULL DEFAULT '[]'
 );
 
+-- Judge mailroom: real mail a judge sent to the family inbox as the Friend or the Stranger.
+-- Audit only: hashed visitor, short excerpts, capped in code. The full text lives in the inbox.
+CREATE TABLE IF NOT EXISTS judge_mail (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  ip_hash     TEXT NOT NULL,
+  persona     TEXT NOT NULL,
+  subject     TEXT NOT NULL,
+  excerpt     TEXT NOT NULL,
+  text_len    INTEGER NOT NULL,
+  message_id  TEXT NOT NULL DEFAULT '',
+  gen         INTEGER,
+  status      TEXT NOT NULL DEFAULT 'sent',  -- sent, read, tried, failed
+  outcome     TEXT,                          -- verdict, turned_away or no_note once known
+  item_id     TEXT,
+  verdict     TEXT,
+  reason      TEXT
+);
+CREATE INDEX IF NOT EXISTS judge_mail_msg ON judge_mail(message_id);
+
 CREATE TABLE IF NOT EXISTS box_folders (
   path       TEXT PRIMARY KEY,   -- '/Probate', '/Probate/wills', ...
   folder_id  TEXT NOT NULL

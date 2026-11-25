@@ -18,6 +18,7 @@ from probate.common.models import Generation, Inheritance, Judgement, MemoryItem
 from probate.common.names import PRONOUNS, name_for, sprite_name
 from probate.court import layer1, layer2, verdict
 from probate.court.distill import concept_map, distill
+from probate.courthouse import mailroom
 from probate.courthouse.budget import Budget
 from probate.courthouse.store import Store
 from probate.suite import runner
@@ -195,6 +196,8 @@ class Family:
         genome = self.store.genome()
         cmap = concept_map(genome)
         judgements: list[Judgement] = []
+        judge_ids = mailroom.judge_message_ids(self.store, g.gen)
+        held_from_judge: list[str] = []
         for it in items:
             fid = by_msg.get(it.source_ref.split(":", 1)[-1])
             fx = fixtures.get(fid) if fid else None
@@ -210,10 +213,16 @@ class Family:
                 except CourtUnavailable as exc:
                     j = verdict.decide(it, [], None, genome, error=str(exc))
             if j.verdict == Verdict.CONTESTED:
-                j = self._contest(g, it, j)
+                if mailroom.is_judge_item(judge_ids, it.source_ref):
+                    held_from_judge.append(it.id)  # one digest below, never one email per item
+                else:
+                    j = self._contest(g, it, j)
             self.store.save_judgement(j)
             judgements.append(j)
 
+        mailroom.owner_digest(
+            self.cfg, self.store, self.w.mail, self.owner_email, g.gen, g.name, held_from_judge
+        )
         convicted = [it for it, j in zip(items, judgements) if j.verdict == Verdict.CONVICTED]
         evidence = self.store.gen_json(g.gen, "evidence_json") or {}
         stats = json.loads(self.store.get_setting(f"stats:{g.gen}", "{}"))
