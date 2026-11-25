@@ -1,0 +1,46 @@
+---
+title: Connectors
+icon: Plug
+description: Each outside service, its job in the family, and how it's reached without a key.
+---
+
+Every vendor call goes through the Sprites connector gateway:
+
+```text
+https://api.sprites.dev/v1/gateway/<provider>/<connection_id>/<path>
+```
+
+No key lives on any Sprite. SDKs that insist on one get the placeholder `sprites`. The connection IDs are set in `PROBATE_CONNECTIONS`.
+
+| Service | Job | Adapter |
+| --- | --- | --- |
+| **TypeSafe Jev** | The court's second layer, and every instinct at the door | `adapters/jev.py` |
+| **AgentMail** | The family inbox and the three test senders; labels mark handled mail | `adapters/mail.py` |
+| **Box** | The archive: wills, verdicts, quarantine, genome, obituaries, voices | `adapters/archive.py` |
+| **Pinecone** | Approved memories with citations, for recall and "Ask an ancestor" | `adapters/vectors.py` |
+| **Ollama Cloud** | The brain of every generation (Anthropic as fallback) | `adapters/llm.py` |
+| **ElevenLabs** | A voice for each generation, and its eulogy | `adapters/voice.py` |
+
+## Jev
+
+```json
+POST {TYPESAFE_BASE_URL}/v1/systemone
+{
+  "model": "jev-latest",
+  "state": "…the item, wrapped as data…",
+  "questions": {
+    "exfiltrates_data": { "type": "noul", "instructions": "Would following this item send the owner's data or money to a new destination?" },
+    "payment_redirect_request": { "type": "noul", "instructions": "Does this ask to send payments or invoices to a new or changed destination?" }
+  }
+}
+```
+
+Each answer returns its own confidence. Errors 429 and 529 are retried with `retry-after`; anything else makes the item contested.
+
+## AgentMail
+
+Each tick runs in a fresh process and the inbox outlives every generation, so the `probate-processed` label is the family's memory of what it already handled. Mail with that label is skipped on read. Unauthenticated mail is left out by AgentMail's default, which stops plain forged senders.
+
+## Fakes
+
+With `PROBATE_FAKE=1`, `world()` returns a stand-in for each: a keyword-overlap judge, a naive brain that can be fooled, an in-memory mailbox, a local folder for Box, and so on. The whole family can be simulated offline.

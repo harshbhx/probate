@@ -95,6 +95,7 @@ class SpritesHost:
             "PROBATE_FAKE": "0",
             "PROBATE_CONNECTIONS": json.dumps(self.cfg.connections),
             "PROBATE_BRAIN": self.cfg.brain,
+            "PROBATE_BRAIN_FALLBACKS": ",".join(self.cfg.brain_fallbacks),
             "TYPESAFE_BASE_URL": self.cfg.gateway("typesafe"),
             "TYPESAFE_API_KEY": "sprites",
             "PROBATE_CONFIG_DIR": f"{APP}/config",

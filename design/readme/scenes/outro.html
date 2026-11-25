@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8">{{BASE}}
+<style>
+{{SEAL_CSS}}
+.stage { position: relative; width: 1200px; height: 440px; }
+.rule { position: absolute; left: 240px; width: 720px; top: 118px; height: 1px; background: var(--line2); transform-origin: left; transform: scaleX(0); }
+.gen { position: absolute; top: 90px; width: 56px; height: 56px; margin-left: -28px; opacity: 0; }
+.gen svg { width: 56px; height: 56px; }
+.gem { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--gilt); opacity: 0;
+  offset-path: path('M290 160 H 910'); offset-rotate: 0deg; }
+.line { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-size: 50px; line-height: 1.12; opacity: 0; }
+.line span { color: var(--mist); }
+.end { position: absolute; left: 0; right: 0; top: 340px; display: flex; justify-content: center; align-items: center; gap: 14px; opacity: 0; }
+.end .mark { width: 34px; height: 34px; }
+.end p { font: 15px 'Geist Mono', monospace; color: var(--silver); }
+</style></head><body>
+<div class="stage">
+  <div class="rule"></div>
+  <div class="gen g1" style="left:290px">{{FACE:1-sealed-idle}}</div>
+  <div class="gen g2" style="left:414px">{{FACE:2-sealed-idle}}</div>
+  <div class="gen g3" style="left:538px">{{FACE:3-sealed-idle}}</div>
+  <div class="gen g4" style="left:662px">{{FACE:4-sealed-idle}}</div>
+  <div class="gen g5" style="left:786px">{{FACE:5-sealed-idle}}</div>
+  <div class="gen g6" style="left:910px">{{FACE:12-alive-happy}}</div>
+  <div class="gem m1"></div><div class="gem m2"></div><div class="gem m3"></div>
+  <p class="line serif">Every generation dies.<br><span>What it learned doesn&rsquo;t have to.</span></p>
+  <div class="end"><div class="mark">{{SEAL}}</div><p>github.com/harshbhx/probate</p></div>
+</div>
+<script>
+{{SEAL_JS}}
+A('.rule', [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 100, 800, 'cubic-bezier(.65,0,.35,1)');
+for (let g = 1; g <= 6; g++) pop(`.g${g}`, 300 + g * 140, 360);
+// What the family learned travels down the line to the one alive today.
+[1, 2, 3].forEach((k, i) => {
+  A(`.m${k}`, [{ opacity: 0, transform: 'rotate(45deg) scale(.4)' }, { opacity: 1, transform: 'rotate(45deg) scale(1)', offset: .1 }, { opacity: 1, transform: 'rotate(45deg) scale(1)', offset: .9 }, { opacity: 0, transform: 'rotate(45deg) scale(.6)' }], 1400 + i * 260, 1500, 'linear');
+  along(`.m${k}`, 1400 + i * 260, 1500, 'cubic-bezier(.45,0,.3,1)');
+});
+A('.g6', [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], 3150, 420, 'ease-out');
+rise('.line', 3000, 800, 12);
+fadeIn('.end', 3900, 500);
+drawSeal(3800);
+</script></body></html>

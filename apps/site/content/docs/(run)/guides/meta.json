@@ -1,0 +1,12 @@
+{
+  "title": "Guides",
+  "pages": [
+    "---[Rocket]Ship---",
+    "deploy",
+    "configuration",
+    "---[Activity]Operate---",
+    "operate",
+    "costs",
+    "troubleshooting"
+  ]
+}
