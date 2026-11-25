@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 
+from probate.common.config import settings
 from probate.common.names import PRONOUNS
 from probate.court.layer1 import PLAIN_WORDS, disk_flags
 from probate.court.verdict import PLAIN_QUESTIONS
@@ -63,6 +64,11 @@ def summary(store: Store) -> dict:
     return {
         "mode": store.get_setting("mode", "live"),
         "paused": store.get_setting("paused", "0") == "1",
+        "resting": store.get_setting("resting", "") or None,
+        "budget": {
+            "spent": round(float(store.get_setting("budget_spent_usd", "0") or 0), 2),
+            "limit": settings.budget_usd,
+        },
         "counts": {
             "generations": len(cards),
             "dead": len(dead),

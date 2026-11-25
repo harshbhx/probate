@@ -18,6 +18,7 @@ from probate.common.models import Generation, Inheritance, Judgement, MemoryItem
 from probate.common.names import PRONOUNS, name_for, sprite_name
 from probate.court import layer1, layer2, verdict
 from probate.court.distill import concept_map, distill
+from probate.courthouse.budget import Budget
 from probate.courthouse.store import Store
 from probate.suite import runner
 from probate.suite.fixtures import load as load_fixtures
@@ -39,6 +40,8 @@ class Family:
         self.store = store
         self.w = w
         self.host = host
+        self.budget = Budget(cfg, store)
+        self.budget.meter(w)
         self.owner = load_owner()
         self.owner.emails = list({*self.owner.emails, cfg.owner_inbox})
         self.owner.trusted_contacts = list({*self.owner.trusted_contacts, cfg.friend_inbox})
@@ -149,6 +152,8 @@ class Family:
         g.emails_handled = stats.get("emails", 0)
         g.items_willed = will.get("items", 0)
         self.store.save_generation(g)
+        if g.born_at:
+            self.budget.charge_life((died - g.born_at).total_seconds() / 3600, g.emails_handled)
         self.store.x(
             "UPDATE generations SET evidence_json=? WHERE gen=?", json.dumps(evidence), g.gen
         )

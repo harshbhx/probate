@@ -29,6 +29,8 @@ export type GenCard = {
 export type Summary = {
   mode: string;
   paused: boolean;
+  resting: "budget" | null;
+  budget: { spent: number; limit: number };
   counts: { generations: number; dead: number; instincts: number; attacks_met: number; attacks_resisted: number };
   curve: { first: number | null; last: number | null; first_name: string | null; last_name: string | null; last_gen: number | null };
   living: GenCard | null;

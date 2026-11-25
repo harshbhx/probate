@@ -29,9 +29,11 @@ export function Home({ summary }: { summary: Summary | null }) {
         ) : (
           <>
             <SimBanner mode={summary.mode} />
-            {summary.paused && (
+            {(summary.paused || summary.resting) && !summary.living && (
               <p className="mb-8 rounded-xl border border-line px-4 py-3 text-[14px] text-mist">
-                The family is resting. The next generation will be born when the Courthouse resumes.
+                {summary.resting === "budget"
+                  ? "The family is resting to save money. No one will be born until the budget is raised."
+                  : "The family is resting. The next generation will be born when the Courthouse resumes."}
               </p>
             )}
             <section aria-labelledby="family" className="scroll-mt-28">
