@@ -1,5 +1,5 @@
 apify==4.3.0
 beautifulsoup4==4.15.0
 httpx>=0.28,<1
-# Probate's court checks, from the v0.2.0 release (not on PyPI yet)
-probate-court-checks @ https://github.com/harshbhx/probate/releases/download/v0.2.0/probate_court_checks-0.2.0-py3-none-any.whl
+# Probate's court checks, from PyPI
+probate-court-checks==0.2.1

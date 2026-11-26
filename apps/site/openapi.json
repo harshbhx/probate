@@ -619,6 +619,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
               "title": "Gen"
             }
           }
@@ -1183,11 +1185,59 @@
                         },
                         "clean": {
                           "type": "boolean"
+                        },
+                        "deletion": {
+                          "description": "The death certificate: what Fly answered when the Sprite was deleted, and when it was asked for again. `local` is true for a run that used a folder instead of a Sprite (the simulation). Null for generations that died before certificates were kept.",
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "sprite": {
+                              "type": "string"
+                            },
+                            "local": {
+                              "type": "boolean"
+                            },
+                            "delete_status": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "description": "Fly's status code for DELETE /v1/sprites/{name}; 404 means it was already gone."
+                            },
+                            "check_status": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "description": "Fly's status code for GET /v1/sprites/{name} afterwards; 404 confirms the delete."
+                            },
+                            "confirmed": {
+                              "type": "boolean"
+                            },
+                            "checked_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "sprite",
+                            "local",
+                            "delete_status",
+                            "check_status",
+                            "confirmed",
+                            "checked_at"
+                          ]
                         }
                       },
                       "required": [
                         "lines",
-                        "clean"
+                        "clean",
+                        "deletion"
                       ]
                     },
                     "child": {
@@ -1347,7 +1397,15 @@
                   ],
                   "body": {
                     "lines": [],
-                    "clean": true
+                    "clean": true,
+                    "deletion": {
+                      "sprite": "gen-011-kofi",
+                      "local": true,
+                      "delete_status": null,
+                      "check_status": null,
+                      "confirmed": true,
+                      "checked_at": null
+                    }
                   },
                   "child": {
                     "gen": 12,
@@ -1388,6 +1446,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
               "title": "Gen"
             }
           }
@@ -1634,11 +1694,59 @@
                         },
                         "clean": {
                           "type": "boolean"
+                        },
+                        "deletion": {
+                          "description": "The death certificate: what Fly answered when the Sprite was deleted, and when it was asked for again. `local` is true for a run that used a folder instead of a Sprite (the simulation). Null for generations that died before certificates were kept.",
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "sprite": {
+                              "type": "string"
+                            },
+                            "local": {
+                              "type": "boolean"
+                            },
+                            "delete_status": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "description": "Fly's status code for DELETE /v1/sprites/{name}; 404 means it was already gone."
+                            },
+                            "check_status": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "description": "Fly's status code for GET /v1/sprites/{name} afterwards; 404 confirms the delete."
+                            },
+                            "confirmed": {
+                              "type": "boolean"
+                            },
+                            "checked_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "sprite",
+                            "local",
+                            "delete_status",
+                            "check_status",
+                            "confirmed",
+                            "checked_at"
+                          ]
                         }
                       },
                       "required": [
                         "lines",
-                        "clean"
+                        "clean",
+                        "deletion"
                       ]
                     },
                     "child": {
@@ -1798,7 +1906,15 @@
                   ],
                   "body": {
                     "lines": [],
-                    "clean": true
+                    "clean": true,
+                    "deletion": {
+                      "sprite": "gen-003-chandra",
+                      "local": true,
+                      "delete_status": null,
+                      "check_status": null,
+                      "confirmed": true,
+                      "checked_at": null
+                    }
                   },
                   "child": {
                     "gen": 4,
@@ -2428,6 +2544,8 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 4611686018427387904,
+              "minimum": 0,
               "default": 0,
               "title": "Since"
             }
@@ -2515,6 +2633,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
               "title": "Gen"
             }
           }
@@ -2607,6 +2727,8 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
               "default": 100,
               "title": "Limit"
             }
@@ -2619,6 +2741,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admin Judge Mail Admin Judge Mail Get"
                 }
               }
@@ -2658,6 +2781,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admin Pause Admin Pause Post"
                 }
               }
@@ -2697,6 +2821,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admin Resume Admin Resume Post"
                 }
               }
@@ -2736,6 +2861,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admin Force Death Admin Force Death Post"
                 }
               }
@@ -2794,6 +2920,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admin Contested Admin Contested  Item Id  Post"
                 }
               }
@@ -2833,6 +2960,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admin Tick Admin Tick Post"
                 }
               }
@@ -2912,6 +3040,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",

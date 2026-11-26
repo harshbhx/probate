@@ -105,7 +105,20 @@ export type Trial = {
   generation: GenCard;
   counts: { approved: number; convicted: number; contested: number };
   cases: Case[];
-  body: { lines: string[]; clean: boolean };
+  body: {
+    lines: string[];
+    clean: boolean;
+    /** What Fly answered when the Sprite was deleted and asked for again. `local` means the run
+     *  used a folder, not a Sprite. Absent for generations that died before this was kept. */
+    deletion?: {
+      sprite: string;
+      local: boolean;
+      delete_status: number | null;
+      check_status: number | null;
+      confirmed: boolean;
+      checked_at: string | null;
+    } | null;
+  };
   child: { gen: number; name: string } | null;
   new_instincts: InstinctRecord[];
   prev: number | null;

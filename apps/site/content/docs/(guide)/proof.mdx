@@ -77,6 +77,15 @@ cd services/core && .venv/bin/python -m pytest -q tests/test_brain_fallback.py
 ```
 
 </Accordion>
+<Accordion title="A death is checked, not assumed" id="death-certificate">
+
+After the delete, the Courthouse asks Fly for the same Sprite again and keeps both answers with the body evidence ([`hosts.py`](https://github.com/harshbhx/probate/blob/main/services/core/probate/courthouse/hosts.py)). The trial page shows them as the death certificate: `DELETE … 204`, then `GET … 404`. If Fly still answers for the Sprite, the certificate says "not confirmed" instead of claiming it is gone, and a simulated run says no Sprite was involved. A failed check never fails the death:
+
+```bash
+cd services/core && .venv/bin/python -m pytest -q tests/test_death_certificate.py
+```
+
+</Accordion>
 <Accordion title="A trick on a linked page goes to trial" id="pages">
 
 Each generation reads the first link in an email through Apify ([`adapters/pages.py`](https://github.com/harshbhx/probate/blob/main/services/core/probate/adapters/pages.py)). Its instincts screen the page first, and anything it keeps from the page becomes a will item marked as coming from the web. The test pages are a trick and its harmless twin on our own domain, and the trick is convicted while the twin is not:

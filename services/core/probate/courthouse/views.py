@@ -156,7 +156,11 @@ def trial(store: Store, gen: int) -> dict | None:
             for v in ("approved", "convicted", "contested")
         },
         "cases": cases,
-        "body": {"lines": disk_flags(evidence), "clean": evidence.get("clean", True)},
+        "body": {
+            "lines": disk_flags(evidence),
+            "clean": evidence.get("clean", True),
+            "deletion": _deletion(evidence),
+        },
         "child": nxt and {"gen": nxt.gen, "name": nxt.name},
         "new_instincts": born_instincts,
         "prev": gen - 1 if gen > 1 else None,
@@ -222,6 +226,22 @@ def genome(store: Store) -> dict:
             }
         )
     return {"instincts": out}
+
+
+def _deletion(evidence: dict) -> dict | None:
+    """The death certificate: what Fly answered when the Sprite was deleted and then asked for
+    again. None for generations that died before certificates were kept."""
+    d = evidence.get("deletion")
+    if not isinstance(d, dict) or not d.get("sprite"):
+        return None
+    return {
+        "sprite": d["sprite"],
+        "local": bool(d.get("local")),
+        "delete_status": d.get("delete_status"),
+        "check_status": d.get("check_status"),
+        "confirmed": bool(d.get("confirmed")),
+        "checked_at": d.get("checked_at"),
+    }
 
 
 def evidence(store: Store) -> dict:

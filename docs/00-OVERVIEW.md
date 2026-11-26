@@ -49,7 +49,7 @@ Full PRD: https://claude.ai/artifact/5SYMavFKdtRmqXx4x4LLMA (source of truth for
 | Carter Rabasa (Box) | Wills, verdicts, quarantine, obituaries, genome: the family archive as readable files |
 | Asaf Ashirov (Pinecone) | Ancestral memory of approved items, retrieved with citations |
 | Michael Chiang (Ollama Cloud) | The brain of each generation (Groq and Claude are backups only) |
-| Robert-George Crupa (Apify) | **Planned (card P1):** reads web pages that emails link to, so a trick hidden on a page goes to trial like any other memory |
+| Robert-George Crupa (Apify) | Reads the web pages that emails link to, so a trick hidden on a page goes to trial like any other memory (built; tested in simulation). The court's checks are also on the Apify Store as Page Court |
 
 Other services: AgentMail (three inboxes), Cloudflare (Email Service sends the owner's own test emails; Workers host the landing page and docs), ElevenLabs (voices), Anthropic (backup brain and instinct writing).
 

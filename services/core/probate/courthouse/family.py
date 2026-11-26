@@ -214,7 +214,8 @@ class Family:
         """Delete the Sprite. A failure is retried on later ticks, up to MAX_DEATH_ATTEMPTS."""
         key = f"death_attempts:{g.gen}"
         try:
-            self.host.destroy(g.sprite)
+            certificate = self.host.destroy(g.sprite)
+            self._file_certificate(g, certificate)
         except Exception as exc:
             n = int(self.store.get_setting(key, "0") or 0) + 1
             self.store.set_setting(key, str(n))
@@ -227,6 +228,17 @@ class Family:
                 f"{g.name}'s computer could not be deleted after {n} tries; an operator should "
                 "check for a leftover Sprite.",
             )
+
+    def _file_certificate(self, g: Generation, certificate: object) -> None:
+        """Keep the death certificate with the body evidence, so the trial page can show it."""
+        if not isinstance(certificate, dict):
+            return
+        try:
+            evidence = self.store.gen_json(g.gen, "evidence_json") or {}
+            evidence["deletion"] = certificate
+            self.store.set_gen_json(g.gen, "evidence_json", evidence)
+        except Exception as exc:  # noqa: BLE001 - the Sprite is gone; never fail a death over this
+            log.warning("gen %s: could not file the death certificate: %s", g.gen, exc)
 
     # ------------------------------------------------------------------ trial
     def trial(self, g: Generation) -> list[Judgement]:

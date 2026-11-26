@@ -7,6 +7,7 @@ import json
 import logging
 import shlex
 import shutil
+from datetime import UTC, datetime
 
 from probate.adapters.sprites import ExecResult, SpritesAPI
 from probate.common.bundle import INSTALL, make_bundle
@@ -67,12 +68,19 @@ class LocalHost:
     def life_log(self, sprite: str) -> list[dict]:
         return self._agent(sprite).life_log()
 
-    def destroy(self, sprite: str) -> None:
+    def destroy(self, sprite: str) -> dict:
         shutil.rmtree(self.root / sprite, ignore_errors=True)
         self.agents.pop(sprite, None)
+        # No Sprite was involved: the "computer" was a folder, and this says so.
+        return {
+            "sprite": sprite,
+            "local": True,
+            "confirmed": not (self.root / sprite).exists(),
+            "checked_at": None,  # a simulated life runs on its own clock; no real time to give
+        }
 
-    def force_destroy(self, sprite: str) -> None:
-        self.destroy(sprite)
+    def force_destroy(self, sprite: str) -> dict:
+        return self.destroy(sprite)
 
     def list_sprites(self) -> list[str]:
         return sorted(p.name for p in self.root.glob("gen-*") if p.is_dir())
@@ -175,18 +183,41 @@ class SpritesHost:
     def life_log(self, sprite: str) -> list[dict]:
         return self._cli(sprite, "log").get("log", [])
 
-    def destroy(self, sprite: str) -> None:
+    def destroy(self, sprite: str) -> dict:
         # The agent service may never have been created (a failed birth): that must not stop the
         # delete, or the Sprite is leaked.
-        self.force_destroy(sprite)
+        return self.force_destroy(sprite)
 
     def list_sprites(self) -> list[str]:
         return sorted(s["name"] for s in self.api.list("gen-") if s.get("name"))
 
-    def force_destroy(self, sprite: str) -> None:
-        """Delete a Sprite even if its service is already gone (cleanup after a crash)."""
+    def force_destroy(self, sprite: str) -> dict:
+        """Delete a Sprite even if its service is already gone (cleanup after a crash).
+
+        Returns the death certificate: what Fly answered to the delete, and what it answered when
+        we asked for the same Sprite again."""
         try:
             self.api.service_action(sprite, "agent", "stop")
         except Exception:  # noqa: BLE001 - the service may not exist; the delete is what matters
             log.info("no agent service to stop on %s; deleting it anyway", sprite)
-        self.api.delete(sprite)
+        deleted = self.api.delete(sprite)
+        return self._certificate(sprite, deleted)
+
+    def _certificate(self, sprite: str, deleted: object) -> dict:
+        """Ask for the Sprite once more and record the answer. Never raises: the delete already
+        happened, and a failed check must not make the death fail."""
+        # VERIFY: a GET straight after the delete is expected to return 404
+        # (docs/06-SETUP-AND-SPIKES.md). If Fly answers anything else, the certificate says so
+        # and is shown as unconfirmed; nothing depends on it.
+        try:
+            check = int(self.api.status(sprite))
+        except Exception as exc:  # noqa: BLE001
+            log.info("could not confirm that %s is gone: %s", sprite, exc)
+            check = None
+        return {
+            "sprite": sprite,
+            "delete_status": deleted if isinstance(deleted, int) else None,
+            "check_status": check,
+            "confirmed": check == 404,
+            "checked_at": datetime.now(UTC).isoformat(),
+        }

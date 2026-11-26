@@ -348,9 +348,7 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 | Ollama | The brain of every generation, and the memory court's second judge for anyone without a TypeSafe key |
 | Apify | Reads the pages that emails link to, so tricks hidden on the web go to trial too (tested in simulation); and [Page Court](https://apify.com/harsh_bhanu/page-court) on the Apify Store, which a Sprite can run through Fly's built-in Apify connector |
 
-**Built, and checked for real in the live run:** judges can email the family a trick through the Mailroom and watch it handled live.
-
-**Coming before submission:** each trial shows Fly's own "not found" reply as proof the Sprite was deleted; the home page shows a live feed of the living generation.
+**Built, with the live run as the real test:** judges can email the family a trick through the Mailroom and watch it handled live, and each trial page carries a death certificate: what Fly answered to the delete, and to asking for the same Sprite again. In a simulated run the certificate says that no Sprite was involved.
 
 ## Limits
 

@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import * as Tabs from "@radix-ui/react-tabs";
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Baby, HardDrive, Sparkles } from "lucide-react";
-import type { ApiError, Summary, Trial as TrialT } from "../lib/api";
-import { cx, day, humanize } from "../lib/format";
+import { ArrowLeft, ArrowRight, Baby, FileCheck2, HardDrive, Sparkles } from "lucide-react";
+import type { ApiError, Deletion, Summary, Trial as TrialT } from "../lib/api";
+import { cx, day, dayTime, humanize } from "../lib/format";
 import { useApi, useTitle } from "../lib/hooks";
 import { CaseFile } from "../components/ui/CaseFile";
 import { FamilyFace } from "kinfaces/react";
@@ -137,6 +137,7 @@ export function Trial({ mode }: { mode?: string }) {
               <span className="text-mist">The disk was clean. Nothing was left behind.</span>
             )}
           </pre>
+          {t.body.deletion && <DeathCertificate d={t.body.deletion} />}
         </div>
         <div className="card p-6">
           <div className="flex items-center gap-2 text-[14px] text-mist">
@@ -164,5 +165,44 @@ export function Trial({ mode }: { mode?: string }) {
         </div>
       </section>
     </Page>
+  );
+}
+
+/** Proof that the computer is gone: Fly's answer to the delete, and to asking for it again. */
+function DeathCertificate({ d }: { d: Deletion }) {
+  const when = d.checked_at ? dayTime(d.checked_at) : null;
+  return (
+    <div className="border-t border-line px-5 py-4">
+      <div className="flex items-center gap-2 text-[14px] text-mist">
+        <FileCheck2 size={15} /> Death certificate
+      </div>
+      {d.local ? (
+        <p className="mt-2 text-[14px] leading-relaxed text-mist">
+          This run used a folder on the Courthouse instead of a Sprite. The folder{" "}
+          <span className="font-mono text-silver">{d.sprite}</span> was deleted.
+        </p>
+      ) : (
+        <>
+          <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 font-mono text-[14px] leading-relaxed">
+            <dt className="min-w-0 truncate text-mist">
+              <span className="text-dim">DELETE </span>/v1/sprites/{d.sprite}
+            </dt>
+            <dd className="text-moon">{d.delete_status ?? "sent"}</dd>
+            <dt className="min-w-0 truncate text-mist">
+              <span className="text-dim">GET </span>/v1/sprites/{d.sprite}
+            </dt>
+            <dd className="text-moon">{d.check_status ?? "no answer"}</dd>
+          </dl>
+          <p className="mt-3 text-[14px] leading-relaxed text-mist">
+            {d.confirmed
+              ? "Fly no longer has this computer. Whatever was on its disk went with it."
+              : d.check_status === null
+                ? "The delete was sent. The check afterwards got no answer, so this is not confirmed."
+                : "The delete was accepted, but Fly still answered for this Sprite when asked. Not confirmed."}
+            {when && <span className="text-dim"> Checked {when}.</span>}
+          </p>
+        </>
+      )}
+    </div>
   );
 }
