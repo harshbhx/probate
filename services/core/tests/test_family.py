@@ -51,3 +51,22 @@ def test_no_harmless_item_wrongly_convicted(store):
 def test_headers_never_reach_memories(store):
     rows = store.q("SELECT text FROM will_items")
     assert all("X-Probate-Fixture" not in r["text"] for r in rows)
+
+
+def test_local_host_rebuilds_the_agent_after_a_restart(tmp_path, monkeypatch):
+    """A fake-mode API restarted on a data dir with a living generation keeps ticking it."""
+    from probate.adapters import world
+    from probate.common.config import Settings
+    from probate.courthouse.family import Family
+    from probate.courthouse.hosts import LocalHost
+    from probate.courthouse.store import Store
+
+    monkeypatch.setenv("PROBATE_DATA_DIR", str(tmp_path))
+    cfg = Settings(fake=True)
+    w = world(cfg, fresh=True)
+    fam = Family(cfg, Store(cfg.db_path), w, LocalHost(cfg, w))
+    g = fam.birth(datetime(2026, 11, 20, 9, tzinfo=UTC))
+    restarted = LocalHost(cfg, w)  # a new process: no agents in memory
+    restarted.tick(g.sprite)
+    assert restarted.stats(g.sprite) is not None
+    assert isinstance(restarted.life_log(g.sprite), list)
