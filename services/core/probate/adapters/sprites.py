@@ -24,7 +24,11 @@ class ExecResult:
 class SpritesAPI:
     def __init__(self, token: str, base: str = API, timeout: float = 180) -> None:
         self.base = base.rstrip("/")
-        self.http = httpx.Client(timeout=timeout, headers={"Authorization": f"Bearer {token}"})
+        self.http = httpx.Client(
+            timeout=timeout,
+            headers={"Authorization": f"Bearer {token}"},
+            transport=httpx.HTTPTransport(retries=3),  # a dropped TLS handshake is retried
+        )
 
     # Sprites
     def create(self, name: str, public: bool = False) -> dict:
