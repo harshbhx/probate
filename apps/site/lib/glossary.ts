@@ -52,6 +52,8 @@ export const GLOSSARY: GlossEntry[] = [
   { more: true, term: 'Vector search', match: ['vector search', 'embeddings', 'embedding'], def: 'Finding text by meaning rather than exact words. Pinecone does this for the family’s approved memories.' },
   { more: true, term: 'OpenAPI', match: ['OpenAPI'], exactCase: true, def: 'A standard file that describes every route of an API, its inputs and its replies. The API reference is built from it.' },
   { more: true, term: 'Stand-in', match: ['stand-ins', 'stand-in'], def: 'A local fake of an outside service, used by make sim and the tests so the whole family runs with no keys.' },
+  { more: true, term: 'Memory court', match: ['memory court'], def: 'The same court for any AI agent: an MCP server that tries every memory before Claude, Cursor or another agent saves it.' },
+  { more: true, term: 'MCP', match: ['MCP'], exactCase: true, def: 'Model Context Protocol: a standard way to give an AI assistant tools it can call, such as remember and recall.' },
   { more: true, term: 'LLM', match: ['LLMs', 'LLM'], exactCase: true, def: 'Large language model: the kind of AI model that reads and writes text.' },
 ];
 
