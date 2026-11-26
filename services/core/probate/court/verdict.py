@@ -73,7 +73,8 @@ def decide(
             f"Approved: nothing in it raised a concern{', ' + src if src else ''}.",
         )
     return done(
-        Verdict.CONTESTED, "Contested: the court isn't sure. The owner decides before the next birth."
+        Verdict.CONTESTED,
+        "Contested: the court isn't sure. The owner decides before the next birth.",
     )
 
 

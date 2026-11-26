@@ -149,7 +149,9 @@ def test_budget_must_cover_one_more_life(tmp_path, monkeypatch):
 
 
 def test_daily_budget_and_count_caps_reset_tomorrow(tmp_path, monkeypatch):
-    r = Rig(tmp_path, monkeypatch, PROBATE_DEMO_DAILY_BUDGET_USD=0.05, PROBATE_DEMO_COOLDOWN_SECONDS=0)
+    r = Rig(
+        tmp_path, monkeypatch, PROBATE_DEMO_DAILY_BUDGET_USD=0.05, PROBATE_DEMO_COOLDOWN_SECONDS=0
+    )
     assert r.od.status(T0)["state"] == "idle"
     r.family.budget.charge(0.2, "generations")
     assert r.od.status(T0)["budget"]["reason"] == "daily"
@@ -158,7 +160,9 @@ def test_daily_budget_and_count_caps_reset_tomorrow(tmp_path, monkeypatch):
     # the day's allowance restarts from what had been spent by then
     assert r.od.status(tomorrow)["state"] == "idle"
 
-    r2 = Rig(tmp_path / "b", monkeypatch, PROBATE_DEMO_MAX_PER_DAY=1, PROBATE_DEMO_COOLDOWN_SECONDS=0)
+    r2 = Rig(
+        tmp_path / "b", monkeypatch, PROBATE_DEMO_MAX_PER_DAY=1, PROBATE_DEMO_COOLDOWN_SECONDS=0
+    )
     r2.od.start("1.1.1.1", T0)
     t = r2.run_to_end()
     assert r2.od.start("2.2.2.2", t + timedelta(seconds=1))[0] == 402
@@ -338,7 +342,10 @@ def test_admin_routes_still_need_the_token(client):
 
 
 def test_api_post_flood_is_throttled(client):
-    codes = [client.post("/api/lives", headers={"x-forwarded-for": "7.7.7.7"}).status_code for _ in range(25)]
+    codes = [
+        client.post("/api/lives", headers={"x-forwarded-for": "7.7.7.7"}).status_code
+        for _ in range(25)
+    ]
     assert codes[-1] == 429
 
 

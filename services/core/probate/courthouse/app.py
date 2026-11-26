@@ -382,9 +382,7 @@ async def api_judge_mail_send(request: Request) -> JSONResponse:
     if family.budget.exhausted() or judge.daily_block(now, est):
         return _bad("budget_exhausted", "The judge budget for today is used up.", 402)
     try:
-        sent = await asyncio.to_thread(
-            mailroom.send, demo, ip_key(ip), persona, subject, text
-        )
+        sent = await asyncio.to_thread(mailroom.send, demo, ip_key(ip), persona, subject, text)
     except mailroom_mod.MailroomError as exc:
         headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else {}
         return JSONResponse(
