@@ -38,22 +38,33 @@ class LocalHost:
     def alive(self, sprite: str) -> bool:
         return (self.root / sprite).exists()
 
+    def _agent(self, sprite: str) -> GenerationAgent:
+        """The agent for a sprite folder; rebuilt from disk after a restart of the API."""
+        agent = self.agents.get(sprite)
+        if agent is None:
+            workdir = self.root / sprite
+            inh = Inheritance.model_validate_json(
+                (workdir / "inheritance.json").read_text(encoding="utf-8")
+            )
+            agent = self.agents[sprite] = GenerationAgent(inh, workdir, self.w)
+        return agent
+
     def tick(self, sprite: str) -> None:
-        self.agents[sprite].tick()
+        self._agent(sprite).tick()
 
     def will(self, sprite: str) -> dict:
-        return self.agents[sprite].write_will()
+        return self._agent(sprite).write_will()
 
     def evidence(self, sprite: str) -> dict:
-        agent = self.agents[sprite]
+        agent = self._agent(sprite)
         base = json.loads((agent.workdir / "baseline.json").read_text(encoding="utf-8"))
         return agent.body.evidence(base)
 
     def stats(self, sprite: str) -> dict:
-        return self.agents[sprite].stats
+        return self._agent(sprite).stats
 
     def life_log(self, sprite: str) -> list[dict]:
-        return self.agents[sprite].life_log()
+        return self._agent(sprite).life_log()
 
     def destroy(self, sprite: str) -> None:
         shutil.rmtree(self.root / sprite, ignore_errors=True)
