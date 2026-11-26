@@ -92,17 +92,20 @@ def preview(
             source_ref=f"preview:{role}",
         )
         flags = layer1.check_item(item, owner)
+        engine = verdict.engine_name(jev)
         answers = None
         error = None
         if flags:
-            j = verdict.decide(item, flags, None, genome)
+            j = verdict.decide(item, flags, None, genome, engine=engine)
         else:
             try:
                 answers = layer2.judge(jev, item, owner, genome, concept_map(genome))
-                j = verdict.decide(item, [], answers, genome)
+                j = verdict.decide(item, [], answers, genome, engine=engine)
             except CourtUnavailable:
                 error = "unreachable"
-                j = verdict.decide(item, [], None, genome, error="the judge model is unreachable")
+                j = verdict.decide(
+                    item, [], None, genome, error="the judge model is unreachable", engine=engine
+                )
     finally:
         _slots.release()
     scores = []

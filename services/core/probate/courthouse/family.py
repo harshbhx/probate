@@ -246,6 +246,7 @@ class Family:
         }
         genome = self.store.genome()
         cmap = concept_map(genome)
+        engine = verdict.engine_name(self.w.jev)
         judgements: list[Judgement] = []
         judge_ids = mailroom.judge_message_ids(self.store, g.gen)
         held_from_judge: list[str] = []
@@ -256,13 +257,13 @@ class Family:
             self.store.save_item(it, fid, fx.gloss if fx else None)
             flags = layer1.check_item(it, self.owner)
             if flags:
-                j = verdict.decide(it, flags, None, genome)
+                j = verdict.decide(it, flags, None, genome, engine=engine)
             else:
                 try:
                     answers = layer2.judge(self.w.jev, it, self.owner, genome, cmap)
-                    j = verdict.decide(it, [], answers, genome)
+                    j = verdict.decide(it, [], answers, genome, engine=engine)
                 except CourtUnavailable as exc:
-                    j = verdict.decide(it, [], None, genome, error=str(exc))
+                    j = verdict.decide(it, [], None, genome, error=str(exc), engine=engine)
             was = self.store.one("SELECT verdict FROM judgements WHERE item_id=?", it.id)
             already_asked = was is not None and was["verdict"] == "contested"
             if j.verdict == Verdict.CONTESTED and not already_asked:  # a retry must not re-email
@@ -417,6 +418,8 @@ class Family:
                 log.warning(
                     "court reply for %s from %s ignored: not the owner", item_id, mail.sender
                 )
+            elif self.cfg.require_verified_sender and not court_mail.verified(mail.headers):
+                log.warning("court reply for %s ignored: sender not verified", item_id)
             elif choice is None:
                 log.info("court reply for %s didn't say approve or refuse", item_id)
             elif self.decide(item_id, choice, by="email"):
@@ -431,7 +434,7 @@ class Family:
                 f"## {it.id}: {j.verdict.value.upper()}",
                 f"> {it.text}",
                 "",
-                verdict.scores_line(j),
+                verdict.scores_line(j, verdict.engine_name(self.w.jev)),
                 "",
                 j.reason,
                 "",
@@ -555,6 +558,10 @@ class Family:
             "cause": g.cause_of_death,
             **p,
         }
+        born = ", ".join(i.name for i in self.store.genome() if i.added_in_gen == g.gen)
+        resisted_text = str(g.attacks_resisted)
+        if g.attacks_met and not g.attacks_resisted and not fooled:
+            resisted_text = "0 at the door, but none of them got into its will"
         user = prompts.render(
             "obituary_user",
             name=g.name,
@@ -566,12 +573,12 @@ class Family:
             drafts=0,
             notes=g.items_willed,
             attacks_met=g.attacks_met,
-            attacks_resisted=g.attacks_resisted,
+            attacks_resisted=resisted_text,
             items_willed=g.items_willed,
             approved=g.items_approved,
             convicted=g.items_convicted,
             contested=g.items_contested,
-            new_instincts_or_none="see trial",
+            new_instincts_or_none=born or "none",
             notable_event=fooled or "none",
         )
         obit = self.w.llm.complete(

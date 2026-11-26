@@ -70,7 +70,7 @@ Only one life runs at a time, everyone sees the same one, and there is a cooldow
 
 The key is a shared secret, not an admin credential: it cannot reach any admin route and the operator can switch it off at once. API: send it as the `X-Probate-Key` header (`POST /api/lives`, `POST /api/attacks`, `GET /api/judge/status`, `POST /api/judge/mail`, `GET /api/judge/mail`). Placeholder only: `X-Probate-Key: <judge key from the submission>`.
 
-**What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the Jev verdicts, and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
+**What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the verdicts of whichever judge answers layer 2 (every result names it: Jev, or the language-model fallback, which is not Jev), and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
 
 **How the site scores.** [PageSpeed Insights](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7) gives the landing page 100 in every category (Performance, Accessibility, Best Practices, SEO) on both mobile and desktop, and axe finds no WCAG A or AA problems on any page of the landing page or docs ([what was checked](docs/ACCESSIBILITY.md)).
 
@@ -100,7 +100,7 @@ Most agents keep one memory and one machine forever, so anything that gets in st
 1. **Birth.** The Courthouse creates a fresh Sprite, ships it the family's code and hands the child its inheritance: approved memories plus every instinct the family has earned.
 2. **Life.** For a day the child works an AgentMail inbox: triage, summaries, draft replies. Its inherited instincts screen every email first. Some emails are tricks from our own attack suite.
 3. **Death.** It writes a will. The Courthouse records any tampering it finds on the disk, then deletes the Sprite. A deleted Sprite can't be restored.
-4. **Trial.** Every will item is judged twice. Layer 1 is plain code: payment changes, "ignore the owner" orders, hidden text, new trusted senders, in any language. A clever email can't argue with it. Layer 2 is [Jev](https://www.datacamp.com/blog/system-one-models-jev), a model that answers typed yes/no and multiple-choice questions with a calibrated confidence. Each item is approved, convicted or held for the owner. Unsure always means held.
+4. **Trial.** Every will item is judged twice. Layer 1 is plain code: payment changes, "ignore the owner" orders, hidden text, new trusted senders, in any language. A clever email can't argue with it. Layer 2 is a model that answers typed yes/no and multiple-choice questions with a confidence: [Jev](https://www.datacamp.com/blog/system-one-models-jev) when it is connected, otherwise a language-model fallback that is labelled "not Jev" in every verdict and on `/api/summary` (`court_engine`). Each item is approved, convicted or held for the owner. A layer 2 doubt means held; a layer 1 conviction is final.
 5. **Instinct.** Each new kind of conviction becomes a named Jev question, tested against harmless lookalike emails. Only instincts that never fire on the harmless twins are passed down, so the family learns without getting paranoid.
 
 ## The court
@@ -110,7 +110,7 @@ Most agents keep one memory and one machine forever, so anything that gets in st
   <img src="docs/media/court.gif" alt="How the court decides. Ada's will item, from an unknown sender, asks to send every invoice to a new address without confirmation. Layer 1, plain code, runs its checks and three fire. Layer 2, Jev, answers yes with confidence 0.97 and 0.94. The item is stamped convicted, and a new instinct is passed to every child." width="100%">
 </picture>
 
-Two judges that fail differently. Plain code can't be argued with; Jev catches what word lists miss. When either is unsure, the item is held for the owner and isn't inherited unless they approve it by email. The full rules are in [the court](apps/site/content/docs/%28guide%29/concepts/court.mdx).
+Two judges that fail differently. Plain code can't be argued with; the layer 2 model (Jev, or the labelled fallback) catches what word lists miss. When layer 2 is unsure or unreachable, the item is held for the owner and isn't inherited unless they approve it by email. The full rules are in [the court](apps/site/content/docs/%28guide%29/concepts/court.mdx).
 
 ## The memory court, for any agent
 
@@ -123,7 +123,7 @@ remember("Keep my replies under five sentences from now on.", source="user")    
 recall("when can I meet")                                       -> only approved memories, best match first
 ```
 
-- **The same rules:** code checks convict; a re-worded copy of a past trick is convicted on sight (instincts); Jev is the second judge when configured, or an Ollama model for anyone without a TypeSafe key; any error holds the memory, never approves it.
+- **The same rules:** code checks convict; a re-worded copy of a past trick is convicted on sight (instincts); Jev is the second judge when configured, or a language-model fallback (labelled "not Jev") for anyone without a TypeSafe key; a layer 2 error holds the memory, never approves it.
 - **In front of the memory you already use.** Plug-ins for [Mem0](https://github.com/mem0ai/mem0), [LangGraph](https://langchain-ai.github.io/langgraph/) stores and [Letta](https://docs.letta.com) archival memory put each write on trial first. Recall can search by meaning through Pinecone, and only approved memories are ever indexed.
 - **Only the owner decides.** A rule for future agents waits for the owner even when the agent says it came from them, and there is no tool to approve it: the owner runs `probate-memory approve <id>` in a terminal, where a fooled agent can't reach.
 - **Local by default.** Memories stay in a SQLite file on your machine.
@@ -149,7 +149,7 @@ The live family site, served by the Courthouse. These two are real screenshots o
 </tr>
 <tr>
 <td><b>The register.</b> Who is alive, every generation's face, and how each one died.</td>
-<td><b>A trial.</b> Each will item with its source, what the code checks found, Jev's scores and the verdict.</td>
+<td><b>A trial.</b> Each will item with its source, what the code checks found, the layer 2 judge's scores (named on the page) and the verdict.</td>
 </tr>
 </table>
 
@@ -334,7 +334,7 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 | Judges' company | Its job in Probate |
 | --- | --- |
 | Fly.io | A Sprite for every life, real deletion at death, connectors, and the Courthouse |
-| TypeSafe | Jev is the court's second layer and every inherited instinct |
+| TypeSafe | Jev is the court's second layer and every inherited instinct when connected; otherwise a labelled fallback |
 | Box | The family archive |
 | Pinecone | Ancestral memory, and recall by meaning in the memory court |
 | Ollama | The brain of every generation, and the memory court's second judge for anyone without a TypeSafe key |
