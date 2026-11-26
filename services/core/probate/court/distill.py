@@ -6,6 +6,8 @@ Spec: docs/02-COURT-SPEC.md section 5. Mirrors Ratchet: a slow judgement becomes
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 from probate.adapters.jev import Question
 from probate.adapters.llm import INSTINCT_TEMPLATES
@@ -28,6 +30,9 @@ def _fires(jev, inst_q: Question, name: str, text: str) -> float:
         return float(ans.value)
     except (TypeError, ValueError):
         return 0.0
+
+
+CHECK_WORKERS = 6
 
 
 def distill(
@@ -110,8 +115,13 @@ def distill(
                 break
             concepts = INSTINCT_TEMPLATES.get(group["pattern"], ("", "", set(), ""))[2]
             q = Question("noul", spec["question"], concepts=set(concepts))
-            missed = [t for t in examples if _fires(jev, q, spec["name"], t) < 0.5]
-            false_hits = [t for t in benign_texts if _fires(jev, q, spec["name"], t) >= 0.2]
+            # One judge call per text, independent of each other: ask them side by side.
+            check = partial(_fires, jev, q, spec["name"])
+            with ThreadPoolExecutor(max_workers=CHECK_WORKERS) as pool:
+                on_examples = list(pool.map(check, examples))
+                on_benign = list(pool.map(check, benign_texts))
+            missed = [t for t, f in zip(examples, on_examples, strict=True) if f < 0.5]
+            false_hits = [t for t, f in zip(benign_texts, on_benign, strict=True) if f >= 0.2]
             if not missed and not false_hits:
                 inst = Instinct(
                     name=spec["name"],
