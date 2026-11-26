@@ -30,6 +30,7 @@ export type GenCard = {
 
 export type Summary = {
   mode: string;
+  court_engine: string;
   paused: boolean;
   resting: "budget" | null;
   budget: { spent: number; limit: number };
@@ -144,6 +145,7 @@ export type EvidenceRow = {
 
 export type Evidence = {
   mode: string;
+  court_engine: string;
   generations: { gen: number; name: string; resistance: number | null }[];
   numbers: {
     generations: number;
