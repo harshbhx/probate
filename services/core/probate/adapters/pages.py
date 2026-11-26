@@ -89,7 +89,7 @@ class ApifyPages:
             r = self.client.get(
                 f"{self.base_url}/v2/datasets/{run['defaultDatasetId']}/items", params={"limit": 1}
             )
-        except (httpx.HTTPError, KeyError, ValueError) as exc:
+        except (httpx.HTTPError, KeyError, ValueError, TypeError) as exc:
             raise PageUnavailable(f"Apify didn't answer: {exc}") from exc
         if r.status_code not in (200, 201):
             raise PageUnavailable(f"Apify returned {r.status_code}: {r.text[:200]}")
