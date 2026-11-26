@@ -60,7 +60,9 @@ The door uses inherited instincts and nothing else. Gen 1 inherits nothing, so i
 
 ![The learning curve: tricks resisted at the door climb from zero in generation one.](/product/curve.webp)
 
-In a simulated 12-generation run with stand-in models (`make sim`), the latest tried generation turned away 75% of the tricks at the door, up from 0% for the first, and no harmless email was wrongly convicted. Those are simulated numbers, and the docs say so wherever they appear; the live family's numbers are on its own site.
+In a simulated 12-generation run with stand-in models (`make sim`), the latest tried generation turned away 75% of the tricks at the door, up from 0% for the first, and no harmless email was wrongly convicted. Those are simulated numbers, and the docs say so wherever they appear.
+
+The real run on Fly Sprites (26 Nov 2026) is a smaller and messier story, and it is one run with small numbers. It reached 18 generations; the 18th died with no emails because AgentMail's plan limits sending to 100 emails a day, and the family is paused. Layer 2 of the court was a language-model fallback (Claude Haiku), not Jev. The family learned 6 instincts from real failures. Generations 1 to 12 had a gate that failed open, so their 0% resistance says nothing about learning; from generation 13 the gate worked and resisted 1 of 4, 4 of 4, 3 of 4 and (generation 16, with the hard tier on) 1 of 6 attacks. The live numbers mix in leftover emails, so the clean evidence is an offline test of 70 fixtures with the 5 instincts learned by generation 16: it blocked 23 to 25 of 41 attacks across three runs and 0 of 29 harmless emails, while 14 attacks were never blocked. The court also wrongly convicted 5 of 29 memories from harmless emails. The data and a verifier are in the [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md); the Hugging Face dataset is published soon.
 
 ## Pages go on trial too
 

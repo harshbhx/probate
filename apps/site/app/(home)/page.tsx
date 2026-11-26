@@ -320,10 +320,10 @@ function Tile({ title, body, href, link, children }: { title: string; body: stri
 }
 
 const NUMBERS: { value: number; suffix: string; label: string; sub: string }[] = [
-  { value: 75, suffix: '%', label: 'tricks resisted at the door', sub: 'by the latest tried generation, up from 0% for Ada' },
-  { value: 6, suffix: '', label: 'instincts inherited', sub: 'each one a conviction turned into a question' },
-  { value: 0, suffix: '%', label: 'harmless twins wrongly convicted', sub: 'a good court is not a paranoid one' },
-  { value: 0, suffix: '', label: 'disk backdoors survived death', sub: 'planted files are found on the body, then deleted' },
+  { value: 75, suffix: '%', label: 'tricks resisted at the door', sub: 'simulated run: the latest tried generation, up from 0% for Ada' },
+  { value: 6, suffix: '', label: 'instincts inherited', sub: 'simulated run; each one a conviction turned into a question' },
+  { value: 0, suffix: '%', label: 'harmless twins wrongly convicted', sub: 'simulated run; a good court is not a paranoid one' },
+  { value: 0, suffix: '', label: 'disk backdoors survived death', sub: 'simulated run; planted files are found on the body, then deleted' },
 ];
 
 function Evidence() {
@@ -359,7 +359,11 @@ function Evidence() {
         />
         <p className="mt-3 text-[14px] text-dim">
           From <code className="font-mono">make sim</code>, a 12-generation run with stand-in models. It shows how the system
-          behaves, not live results.{' '}
+          behaves, not real results. The real run on Fly Sprites (18 generations, one run, small numbers) is on{' '}
+          <Link href="/docs/results" className="text-moon underline decoration-gilt/50 underline-offset-[4px]">
+            the results page
+          </Link>
+          : an offline test blocked 23 to 25 of 41 attacks and 0 of 29 harmless emails.{' '}
           <Link href="/docs/concepts/attack-suite" className="text-moon underline decoration-gilt/50 underline-offset-[4px]">
             The attack suite
           </Link>

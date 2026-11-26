@@ -115,6 +115,17 @@ cd actors/page-court && pip install -r requirements-dev.txt && python -m pytest 
 Or run [Page Court on the Apify Store](https://apify.com/harsh_bhanu/page-court) on our trick page, `https://probate.dualmindlab.tech/suite/billing-update.html`.
 
 </Accordion>
+<Accordion title="The real-run numbers can be recomputed" id="real-run">
+
+The real run on Fly Sprites (26 Nov 2026) is published as a [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md) with its data files, an incident timeline of every bug that touched it, and a [verifier](https://github.com/harshbhx/probate/blob/main/scripts/verify_real_run.py) that recomputes the headline numbers from the exported files and fails if a claim is contradicted. The Hugging Face dataset is published soon. Layer 2 was a language-model fallback (Claude Haiku), not Jev.
+
+```bash
+python scripts/verify_real_run.py
+```
+
+The offline gate test (70 fixtures, three runs) is in `datasets/probate-real-run/gate-evaluation/`.
+
+</Accordion>
 <Accordion title="Simulated numbers are labelled" id="labelled">
 
 `GET /healthz` returns `"mode": "simulation"` after `make sim`, and the live site shows an amber "Simulated run" banner on every page while it does.
