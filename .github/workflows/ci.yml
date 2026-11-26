@@ -1,101 +1,246 @@
 name: ci
+
+# One workflow, one stable required check.
+#
+#   changes  works out which parts of the repository the change touches (plain `git diff`, no
+#            third-party action) and publishes one true/false output per area.
+#   <area>   each test job runs only when its area changed. A docs-only change runs none of them.
+#   ci-ok    always runs, and succeeds when every job that ran passed (skipped jobs count as fine).
+#            Make `ci-ok` the only required status check in branch protection: unlike a per-job
+#            check it never hangs as "expected" when a filter skips the work.
+#
+# Pushes to main, manual runs, and changes to this file or .github/actions/ run every area.
+# Details: docs/CICD.md
+
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
+permissions: {}
 
-# Least privilege: every job only reads the repository.
-permissions:
-  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # A newer push to a pull request supersedes the old run; runs on main always finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  core:
+  changes:
+    name: changes
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      court_checks: ${{ steps.filter.outputs.court_checks }}
+      memory_court: ${{ steps.filter.outputs.memory_court }}
+      page_court: ${{ steps.filter.outputs.page_court }}
+      site: ${{ steps.filter.outputs.site }}
+      web: ${{ steps.filter.outputs.web }}
+      edge: ${{ steps.filter.outputs.edge }}
+      client_ts: ${{ steps.filter.outputs.client_ts }}
+      client_py: ${{ steps.filter.outputs.client_py }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Work out what changed
+        id: filter
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          all=false
+          files=""
+          case "$EVENT" in
+            pull_request)
+              files="$(git diff --name-only "${PR_BASE}...${PR_HEAD}")" ;;
+            push)
+              if git cat-file -e "${PUSH_BEFORE}^{commit}" 2>/dev/null; then
+                files="$(git diff --name-only "${PUSH_BEFORE}" "${PUSH_AFTER}")"
+              else
+                all=true # new branch or rewritten history: no usable base
+              fi ;;
+            *)
+              all=true ;;
+          esac
+          echo "Changed files:"; printf '%s\n' "$files" | sed 's/^/  /'
+
+          # Edits to this workflow or the shared setup actions can affect every job.
+          if printf '%s\n' "$files" | grep -Eq '^(\.github/workflows/ci\.yml|\.github/actions/)'; then all=true; fi
+
+          npm_root='package(-lock)?\.json'
+          check() { # name, regex of paths that make the area relevant
+            if [ "$all" = true ] || printf '%s\n' "$files" | grep -Eq "$2"; then
+              echo "$1=true" >> "$GITHUB_OUTPUT"; echo "$1: run"
+            else
+              echo "$1=false" >> "$GITHUB_OUTPUT"; echo "$1: skip"
+            fi
+          }
+          check core         '^(services/core/|config/|fixtures/)'
+          check court_checks '^(packages/court-checks/|datasets/probate-attack-suite/)'
+          check memory_court '^packages/memory-court/'
+          check page_court   '^actors/page-court/'
+          check site         "^(apps/site/|packages/(faces|tokens|moments)/|${npm_root}\$)"
+          check web          "^(apps/web/|packages/(faces|tokens|moments|mcp)/|${npm_root}\$)"
+          check edge         "^(apps/edge/|${npm_root}\$)"
+          check client_ts    "^(packages/client/|services/core/|${npm_root}\$)"
+          check client_py    '^(packages/client-py/|services/core/)'
+
+  core:
+    name: core
+    needs: changes
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: services/core
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: "3.13"
-      - run: pip install -e '.[dev]'
+          persist-credentials: false
+      - uses: ./.github/actions/setup-core
       - run: ruff check probate tests
       - run: PROBATE_DATA_DIR=$RUNNER_TEMP/probate python -m pytest -q
       - name: Simulate a family
         run: PROBATE_FAKE=1 PROBATE_DATA_DIR=$RUNNER_TEMP/sim python -m probate.courthouse.simulate --generations 6
 
   court-checks:
+    name: court-checks
+    needs: changes
+    if: needs.changes.outputs.court_checks == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: packages/court-checks
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: packages/court-checks/pyproject.toml
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: python -m pytest -q
       - run: python ../../datasets/probate-attack-suite/build.py --check
 
   memory-court:
+    name: memory-court
+    needs: changes
+    if: needs.changes.outputs.memory_court == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: packages/memory-court
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: packages/memory-court/pyproject.toml
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: ruff format --check .
       - run: python -m pytest -q
 
   page-court:
+    name: page-court
+    needs: changes
+    if: needs.changes.outputs.page_court == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: actors/page-court
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: actors/page-court/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
       - run: ruff format --check .
       - run: python -m pytest -q
 
-  web:
+  site:
+    name: site
+    needs: changes
+    if: needs.changes.outputs.site == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+          persist-credentials: false
+      - uses: ./.github/actions/setup-web
+      - name: Type checks
+        run: npm run lint -w @probate/site
+      - name: Build the landing page and docs
+        run: npm run build -w @probate/site
+
+  web:
+    name: web
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-web
       - name: Family faces
         run: npm test -w kinfaces
       - name: Type checks
-        run: npm run lint
-      - name: Build the live site and the landing + docs
-        run: npm run build
+        run: npm run lint -w @probate/web && npm run lint -w @probate/mcp
+      - name: Build the live site and the MCP server
+        run: npm run build -w @probate/web && npm run build -w @probate/mcp
 
   edge:
+    name: edge
+    needs: changes
+    if: needs.changes.outputs.edge == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+          persist-credentials: false
+      - uses: ./.github/actions/setup-web
       - run: npm run lint -w @probate/edge
       - run: npm test -w @probate/edge
       - name: Check the Worker bundles
@@ -103,18 +248,19 @@ jobs:
         working-directory: apps/edge
 
   client-ts:
+    name: client-ts
+    needs: changes
+    if: needs.changes.outputs.client_ts == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
-          cache: npm
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
-      - run: npm ci
-      - run: pip install -e services/core
+          persist-credentials: false
+      - uses: ./.github/actions/setup-web
+      - uses: ./.github/actions/setup-core
       - run: npm run lint -w probate-client
       - name: Test against a fake-mode Courthouse
         run: npm test -w probate-client
@@ -123,17 +269,44 @@ jobs:
       - run: npm run build -w probate-client
 
   client-py:
+    name: client-py
+    needs: changes
+    if: needs.changes.outputs.client_py == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: packages/client-py
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: "3.13"
-      - run: pip install -e ../../services/core -e '.[dev]'
+          persist-credentials: false
+      - uses: ./.github/actions/setup-core
+      - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest -q
       - name: Build and check the package
         run: python -m build && twine check dist/*
+
+  # The single check to require in branch protection.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [changes, core, court-checks, memory-court, page-court, site, web, edge, client-ts, client-py]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Every job that ran passed (skipped is fine)
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          bad="$(echo "$RESULTS" | jq -r '[to_entries[] | select(.value.result != "success" and .value.result != "skipped") | .key] | join(", ")')"
+          if [ -n "$bad" ]; then
+            echo "::error title=ci-ok::Failed or cancelled: $bad"
+            exit 1
+          fi

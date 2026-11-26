@@ -18,7 +18,7 @@ permissions: {}
 
 concurrency:
   group: actionlint-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   ACTIONLINT_VERSION: "1.7.12"

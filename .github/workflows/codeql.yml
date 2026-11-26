@@ -7,8 +7,22 @@ name: codeql
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - design/**
+      - datasets/**
+      - LICENSE
+      - CITATION.cff
   push:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - design/**
+      - datasets/**
+      - LICENSE
+      - CITATION.cff
   schedule:
     - cron: "17 4 * * 1" # Mondays 04:17 UTC
   workflow_dispatch:
@@ -17,7 +31,7 @@ permissions: {}
 
 concurrency:
   group: codeql-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:
