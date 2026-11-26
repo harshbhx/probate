@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from probate.adapters.archive import BoxArchive, LocalArchive
-from probate.adapters.jev import CloudflareJev, FakeJev, RealJev
+from probate.adapters.jev import CloudflareJev, FakeJev, LLMJev, RealJev
 from probate.adapters.llm import FakeLLM, RealLLM
 from probate.adapters.mail import CloudflareSender, FakeMailbox, RealMailbox, RoutedMailbox
 from probate.adapters.pages import ApifyPages, FakePages
@@ -46,28 +46,35 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
             FakePages(limit=cfg.links_per_mail) if cfg.read_links else None,
         )
     else:
+        llm = RealLLM(
+            cfg.brain,
+            cfg.gateway("ollama"),
+            cfg.gateway("anthropic"),
+            fallbacks=cfg.brain_fallbacks,
+            groq_url=cfg.gateway("groq"),
+            cloudflare_url=cfg.gateway("cloudflare"),
+            cloudflare_account_id=cfg.cf_account_id,
+        )
+        if cfg.jev_provider == "cloudflare":
+            jev = CloudflareJev(cfg.gateway("cloudflare"), cfg.cf_account_id)
+        elif cfg.jev_provider == "llm":
+            jev = LLMJev(llm)  # not Jev: the run is labelled as the language-model fallback
+        else:
+            jev = RealJev(cfg.gateway("typesafe"))
         _WORLD = World(
-            jev=(
-                CloudflareJev(cfg.gateway("cloudflare"), cfg.cf_account_id)
-                if cfg.jev_provider == "cloudflare"
-                else RealJev(cfg.gateway("typesafe"))
-            ),
-            llm=RealLLM(
-                cfg.brain,
-                cfg.gateway("ollama"),
-                cfg.gateway("anthropic"),
-                fallbacks=cfg.brain_fallbacks,
-                groq_url=cfg.gateway("groq"),
-                cloudflare_url=cfg.gateway("cloudflare"),
-                cloudflare_account_id=cfg.cf_account_id,
-            ),
+            jev=jev,
+            llm=llm,
             mail=RoutedMailbox(
                 RealMailbox(cfg.gateway("agentmail")),
                 {cfg.owner_sender: CloudflareSender(cfg.gateway("cloudflare"), cfg.cf_account_id)},
             ),
             archive=BoxArchive(cfg.gateway("box")),
             vectors=PineconeVectors(cfg.gateway("pinecone")),
-            voice=ElevenLabsVoice(cfg.gateway("elevenlabs")),
+            voice=(
+                ElevenLabsVoice(cfg.gateway("elevenlabs"))
+                if cfg.connections.get("elevenlabs")
+                else FakeVoice()  # no ElevenLabs connector: eulogies are text only
+            ),
             fake=False,
             pages=(
                 ApifyPages(cfg.gateway("apify"), cfg.apify_actor, limit=cfg.links_per_mail)

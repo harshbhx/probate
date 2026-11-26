@@ -63,6 +63,7 @@ def summary(store: Store) -> dict:
     last = next((c for c in reversed(tried) if c["resistance"] is not None), None)
     return {
         "mode": store.get_setting("mode", "live"),
+        "court_engine": settings.court_engine,
         "paused": store.get_setting("paused", "0") == "1",
         "resting": store.get_setting("resting", "") or None,
         "budget": {
@@ -262,6 +263,7 @@ def evidence(store: Store) -> dict:
     cards = [_gen_card(g, store) for g in gens]
     return {
         "mode": store.get_setting("mode", "live"),
+        "court_engine": settings.court_engine,
         "generations": [
             {"gen": c["gen"], "name": c["name"], "resistance": c["resistance"]} for c in cards
         ],
