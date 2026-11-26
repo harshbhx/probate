@@ -128,6 +128,17 @@ class SpritesHost:
 
     def birth(self, sprite: str, inh: Inheritance) -> dict:
         self.api.create(sprite)
+        try:
+            return self._birth_body(sprite, inh)
+        except Exception:
+            # A half-born Sprite would bill forever and nothing else knows it exists.
+            try:
+                self.force_destroy(sprite)
+            except Exception:
+                log.warning("could not clean up the half-born Sprite %s", sprite, exc_info=True)
+            raise
+
+    def _birth_body(self, sprite: str, inh: Inheritance) -> dict:
         # The child gets the Courthouse's own code, not whatever is on GitHub right now.
         self.api.write_file(sprite, "bundle.tgz", make_bundle())
         self._run(sprite, ["bash", "-lc", INSTALL])
@@ -165,8 +176,9 @@ class SpritesHost:
         return self._cli(sprite, "log").get("log", [])
 
     def destroy(self, sprite: str) -> None:
-        self.api.service_action(sprite, "agent", "stop")
-        self.api.delete(sprite)
+        # The agent service may never have been created (a failed birth): that must not stop the
+        # delete, or the Sprite is leaked.
+        self.force_destroy(sprite)
 
     def list_sprites(self) -> list[str]:
         return sorted(s["name"] for s in self.api.list("gen-") if s.get("name"))

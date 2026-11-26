@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from datetime import UTC, datetime, timedelta
 from difflib import SequenceMatcher
 
@@ -26,6 +27,7 @@ from probate.suite.fixtures import load_all as load_fixtures
 from probate.webhooks import events as wh_events
 
 MAX_INHERITED = 200
+MAX_DEATH_ATTEMPTS = 5  # then the generation is recorded as dead even if its Sprite lingers
 log = logging.getLogger("probate.family")
 
 
@@ -45,6 +47,9 @@ class Family:
         self.host = host
         self.budget = Budget(cfg, store)
         self.budget.meter(w)
+        # One lock for the life cycle: the scheduler thread and the admin routes must never run a
+        # birth, death or trial at the same time (a double birth would make two Sprites).
+        self.lifecycle_lock = threading.RLock()
         self.owner = load_owner()
         # The first address in the owner profile receives contested items; his sending domain
         # is the fallback. The suite's sender always counts as the owner.
@@ -124,7 +129,21 @@ class Family:
             owner=self.owner,
             family_inbox=self.cfg.family_inbox,
         )
-        baseline = self.host.birth(g.sprite, inh)
+        try:
+            baseline = self.host.birth(g.sprite, inh)
+        except Exception:
+            # The host cleans up its own half-born Sprite; here we make sure the row cannot
+            # leave the family waiting on a body that never existed.
+            try:
+                self.host.force_destroy(g.sprite)
+            except Exception:
+                log.warning("gen %s: cleanup after a failed birth failed", gen, exc_info=True)
+            g.state = "died_early"
+            self.store.save_generation(g)
+            self.store.event(
+                gen, "error", f"{name} could not be born: the new Sprite was deleted again."
+            )
+            raise
         self.store.set_gen_json(gen, "baseline_json", baseline)
         g.state = "living"
         self.store.save_generation(g)
@@ -151,18 +170,30 @@ class Family:
             will = self.host.will(g.sprite)
         except Exception as exc:  # noqa: BLE001 - any failure here means no will
             will = {"items": 0, "error": str(exc)}
-        evidence = self.host.evidence(g.sprite)
-        stats = self.host.stats(g.sprite)
-        log = self.host.life_log(g.sprite)
+        # One broken call must not leave the generation dying: each has an empty fallback.
+        try:
+            evidence = self.host.evidence(g.sprite)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gen %s: no body evidence: %s", g.gen, exc)
+            evidence = {"unavailable": True, "error": str(exc)[:200]}
+        try:
+            stats = self.host.stats(g.sprite)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gen %s: no stats: %s", g.gen, exc)
+            stats = {}
+        try:
+            life = self.host.life_log(g.sprite)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gen %s: no life log: %s", g.gen, exc)
+            life = []
         last_breath = (died - timedelta(seconds=30)).isoformat()
-        for row in log:
+        self.store.set_gen_json(g.gen, "evidence_json", evidence)
+        self.store.set_setting(f"stats:{g.gen}", json.dumps(stats))
+        self._destroy_body(g)
+        for row in life:
             # Life runs on the generation's own clock; nothing it did can postdate its death.
             ts = row["ts"] if row["ts"] and row["ts"] <= last_breath else last_breath
-            self.store.event(g.gen, row["kind"], row["text"], ts)
-        self.store.set_gen_json(g.gen, "evidence_json", evidence)
-        self.store.x("UPDATE generations SET baseline_json=baseline_json WHERE gen=?", g.gen)
-        self.store.set_setting(f"stats:{g.gen}", json.dumps(stats))
-        self.host.destroy(g.sprite)
+            self.store.event_once(g.gen, row["kind"], row["text"], ts)
         g.state = "dead"
         g.died_at = died
         g.emails_handled = stats.get("emails", 0)
@@ -170,9 +201,6 @@ class Family:
         self.store.save_generation(g)
         if g.born_at:
             self.budget.charge_life((died - g.born_at).total_seconds() / 3600, g.emails_handled)
-        self.store.x(
-            "UPDATE generations SET evidence_json=? WHERE gen=?", json.dumps(evidence), g.gen
-        )
         self.store.event(
             g.gen,
             "death",
@@ -182,10 +210,33 @@ class Family:
         self.emit("life.died", wh_events.life_died(g, self.cfg.public_url), f"gen:{g.gen}")
         return g
 
+    def _destroy_body(self, g: Generation) -> None:
+        """Delete the Sprite. A failure is retried on later ticks, up to MAX_DEATH_ATTEMPTS."""
+        key = f"death_attempts:{g.gen}"
+        try:
+            self.host.destroy(g.sprite)
+        except Exception as exc:
+            n = int(self.store.get_setting(key, "0") or 0) + 1
+            self.store.set_setting(key, str(n))
+            if n < MAX_DEATH_ATTEMPTS:
+                raise
+            log.error("gen %s: giving up deleting %s: %s", g.gen, g.sprite, exc)
+            self.store.event(
+                g.gen,
+                "error",
+                f"{g.name}'s computer could not be deleted after {n} tries; an operator should "
+                "check for a leftover Sprite.",
+            )
+
     # ------------------------------------------------------------------ trial
     def trial(self, g: Generation) -> list[Judgement]:
         raw = self.w.archive.get_text(f"wills/WILL-gen-{g.gen:03d}.json") or "[]"
-        items = [MemoryItem.model_validate(x) for x in json.loads(raw)]
+        items = []
+        for x in json.loads(raw):
+            try:
+                items.append(MemoryItem.model_validate(x))
+            except ValueError:
+                log.warning("gen %s: skipped a will item that does not validate", g.gen)
         fixtures = load_fixtures()
         by_msg = {
             r["message_id"]: r["fixture_id"]
@@ -212,7 +263,9 @@ class Family:
                     j = verdict.decide(it, [], answers, genome)
                 except CourtUnavailable as exc:
                     j = verdict.decide(it, [], None, genome, error=str(exc))
-            if j.verdict == Verdict.CONTESTED:
+            was = self.store.one("SELECT verdict FROM judgements WHERE item_id=?", it.id)
+            already_asked = was is not None and was["verdict"] == "contested"
+            if j.verdict == Verdict.CONTESTED and not already_asked:  # a retry must not re-email
                 if mailroom.is_judge_item(judge_ids, it.source_ref):
                     held_from_judge.append(it.id)  # one digest below, never one email per item
                 else:
@@ -231,16 +284,20 @@ class Family:
             for s in stats.get("skills", []):
                 extra.append({"id": f"skill_{s['mail']}", "text": s["text"], "concept": "install"})
         benign = [f.body for f in fixtures.values() if not f.is_attack]
-        new, notes = distill(
-            jev=self.w.jev,
-            llm=self.w.llm,
-            gen=g.gen,
-            gen_name=g.name,
-            convicted=convicted,
-            genome=genome,
-            benign_texts=benign,
-            extra_cases=extra,
-        )
+        try:
+            new, notes = distill(
+                jev=self.w.jev,
+                llm=self.w.llm,
+                gen=g.gen,
+                gen_name=g.name,
+                convicted=convicted,
+                genome=genome,
+                benign_texts=benign,
+                extra_cases=extra,
+            )
+        except Exception as exc:
+            log.warning("gen %s: distilling instincts failed", g.gen, exc_info=True)
+            new, notes = [], [f"distill failed: {exc}"]
         for note in notes:
             log.info("gen %s distill: %s", g.gen, note)
         for inst in new:
@@ -275,7 +332,15 @@ class Family:
             self.w.vectors.upsert(approved)
         except Exception:
             log.warning("gen %s: ancestral memory upsert failed", g.gen, exc_info=True)
-        self._obituary(g)
+        try:
+            self._obituary(g)
+        except Exception:
+            log.warning("gen %s: the obituary could not be written", g.gen, exc_info=True)
+            self.store.x(
+                "UPDATE generations SET obituary=COALESCE(obituary, ?) WHERE gen=?",
+                f"{g.name} died. The obituary could not be written; the verdicts are on the trial page.",
+                g.gen,
+            )
         g = self.store.generation(g.gen)
         g.state = "tried"
         self.store.save_generation(g)

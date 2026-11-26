@@ -89,10 +89,12 @@ class Budget:
     def charge(self, usd: float, what: str) -> None:
         if usd <= 0:
             return
-        self.store.set_setting(SPENT, f"{self.spent() + usd:.6f}")
-        key = f"budget:{what}"
-        prev = float(self.store.get_setting(key, "0") or 0)
-        self.store.set_setting(key, f"{prev + usd:.6f}")
+        # Read-modify-write under the store's lock: threads must not lose each other's charges.
+        with self.store.lock:
+            self.store.set_setting(SPENT, f"{self.spent() + usd:.6f}")
+            key = f"budget:{what}"
+            prev = float(self.store.get_setting(key, "0") or 0)
+            self.store.set_setting(key, f"{prev + usd:.6f}")
         if self.exhausted():
             log.warning("spending cap reached: %.2f of %.2f USD", self.spent(), self.limit)
 
