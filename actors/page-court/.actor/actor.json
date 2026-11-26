@@ -1,0 +1,17 @@
+{
+  "actorSpecification": 1,
+  "name": "page-court",
+  "title": "Page Court: prompt-injection check for AI agents",
+  "description": "Put web pages on trial before an AI agent trusts them. Finds instructions aimed at agents, new payees, fake authority, notes to the judge and hidden or encoded text, including text a person can't see. Runs Probate's court checks; no AI model, no API key.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "dockerfile": "../Dockerfile",
+  "dockerContextDir": "../",
+  "readme": "../README.md",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}
