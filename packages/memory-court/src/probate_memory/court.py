@@ -10,11 +10,13 @@ In order, and the first rule that decides wins:
    sender) waits for the owner to confirm it, even when the agent says it came from them: a
    fooled agent can claim anything came from its owner, so only the owner, outside the agent,
    can clear it.
-4. Jev, when configured. Confident risk convicts; clean, confident answers approve; anything
-   else waits. If Jev can't be reached, the memory waits. The court never approves on an error.
-5. Without Jev, a clean memory from the owner or a trusted contact is approved; one from a
-   stranger, a web page or a tool waits, because code checks alone can convict but not clear a
-   stranger.
+4. A second judge, when configured: TypeSafe Jev, or an Ollama model (ollama.py) for anyone
+   without a TypeSafe key. Both get the same questions. Confident risk convicts; clean, confident
+   answers approve; anything else waits. If the judge can't be reached, the memory waits. The
+   court never approves on an error.
+5. Without a second judge, a clean memory from the owner or a trusted contact is approved; one
+   from a stranger, a web page or a tool waits, because code checks alone can convict but not
+   clear a stranger.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ from dataclasses import dataclass, field
 from probate_court_checks import OwnerProfile, Source, check_text
 
 from probate_memory.jev import OWNER_MAY, RISK_QUESTIONS, Answer, Jev, JevUnavailable, state_for
+from probate_memory.ollama import OllamaJudge
 
 APPROVED, CONVICTED, CONTESTED = "approved", "convicted", "contested"
 MAX_TEXT = 4000
@@ -93,7 +96,7 @@ def judge(
     source: str,
     owner: OwnerProfile,
     instincts: list[Instinct],
-    jev: Jev | None = None,
+    jev: Jev | OllamaJudge | None = None,
     about: str = "",
 ) -> Judgement:
     src = Source(source)
@@ -132,34 +135,38 @@ def judge(
         )
 
     if jev is not None:
+        name = getattr(jev, "name", "Jev")
         try:
             answers = jev.ask(state_for(text, src.value, owner.domains, about))
         except JevUnavailable as exc:
-            return Judgement(CONTESTED, f"Contested: the court couldn't reach Jev ({exc}).")
+            return Judgement(CONTESTED, f"Contested: the court couldn't reach {name} ({exc}).")
         names = [n for n in RISK_QUESTIONS if not (n in OWNER_MAY and src is Source.USER)]
         for n in names:
             a = answers.get(n)
             if a and a.value >= 0.5 and a.confidence >= 0.7:
                 return Judgement(
                     CONVICTED,
-                    f"Convicted: Jev found it {n.replace('_', ' ')} ({a.confidence:.0%} sure).",
+                    f"Convicted: {name} found it {n.replace('_', ' ')} ({a.confidence:.0%} sure).",
                     jev=answers,
                 )
         risk = answers.get("risk")
         if risk and risk.value >= 0.6:
             return Judgement(
-                CONVICTED, f"Convicted: Jev rated its risk {risk.value:.2f}.", jev=answers
+                CONVICTED, f"Convicted: {name} rated its risk {risk.value:.2f}.", jev=answers
             )
         sure = all(answers[n].confidence >= 0.8 for n in names if n in answers)
         low = all(_num(answers.get(n)) < 0.2 for n in names)
         if low and sure and (not risk or risk.value < 0.3):
             return Judgement(
                 APPROVED,
-                f"Approved: neither judge found a concern, and it came from {who}.",
+                f"Approved: neither the code checks nor {name} found a concern, and it came from "
+                f"{who}.",
                 jev=answers,
             )
         return Judgement(
-            CONTESTED, "Contested: Jev isn't sure. It waits for the owner to decide.", jev=answers
+            CONTESTED,
+            f"Contested: {name} isn't sure. It waits for the owner to decide.",
+            jev=answers,
         )
 
     if src in (Source.USER, Source.TRUSTED_CONTACT):
@@ -169,6 +176,6 @@ def judge(
     return Judgement(
         CONTESTED,
         f"Contested: it came from {who}, and only the code checks ran. They can convict a "
-        "stranger's memory but not clear it: set up Jev for a second judge, or the owner "
-        "approves it.",
+        "stranger's memory but not clear it: set up Jev or an Ollama model as a second judge, "
+        "or the owner approves it.",
     )
