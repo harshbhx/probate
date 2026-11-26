@@ -21,6 +21,33 @@ class ExecResult:
     stderr: str
 
 
+def parse_frames(raw: bytes) -> ExecResult | None:
+    """Decode the exec stream: marker byte 1 = stdout, 2 = stderr, 3 = exit (the next byte is the
+    exit code). Returns None when the body is not framed, so the caller can try other formats."""
+    if not raw or raw[0] not in (1, 2, 3):
+        return None
+    out: list[bytes] = []
+    err: list[bytes] = []
+    code = 0
+    i = 0
+    while i < len(raw):
+        marker = raw[i]
+        if marker == 3:
+            code = raw[i + 1] if i + 1 < len(raw) else 0
+            i += 2
+            continue
+        if marker not in (1, 2):
+            return None
+        j = i + 1
+        while j < len(raw) and raw[j] not in (1, 2, 3):
+            j += 1
+        (out if marker == 1 else err).append(raw[i + 1 : j])
+        i = j
+    return ExecResult(
+        code, b"".join(out).decode(errors="replace"), b"".join(err).decode(errors="replace")
+    )
+
+
 class SpritesAPI:
     def __init__(self, token: str, base: str = API, timeout: float = 180) -> None:
         self.base = base.rstrip("/")
@@ -79,7 +106,10 @@ class SpritesAPI:
             params.append(("stdin", "true"))
         r = self.http.post(f"{self.base}/sprites/{name}/exec", params=params, content=stdin or b"")
         r.raise_for_status()
-        # VERIFY in spike S2: response format. Accept JSON {exit_code, stdout, stderr} or raw stdout.
+        framed = parse_frames(r.content)
+        if framed is not None:
+            return framed
+        # Older or other responses: JSON {exit_code, stdout, stderr}, or plain stdout.
         try:
             data = r.json()
             return ExecResult(
