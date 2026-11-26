@@ -99,6 +99,9 @@ class SpritesHost:
             "TYPESAFE_BASE_URL": self.cfg.gateway("typesafe"),
             "TYPESAFE_API_KEY": "sprites",
             "PROBATE_CONFIG_DIR": f"{APP}/config",
+            # Card P1: how many linked pages each email may have read by Apify, and with which actor.
+            "PROBATE_LINKS_PER_MAIL": str(self.cfg.links_per_mail),
+            "PROBATE_APIFY_ACTOR": self.cfg.apify_actor,
         }
 
     def birth(self, sprite: str, inh: Inheritance) -> dict:

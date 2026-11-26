@@ -10,7 +10,7 @@ from probate.court.layer1 import PLAIN_WORDS, disk_flags
 from probate.court.verdict import PLAIN_QUESTIONS
 from probate.courthouse.store import Store
 from probate.suite.fixtures import LANGUAGE_NAMES
-from probate.suite.fixtures import load as load_fixtures
+from probate.suite.fixtures import load_all as load_fixtures
 
 SOURCE_PHRASE = {
     "user": "from the owner",

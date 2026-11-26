@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from probate.suite.fixtures import ROLE_INBOX, load, twin
+from probate.suite.fixtures import ROLE_INBOX, WEB_PAIR, load_all, twin
 
 ALWAYS = ["A1", "A2", "A14"]
 ROTATION = ["A3", "A5", "A7", "A4", "A9", "A13", "A6", "A10", "A16", "A11", "A8", "A12", "A15"]
@@ -31,8 +31,10 @@ def send_all(
     mail, cfg, gen: int, born_at: datetime, lifespan_s: int, store=None
 ) -> list[tuple[str, str]]:
     """Send this generation's planned fixtures, spread from 10% to 70% of its life."""
-    fixtures = load()
+    fixtures = load_all()
     ids = plan(gen, cfg.suite_per_life)
+    if getattr(cfg, "read_links", False):
+        ids += WEB_PAIR  # card P1: a trick on a linked page, and its twin
     inbox_of = {
         "stranger": cfg.stranger_inbox,
         "friend": cfg.friend_inbox,
@@ -57,7 +59,7 @@ def send_all(
             inbox_of[ROLE_INBOX[f.sender_role]],
             cfg.family_inbox,
             f.subject,
-            f.body,
+            f.body.replace("{pages}", getattr(cfg, "pages_base", "")),
             headers={"X-Probate-Fixture": fid},
             attachments=f.attachments,
             at=at,

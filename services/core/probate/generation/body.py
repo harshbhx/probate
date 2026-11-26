@@ -30,7 +30,11 @@ class Body:
                 else []
             )
         p = self.workdir / "crontab.txt"
-        return [line for line in p.read_text(encoding="utf-8").splitlines() if line.strip()] if p.exists() else []
+        return (
+            [line for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
+            if p.exists()
+            else []
+        )
 
     def rc_hashes(self) -> dict[str, str]:
         out = {}
