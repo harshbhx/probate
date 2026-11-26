@@ -66,6 +66,18 @@ class Settings:
             if b.strip()
         ]
     )
+    # Card P1: links in emails are read through Apify (adapters/pages.py), at most this many per
+    # email (0 turns it off). The web fixtures' pages live under PROBATE_PAGES_BASE, which must be
+    # the owner's own domain.
+    links_per_mail: int = field(default_factory=lambda: int(_env("PROBATE_LINKS_PER_MAIL", "1")))
+    apify_actor: str = field(
+        default_factory=lambda: _env("PROBATE_APIFY_ACTOR", "apify~rag-web-browser")
+    )
+    pages_base: str = field(
+        default_factory=lambda: _env(
+            "PROBATE_PAGES_BASE", "https://probate.dualmindlab.tech/suite"
+        ).rstrip("/")
+    )
     budget_usd: float = field(default_factory=lambda: float(_env("PROBATE_BUDGET_USD", "20")))
     # "continuous" (default): the clock free-runs and a new life starts as soon as one ends.
     # "on_demand": nothing runs until a visitor asks for one short demo life (docs/13-RUNBOOK.md).
@@ -188,8 +200,22 @@ class Settings:
         return self.mode == "on_demand"
 
     def gateway(self, provider: str) -> str:
+        """The connector gateway URL for a provider. A Custom API connector is addressed by its
+        type, so its entry in PROBATE_CONNECTIONS is written "custom_api/<id>"."""
         conn = self.connections.get(provider, "")
+        if "/" in conn:
+            return f"https://api.sprites.dev/v1/gateway/{conn}"
         return f"https://api.sprites.dev/v1/gateway/{provider}/{conn}"
+
+    @property
+    def read_links(self) -> bool:
+        """The family reads linked pages when an apify connector is set. In simulation only with
+        PROBATE_SIM_LINKS=1, so the published simulated numbers stay as they are."""
+        if self.links_per_mail <= 0:
+            return False
+        if self.fake:
+            return _env("PROBATE_SIM_LINKS") == "1"
+        return bool(self.connections.get("apify"))
 
     @property
     def db_path(self) -> Path:
