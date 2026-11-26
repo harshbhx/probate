@@ -12,6 +12,7 @@ token. The page text is untrusted (source `web`), so anything it tries to plant 
 from __future__ import annotations
 
 import re
+import time
 from dataclasses import dataclass
 
 import httpx
@@ -65,14 +66,30 @@ class ApifyPages:
         self.actor = actor
         self.scraper = scraper
         self.client = gateway_client(timeout=timeout)
+        self.max_wait = 90.0  # seconds to wait for the run
+        self.poll_seconds = 2.0
 
     def read(self, url: str) -> Page:
         body = {"query": url, "maxResults": 1, "scrapingTool": self.scraper}
+        # The Sprites Apify connector forwards the run endpoints, not run-sync: start the run,
+        # poll it, then read its dataset.
         try:
-            r = self.client.post(
-                f"{self.base_url}/v2/acts/{self.actor}/run-sync-get-dataset-items", json=body
+            r = self.client.post(f"{self.base_url}/v2/actors/{self.actor}/runs", json=body)
+            if r.status_code not in (200, 201):
+                raise PageUnavailable(f"Apify returned {r.status_code}: {r.text[:200]}")
+            run = r.json()["data"]
+            deadline = time.monotonic() + self.max_wait
+            while run.get("status") not in ("SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"):
+                if time.monotonic() > deadline:
+                    raise PageUnavailable("Apify took too long to read the page")
+                time.sleep(self.poll_seconds)
+                run = self.client.get(f"{self.base_url}/v2/actor-runs/{run['id']}").json()["data"]
+            if run["status"] != "SUCCEEDED":
+                raise PageUnavailable(f"The Apify run {run['status'].lower()}")
+            r = self.client.get(
+                f"{self.base_url}/v2/datasets/{run['defaultDatasetId']}/items", params={"limit": 1}
             )
-        except httpx.HTTPError as exc:
+        except (httpx.HTTPError, KeyError, ValueError) as exc:
             raise PageUnavailable(f"Apify didn't answer: {exc}") from exc
         if r.status_code not in (200, 201):
             raise PageUnavailable(f"Apify returned {r.status_code}: {r.text[:200]}")
