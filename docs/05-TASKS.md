@@ -6,7 +6,7 @@ Hard dates (IST): **core loop working by Thu Nov 26, 23:59**, **site + voice by 
 
 ## Status (Nov 25)
 
-Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 69 tests, `make sim` gives a 12-generation family):
+Built and tested offline with stand-in vendors (`PROBATE_FAKE=1`, 352 tests, `make sim` gives a 12-generation family):
 
 - **Done in code:** A1, A2, A3, B1, B2, B3, C1, C2, C3, C4, C5, E1, E2, E3, F1, F3.
 - **Replaced:** D0 to D3. The website is now React in `apps/web` (see `docs/04-DESIGN.md` v2 and `docs/11-UI-SCREENS.md`), served by the Courthouse. The Jinja and `probate/web/` paths below are history.
@@ -238,14 +238,17 @@ Judges email a trick to the family and watch what happens.
 - [ ] Refreshes every 5 to 10 seconds by polling `/api/summary`, so the Courthouse can still sleep when nobody is watching
 - [ ] Every page says "Live from Fly.io Sprites" with the Sprite name, or "Simulated run" when `mode` is simulation
 
-## P1. Apify reads the links (any agent) · Fri Nov 27
+## P1. Apify reads the links (any agent) · Fri Nov 27 · built Thu Nov 26
 
 Gives Apify, a judges' company, a real job: indirect prompt injection through a web page.
 
-- [ ] When an email links to a page, the generation asks Apify (through a Sprites connector) for the page text; nothing from the page runs on the Sprite
-- [ ] Page text counts as untrusted (`unknown_sender` source with `source_ref` = the URL), so anything it tries to plant goes to trial
-- [ ] Two new fixtures: a trick page and its harmless twin, hosted on the owner's own domain (for example `pages.dualmindlab.tech`), never a third party's site
-- [ ] Fake mode returns the page text from the fixture, so `make sim` still runs offline
+- [x] When an email links to a page, the generation asks Apify's RAG Web Browser (`apify~rag-web-browser`, through the `apify` Sprites connector) for the page text as Markdown; nothing from the page runs on the Sprite. Code: `services/core/probate/adapters/pages.py`
+- [x] Inherited instincts screen the page exactly as they screen an email; a page that trips one is turned away before the brain reads it
+- [x] Page text counts as untrusted: anything kept from it has source `web` and its evidence names the URL, so it goes to trial. The memory keeps the email's `source_ref`, so the verdict is tied back to the email and its fixture
+- [x] Two new fixtures, W1 (a trick page) and W1h (its harmless twin), both linked by the trusted friend so the email itself is harmless. They live in `probate/suite/suite-web.json`, apart from the 16 + 16, so the published suite numbers don't change. The pages are served by the docs site from `apps/site/public/suite/` on the owner's own domain (`PROBATE_PAGES_BASE`, default `https://probate.dualmindlab.tech/suite`)
+- [x] Fake mode serves the pages from the fixture file, so `make sim` still runs offline. Simulations only read links with `PROBATE_SIM_LINKS=1`; real runs read them whenever an `apify` connection is set
+- [x] Tests: `services/core/tests/test_links.py` (Gen 1 writes the trick down and the court convicts it; later generations turn the page away; the harmless page is never convicted)
+- [ ] First real run: confirm the gateway path and the actor's output fields (marked `# VERIFY` in `pages.py`)
 
 ## G1. End-to-end rehearsal (any free agent + the owner) · Fri Nov 27 night
 
