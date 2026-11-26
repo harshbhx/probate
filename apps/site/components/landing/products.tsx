@@ -9,7 +9,7 @@ import { SpotlightCard } from '@/components/fx/SpotlightCard';
 import { CourtBeams } from './court-beams';
 import { PageVerdicts } from './page-verdicts';
 import memories from '@/lib/generated/memory-court-examples.json';
-import { githubUrl } from '@/lib/shared';
+import { githubUrl, pageCourtUrl } from '@/lib/shared';
 
 const repo = githubUrl || 'https://github.com/harshbhx/probate';
 const GIT = 'git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court';
@@ -85,7 +85,7 @@ t.verdict   # "convicted"`,
     label: 'Page Court',
     lang: 'bash',
     code: `curl -X POST \\
-  "https://api.apify.com/v2/acts/USER~page-court/run-sync-get-dataset-items" \\
+  "https://api.apify.com/v2/acts/harsh_bhanu~page-court/run-sync-get-dataset-items" \\
   -H "Authorization: Bearer $APIFY_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"startUrls": [{"url": "https://example.com/"}]}'`,
@@ -134,8 +134,8 @@ const PAGE_POINTS = [
   {
     title: 'Page Court, on Apify',
     body: 'The same checks as an Apify Actor any agent can call before it trusts a page, with no model and no key. It also reads what people can’t see: CSS-hidden text, comments, invisible characters.',
-    href: `${repo}/tree/main/actors/page-court`,
-    link: 'The Actor',
+    href: pageCourtUrl,
+    link: 'On the Apify Store',
   },
 ];
 
@@ -208,7 +208,7 @@ const TREE: TreeNode[] = [
 const BOX = [
   { name: 'The family', what: 'An email agent that dies every night, on Fly.io Sprites', href: '/docs' },
   { name: 'The memory court', what: 'MCP server, plus Mem0, LangGraph and Letta plug-ins', href: '/docs/memory-court' },
-  { name: 'Page Court', what: 'An Apify Actor that tries web pages', href: `${repo}/tree/main/actors/page-court` },
+  { name: 'Page Court', what: 'An Actor on the Apify Store that tries web pages', href: pageCourtUrl },
   { name: 'Court checks', what: 'The code checks as a Python package and CLI', href: `${repo}/tree/main/packages/court-checks` },
   { name: 'Open datasets', what: 'The attack suite and the simulated runs, on Hugging Face', href: 'https://huggingface.co/datasets/harshbhx/probate-attack-suite' },
   { name: 'The write-up', what: 'How it works and why, in one read', href: '/article' },

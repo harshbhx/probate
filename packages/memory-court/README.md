@@ -177,7 +177,7 @@ Only approved memories are ever sent to Pinecone, and a forgotten one is deleted
 
 ```sh
 pip install -e '.[dev]'
-ruff check . && python -m pytest -q   # 55 tests, including a real MCP client talking to the server over stdio
+ruff check . && python -m pytest -q   # 59 tests, including a real MCP client talking to the server over stdio
 ```
 
 MIT licensed. Part of [Probate](https://github.com/harshbhx/probate), built for Fly.io Hacksgiving 2026.

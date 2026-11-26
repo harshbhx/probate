@@ -16,6 +16,8 @@ export const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL ?? '';
 // The write-up lives on this site (/article) unless it is published elsewhere too.
 export const articleUrl = process.env.NEXT_PUBLIC_ARTICLE_URL || '/article';
 export const postUrl = process.env.NEXT_PUBLIC_POST_URL ?? '';
+// Page Court's listing on the Apify Store.
+export const pageCourtUrl = 'https://apify.com/harsh_bhanu/page-court';
 
 export const gitConfig = repo
   ? { user: repo.split('/')[0], repo: repo.split('/')[1], branch: 'main' }

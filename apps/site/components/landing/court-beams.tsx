@@ -7,7 +7,7 @@ import { Seal } from '@/components/seal';
 
 const SOURCES = [
   { name: 'An email', via: 'AgentMail, in the family' },
-  { name: 'A linked web page', via: 'Apify, card P1' },
+  { name: 'A linked web page', via: 'Apify, in the family' },
   { name: 'Claude or Cursor', via: 'the MCP server' },
   { name: 'Mem0', via: 'CourtedMemory' },
   { name: 'LangGraph', via: 'CourtedStore' },
