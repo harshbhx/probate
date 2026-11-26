@@ -1,0 +1,40 @@
+{
+  "actorSpecification": 1,
+  "fields": {},
+  "views": {
+    "overview": {
+      "title": "Verdicts",
+      "transformation": {
+        "fields": ["url", "verdict", "summary", "checks", "hidden_chars", "title"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "url": { "label": "Page", "format": "link" },
+          "verdict": { "label": "Verdict", "format": "text" },
+          "summary": { "label": "Why", "format": "text" },
+          "checks": { "label": "Checks that fired", "format": "array" },
+          "hidden_chars": { "label": "Hidden characters", "format": "number" },
+          "title": { "label": "Title", "format": "text" }
+        }
+      }
+    },
+    "findings": {
+      "title": "Findings",
+      "transformation": {
+        "unwind": ["findings"],
+        "fields": ["url", "check", "where", "excerpt", "reason"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "url": { "label": "Page", "format": "link" },
+          "check": { "label": "Check", "format": "text" },
+          "where": { "label": "Where", "format": "text" },
+          "excerpt": { "label": "What fired", "format": "text" },
+          "reason": { "label": "Reason", "format": "text" }
+        }
+      }
+    }
+  }
+}
