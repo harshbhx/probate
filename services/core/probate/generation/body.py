@@ -23,7 +23,10 @@ class Body:
 
     def crontab(self) -> list[str]:
         if self.real:
-            r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, check=False)
+            try:
+                r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, check=False)
+            except FileNotFoundError:  # a Sprite image without cron: there is no crontab to read
+                return []
             return (
                 [line for line in r.stdout.splitlines() if line.strip()]
                 if r.returncode == 0
