@@ -17,9 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "apps" / "site" / "lib" / "generated"
 sys.path.insert(0, str(ROOT / "actors" / "page-court"))
 
-from probate_court_checks import OwnerProfile  # noqa: E402
-from probate_memory.court import judge  # noqa: E402
-from src.scan import scan_page  # noqa: E402
+from probate_court_checks import OwnerProfile
+from probate_memory.court import judge
+from src.scan import scan_page
 
 OWNER = OwnerProfile(name="Sam", domains=["owner.example"])
 
