@@ -1,6 +1,6 @@
 {
   "name": "probate-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Typed client for the Probate Courthouse public API. Zero dependencies, uses global fetch.",
   "license": "MIT",
   "author": "Harsh Bhanushali <bhanushaliharsh434@gmail.com>",

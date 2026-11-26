@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Documentation only: a fuller README with install, usage and links, now that the package is on the public registry.
+
 ## 0.2.0
 
 - The check reasons say "the owner" instead of naming the project's author, so the package reads the same for anyone who runs it.

@@ -43,7 +43,7 @@ You need Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 <Tabs items={['Claude Code', 'Claude Desktop or Cursor', 'pip']}>
   <Tab value="Claude Code">
     ```sh
-    claude mcp add probate-memory -- uvx --from "git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court" probate-memory serve
+    claude mcp add probate-memory -- uvx probate-memory-court serve
     ```
   </Tab>
   <Tab value="Claude Desktop or Cursor">
@@ -53,8 +53,7 @@ You need Python 3.11+ and [uv](https://docs.astral.sh/uv/).
         "probate-memory": {
           "command": "uvx",
           "args": [
-            "--from", "git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court",
-            "probate-memory", "serve"
+            "probate-memory-court", "serve"
           ],
           "env": { "PROBATE_OWNER_DOMAINS": "example.org" }
         }
@@ -64,7 +63,7 @@ You need Python 3.11+ and [uv](https://docs.astral.sh/uv/).
   </Tab>
   <Tab value="pip">
     ```sh
-    pip install "probate-memory-court @ git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court"
+    pip install probate-memory-court
     probate-memory serve
     ```
   </Tab>

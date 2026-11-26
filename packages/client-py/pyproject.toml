@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "probate-client"
-version = "0.1.0"
+version = "0.1.1"
 description = "Typed sync and async client for the Probate Courthouse public API."
 readme = "README.md"
 license = "MIT"

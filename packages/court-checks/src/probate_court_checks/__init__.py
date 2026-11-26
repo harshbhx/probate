@@ -14,7 +14,7 @@ from probate_court_checks.checks import (
 )
 from probate_court_checks.models import Flag, OwnerProfile, Source
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     "MAX_CHARS",
