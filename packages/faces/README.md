@@ -1,5 +1,9 @@
 # kinfaces
 
+Deterministic generated faces for a family line, as framework-free SVG strings with an optional React component.
+
+[![npm](https://img.shields.io/npm/v/kinfaces)](https://www.npmjs.com/package/kinfaces) [![license: MIT](https://img.shields.io/npm/l/kinfaces)](https://github.com/harshbhx/probate/blob/main/packages/faces/LICENSE) [![repo](https://img.shields.io/badge/repo-harshbhx%2Fprobate-blue?logo=github)](https://github.com/harshbhx/probate)
+
 Deterministic generated faces for a family line. Gen 1 gets a face; every child copies its
 parent's face and changes **exactly one trait**, so the family looks related down the line and
 every generation is still its own person. Same input, same face, on every machine.
@@ -10,6 +14,7 @@ every generation is still its own person. Same input, same face, on every machin
 
 - Framework-free `faceSvg()` returns an SVG string: Node, browsers, workers, edge functions, build scripts.
 - Optional React component (`kinfaces/react`), SSR-safe. React is an **optional** peer dependency.
+- Also mirrored on GitHub Packages as `@harshbhx/kinfaces`.
 - ESM, TypeScript types included, tree-shakeable (`sideEffects: false`), no runtime dependencies.
 - Extracted from [Probate](https://github.com/harshbhx/probate), where each agent generation gets a portrait.
 
@@ -19,7 +24,9 @@ every generation is still its own person. Same input, same face, on every machin
 npm install kinfaces
 ```
 
-## Plain JavaScript
+## Usage
+
+### Plain JavaScript
 
 ```js
 import { faceSvg } from "kinfaces";
@@ -46,7 +53,7 @@ element.innerHTML = faceSvg(12, { title: "Generation 12" });
 Faces are static by default. Pass `animate: true` to add breathing and blinking (the stylesheet
 is embedded in the string and honours `prefers-reduced-motion`).
 
-## React
+### React
 
 ```tsx
 import { FamilyFace } from "kinfaces/react";
@@ -62,7 +69,7 @@ import "kinfaces/faces.css"; // the breathing / blinking animation (optional; fa
 SVG. Both work in server components and during SSR; `kinfaces/react` carries a `"use client"`
 directive because the pointer-tracking hook needs the client.
 
-## Server-side rendering without React
+### Server-side rendering without React
 
 ```js
 // any handler: Express, a Cloudflare Worker, Next.js route handler, ...
@@ -158,12 +165,22 @@ Rendering details (colours, shapes) are not part of that promise; the *traits* a
 - **Animation uses CSS classes (`pf-*`).** Inside `<img src="x.svg">` the embedded `<style>`
   still works, but some sanitisers strip `<style>`; static faces work everywhere.
 - **Engines.** Node 18+ and any current browser. The React build needs React 18 or newer.
-- Not yet tested in a published release; see the changelog.
+
+## Part of Probate
+
+This is one piece of [Probate](https://github.com/harshbhx/probate), an email agent that lives one generation at a time and passes down only what a court approves. Built for Fly.io Hacksgiving 2026.
+
+- Repository: [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- Live site: [probate.dualmindlab.tech](https://probate.dualmindlab.tech)
+- Docs for this package: [Everything we built](https://probate.dualmindlab.tech/docs/products) and [Inheritance](https://probate.dualmindlab.tech/docs/concepts/inheritance), the idea the faces show
+- The story: [the Probate write-up](https://probate.dualmindlab.tech/article)
+- Related: [probate-client](https://www.npmjs.com/package/probate-client) (npm), [probate-mcp](https://www.npmjs.com/package/probate-mcp) (npm)
+- Releases: [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0), [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0)
 
 ## Development
 
 ```sh
-npm install        # in the monorepo root
+npm install                     # in the monorepo root
 npm test -w kinfaces            # builds, then runs source and built-package tests
 npm run build -w kinfaces       # dist/ (JS + .d.ts + faces.css)
 npm run gallery -w kinfaces     # regenerate gallery.svg

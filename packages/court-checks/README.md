@@ -4,6 +4,8 @@ Small, deterministic text checks that flag likely **prompt-injection and memory-
 in text an AI agent is about to read, store or act on (an e-mail, a web page, a "memory"
 to be saved). Pure Python, standard library only, no model and no network calls.
 
+[![PyPI](https://img.shields.io/pypi/v/probate-court-checks)](https://pypi.org/project/probate-court-checks/) [![license: MIT](https://img.shields.io/pypi/l/probate-court-checks)](https://github.com/harshbhx/probate/blob/main/packages/court-checks/LICENSE) [![repo](https://img.shields.io/badge/repo-harshbhx%2Fprobate-blue?logo=github)](https://github.com/harshbhx/probate)
+
 This is the "layer 1" of the Courthouse in the [Probate](https://github.com/harshbhx/probate)
 project, extracted so it can be used on its own. Because it is code, the text being
 checked cannot argue with it or talk it out of its verdict.
@@ -11,10 +13,10 @@ checked cannot argue with it or talk it out of its verdict.
 ## Install
 
 ```sh
-pip install probate-court-checks      # Python 3.11+, from PyPI
+pip install probate-court-checks      # Python 3.11+
 ```
 
-## Use
+## Usage
 
 ```python
 from probate_court_checks import OwnerProfile, Source, check_text
@@ -101,6 +103,18 @@ used in the test suite:
 
 The suite is small and synthetic; treat these as regression tests, not accuracy claims.
 
+## Part of Probate
+
+This is one piece of [Probate](https://github.com/harshbhx/probate), an email agent that lives one generation at a time and passes down only what a court approves. Built for Fly.io Hacksgiving 2026.
+
+- Repository: [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- Live site: [probate.dualmindlab.tech](https://probate.dualmindlab.tech)
+- Docs for this package: [The attack suite](https://probate.dualmindlab.tech/docs/concepts/attack-suite) and [Everything we built](https://probate.dualmindlab.tech/docs/products)
+- The story: [the Probate write-up](https://probate.dualmindlab.tech/article)
+- Related: [probate-memory-court](https://pypi.org/project/probate-memory-court/) (PyPI), [Page Court](https://apify.com/harsh_bhanu/page-court) (Apify Actor), [probate-client](https://pypi.org/project/probate-client/) (PyPI)
+- Releases: [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0), [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0)
+- Data: [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) on Hugging Face
+
 ## Development
 
 ```sh
@@ -111,6 +125,6 @@ ruff check . && pytest
 The fixtures in `tests/data/suite-v1.json` are a copy of `fixtures/suite-v1.json` in the
 repository root.
 
-## Licence
+## License
 
-MIT. See `LICENSE`.
+MIT. Copyright (c) 2026 Harsh Bhanushali.
