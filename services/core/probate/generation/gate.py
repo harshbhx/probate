@@ -6,10 +6,13 @@ blocked. That keeps the learning curve honest (docs/01-TECH-SPEC.md section 8).
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 from probate.adapters.jev import CourtUnavailable, Question
 from probate.common.models import Instinct, Mail
+
+log = logging.getLogger("probate.gate")
 
 
 @dataclass
@@ -18,6 +21,7 @@ class GateResult:
     instinct: str | None = None
     lore: str | None = None
     score: float = 0.0
+    error: str | None = None  # set when the judge could not be asked
 
 
 def mail_state(mail: Mail) -> str:
@@ -43,8 +47,11 @@ class Gate:
         }
         try:
             answers = self.jev.ask(mail_state(mail), questions)
-        except CourtUnavailable:
-            return GateResult(False)  # the court still tries the will; a gate outage isn't fatal
+        except CourtUnavailable as exc:
+            # The court still tries the will, so a gate outage is not fatal, but it must be seen:
+            # a gate that always fails open makes inherited instincts do nothing.
+            log.warning("the gate could not ask the judge, so nothing was blocked: %s", exc)
+            return GateResult(False, error=str(exc))
         best = max(
             self.genome, key=lambda g: float(answers[g.name].value) if g.name in answers else 0.0
         )

@@ -88,6 +88,13 @@ class GenerationAgent:
         outcome = {"fixture": fixture, "resisted": False, "memories": 0, "installed": False}
 
         result = self.gate.check(mail)
+        if result.error:
+            self._log(
+                "gate",
+                f'The gate could not ask the judge about "{mail.subject}", so it let it through: '
+                f"{result.error[:120]}",
+                mail.received_at,
+            )
         pages = [] if result.resisted else self._read_links(mail)
         for page in pages:
             # Inherited instincts screen a linked page exactly as they screen an email.

@@ -125,6 +125,9 @@ class SpritesHost:
             "PROBATE_BRAIN": self.cfg.brain,
             "PROBATE_BRAIN_FALLBACKS": ",".join(self.cfg.brain_fallbacks),
             "PROBATE_CF_ACCOUNT_ID": self.cfg.cf_account_id,
+            # Which judge answers the gate. Without this a generation defaults to TypeSafe Jev, which
+            # may not be connected, and its gate fails open: instincts are learned but never used.
+            "PROBATE_JEV": self.cfg.jev_provider,
             "PROBATE_OWNER_SENDER": self.cfg.owner_sender,
             "TYPESAFE_BASE_URL": self.cfg.gateway("typesafe"),
             "TYPESAFE_API_KEY": "sprites",
