@@ -35,6 +35,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Proof** | [Every claim and how to check it](apps/site/content/docs/%28guide%29/proof.mdx) |
 | **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
 | **Code** | This repository, plus the [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0) releases and the [packages](#packages) |
+| **Packages** | Six packages on [npm](https://www.npmjs.com/~harshbhx1), [PyPI](https://pypi.org/user/harshbhx/) and GitHub Packages, plus the `ghcr.io/harshbhx/probate` Docker image and the [Page Court](https://apify.com/harsh_bhanu/page-court) Actor: [the list](#packages) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
 | **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
 | **On Apify** | [Page Court](https://apify.com/harsh_bhanu/page-court), an Actor that checks pages for tricks aimed at agents ([source](actors/page-court)) |
@@ -249,6 +250,10 @@ Probate ships six small packages. The npm ones are on [npm](https://www.npmjs.co
 | [`probate-client`](packages/client-py) (Python) | The same client for Python, sync and async | `pip install probate-client` ([PyPI](https://pypi.org/project/probate-client/)) |
 | [`probate-court-checks`](packages/court-checks) | The court's deterministic text checks, with a small CLI | `pip install probate-court-checks` ([PyPI](https://pypi.org/project/probate-court-checks/)) |
 | [`probate-memory-court`](packages/memory-court) | Memory with a court for any MCP agent: every memory is tried before it is saved | `uvx probate-memory-court serve` ([PyPI](https://pypi.org/project/probate-memory-court/)) |
+
+**Docker image.** `docker run -p 8080:8080 ghcr.io/harshbhx/probate` starts the Courthouse and the live site in simulation mode ([package page](https://github.com/harshbhx/probate/pkgs/container/probate)).
+
+**Apify Actor.** [Page Court](https://apify.com/harsh_bhanu/page-court) checks a web page for tricks aimed at agents, with no model and no key.
 
 ```bash
 # npm
