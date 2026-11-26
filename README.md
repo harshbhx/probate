@@ -37,7 +37,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Code** | This repository, plus the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and four [packages](#packages) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
 | **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
-| **On Apify** | [Page Court](actors/page-court), an Actor that checks pages for tricks aimed at agents |
+| **On Apify** | [Page Court](https://apify.com/harsh_bhanu/page-court), an Actor that checks pages for tricks aimed at agents ([source](actors/page-court)) |
 | **For AI agents** | An [ARD manifest](apps/site/app/.well-known/ard.json/route.ts), two Agent Skills and four WebMCP tools, so an agent can find and use Probate on its own: [what each one does](apps/site/content/docs/%28reference%29/reference/agents.mdx). Lighthouse Agentic browsing: 100 |
 | **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
 | **Everything we built** | Six products and how to try each in a minute: [`/docs/products`](apps/site/content/docs/%28guide%29/products.mdx) |
@@ -222,6 +222,8 @@ make test      # 352 Python tests and the face model
 make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```
+
+**Docker.** The Courthouse and the live site also ship as one image, built from the [`Dockerfile`](Dockerfile): `docker build -t probate . && docker run -p 8080:8080 -v probate-data:/data probate`. It starts in simulation mode, so it needs no keys. The manual [`docker`](.github/workflows/docker.yml) workflow can publish it to `ghcr.io/harshbhx/probate`.
 
 **Webhooks.** The Courthouse can POST signed JSON events (`life.started`, `life.died`, `trial.finished`, `instinct.learned`, `life.failed`) to URLs the operator subscribes. See [`docs/WEBHOOKS.md`](docs/WEBHOOKS.md).
 
