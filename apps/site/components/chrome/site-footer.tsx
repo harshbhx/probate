@@ -5,6 +5,7 @@ import { Seal } from '@/components/seal';
 import { BigWord } from '@/components/fx/BigWord';
 import { FOOTER } from './nav-links';
 import { LiveStatus } from './live-status';
+import { pageSpeedUrl } from '@/lib/shared';
 
 export function SiteFooter() {
   return (
@@ -43,7 +44,13 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-6 text-[13px] text-dim sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>Built by Harsh Bhanushali for Fly.io Hacksgiving 2026.</p>
+          <p>
+            Built by Harsh Bhanushali for Fly.io Hacksgiving 2026.{' '}
+            <a href={pageSpeedUrl} className="text-mist underline decoration-gilt/50 underline-offset-[3px] transition-colors hover:text-moon">
+              PageSpeed 100 in every category, on mobile and desktop
+            </a>
+            .
+          </p>
           <p className="flex items-center gap-2">
             <FamilyFace gen={1} life="sealed" size={20} />
             In memory of every generation that was fooled, so its children would not be.

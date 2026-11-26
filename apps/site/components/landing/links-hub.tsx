@@ -1,9 +1,9 @@
 // "Everything about Probate": the one list of links judges and readers need, in the same order
 // everywhere (form, posts, README). A link without an address is left out, not shown broken.
 import Link from '@/components/intent-link';
-import { ArrowUpRight, BookOpen, ClipboardCheck, Code2, Database, FileText, Gavel, Play, Radio, Trophy } from 'lucide-react';
+import { ArrowUpRight, BookOpen, ClipboardCheck, Code2, Database, FileText, Gauge, Gavel, Play, Radio, Trophy } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { articleUrl, githubUrl, liveUrl, postUrl, videoUrl } from '@/lib/shared';
+import { articleUrl, githubUrl, liveUrl, pageSpeedUrl, postUrl, videoUrl } from '@/lib/shared';
 
 type Item = { icon: LucideIcon; label: string; note: string; href: string; shown?: string };
 
@@ -20,6 +20,7 @@ export function LinksHub() {
     { icon: Database, label: 'The open datasets', note: 'The attack suite and a simulated run, on Hugging Face', href: 'https://huggingface.co/datasets/harshbhx/probate-attack-suite', shown: 'huggingface.co/datasets/harshbhx' },
     { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#court', shown: '#court' },
     { icon: BookOpen, label: 'The docs', note: 'Concepts, architecture and the HTTP API', href: '/docs', shown: 'docs' },
+    { icon: Gauge, label: 'PageSpeed report', note: '100 in every category, on mobile and desktop', href: pageSpeedUrl, shown: 'pagespeed.web.dev' },
     { icon: ArrowUpRight, label: 'The post', note: 'Share it or reply with a question', href: postUrl },
   ].filter((i) => i.href);
 

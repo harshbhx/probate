@@ -11,6 +11,7 @@ import {
   Code2,
   Database,
   FileText,
+  Gauge,
   Gavel,
   Globe,
   Mail,
@@ -24,7 +25,7 @@ import {
   Trophy,
   User,
 } from 'lucide-react';
-import { articleUrl, githubUrl, liveUrl, pageCourtUrl, postUrl, videoUrl } from '@/lib/shared';
+import { articleUrl, githubUrl, liveUrl, pageCourtUrl, pageSpeedUrl, postUrl, videoUrl } from '@/lib/shared';
 
 export type Item = { icon: LucideIcon; label: string; note: string; href: string };
 export type Group = { title: string; items: Item[] };
@@ -50,7 +51,8 @@ export const GROUPS: Group[] = [
       { icon: BookOpen, label: 'The docs', note: 'Concepts, architecture, deploying and costs', href: '/docs' },
       { icon: ClipboardCheck, label: 'Proof for every claim', note: 'A command or a page next to each one', href: '/docs/proof' },
       { icon: Braces, label: 'API reference', note: 'Every Courthouse route, with real example replies', href: '/docs/reference/api' },
-      { icon: Accessibility, label: 'Accessibility', note: 'PageSpeed scores and what axe found', href: '/docs/accessibility' },
+      { icon: Gauge, label: 'PageSpeed report', note: '100 in every category, on mobile and desktop', href: pageSpeedUrl },
+      { icon: Accessibility, label: 'Accessibility', note: 'What axe found on every page, and what is untested', href: '/docs/accessibility' },
       { icon: MessageCircle, label: 'The post', note: 'Share it, or reply with a question', href: postUrl },
     ],
   },
