@@ -25,8 +25,8 @@ classifiers = [
 ]
 dependencies = [
   "mcp>=2.3,<3",
-  # Not on PyPI yet: the court checks come from Probate's v0.1.0 release.
-  "probate-court-checks @ https://github.com/harshbhx/probate/releases/download/v0.1.0/probate_court_checks-0.1.0-py3-none-any.whl",
+  # Not on PyPI yet: the court checks come from Probate's v0.2.0 release.
+  "probate-court-checks @ https://github.com/harshbhx/probate/releases/download/v0.2.0/probate_court_checks-0.2.0-py3-none-any.whl",
 ]
 
 [project.optional-dependencies]
