@@ -20,3 +20,5 @@ For a one-page picture of how the parts fit together, see [ARCHITECTURE.md](ARCH
 | [11-UI-SCREENS.md](11-UI-SCREENS.md) | UI screens |
 | [12-THREAT-MODEL.md](12-THREAT-MODEL.md) | What Probate protects, from whom, and its limits |
 | [13-RUNBOOK.md](13-RUNBOOK.md) | Deploy, run, recover, demo day |
+| [PERFORMANCE.md](PERFORMANCE.md) | Landing page speed and security headers: PageSpeed 100 in every category, on mobile and desktop |
+| [ACCESSIBILITY.md](ACCESSIBILITY.md) | Accessibility statement: the PageSpeed scores, what axe found, what is untested |
