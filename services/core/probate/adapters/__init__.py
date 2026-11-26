@@ -8,6 +8,7 @@ from probate.adapters.archive import BoxArchive, LocalArchive
 from probate.adapters.jev import CloudflareJev, FakeJev, RealJev
 from probate.adapters.llm import FakeLLM, RealLLM
 from probate.adapters.mail import CloudflareSender, FakeMailbox, RealMailbox, RoutedMailbox
+from probate.adapters.pages import ApifyPages, FakePages
 from probate.adapters.vectors import FakeVectors, PineconeVectors
 from probate.adapters.voice import ElevenLabsVoice, FakeVoice
 from probate.common.config import Settings, settings
@@ -22,6 +23,7 @@ class World:
     vectors: object
     voice: object
     fake: bool
+    pages: object | None = None  # reads linked web pages; None when the family doesn't
 
 
 _WORLD: World | None = None
@@ -41,6 +43,7 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
             FakeVectors(),
             FakeVoice(),
             True,
+            FakePages(limit=cfg.links_per_mail) if cfg.read_links else None,
         )
     else:
         _WORLD = World(
@@ -66,5 +69,10 @@ def world(cfg: Settings | None = None, *, fresh: bool = False) -> World:
             vectors=PineconeVectors(cfg.gateway("pinecone")),
             voice=ElevenLabsVoice(cfg.gateway("elevenlabs")),
             fake=False,
+            pages=(
+                ApifyPages(cfg.gateway("apify"), cfg.apify_actor, limit=cfg.links_per_mail)
+                if cfg.read_links
+                else None
+            ),
         )
     return _WORLD
