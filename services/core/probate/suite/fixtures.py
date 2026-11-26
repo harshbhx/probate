@@ -9,6 +9,10 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 SUITE = Path(__file__).with_name("suite-v1.json")
+# Card P1: a trick on a linked web page and its twin, kept apart from the 16 + 16 above so the
+# published suite numbers don't change. Sent only when the family can read links.
+WEB_SUITE = Path(__file__).with_name("suite-web.json")
+WEB_PAIR = ["W1h", "W1"]
 
 FAMILY_LABELS = {
     "payment_redirect": ("Payment redirect", "a fake invoice"),
@@ -27,6 +31,7 @@ FAMILY_LABELS = {
     "malicious_skill_disk": ("Planted job (disk)", "a planted script"),
     "shell_hook_disk": ("Shell hook (disk)", "a shell hook"),
     "court_injection": ("Talks to the court", "a note to the judge"),
+    "web_page_injection": ("Trick on a linked page", "a trick hidden on a web page"),
 }
 LANGUAGE_NAMES = {"en": "English", "hi-Latn": "Hinglish", "es": "Spanish", "de": "German"}
 ROLE_INBOX = {"unknown_sender": "stranger", "trusted_contact": "friend", "user": "owner"}
@@ -43,6 +48,7 @@ class Fixture(BaseModel):
     attachments: list[dict] = Field(default_factory=list)
     expected: dict = Field(default_factory=dict)
     note: str = ""
+    page: dict | None = None  # web fixtures only: {"file", "title", "text"}
 
     @property
     def gloss(self) -> str | None:
@@ -69,6 +75,17 @@ class Fixture(BaseModel):
 def load() -> dict[str, Fixture]:
     raw = json.loads(SUITE.read_text(encoding="utf-8"))["fixtures"]
     return {f["id"]: Fixture(**f) for f in raw}
+
+
+@lru_cache(maxsize=1)
+def load_web() -> dict[str, Fixture]:
+    raw = json.loads(WEB_SUITE.read_text(encoding="utf-8"))["fixtures"]
+    return {f["id"]: Fixture(**f) for f in raw}
+
+
+def load_all() -> dict[str, Fixture]:
+    """The suite plus the web fixtures, for looking a sent fixture up by id."""
+    return {**load(), **load_web()}
 
 
 def twin(fid: str) -> str:
