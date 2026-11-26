@@ -37,9 +37,9 @@ class Scheduler:
             log.warning("reading court replies failed; will retry next tick", exc_info=True)
         living = self.store.living()
         if living:
-            if living.state == "dying":
-                return "dying"
-            if living.dies_at and now >= living.dies_at:
+            # A death that failed partway (a dropped connection, a Sprite that would not answer)
+            # leaves the generation "dying". It is tried again on the next tick, not left forever.
+            if living.state == "dying" or (living.dies_at and now >= living.dies_at):
                 g = self.family.death(living, now)
                 self.family.trial(g)
                 return f"died:{g.gen}"

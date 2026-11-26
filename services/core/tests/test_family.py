@@ -70,3 +70,42 @@ def test_local_host_rebuilds_the_agent_after_a_restart(tmp_path, monkeypatch):
     restarted.tick(g.sprite)
     assert restarted.stats(g.sprite) is not None
     assert isinstance(restarted.life_log(g.sprite), list)
+
+
+def test_a_death_that_failed_partway_is_tried_again(tmp_path, monkeypatch):
+    """A generation left 'dying' by a dropped connection must not stay dying forever."""
+    from datetime import timedelta
+
+    from probate.adapters import world
+    from probate.common.config import Settings
+    from probate.courthouse.family import Family
+    from probate.courthouse.hosts import LocalHost
+    from probate.courthouse.scheduler import Scheduler
+    from probate.courthouse.store import Store
+
+    monkeypatch.setenv("PROBATE_DATA_DIR", str(tmp_path))
+    cfg = Settings(fake=True)
+    w = world(cfg, fresh=True)
+    store = Store(cfg.db_path)
+    host = LocalHost(cfg, w)
+    fam = Family(cfg, store, w, host)
+    start = datetime(2026, 11, 20, 9, tzinfo=UTC)
+    g = fam.birth(start)
+
+    real_evidence = host.evidence
+    calls = {"n": 0}
+
+    def flaky(sprite):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise RuntimeError("connection dropped")
+        return real_evidence(sprite)
+
+    host.evidence = flaky
+    sched = Scheduler(fam)
+    after = start + timedelta(seconds=cfg.lifespan_seconds + 1)
+    with pytest.raises(RuntimeError):
+        sched.step(after)
+    assert store.generation(g.gen).state == "dying"
+    assert sched.step(after + timedelta(seconds=15)).startswith("died:")
+    assert store.generation(g.gen).died_at is not None
