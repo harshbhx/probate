@@ -9,7 +9,11 @@
       "type": "array",
       "description": "Web pages to put on trial. Each is fetched once and read, never run: no JavaScript is executed.",
       "editor": "requestListSources",
-      "prefill": [{ "url": "https://probate.dualmindlab.tech/suite/billing-update.html" }]
+      "prefill": [
+        {
+          "url": "https://probate.dualmindlab.tech/suite/billing-update.html"
+        }
+      ]
     },
     "texts": {
       "title": "Texts",
@@ -22,8 +26,20 @@
       "type": "string",
       "description": "Only the owner may give an agent standing orders, so the same words are judged differently by source.",
       "editor": "select",
-      "enum": ["web", "unknown_sender", "tool_output", "trusted_contact", "user"],
-      "enumTitles": ["A web page", "A stranger", "A tool's output", "A trusted contact", "The owner"],
+      "enum": [
+        "web",
+        "unknown_sender",
+        "tool_output",
+        "trusted_contact",
+        "user"
+      ],
+      "enumTitles": [
+        "A web page",
+        "A stranger",
+        "A tool's output",
+        "A trusted contact",
+        "The owner"
+      ],
       "default": "web"
     },
     "ownerName": {
@@ -43,7 +59,8 @@
     "ownerEmails": {
       "title": "Owner's email addresses",
       "type": "array",
-      "editor": "stringList"
+      "editor": "stringList",
+      "description": "The owner's own email addresses. Mail from these is treated as the owner."
     },
     "trustedContacts": {
       "title": "Trusted contacts",
@@ -69,7 +86,8 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 20,
-      "default": 5
+      "default": 5,
+      "description": "How many pages to fetch at once."
     }
   },
   "required": []
