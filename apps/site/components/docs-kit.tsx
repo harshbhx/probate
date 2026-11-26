@@ -5,6 +5,7 @@ import { GLOSSARY, glossAnchor } from '@/lib/glossary';
 import Link from 'next/link';
 import { icons } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { liveUrl } from '@/lib/shared';
 
 function Icon({ name, className }: { name?: string; className?: string }) {
   const I = name ? icons[name as keyof typeof icons] : undefined;
@@ -24,6 +25,15 @@ export function Summary({ children, who }: { children: ReactNode; who?: string }
       </div>
     </div>
   );
+}
+
+/**
+ * A link into the live family site. Its address is only known at build time
+ * (NEXT_PUBLIC_LIVE_URL); without it, the fallback text is shown instead of a dead link.
+ */
+export function LiveLink({ path = '/', fallback, children }: { path?: string; fallback: ReactNode; children: ReactNode }) {
+  if (!liveUrl) return <>{fallback}</>;
+  return <a href={new URL(path, liveUrl).toString()}>{children}</a>;
 }
 
 /** The same idea without the jargon. */
@@ -204,7 +214,7 @@ export function Partner({ name, judge, icon, children }: { name: string; judge?:
           <span className="text-[15px] font-medium text-moon">{name}</span>
           {judge && <span className="text-[13px] text-dim">judged by {judge}</span>}
         </p>
-        <div className="mt-0.5 text-[14px] leading-relaxed text-mist">{children}</div>
+        <div className="mt-0.5 text-[14px] leading-relaxed text-mist [&_a]:text-silver [&_a]:underline [&_a]:decoration-gilt/50 [&_a]:underline-offset-4">{children}</div>
       </div>
     </div>
   );

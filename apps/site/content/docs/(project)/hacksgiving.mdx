@@ -21,11 +21,11 @@ Probate is an entry in [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23
   <Partner name="TypeSafe Jev" judge="Daniel Gafni" icon="Gavel">Layer 2 of the court, with a confidence on every answer, and every inherited instinct.</Partner>
   <Partner name="Box" judge="Carter Rabasa" icon="Archive">The family archive as readable files: wills, verdicts, quarantine, obituaries and the genome.</Partner>
   <Partner name="Pinecone" judge="Asaf Ashirov" icon="Search">Ancestral memory: approved will items, searched with citations. In the memory court, optional recall by meaning that only ever holds approved memories.</Partner>
-  <Partner name="Ollama Cloud" judge="Michael Chiang" icon="Brain">The brain of every generation.</Partner>
-  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In the family, each generation reads the pages emails link to through Apify's RAG Web Browser on a Sprites connector, so a trick hidden on a web page goes to trial like any other memory (tested in simulation; the real run is next). The court's checks also ship as the Page Court Actor, and there's an Apify connector ready for Fly's Sprites catalog.</Partner>
+  <Partner name="Ollama Cloud" judge="Michael Chiang" icon="Brain">The brain of every generation. In the memory court, an Ollama model can be the second judge for anyone without a TypeSafe key.</Partner>
+  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In the family, each generation reads the pages emails link to through Apify's RAG Web Browser on a Sprites connector, so a trick hidden on a web page goes to trial like any other memory (tested in simulation; the real run is next). The court's checks are also on the Apify Store as <a href="https://apify.com/harsh_bhanu/page-court">Page Court</a>, which any agent can call before it trusts a page.</Partner>
 </Partners>
 
-Also used: AgentMail (three inboxes), Cloudflare (Email Service for the owner's own test emails; Workers for this site), ElevenLabs (voices) and Anthropic (backup brain and instinct writing).
+Also used: AgentMail (three inboxes), Cloudflare (Email Service for the owner's own test emails; Workers for this site), ElevenLabs (voices), and Anthropic and Groq (backup brains, used only when Ollama fails).
 
 ## What to look at
 
@@ -49,7 +49,7 @@ The full walkthrough is on [For judges](/docs/for-judges). In short:
 </Step>
 <Step>
 
-**Try to fool it** (coming before submission). Email the family a trick and watch the living generation handle it, then see the verdict at its trial.
+**Try to fool it.** With the judge key from the submission, email the family a trick through the live site's Mailroom and watch the living generation handle it, then see the verdict at its trial.
 
 </Step>
 </Steps>
@@ -59,9 +59,9 @@ The full walkthrough is on [For judges](/docs/for-judges). In short:
 | Date (IST) | What happens |
 | --- | --- |
 | Nov 23 to 25 | Specs, the court, the simulation, both sites |
-| Nov 25 to 26 | Real Sprites, connectors and the first live generations |
-| Nov 26 | The Apify link reader, Page Court, and the memory court's plug-ins |
-| Nov 27 | Live judging features |
+| Nov 25 | The Courthouse, real Sprites and connectors, the judge key |
+| Nov 26 | The Mailroom, the Apify link reader, Page Court on the Apify Store, the memory court's plug-ins, release v0.2.0 |
+| Nov 26 to 27 | The real run: the first live generations replace the simulation |
 | **Sat Nov 28** | Submission |
 | Mon Nov 30, 1:30 PM | Entries close (midnight PST, Nov 29) |
 | Tue Dec 1 | Winners announced; the family stays alive until then |

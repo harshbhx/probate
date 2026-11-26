@@ -6,7 +6,7 @@ description: What to open, what to try in five minutes, and what each result res
 ---
 
 <Summary who="Hacksgiving judges">
-  Probate runs on Fly.io Sprites and reaches every outside service through Sprites connectors. Each generation's Sprite is **really deleted** when it dies. Below: where to look, what to try, and which numbers are live and which are simulated.
+  Probate runs on Fly.io Sprites and reaches every outside service through Sprites connectors. Each generation's Sprite is **really deleted** when it dies. The family itself lives on <LiveLink fallback="the live family site, served by the Courthouse Sprite (its address is in the submission)">the live family site</LiveLink>; these docs explain it. Below: where to look, what to try, and which numbers are live and which are simulated.
 </Summary>
 
 ## Five minutes
@@ -16,7 +16,7 @@ description: What to open, what to try in five minutes, and what each result res
 
 ### Open the register
 
-The live family site's home page shows every generation, how it died, and the learning curve on the same timeline. The amber banner says "Simulated run" until real generations replace the simulation.
+Open <LiveLink fallback="the live family site (its address is in the submission)">the live family site</LiveLink>. The Courthouse sleeps between visitors, so the first page can take a few seconds. Its home page shows every generation, how it died, and the learning curve on the same timeline. The amber banner says "Simulated run" until real generations replace the simulation.
 
 </Step>
 <Step>
@@ -37,17 +37,28 @@ On any dead generation's page, ask "What fooled you?". It answers from its own w
 
 ### Email the family a trick
 
-On the For judges page, paste the judge key, start a life, then use the **Mailroom** to send a real email to the family as the **Friend** (a trusted contact it knows) or the **Stranger** (someone it has never met). Never as the owner. The Courthouse sends it for you and you never receive the inbox's login, so please don't email the family inbox from your own address. The living generation reads it, and when its life ends the court tries what it wrote down. The page shows each mail's status and then the verdict, with the court's reason. Limits: 120 characters of subject, 600 of text, a few a minute. The **Attack the family** box on the same page is the quick version: an instant verdict, no email.
+On the live site's own **For judges** page (`/judges`, not this docs page), paste the judge key from the submission, start a life, then use the **Mailroom** to send a real email to the family as the **Friend** (a trusted contact it knows) or the **Stranger** (someone it has never met). Never as the owner. The Courthouse sends it for you and you never receive the inbox's login, so please don't email the family inbox from your own address. The living generation reads it, and when its life ends the court tries what it wrote down. The page shows each mail's status and then the verdict, with the court's reason. Limits: 120 characters of subject, 600 of text, a few a minute. The **Attack the family** box on the same page is the quick version: an instant verdict, no email.
 
 </Step>
 <Step>
 
 ### Check the evidence page
 
-Every trick and harmless twin, for every generation, in four languages, with the headline numbers and the honest limits.
+On the live site's evidence page: every trick and harmless twin, for every generation, in four languages, with the headline numbers and the honest limits.
 
 </Step>
 </Steps>
+
+## One more minute each
+
+The court also ships on its own. Each of these works without the family.
+
+<PathGrid>
+  <PathCard title="Page Court, on the Apify Store" href="https://apify.com/harsh_bhanu/page-court" icon="Globe">The court's checks as an Actor: give it a URL and it reports text aimed at an agent, including text hidden from people. No model and no key; a test page to try it on is in Proof.</PathCard>
+  <PathCard title="The memory court" href="/docs/memory-court" icon="Brain">Any agent's memory, on trial before it is saved: an MCP server for Claude and Cursor, with plug-ins for Mem0, LangGraph and Letta. One command to add it to Claude Code.</PathCard>
+  <PathCard title="Proof you can check" href="/docs/proof" icon="ClipboardCheck">Every claim next to the file and the command that shows it. Most run offline in under a minute.</PathCard>
+  <PathCard title="The write-up" href="/article" icon="BookOpen">"My agent dies every night": the whole idea in a ten-minute read.</PathCard>
+</PathGrid>
 
 ## Each judge's product has a real job
 
@@ -57,15 +68,18 @@ Every trick and harmless twin, for every generation, in four languages, with the
   <Partner name="Box" judge="Carter Rabasa" icon="Archive">The family archive as readable files: wills, verdicts, quarantine, obituaries and the genome.</Partner>
   <Partner name="Pinecone" judge="Asaf Ashirov" icon="Search">Ancestral memory: approved will items, searched with citations. In the memory court, optional recall by meaning that only ever holds approved memories.</Partner>
   <Partner name="Ollama Cloud" judge="Michael Chiang" icon="Brain">The brain of every generation. Groq and Claude are backups only, used when Ollama fails. In the memory court, an Ollama model can be the second judge for anyone without a TypeSafe key.</Partner>
-  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In the family, each generation reads the pages emails link to through Apify's RAG Web Browser on a Sprites connector, so a trick hidden on a web page goes to trial like any other memory (tested in simulation; the real run is next). The court's checks also ship as the Page Court Actor, and there's an Apify connector ready for Fly's Sprites catalog.</Partner>
+  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In the family, each generation reads the pages emails link to through Apify's RAG Web Browser on a Sprites connector, so a trick hidden on a web page goes to trial like any other memory (tested in simulation; the real run is next). The court's checks are also on the Apify Store as <a href="https://apify.com/harsh_bhanu/page-court">Page Court</a>, which any agent can call before it trusts a page.</Partner>
 </Partners>
 
 ## What is live, and what is simulated
 
 <StatusList asOf="Updated as the real run progresses.">
-  <Status state="done" title="Court, family, inheritance, both sites" href="/docs/proof">Runs today; 352 tests.</Status>
+  <Status state="done" title="Court, family, inheritance, both sites" href="/docs/proof">Runs today; 352 tests in the core service.</Status>
+  <Status state="done" title="Page Court, published on the Apify Store" href="https://apify.com/harsh_bhanu/page-court">20 tests, on top of the 52 in the court checks it runs.</Status>
+  <Status state="done" title="The memory court and its plug-ins" href="/docs/memory-court">An MCP server with Mem0, LangGraph and Letta plug-ins. 59 tests, including a real MCP client over stdio.</Status>
   <Status state="simulated" title="The learning curve and evidence numbers" href="/docs/results">From `make sim`. Labelled as simulated everywhere they appear.</Status>
   <Status state="next" title="Real generations on Sprites" href="/docs/guides/deploy">Replaces the simulated register as soon as the first real generation is born.</Status>
+  <Status state="next" title="Reading linked pages in a real life" href="/docs/concepts/attack-suite">Built and tested with a stand-in reader. A real life reads them once the Apify connection is set.</Status>
   <Status state="next" title="Email it a trick" href="/docs/reference/api">The judge mailroom is built and tested against the stand-in mailbox. Real delivery through AgentMail (headers, labels, latency) is unverified until the real run.</Status>
 </StatusList>
 
@@ -74,6 +88,6 @@ Every trick and harmless twin, for every generation, in four languages, with the
 | Hacksgiving rule | How Probate meets it |
 | --- | --- |
 | Runs on a Sprite | Every generation and the Courthouse ([How we use Sprites](/docs/architecture/sprites)) |
-| Uses at least one Sprites connector | All of them: TypeSafe, Box, Pinecone, Ollama, AgentMail, ElevenLabs, Anthropic, and Custom API connectors for Cloudflare and Groq ([Connectors](/docs/architecture/connectors)) |
+| Uses at least one Sprites connector | All of them: TypeSafe, AgentMail, Box, Pinecone, Ollama, Apify, ElevenLabs and Anthropic, plus Custom API connectors for Cloudflare and Groq ([Connectors](/docs/architecture/connectors)) |
 | Built during Hacksgiving week | Nov 23 to 29, 2026; the commit history shows it |
-| Code, demo and description | [github.com/harshbhx/probate](https://github.com/harshbhx/probate), the live site, and the [README](https://github.com/harshbhx/probate#readme) |
+| Code, demo and description | [github.com/harshbhx/probate](https://github.com/harshbhx/probate), <LiveLink fallback="the live family site">the live family site</LiveLink>, and the [README](https://github.com/harshbhx/probate#readme) |
