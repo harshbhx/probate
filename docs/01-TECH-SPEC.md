@@ -68,7 +68,7 @@ All generation paths live under `/home/sprite/app` (the documented home for your
 
 1. Exec `cli will`: the agent stops taking new mail, writes `wills/WILL-gen-NNN.md` and `wills/WILL-gen-NNN.json` to Box and prints `{"items": N, "box_file_id": "..."}`.
 2. Exec `cli evidence`: prints a diff between the current disk and `/home/sprite/app/baseline.json` (new crontab lines, changed rc files, new binaries). Store it with the generation. This is the proof for attacks A14 and A15.
-3. `POST .../services/agent/stop`, then `DELETE /v1/sprites/gen-NNN-<name>` (expect 204). Confirm with `GET` returning 404. Row becomes `dead` with `died_at`.
+3. `POST .../services/agent/stop`, then `DELETE /v1/sprites/gen-NNN-<name>` (expect 204). Confirm with `GET` returning 404; both answers are kept with the body evidence as the death certificate (`body.deletion` on the trial). Row becomes `dead` with `died_at`.
 4. If exec fails at step 1 (agent crashed), the Courthouse writes the will from the last memory snapshot (agent writes `/home/sprite/app/memory.jsonl` continuously; the Courthouse reads it with `GET /fs/read`). If even that fails, the generation dies intestate: nothing is inherited and the cause of death is "died without a will".
 
 ## 5. Data contracts (pydantic, `probate/common/models.py`)
