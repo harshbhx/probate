@@ -54,7 +54,11 @@ class SpritesAPI:
         self.http = httpx.Client(
             timeout=timeout,
             headers={"Authorization": f"Bearer {token}"},
-            transport=httpx.HTTPTransport(retries=3),  # a dropped TLS handshake is retried
+            # No kept-alive connections: reusing one the server already closed raises "SSL: UNEXPECTED_EOF".
+            # A failed connect is retried.
+            transport=httpx.HTTPTransport(
+                retries=3, limits=httpx.Limits(max_keepalive_connections=0)
+            ),
         )
 
     # Sprites
