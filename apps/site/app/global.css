@@ -16,7 +16,7 @@
 @font-face {
   font-family: 'Geist Fallback';
   src: local('Arial'), local('Arimo'), local('Helvetica');
-  size-adjust: 104.76%;
+  size-adjust: 102.5%;
   ascent-override: 95.9%;
   descent-override: 28.2%;
   line-gap-override: 0%;
@@ -29,7 +29,16 @@
   descent-override: 27.6%;
   line-gap-override: 0%;
 }
+@font-face {
+  font-family: 'Geist Mono Fallback';
+  src: local('Courier New'), local('Cousine'), local('Liberation Mono');
+  size-adjust: 100%;
+  ascent-override: 100.5%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
+}
 @theme {
+  --font-mono: 'Geist Mono Variable', 'Geist Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-display: 'Newsreader Variable', 'Newsreader Fallback', ui-serif, Georgia, serif;
   --font-sans: 'Geist Variable', 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
 }
