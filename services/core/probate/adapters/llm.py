@@ -20,6 +20,13 @@ from probate.court import lexicon as lx
 log = logging.getLogger("probate.brain")
 
 
+def json_only(text: str) -> str:
+    """The JSON object in a model reply. Claude has no JSON mode, so it often wraps the object in a
+    ```json fence or adds a sentence around it; take the outermost braces."""
+    start, end = text.find("{"), text.rfind("}")
+    return text[start : end + 1] if 0 <= start < end else text
+
+
 class RealLLM:
     """Calls the brain, then each fallback in turn when a provider fails.
 
@@ -72,7 +79,7 @@ class RealLLM:
                 error = e
                 continue
             self.last_provider = provider
-            return out
+            return json_only(out) if json_mode else out
         raise RuntimeError(f"every brain failed; last error: {error}") from error
 
     def _call(
