@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/harshbhx/probate/tree/main/packages/client-py"
+Homepage = "https://github.com/harshbhx/probate"
 Repository = "https://github.com/harshbhx/probate"
 Issues = "https://github.com/harshbhx/probate/issues"
 

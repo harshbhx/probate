@@ -3,8 +3,6 @@
 A small typed client for the [Probate](https://github.com/harshbhx/probate) Courthouse public API,
 with sync and async versions. It depends only on `httpx`. Python 3.11+.
 
-Not yet published to PyPI. Until then: `pip install ./packages/client-py` from a checkout.
-
 ```sh
 pip install probate-client
 ```
