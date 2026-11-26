@@ -25,6 +25,8 @@ classifiers = [
 Homepage = "https://github.com/harshbhx/probate"
 Repository = "https://github.com/harshbhx/probate"
 Issues = "https://github.com/harshbhx/probate/issues"
+Documentation = "https://probate.dualmindlab.tech/docs/reference/api"
+Changelog = "https://github.com/harshbhx/probate/blob/main/packages/client-py/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6", "build>=1.2", "twine>=5.1"]

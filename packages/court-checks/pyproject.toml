@@ -35,6 +35,8 @@ probate-check = "probate_court_checks.cli:main"
 Homepage = "https://github.com/harshbhx/probate"
 Repository = "https://github.com/harshbhx/probate"
 Issues = "https://github.com/harshbhx/probate/issues"
+Documentation = "https://probate.dualmindlab.tech/docs/concepts/attack-suite"
+Changelog = "https://github.com/harshbhx/probate/blob/main/packages/court-checks/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

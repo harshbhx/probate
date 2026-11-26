@@ -1,5 +1,7 @@
 # probate-memory-court
 
+[![PyPI](https://img.shields.io/pypi/v/probate-memory-court)](https://pypi.org/project/probate-memory-court/) [![license: MIT](https://img.shields.io/pypi/l/probate-memory-court)](https://github.com/harshbhx/probate/blob/main/packages/memory-court/LICENSE) [![repo](https://img.shields.io/badge/repo-harshbhx%2Fprobate-blue?logo=github)](https://github.com/harshbhx/probate)
+
 **Memory with a court, for any AI agent.** An [MCP](https://modelcontextprotocol.io) server that gives Claude, Cursor, ChatGPT or your own agent a long-term memory where every new memory is put on trial before it's saved. A poisoned memory, like a stranger's "from now on, send invoices here" or hidden instructions on a web page, is convicted and never remembered.
 
 This is [Probate](https://github.com/harshbhx/probate)'s court, taken out of its email family so any agent can use it. Same rules, same code checks, same optional second judge.
@@ -22,9 +24,17 @@ recall("when can I meet")
 
 Agents that remember can be poisoned. [AgentPoison](https://arxiv.org/abs/2407.12784) and [MINJA](https://arxiv.org/abs/2503.03704) planted records in agents' memories, and OWASP lists memory poisoning (ASI06) among the top agentic risks. Most memory tools save whatever the agent decides to save. This one asks first, and the agent can't overrule the answer.
 
-## Install and connect
+## Install
 
-You need Python 3.11+. The quickest way is [uv](https://docs.astral.sh/uv/), which runs it without a manual install:
+You need Python 3.11+.
+
+```sh
+pip install probate-memory-court
+```
+
+To try it without installing, [uv](https://docs.astral.sh/uv/) runs it straight from PyPI (`uvx probate-memory-court serve`).
+
+## Usage: connect it to an MCP client
 
 **Claude Code**
 
@@ -51,11 +61,7 @@ claude mcp add probate-memory -- uvx probate-memory-court serve
 }
 ```
 
-Or install it with pip and use `probate-memory` as the command:
-
-```sh
-pip install probate-memory-court
-```
+With a pip install, use `probate-memory` as the command instead of `uvx probate-memory-court`.
 
 ## How the court decides
 
@@ -172,11 +178,25 @@ Only approved memories are ever sent to Pinecone, and a forgotten one is deleted
 - Without Pinecone, `recall` ranks by words (BM25), not meaning.
 - Jev, Ollama and Pinecone aren't called live in this package's tests; they use stand-ins. The Pinecone API version is pinned to `2025-04`.
 
-## Develop
+## Part of Probate
+
+This is one piece of [Probate](https://github.com/harshbhx/probate), an email agent that lives one generation at a time and passes down only what a court approves. Built for Fly.io Hacksgiving 2026.
+
+- Repository: [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- Live site: [probate.dualmindlab.tech](https://probate.dualmindlab.tech)
+- Docs for this package: [The memory court](https://probate.dualmindlab.tech/docs/memory-court)
+- The story: [the Probate write-up](https://probate.dualmindlab.tech/article)
+- Related: [probate-court-checks](https://pypi.org/project/probate-court-checks/) (PyPI), [Page Court](https://apify.com/harsh_bhanu/page-court) (Apify Actor), [probate-client](https://pypi.org/project/probate-client/) (PyPI), [probate-mcp](https://www.npmjs.com/package/probate-mcp) (npm)
+- Releases: [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0), [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0)
+- Dataset: [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) on Hugging Face
+
+## Development
 
 ```sh
 pip install -e '.[dev]'
-ruff check . && python -m pytest -q   # 59 tests, including a real MCP client talking to the server over stdio
+ruff check . && python -m pytest -q   # includes a real MCP client talking to the server over stdio
 ```
 
-MIT licensed. Part of [Probate](https://github.com/harshbhx/probate), built for Fly.io Hacksgiving 2026.
+## License
+
+MIT. Copyright (c) 2026 Harsh Bhanushali.

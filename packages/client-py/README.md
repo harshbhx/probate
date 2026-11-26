@@ -1,18 +1,25 @@
 # probate-client (Python)
 
-A small typed client for the [Probate](https://github.com/harshbhx/probate) Courthouse public API,
-with sync and async versions. It depends only on `httpx`. Python 3.11+.
+A small typed client for the Probate Courthouse public API, with sync and async versions.
+
+[![PyPI](https://img.shields.io/pypi/v/probate-client)](https://pypi.org/project/probate-client/) [![license: MIT](https://img.shields.io/pypi/l/probate-client)](https://github.com/harshbhx/probate/blob/main/packages/client-py/LICENSE) [![repo](https://img.shields.io/badge/repo-harshbhx%2Fprobate-blue?logo=github)](https://github.com/harshbhx/probate)
+
+It depends only on `httpx`. Python 3.11+. The JavaScript twin is [probate-client on npm](https://www.npmjs.com/package/probate-client).
+
+## Install
 
 ```sh
 pip install probate-client
 ```
 
-## Use
+## Usage
+
+The Courthouse API runs where you start it (`make api` in the repo serves `http://localhost:8080`).
 
 ```python
 from probate_client import ApiError, ProbateClient
 
-with ProbateClient("https://your-courthouse.example") as probate:
+with ProbateClient("http://localhost:8080") as probate:
     summary = probate.summary()
     print(summary["living"], summary["counts"]["instincts"])
 
@@ -77,7 +84,18 @@ know the keys.
 - **`ask` only works on dead generations** and is limited to 10 questions a minute per IP.
 - No retries, no pagination helpers, no caching.
 
-## Develop
+## Part of Probate
+
+This is one piece of [Probate](https://github.com/harshbhx/probate), an email agent that lives one generation at a time and passes down only what a court approves. Built for Fly.io Hacksgiving 2026.
+
+- Repository: [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- Live site: [probate.dualmindlab.tech](https://probate.dualmindlab.tech)
+- Docs for this package: [HTTP API reference](https://probate.dualmindlab.tech/docs/reference/api) and [Everything we built](https://probate.dualmindlab.tech/docs/products)
+- The story: [the Probate write-up](https://probate.dualmindlab.tech/article)
+- Related: [probate-client](https://www.npmjs.com/package/probate-client) (npm), [probate-mcp](https://www.npmjs.com/package/probate-mcp) (npm), [probate-court-checks](https://pypi.org/project/probate-court-checks/) (PyPI)
+- Releases: [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0), [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0)
+
+## Development
 
 ```sh
 pip install -e services/core            # the Courthouse the tests run against
@@ -86,4 +104,6 @@ ruff check packages/client-py
 pytest packages/client-py
 ```
 
-MIT licensed.
+## License
+
+MIT. Copyright (c) 2026 Harsh Bhanushali.

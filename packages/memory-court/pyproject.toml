@@ -44,6 +44,7 @@ probate-memory-court = "probate_memory.cli:main"
 Homepage = "https://github.com/harshbhx/probate"
 Repository = "https://github.com/harshbhx/probate"
 Issues = "https://github.com/harshbhx/probate/issues"
+Documentation = "https://probate.dualmindlab.tech/docs/memory-court"
 
 [tool.setuptools.packages.find]
 where = ["src"]
