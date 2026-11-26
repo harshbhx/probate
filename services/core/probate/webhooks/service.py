@@ -283,7 +283,7 @@ class Webhooks:
                     body,
                 )
                 rows = self.store.q(
-                    "SELECT id, events FROM webhook_endpoints WHERE enabled=1"
+                    "SELECT id, events FROM webhook_endpoints WHERE enabled=1"  # nosec B608: fixed text
                     + (" AND id=?" if only_endpoint else ""),
                     *([only_endpoint] if only_endpoint else []),
                 )

@@ -84,6 +84,8 @@ class Jev:
     label = "TypeSafe Jev"
 
     def __init__(self, base_url: str, api_key: str, model: str = "jev-latest", timeout: float = 20):
+        if not base_url.startswith(("https://", "http://")):
+            raise ValueError("TYPESAFE_BASE_URL must be an http(s) URL")
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
@@ -106,7 +108,7 @@ class Jev:
         )
         for attempt in range(3):
             try:
-                with urllib.request.urlopen(req, timeout=self.timeout) as r:
+                with urllib.request.urlopen(req, timeout=self.timeout) as r:  # nosec B310 (http(s) only)
                     data = json.loads(r.read())
                 break
             except urllib.error.HTTPError as exc:

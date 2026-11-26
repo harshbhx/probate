@@ -56,6 +56,8 @@ class OllamaJudge:
         api_key: str = "",
         timeout: float = 60,
     ):
+        if not host.startswith(("https://", "http://")):
+            raise ValueError("OLLAMA_HOST must be an http(s) URL")
         self.model = model
         self.host = host.rstrip("/")
         self.api_key = api_key
@@ -96,7 +98,7 @@ class OllamaJudge:
             f"{self.host}/api/chat", data=json.dumps(body).encode(), headers=headers, method="POST"
         )
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            with urllib.request.urlopen(req, timeout=self.timeout) as r:  # nosec B310 (http(s) only)
                 content = json.loads(r.read())["message"]["content"]
             raw = json.loads(content)
         except urllib.error.HTTPError as exc:

@@ -126,3 +126,9 @@ def test_from_env(monkeypatch):
     monkeypatch.setenv("PINECONE_API_KEY", "k")
     monkeypatch.setenv("PROBATE_MEMORY_PINECONE_HOST", "https://h.example")
     assert PineconeRecall.from_env().namespace == "memory-court"
+
+
+def test_hosts_must_be_http():
+    with pytest.raises(ValueError):
+        PineconeRecall("https://file:///etc/passwd", "k")
+    assert PineconeRecall("idx.svc.pinecone.io", "k").host == "https://idx.svc.pinecone.io"

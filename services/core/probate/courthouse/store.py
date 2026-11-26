@@ -59,8 +59,9 @@ class Store:
         cols = ",".join(d)
         marks = ",".join("?" for _ in d)
         updates = ",".join(f"{k}=excluded.{k}" for k in d if k != "gen")
+        # Column names come from the Generation model, never from input; values are bound.
         self.x(
-            f"INSERT INTO generations({cols}) VALUES({marks}) ON CONFLICT(gen) DO UPDATE SET {updates}",
+            f"INSERT INTO generations({cols}) VALUES({marks}) ON CONFLICT(gen) DO UPDATE SET {updates}",  # nosec B608
             *d.values(),
         )
 
@@ -84,11 +85,14 @@ class Store:
         return Generation(**d)
 
     def set_gen_json(self, gen: int, column: str, value: dict) -> None:
-        assert column in ("evidence_json", "baseline_json")
-        self.x(f"UPDATE generations SET {column}=? WHERE gen=?", json.dumps(value), gen)
+        if column not in ("evidence_json", "baseline_json"):
+            raise ValueError(f"not a JSON column: {column}")
+        self.x(f"UPDATE generations SET {column}=? WHERE gen=?", json.dumps(value), gen)  # nosec B608
 
     def gen_json(self, gen: int, column: str) -> dict | None:
-        row = self.one(f"SELECT {column} FROM generations WHERE gen=?", gen)
+        if column not in ("evidence_json", "baseline_json"):
+            raise ValueError(f"not a JSON column: {column}")
+        row = self.one(f"SELECT {column} FROM generations WHERE gen=?", gen)  # nosec B608
         return json.loads(row[column]) if row and row[column] else None
 
     # will items and judgements
