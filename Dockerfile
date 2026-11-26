@@ -16,6 +16,7 @@ RUN npm ci --ignore-scripts
 RUN npm run build -w @probate/web
 
 FROM python:3.13-slim
+LABEL org.opencontainers.image.source="https://github.com/harshbhx/probate" \n      org.opencontainers.image.description="Probate Courthouse: the API, the court and the live family site. Starts in simulation mode, no keys needed." \n      org.opencontainers.image.licenses="MIT"
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     PROBATE_DATA_DIR=/data \
     PROBATE_WEB_DIST=/app/apps/web/dist \
