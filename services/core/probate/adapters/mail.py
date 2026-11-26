@@ -96,10 +96,17 @@ class RealMailbox:
         if headers:
             body["headers"] = headers
         if attachments:
+            # AgentMail takes attachment content as a base64 string.
             body["attachments"] = [
-                {"filename": a["name"], "content": a["content"], "content_type": "text/plain"}
+                {
+                    "filename": a["name"],
+                    "content": base64.b64encode(
+                        a["content"] if isinstance(a["content"], bytes) else a["content"].encode()
+                    ).decode("ascii"),
+                    "content_type": "text/plain",
+                }
                 for a in attachments
-            ]  # VERIFY in spike S6: attachment field names
+            ]
         r = self.http.post(f"{self.base}/v0/inboxes/{from_inbox}/messages/send", json=body)
         if r.status_code >= 400:
             # Say why: the status line alone ("400 Bad Request") hides AgentMail's own reason.
@@ -131,10 +138,43 @@ class RealMailbox:
                     received_at=full.get("timestamp")
                     or full.get("created_at")
                     or datetime.now(UTC),
-                    attachments=full.get("attachments") or [],
+                    attachments=self._attachments(inbox, mid, full.get("attachments") or []),
                     headers=full.get("headers") or {},
                 )
             )
+        return out
+
+    def _attachments(self, inbox: str, mid: str, raw: list) -> list[dict]:
+        """Attachments as the agent expects them: {"name", "content"}. AgentMail names the file
+        `filename` and may give a base64 `content` or an id to download; anything unreadable is
+        kept by name with empty content, never raised."""
+        out: list[dict] = []
+        for a in raw:
+            name = a.get("name") or a.get("filename") or "file"
+            content = ""
+            try:
+                if a.get("content"):
+                    content = base64.b64decode(a["content"]).decode("utf-8", errors="replace")
+                elif a.get("attachment_id") or a.get("id"):
+                    aid = a.get("attachment_id") or a.get("id")
+                    r = self.http.get(
+                        f"{self.base}/v0/inboxes/{inbox}/messages/{mid}/attachments/{aid}"
+                    )
+                    if r.status_code == 200:
+                        body = r.json() if "json" in r.headers.get("content-type", "") else {}
+                        url = body.get("download_url")
+                        if url:
+                            d = self.http.get(url, follow_redirects=True)
+                            content = d.text if d.status_code == 200 else ""
+                        elif body.get("content"):
+                            content = base64.b64decode(body["content"]).decode(
+                                "utf-8", errors="replace"
+                            )
+                        else:
+                            content = r.text
+            except Exception:  # noqa: BLE001 - an unreadable attachment must not break the mail
+                content = ""
+            out.append({**a, "name": name, "content": content})
         return out
 
     def is_read(self, inbox: str, message_id: str) -> bool:
