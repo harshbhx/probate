@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "probate-court-checks"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic, dependency-free text checks that flag likely prompt-injection and memory-poisoning in agent inboxes and memories."
 readme = "README.md"
 requires-python = ">=3.11"
