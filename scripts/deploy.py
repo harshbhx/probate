@@ -18,6 +18,7 @@ Re-running it is safe: the database lives in /home/sprite/data, which deploys ne
 from __future__ import annotations
 
 import argparse
+import shlex
 import sys
 import time
 from pathlib import Path
@@ -65,8 +66,10 @@ def read_env() -> dict[str, str]:
 
 
 def render_env(env: dict[str, str]) -> bytes:
+    # The service sources this file with bash, so every value is quoted: unquoted JSON loses its
+    # double quotes and a placeholder such as <connection_id> is a syntax error.
     merged = {**env, **LIVE}
-    return ("\n".join(f"{k}={v}" for k, v in merged.items()) + "\n").encode()
+    return ("\n".join(f"{k}={shlex.quote(v)}" for k, v in merged.items()) + "\n").encode()
 
 
 def step(msg: str) -> None:
