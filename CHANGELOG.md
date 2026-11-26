@@ -1,8 +1,9 @@
 # Changelog
 
 All notable changes to this project are documented here, in the style of
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). There are no tagged releases yet;
-everything below is unreleased and was built during Fly.io Hacksgiving 2026 (from 25 Nov 2026).
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Everything here was built during
+Fly.io Hacksgiving 2026 (23 to 29 Nov 2026). The packages have their own versions and tags
+(see [the releases](https://github.com/harshbhx/probate/releases)); the project as a whole is unreleased.
 
 ## [Unreleased]
 
@@ -12,6 +13,23 @@ everything below is unreleased and was built during Fly.io Hacksgiving 2026 (fro
 
 ### Added
 
+- **Death certificate.** After a generation's Sprite is deleted, the Courthouse asks Fly for it
+  again and keeps both answers with the body evidence. The trial page shows them under "Found
+  on the body" (`body.deletion` in the API). A Sprite that still answers is shown as not
+  confirmed, and a simulated run says no Sprite was involved.
+- **The memory court** (`packages/memory-court`, on PyPI as `probate-memory-court`): the same
+  court in front of any agent's memory, as an MCP server, with plug-ins for Mem0, LangGraph
+  and Letta, an optional Ollama second judge and optional Pinecone recall.
+- **Linked pages go to trial.** A generation reads the first link in an email through Apify's
+  RAG Web Browser on a Sprites connector; the page is screened and tried like any other source.
+- **Page Court** (`actors/page-court`, on the Apify Store): the court's checks for web pages,
+  including text hidden from people.
+- **Packages on registries:** `probate-court-checks`, `probate-memory-court` and
+  `probate-client` on PyPI; `probate-client`, `probate-mcp` and `kinfaces` on npm.
+- **README visuals in one design, and a brand kit** (`brand/`): logo files, colours, type, the
+  shared frame and ready-made visuals.
+- **A write-up** at `/article`, a sitemap and a robots file for the site, and a
+  "Everything we built" docs page.
 - **Judge mailroom.** `POST /api/judge/mail` lets a judge send a real email to the family inbox as the
   Friend or the Stranger (never the owner), `GET /api/judge/mail` follows it to the court's verdict,
   `GET /admin/judge/mail` is the audit; panel on the For judges page.
