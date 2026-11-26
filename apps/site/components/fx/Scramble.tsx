@@ -1,8 +1,8 @@
 'use client';
 // Adapted from the React Bits "Decrypted Text" pattern (reactbits.dev, MIT): glyphs shuffle, then lock in
 // left to right. Plays once on mount. The real text is always in the DOM for readers and search, and under
-// prefers-reduced-motion it never changes. The real text also sets the box (the scrambled layer sits on top of it
-// in the same grid cell), so shuffling never moves the lines around it.
+// prefers-reduced-motion it never changes. The real text also sets the box (the scrambled layer is
+// absolutely positioned over it), so shuffling never moves or resizes anything around it.
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
 
@@ -39,11 +39,13 @@ export function Scramble({ text, duration = 1500, delay = 350, className }: { te
   }, [text, duration, delay, reduce]);
 
   return (
-    <span className={`inline-grid ${className ?? ''}`}>
-      <span className="col-start-1 row-start-1 opacity-0">{text}</span>
-      <span aria-hidden className="col-start-1 row-start-1 whitespace-pre tabular-nums">
-        {shown}
-      </span>
+    <span className={`relative inline-block ${className ?? ''}`}>
+      <span className={shown === text ? undefined : 'opacity-0'}>{text}</span>
+      {shown !== text && (
+        <span aria-hidden className="pointer-events-none absolute left-0 top-0 whitespace-pre">
+          {shown}
+        </span>
+      )}
     </span>
   );
 }
