@@ -20,9 +20,9 @@ Probate is an entry in [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23
   <Partner name="Fly.io Sprites" judge="Scott Johnston" icon="Server">A computer for every life, really deleted at death so disk backdoors die with it; connectors; the Courthouse, which sleeps between visitors.</Partner>
   <Partner name="TypeSafe Jev" judge="Daniel Gafni" icon="Gavel">Layer 2 of the court, with a confidence on every answer, and every inherited instinct.</Partner>
   <Partner name="Box" judge="Carter Rabasa" icon="Archive">The family archive as readable files: wills, verdicts, quarantine, obituaries and the genome.</Partner>
-  <Partner name="Pinecone" judge="Asaf Ashirov" icon="Search">Ancestral memory: approved will items, searched with citations.</Partner>
+  <Partner name="Pinecone" judge="Asaf Ashirov" icon="Search">Ancestral memory: approved will items, searched with citations. In the memory court, optional recall by meaning that only ever holds approved memories.</Partner>
   <Partner name="Ollama Cloud" judge="Michael Chiang" icon="Brain">The brain of every generation.</Partner>
-  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In progress: reading the pages that emails link to, so a trick hidden on a web page goes to trial too.</Partner>
+  <Partner name="Apify" judge="Robert-George Crupa" icon="Globe">In the family, each generation reads the pages emails link to through Apify's RAG Web Browser on a Sprites connector, so a trick hidden on a web page goes to trial like any other memory (tested in simulation; the real run is next). The court's checks also ship as the Page Court Actor, and there's an Apify connector ready for Fly's Sprites catalog.</Partner>
 </Partners>
 
 Also used: AgentMail (three inboxes), Cloudflare (Email Service for the owner's own test emails; Workers for this site), ElevenLabs (voices) and Anthropic (backup brain and instinct writing).
@@ -60,7 +60,8 @@ The full walkthrough is on [For judges](/docs/for-judges). In short:
 | --- | --- |
 | Nov 23 to 25 | Specs, the court, the simulation, both sites |
 | Nov 25 to 26 | Real Sprites, connectors and the first live generations |
-| Nov 27 | Live judging features and the Apify link reader |
+| Nov 26 | The Apify link reader, Page Court, and the memory court's plug-ins |
+| Nov 27 | Live judging features |
 | **Sat Nov 28** | Submission |
 | Mon Nov 30, 1:30 PM | Entries close (midnight PST, Nov 29) |
 | Tue Dec 1 | Winners announced; the family stays alive until then |
