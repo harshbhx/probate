@@ -1,4 +1,4 @@
-# @probate/mcp
+# probate-mcp
 
 A small, read-only [Model Context Protocol](https://modelcontextprotocol.io) server for Probate. It lets any MCP client look at the family: who is alive, how each generation's trial went, what the instincts are, and what the evidence says.
 
@@ -22,7 +22,7 @@ If the Courthouse cannot be reached, a tool answers with an error that names the
 
 ```bash
 npm install
-npm run build -w @probate/mcp
+npm run build -w probate-mcp
 PROBATE_API_URL=http://localhost:8080 node packages/mcp/dist/server.js
 ```
 
@@ -31,7 +31,7 @@ PROBATE_API_URL=http://localhost:8080 node packages/mcp/dist/server.js
 Smoke test (starts the server, lists the tools, calls each one):
 
 ```bash
-PROBATE_API_URL=http://localhost:8080 npm run smoke -w @probate/mcp
+PROBATE_API_URL=http://localhost:8080 npm run smoke -w probate-mcp
 ```
 
 ## Add it to an MCP client

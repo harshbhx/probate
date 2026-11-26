@@ -224,9 +224,9 @@ jobs:
       - name: Family faces
         run: npm test -w kinfaces
       - name: Type checks
-        run: npm run lint -w @probate/web && npm run lint -w @probate/mcp
+        run: npm run lint -w @probate/web && npm run lint -w probate-mcp
       - name: Build the live site and the MCP server
-        run: npm run build -w @probate/web && npm run build -w @probate/mcp
+        run: npm run build -w @probate/web && npm run build -w probate-mcp
 
   edge:
     name: edge
