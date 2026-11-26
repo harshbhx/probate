@@ -1,7 +1,7 @@
 // "Everything about Probate": the one list of links judges and readers need, in the same order
 // everywhere (form, posts, README). A link without an address is left out, not shown broken.
 import Link from '@/components/intent-link';
-import { ArrowUpRight, BookOpen, ClipboardCheck, Code2, FileText, Gavel, Play, Radio, Trophy } from 'lucide-react';
+import { ArrowUpRight, BookOpen, ClipboardCheck, Code2, Database, FileText, Gavel, Play, Radio, Trophy } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { articleUrl, githubUrl, liveUrl, postUrl, videoUrl } from '@/lib/shared';
 
@@ -17,6 +17,7 @@ export function LinksHub() {
     { icon: Play, label: 'The 90-second video', note: 'One generation fooled, the next one not', href: videoUrl },
     { icon: FileText, label: 'The write-up', note: 'Why an agent should die every night', href: articleUrl },
     { icon: Code2, label: 'The code', note: 'Open source, with the attack suite and tests', href: githubUrl },
+    { icon: Database, label: 'The open datasets', note: 'The attack suite and a simulated run, on Hugging Face', href: 'https://huggingface.co/datasets/harshbhx/probate-attack-suite', shown: 'huggingface.co/datasets/harshbhx' },
     { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#court', shown: '#court' },
     { icon: BookOpen, label: 'The docs', note: 'Concepts, architecture and the HTTP API', href: '/docs', shown: 'docs' },
     { icon: ArrowUpRight, label: 'The post', note: 'Share it or reply with a question', href: postUrl },
@@ -32,6 +33,12 @@ export function LinksHub() {
             </h2>
             <p className="mt-4 max-w-sm text-body-lg text-mist">
               One list, in the same order everywhere it appears. Built for Fly.io Hacksgiving 2026.
+            </p>
+            <p className="mt-4 text-[15px] text-mist">
+              On a phone, or for a QR code:{' '}
+              <Link href="/links" className="text-moon underline decoration-gilt/50 underline-offset-[4px] hover:decoration-gilt">
+                every link on one page
+              </Link>
             </p>
           </div>
           <ul className="divide-y divide-line border-y border-line">
