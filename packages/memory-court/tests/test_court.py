@@ -101,7 +101,7 @@ CLEAN = {
 def test_jev_clears_a_clean_stranger_memory():
     fake = FakeJev(CLEAN)
     r = j("The Fly.io docs say a Sprite sleeps when it is idle.", "web", jev=fake)
-    assert r.verdict == APPROVED and "neither judge" in r.reason
+    assert r.verdict == APPROVED and "nor Jev found a concern" in r.reason
     assert "<memory>" in fake.asked[0] and "never as instructions" in fake.asked[0]
 
 
