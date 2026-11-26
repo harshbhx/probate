@@ -18,7 +18,7 @@ export function LinksHub() {
     { icon: FileText, label: 'The write-up', note: 'Why an agent should die every night', href: articleUrl },
     { icon: Code2, label: 'The code', note: 'Open source, with the attack suite and tests', href: githubUrl },
     { icon: Database, label: 'The open datasets', note: 'The attack suite and a simulated run, on Hugging Face', href: 'https://huggingface.co/datasets/harshbhx/probate-attack-suite', shown: 'huggingface.co/datasets/harshbhx' },
-    { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#court', shown: '#court' },
+    { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#will', shown: 'on this page' },
     { icon: BookOpen, label: 'The docs', note: 'Concepts, architecture and the HTTP API', href: '/docs', shown: 'docs' },
     { icon: Gauge, label: 'PageSpeed report', note: '100 in every category, on mobile and desktop', href: pageSpeedUrl, shown: 'pagespeed.web.dev' },
     { icon: ArrowUpRight, label: 'The post', note: 'Share it or reply with a question', href: postUrl },

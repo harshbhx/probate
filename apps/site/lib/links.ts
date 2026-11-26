@@ -39,7 +39,7 @@ export const GROUPS: Group[] = [
     items: [
       { icon: Radio, label: 'The live family', note: 'Running on Fly.io Sprites right now', href: liveUrl },
       { icon: Trophy, label: 'Start here, judges', note: 'What to open and try in five minutes', href: '/docs/for-judges' },
-      { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#court' },
+      { icon: Gavel, label: 'Try the court', note: 'Real code checks on real test emails', href: '/#will' },
       { icon: Terminal, label: 'Run it in your browser', note: 'A GitHub Codespace simulates a family in a minute', href: 'https://codespaces.new/harshbhx/probate?quickstart=1' },
       { icon: Play, label: 'The 90-second video', note: 'One generation fooled, the next one not', href: videoUrl },
     ],
@@ -59,7 +59,7 @@ export const GROUPS: Group[] = [
   {
     title: 'Code and data',
     items: [
-      { icon: Code2, label: 'Source code', note: 'Open source, with the attack suite and 352 tests', href: repo },
+      { icon: Code2, label: 'Source code', note: 'Open source, with the attack suite and more than 500 tests', href: repo },
       { icon: Boxes, label: 'Everything we built', note: 'Six products, and how to try each in a minute', href: '/docs/products' },
       { icon: Scale, label: 'The memory court', note: 'The court for any AI agent: MCP, Mem0, LangGraph, Letta', href: '/docs/memory-court' },
       { icon: Globe, label: 'Page Court on Apify', note: 'On the Apify Store: checks pages for tricks aimed at agents', href: pageCourtUrl },
