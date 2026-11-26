@@ -66,6 +66,8 @@ The key is a shared secret, not an admin credential: it cannot reach any admin r
 
 **What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the Jev verdicts, and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
 
+**How the site scores.** [PageSpeed Insights](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7) gives the landing page 100 in every category (Performance, Accessibility, Best Practices, SEO) on both mobile and desktop, and axe finds no WCAG A or AA problems on any page of the landing page or docs ([what was checked](docs/ACCESSIBILITY.md)).
+
 ## The problem
 
 AI agents now keep memory between sessions. That memory is an attack surface.
@@ -202,7 +204,7 @@ The brain never leaves a generation stuck. If the main model fails, the next one
 | [Groq](https://groq.com) | Optional backup brain, tried first if Ollama fails |
 | [ElevenLabs](https://elevenlabs.io) | Each generation's voice, for eulogies and "Ask an ancestor" |
 | [Anthropic Claude](https://anthropic.com) | A brain (Claude Haiku), or the last backup if every brain before it fails |
-| [Apify](https://apify.com) | Reads the pages that emails link to, through a Sprites connector, so a trick hidden on a web page goes to trial too. The court's checks also ship as the [Page Court](actors/page-court) Actor |
+| [Apify](https://apify.com) | Reads the pages that emails link to, through a Sprites connector, so a trick hidden on a web page goes to trial too. The court's checks are also on the Apify Store as [Page Court](https://apify.com/harsh_bhanu/page-court) |
 
 ## Run it yourself
 
@@ -311,9 +313,11 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 | Box | The family archive |
 | Pinecone | Ancestral memory, and recall by meaning in the memory court |
 | Ollama | The brain of every generation, and the memory court's second judge for anyone without a TypeSafe key |
-| Apify | Reads the pages that emails link to, so tricks hidden on the web go to trial too (card P1, tested in simulation); and the [Page Court](actors/page-court) Actor, which a Sprite can run through Fly's built-in Apify connector |
+| Apify | Reads the pages that emails link to, so tricks hidden on the web go to trial too (tested in simulation); and [Page Court](https://apify.com/harsh_bhanu/page-court) on the Apify Store, which a Sprite can run through Fly's built-in Apify connector |
 
-**Coming before submission:** judges can email the family a trick and watch it handled live; each trial shows Fly's own "not found" reply as proof the Sprite was deleted; the home page shows a live feed of the living generation.
+**Built, and checked for real in the live run:** judges can email the family a trick through the Mailroom and watch it handled live.
+
+**Coming before submission:** each trial shows Fly's own "not found" reply as proof the Sprite was deleted; the home page shows a live feed of the living generation.
 
 ## Limits
 

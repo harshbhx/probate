@@ -127,5 +127,6 @@ The full threat model is in the [security docs](/docs/security).
 - **Proof for every claim:** [/docs/proof](/docs/proof)
 - **The memory court:** [/docs/memory-court](/docs/memory-court)
 - **Code:** [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- **This site:** 100 in every PageSpeed category, on mobile and desktop ([the report](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7))
 
 Every generation dies. What it learned doesn't have to.
