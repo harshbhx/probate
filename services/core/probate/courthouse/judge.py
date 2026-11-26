@@ -81,7 +81,7 @@ class Judge:
         with self.lock:
             self._bad.setdefault(ipk, []).append(now)
 
-    def check(self, provided: str | None, ip: str) -> str:
+    def check(self, provided: str | None, ip: str, count_failure: bool = True) -> str:
         """Returns ok | missing | invalid | disabled | throttled | unavailable."""
         if not provided:
             return "missing"
@@ -94,7 +94,8 @@ class Judge:
         # Equal-length digests keep the comparison independent of the guess and the real key.
         same = hmac.compare_digest(_digest(provided[:MAX_KEY_LENGTH]), _digest(self.cfg.judge_key))
         if not same or len(provided) > MAX_KEY_LENGTH:
-            self._fail(ipk, now)
+            if count_failure:  # the status poll must not lock out a browser holding a stale key
+                self._fail(ipk, now)
             return "invalid"
         return "disabled" if self.disabled else "ok"
 

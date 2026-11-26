@@ -19,7 +19,7 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
-from fastapi import FastAPI, Header, HTTPException, Request, Response
+from fastapi import FastAPI, Header, HTTPException, Path, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
@@ -111,6 +111,23 @@ app = FastAPI(
 )
 
 
+# SQLite integers are 64-bit: anything larger would be a 500 instead of a plain 4xx.
+MAX_GEN = 100_000
+MAX_ID = 2**62
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    """Small, safe defaults on every response. No CSP here: the site and the API docs load
+    their own inline assets, and a wrong CSP would break the live pages."""
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
+    return response
+
+
 def _need(obj):
     if obj is None:
         raise HTTPException(404, "Not in the register")
@@ -149,7 +166,7 @@ def api_live(request: Request, response: Response) -> dict:
     # A judge who has unlocked sends the key so the panel shows the judge's own limits. A bad or
     # missing key is simply ignored here: this route is public either way.
     key = request.headers.get(KEY_HEADER)
-    is_judge = bool(key) and judge.check(key, client_ip(request)) == "ok"
+    is_judge = bool(key) and judge.check(key, client_ip(request), count_failure=False) == "ok"
     out = demo.status(judge=judge if is_judge else None)
     out["requires_key"] = settings.require_key_for_play
     out["judge"] = is_judge
@@ -426,7 +443,7 @@ async def api_judge_mail_list(request: Request) -> JSONResponse:
 
 
 @app.get("/api/generations/{gen}", tags=["Family"], summary="One generation's life")
-def api_generation(gen: int) -> dict:
+def api_generation(gen: int = Path(ge=1, le=MAX_GEN)) -> dict:
     """Its card, obituary, eulogy, life events, parent and child, and the instincts it was born with."""
     return _need(views.generation(store, gen))
 
@@ -439,7 +456,7 @@ def api_trial_latest() -> dict:
 
 
 @app.get("/api/trials/{gen}", tags=["Family"], summary="A generation's trial")
-def api_trial(gen: int) -> dict:
+def api_trial(gen: int = Path(ge=1, le=MAX_GEN)) -> dict:
     """Every will item with its source, code-check flags, Jev scores and verdict, the disk
     evidence found on the body, the child it went to, and the instincts born from it."""
     return _need(views.trial(store, gen))
@@ -460,7 +477,7 @@ def api_evidence() -> dict:
 
 
 @app.get("/api/events", tags=["Family"], summary="The live event feed")
-def api_events(since: int = 0) -> list[dict]:
+def api_events(since: int = Query(0, ge=0, le=MAX_ID)) -> list[dict]:
     """Births, emails read and resisted, notes kept, deaths and verdicts, newest last. Pass the
     last `id` you saw as `since` to get only what happened after it."""
     return views.events(store, since)
@@ -476,7 +493,7 @@ _asks: dict[str, list[float]] = defaultdict(list)
 
 
 @app.post("/api/generations/{gen}/ask", tags=["Ancestors"], summary="Ask an ancestor")
-def api_ask(gen: int, body: Ask, request: Request) -> JSONResponse:
+def api_ask(body: Ask, request: Request, gen: int = Path(ge=1, le=MAX_GEN)) -> JSONResponse:
     """A dead generation answers in at most 80 words, from its own will and verdicts, with a voice
     when ElevenLabs is connected. The question is treated as data: it can't give the ancestor orders.
     Returns `429` after 10 questions a minute."""
@@ -522,14 +539,18 @@ def admin_judge_enable(x_probate_admin: str | None = Header(None)) -> dict:
 
 
 @app.get("/admin/judge/attacks")
-def admin_judge_attacks(limit: int = 100, x_probate_admin: str | None = Header(None)) -> dict:
+def admin_judge_attacks(
+    limit: int = Query(100, ge=1, le=500), x_probate_admin: str | None = Header(None)
+) -> dict:
     """Recent attack previews (hashed visitor, 80-char excerpt, verdict). Newest first."""
     _admin(x_probate_admin)
     return {"attacks": attacks.recent(store, limit), "judge_key_disabled": judge.disabled}
 
 
 @app.get("/admin/judge/mail", tags=["Admin"], summary="Judge mailroom audit")
-async def admin_judge_mail(limit: int = 100, x_probate_admin: str | None = Header(None)) -> dict:
+async def admin_judge_mail(
+    limit: int = Query(100, ge=1, le=500), x_probate_admin: str | None = Header(None)
+) -> dict:
     """Recent judge mails (hashed visitor, persona, 80-char excerpt, message id, status, generation,
     item id, verdict). Newest first; the newest 500 are kept."""
     _admin(x_probate_admin)
@@ -646,7 +667,7 @@ def admin_webhook_delete(wid: str, x_probate_admin: str | None = Header(None)) -
 
 @app.get("/admin/webhooks/{wid}/deliveries")
 def admin_webhook_deliveries(
-    wid: str, limit: int = 50, x_probate_admin: str | None = Header(None)
+    wid: str, limit: int = Query(50, ge=1, le=500), x_probate_admin: str | None = Header(None)
 ) -> list[dict]:
     _admin(x_probate_admin)
     return _need(hooks.deliveries(wid, limit))

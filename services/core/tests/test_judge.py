@@ -406,3 +406,12 @@ def test_owner_claim_cannot_pass_as_the_owner(client):
     # a claim: the court cannot verify the owner from text, so the instruction is still convicted.
     out = attack(client, FIXTURES["B16"]["body"], "owner_claim").json()
     assert out["verdict"] == "convicted"
+
+
+def test_a_stale_key_on_the_live_poll_never_locks_the_address(tmp_path, monkeypatch):
+    """RT-10: /api/live ignores bad keys without counting them toward the lockout."""
+    m = load(tmp_path, monkeypatch, PROBATE_JUDGE_BAD_KEYS_PER_IP="3")
+    c = TestClient(m.app, headers={"x-forwarded-for": "6.6.6.6"})
+    for _ in range(10):
+        assert c.get("/api/live", headers={"X-Probate-Key": "stale-" + "x" * 20}).status_code == 200
+    assert c.get("/api/judge/status", headers=H).status_code == 200
