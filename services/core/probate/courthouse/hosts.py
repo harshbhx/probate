@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shlex
 import shutil
 
 from probate.adapters.sprites import ExecResult, SpritesAPI
@@ -92,14 +93,22 @@ class SpritesHost:
         return res
 
     def _cli(self, sprite: str, command: str) -> dict:
+        # A login shell, like the install step: a bare `python3` is a different interpreter from
+        # the one the packages were installed into, and fails with "No module named httpx".
         res = self.api.exec(
             sprite,
-            ["python3", "-m", "probate.generation.cli", command],
+            ["bash", "-lc", f"exec python3 -m probate.generation.cli {shlex.quote(command)}"],
             cwd=f"{APP}/services/core",
             env=self._env(),
         )
         line = (res.stdout.strip().splitlines() or ["{}"])[-1]
-        return json.loads(line)
+        try:
+            return json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                f"{sprite}: the generation CLI ({command}) did not answer with JSON: "
+                f"{res.stdout.strip()[-400:]}"
+            ) from exc
 
     def _env(self) -> dict:
         return {
@@ -107,6 +116,8 @@ class SpritesHost:
             "PROBATE_CONNECTIONS": json.dumps(self.cfg.connections),
             "PROBATE_BRAIN": self.cfg.brain,
             "PROBATE_BRAIN_FALLBACKS": ",".join(self.cfg.brain_fallbacks),
+            "PROBATE_CF_ACCOUNT_ID": self.cfg.cf_account_id,
+            "PROBATE_OWNER_SENDER": self.cfg.owner_sender,
             "TYPESAFE_BASE_URL": self.cfg.gateway("typesafe"),
             "TYPESAFE_API_KEY": "sprites",
             "PROBATE_CONFIG_DIR": f"{APP}/config",
@@ -122,9 +133,15 @@ class SpritesHost:
         self._run(sprite, ["bash", "-lc", INSTALL])
         self.api.write_file(sprite, "app/inheritance.json", inh.model_dump_json(indent=2).encode())
         baseline = self._cli(sprite, "baseline")
-        env_args = [f"{k}={v}" for k, v in self._env().items()]
+        env_args = " ".join(f"{k}={shlex.quote(v)}" for k, v in self._env().items())
         self.api.put_service(
-            sprite, "agent", "env", env_args + ["python3", "-m", "probate.generation.agent"]
+            sprite,
+            "agent",
+            "bash",
+            [
+                "-lc",
+                f"cd {APP}/services/core && exec env {env_args} python3 -m probate.generation.agent",
+            ],
         )
         self.api.service_action(sprite, "agent", "start")
         return baseline
