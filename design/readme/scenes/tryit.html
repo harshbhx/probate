@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8">{{BASE}}
+<style>
+.stage { position: relative; width: 960px; height: 468px; }
+h1.t { top: 66px; font-size: 36px; }
+.rows { position: absolute; left: 40px; right: 40px; top: 126px; display: grid; gap: 10px; }
+.r { position: relative; height: 92px; border: 1px solid var(--line); border-radius: 12px; background: var(--night2); }
+.r .n { position: absolute; left: 20px; top: 25px; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line2);
+  display: grid; place-items: center; font: 400 21px/1 'Newsreader', serif; color: var(--gilt); }
+.r .h { position: absolute; left: 82px; top: 13px; font: 500 17.5px/22px 'Geist', sans-serif; color: var(--moon); }
+.r .u { position: absolute; left: 82px; top: 38px; font: 14px/20px 'Geist Mono', monospace; color: var(--gilt); }
+.r .p { position: absolute; left: 82px; top: 61px; font-size: 14.5px; line-height: 20px; color: var(--mist); }
+.r .g { position: absolute; right: 20px; top: 16px; font: 13px/18px 'Geist Mono', monospace; color: var(--dim); }
+.r .g.live { color: var(--life); } .r .g.first { color: var(--gilt); }
+</style></head><body>
+<div class="stage">
+  {{HEAD:Try it}}
+  {{NOTE:three places to start}}
+  <h1 class="t">Start with the judges&rsquo; guide</h1>
+  <div class="rows">
+    <div class="r"><span class="n">1</span><p class="h">The guide for judges</p><p class="u">probate.dualmindlab.tech/docs/for-judges</p>
+      <p class="p">What to open, in what order, and what each result rests on. Five minutes.</p><span class="g first">start here</span></div>
+    <div class="r"><span class="n">2</span><p class="h">Page Court, on the Apify Store</p><p class="u">apify.com/harsh_bhanu/page-court</p>
+      <p class="p">Give it a URL. It reports text aimed at an agent, even text people can&rsquo;t see.</p><span class="g live">live</span></div>
+    <div class="r"><span class="n">3</span><p class="h">The memory court, in Claude or Cursor</p><p class="u">probate.dualmindlab.tech/docs/memory-court</p>
+      <p class="p">One command adds a memory where every write goes on trial before it is saved.</p><span class="g">one command</span></div>
+  </div>
+  {{REGISTER}}
+</div>
+</body></html>

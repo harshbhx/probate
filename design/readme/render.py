@@ -1,15 +1,25 @@
-"""Render Probate's README animations.
+"""Render Probate's README visuals: one design for every GIF and still.
 
-    python3 render.py [intro lineage court curve architecture outro]
+    python3 render.py [banner stats tryit lineage court memory curve architecture footer]
+
+Every visual shares one frame (the seal and name, the section, step ticks, and the register line
+along the bottom), one type scale and the Night Court colours, so the README reads as one piece.
+Scenes are laid out at 960 px wide with no text under 12.5 px, because GitHub shows README images
+at about 830 px.
 
 Each scene is an HTML file in scenes/ with a scripted timeline (Web Animations API). The
 renderer pauses every animation, steps it to each frame's time, and screenshots it, so frames
-are exact. ffmpeg turns the frames into a GIF. Tokens in the HTML:
+are exact. ffmpeg turns the frames into a GIF, and one frame is kept as a PNG poster for readers
+who ask for reduced motion. Stills are rendered at 2x. Tokens in the HTML:
 
-    {{BASE}}            fonts, Night Court colours, faces.css, the timeline helper
+    {{BASE}}                fonts, Night Court colours, the frame, faces.css, the timeline helper
+    {{HEAD:How it works}}   the frame's header, with the section name
+    {{STEPS:4}}             step ticks at the top right; step(i, at) lights one
+    {{NOTE:simulated}}      a short note at the top right instead of ticks
+    {{REGISTER}}            the register line along the bottom: twelve generations, the last one alive
     {{FACE:3-sealed-idle}}  a family face, rendered from packages/faces
-    {{ICON:Gavel}}      a Lucide icon
-    {{SEAL}}            the Probate seal, with classes for drawing it in
+    {{ICON:Gavel}}          a Lucide icon
+    {{SEAL}}                the Probate seal, with classes for drawing it in
 
 Needs Playwright with Chromium, ffmpeg, and the npm workspaces installed (for the fonts).
 faces.json and faces.css come from faces-entry.tsx (the real faces package, kinfaces):
@@ -23,6 +33,7 @@ out from it, so regenerate scenes/curve.html's points if the numbers change.
 
 import asyncio
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -34,22 +45,27 @@ from playwright.async_api import async_playwright
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-OUT = REPO / "docs" / "media"
+OUT = pathlib.Path(os.environ.get("PROBATE_README_OUT") or REPO / "docs" / "media")  # set PROBATE_README_OUT to draft elsewhere
 NM = REPO / "node_modules"
 FACES = json.loads((HERE / "faces.json").read_text())
 ICONS = json.loads((HERE / "icons.json").read_text())
 WORK = pathlib.Path(tempfile.gettempdir()) / "probate-readme-anim"
 
-# name: (width, height, duration ms, loop)  loop=False plays once and holds the last frame.
+# name: (width, height, duration ms, loop, device scale, poster ms)
+# duration 0 is a still (PNG at 2x). loop=False plays once and holds the last frame.
 SCENES = {
-    "intro": (1200, 520, 7000, False),
-    "lineage": (1200, 600, 16000, True),
-    "court": (1200, 580, 10000, True),
-    "curve": (1200, 580, 7500, True),
-    "architecture": (1200, 760, 22000, True),
-    "outro": (1200, 440, 6000, False),
+    "banner": (960, 300, 4200, False, 4 / 3, 4200),
+    "stats": (960, 250, 0, False, 2, 0),
+    "tryit": (960, 468, 0, False, 2, 0),
+    "lineage": (960, 540, 15400, True, 1, 15400),
+    "court": (960, 540, 8600, True, 1, 8600),
+    "memory": (960, 540, 9800, True, 1, 9800),
+    "curve": (960, 540, 5600, True, 1, 5600),
+    "architecture": (960, 640, 22600, True, 1, 22600),
+    "footer": (960, 260, 4800, False, 4 / 3, 4800),
 }
 FPS = 25
+HOLD = 2.6  # seconds a looping scene rests on its last frame before it starts again
 
 BASE = """
 <style>
@@ -65,6 +81,26 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--nigh
 .serif { font-family: 'Newsreader', serif; font-weight: 400; letter-spacing: -0.015em; }
 .mono { font-family: 'Geist Mono', monospace; }
 .abs { position: absolute; }
+/* The frame every visual shares. */
+.fr-head { position: absolute; left: 40px; top: 24px; display: flex; align-items: center; gap: 10px; }
+.fr-head .fr-seal { width: 24px; height: 24px; }
+.fr-head .fr-name { font: 400 19px/1 'Newsreader', serif; letter-spacing: -0.01em; color: var(--moon); }
+.fr-head .fr-sec { margin-left: 4px; padding-left: 13px; border-left: 1px solid var(--line2); font-size: 14px; line-height: 18px; color: var(--mist); }
+.fr-steps { position: absolute; right: 40px; top: 35px; display: flex; gap: 6px; }
+.fr-steps i { position: relative; width: 20px; height: 3px; border-radius: 2px; background: var(--line2); overflow: hidden; }
+.fr-steps i b { position: absolute; inset: 0; background: var(--gilt); opacity: 0; }
+.fr-note { position: absolute; right: 40px; top: 27px; font: 13px/18px 'Geist Mono', monospace; color: var(--dim); }
+.fr-note.sim { color: var(--amber); }
+.fr-reg { position: absolute; left: 40px; right: 40px; bottom: 22px; height: 9px; }
+.fr-reg::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: var(--line); }
+.fr-reg i { position: absolute; top: 0; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--night); border: 1.25px solid var(--faint); }
+.fr-reg i.live { background: var(--life); border-color: var(--life); }
+.fr-foot { position: absolute; left: 40px; right: 40px; bottom: 46px; font-size: 13px; line-height: 18px; color: var(--dim); }
+h1.t { position: absolute; left: 40px; top: 72px; font: 400 40px/1.1 'Newsreader', serif; letter-spacing: -0.02em; color: var(--moon); }
+p.s { position: absolute; left: 40px; top: 126px; font-size: 16.5px; line-height: 22px; color: var(--mist); }
+/* A verdict stamp: approved, convicted or contested. Colour only ever means a verdict. */
+.vd { display: inline-block; border: 1.5px solid currentColor; border-radius: 6px; padding: 4px 9px; font: 600 12.5px/1 'Geist Mono', monospace; letter-spacing: .12em; }
+.vd.conv { color: var(--verdict); } .vd.appr { color: var(--life); } .vd.cont { color: var(--amber); }
 .hide { opacity: 0; }
 svg { display: block; }
 FACESCSS
@@ -85,6 +121,12 @@ const draw = (sel, at, dur = 600, easing = 'cubic-bezier(.4,0,.2,1)') =>
   A(sel, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], at, dur, easing);
 const stamp = (sel, at, rot = -4) =>
   A(sel, [{ opacity: 0, transform: `rotate(${rot}deg) scale(1.9)` }, { opacity: 1, transform: `rotate(${rot}deg) scale(.96)`, offset: .75 }, { opacity: 1, transform: `rotate(${rot}deg) scale(1)` }], at, 320, 'cubic-bezier(.5,0,.75,0)');
+const step = (i, at) => {
+  A(`.fr-steps i:nth-child(${i}) b`, [{ opacity: 0 }, { opacity: 1 }], at, 300, 'ease-out');
+  if (i > 1) A(`.fr-steps i:nth-child(${i - 1}) b`, [{ opacity: 0.45 }], at, 300, 'ease-out');
+};
+const type = (sel, at, dur = 700) =>
+  A(sel, [{ clipPath: 'inset(0 100% 0 0)', opacity: 1 }, { clipPath: 'inset(0 0 0 0)', opacity: 1 }], at, dur, 'steps(28, end)');
 const along = (sel, at, dur, easing = 'cubic-bezier(.45,0,.25,1)') =>
   A(sel, [{ offsetDistance: '0%' }, { offsetDistance: '100%' }], at, dur, easing);
 </script>
@@ -123,12 +165,32 @@ SEAL_CSS = """
 """
 
 
+SEAL_STILL = SEAL.replace(' dr"', '"').replace(' nd"', '"').replace('class="seal"', 'class="fr-seal"')
+REGISTER = '<div class="fr-reg">' + "".join(
+    f'<i{" class=\"live\"" if g == 11 else ""} style="left:{g * 100 / 11:.3f}%"></i>' for g in range(12)
+) + "</div>"
+
+
+def head(section: str) -> str:
+    sec = f'<span class="fr-sec">{section}</span>' if section else ""
+    return f'<div class="fr-head">{SEAL_STILL}<span class="fr-name">Probate</span>{sec}</div>'
+
+
 def fill(html: str) -> str:
     base = BASE.replace("NM", str(NM)).replace("FACESCSS", (HERE / "faces.css").read_text())
     html = html.replace("{{BASE}}", base).replace("{{SEAL}}", SEAL).replace("{{SEAL_JS}}", SEAL_JS).replace("{{SEAL_CSS}}", SEAL_CSS)
+    html = re.sub(r"\{\{HEAD:([^}]*)\}\}", lambda m: head(m.group(1)), html)
+    html = re.sub(r"\{\{STEPS:(\d+)\}\}", lambda m: '<div class="fr-steps">' + "<i><b></b></i>" * int(m.group(1)) + "</div>", html)
+    html = re.sub(r"\{\{NOTE:([^}]*)\}\}", lambda m: f'<p class="fr-note{" sim" if "simulated" in m.group(1) else ""}">{m.group(1)}</p>', html)
+    html = html.replace("{{REGISTER}}", REGISTER)
     html = re.sub(r"\{\{FACE:([^}]+)\}\}", lambda m: FACES[m.group(1)], html)
     html = re.sub(r"\{\{ICON:([^}]+)\}\}", lambda m: ICONS[m.group(1)], html)
     return html
+
+
+async def seek(pg, t: float) -> None:
+    """Pause every animation on the page at time t (ms)."""
+    await pg.evaluate(f"document.getAnimations().forEach(a => {{ a.pause(); a.currentTime = {t}; }})")
 
 
 async def render(names: list[str]) -> None:
@@ -136,27 +198,34 @@ async def render(names: list[str]) -> None:
     async with async_playwright() as p:
         b = await p.chromium.launch()
         for name in names:
-            w, h, dur, loop = SCENES[name]
+            w, h, dur, loop, dsf, poster = SCENES[name]
             page_file = WORK / f"{name}.html"
             page_file.write_text(fill((HERE / "scenes" / f"{name}.html").read_text()))
-            pg = await b.new_page(viewport={"width": w, "height": h})
+            pg = await b.new_page(viewport={"width": w, "height": h}, device_scale_factor=dsf)
             await pg.goto(page_file.as_uri())
             await pg.evaluate("document.fonts.ready")
             await pg.wait_for_timeout(150)
+
+            if not dur:  # a still
+                await pg.screenshot(path=str(OUT / f"{name}.png"))
+                print(f"{name}.png  {(OUT / f'{name}.png').stat().st_size // 1024} KB")
+                await pg.close()
+                continue
             frames = WORK / f"frames-{name}"
             shutil.rmtree(frames, ignore_errors=True)
             frames.mkdir()
             n = dur * FPS // 1000 + 1
             for i in range(n):
-                t = i * 1000 / FPS
-                await pg.evaluate(f"document.getAnimations().forEach(a => {{ a.pause(); a.currentTime = {t}; }})")
+                await seek(pg, i * 1000 / FPS)
                 await pg.screenshot(path=str(frames / f"{i:04d}.png"))
-            hold = 0.1 if loop else 1.0
+            await seek(pg, poster)
+            await pg.screenshot(path=str(OUT / f"{name}.png"))
+            hold = HOLD if loop else 1.0
             subprocess.run(
                 [
                     "ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", str(frames / "%04d.png"),
-                    "-vf", f"tpad=stop_mode=clone:stop_duration={hold},scale=960:-1:flags=lanczos,split[a][b];"
-                    "[a]palettegen=max_colors=160:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
+                    "-vf", f"tpad=stop_mode=clone:stop_duration={hold},split[a][b];"
+                    "[a]palettegen=max_colors=192:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
                     "-loop", "0" if loop else "-1", str(OUT / f"{name}.gif"),
                 ],
                 check=True,
