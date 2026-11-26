@@ -56,16 +56,23 @@ def test_apify_reader_calls_the_rag_web_browser():
     seen = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
-        seen["url"] = str(request.url)
-        seen["body"] = json.loads(request.content)
+        path = request.url.path
+        if request.method == "POST":
+            seen["url"] = str(request.url)
+            seen["body"] = json.loads(request.content)
+            return httpx.Response(201, json={"data": {"id": "r1", "status": "RUNNING"}})
+        if path.endswith("/v2/actor-runs/r1"):
+            return httpx.Response(
+                200, json={"data": {"id": "r1", "status": "SUCCEEDED", "defaultDatasetId": "d1"}}
+            )
         return httpx.Response(
             200, json=[{"metadata": {"url": "https://x.example", "title": "X"}, "markdown": "# Hi"}]
         )
 
-    page = _apify(handler).read("https://x.example")
-    assert seen["url"] == (
-        "https://gw.example/apify/conn_1/v2/acts/apify~rag-web-browser/run-sync-get-dataset-items"
-    )
+    reader = _apify(handler)
+    reader.poll_seconds = 0
+    page = reader.read("https://x.example")
+    assert seen["url"] == ("https://gw.example/apify/conn_1/v2/actors/apify~rag-web-browser/runs")
     assert seen["body"] == {
         "query": "https://x.example",
         "maxResults": 1,
