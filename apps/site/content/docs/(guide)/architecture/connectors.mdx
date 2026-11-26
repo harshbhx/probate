@@ -18,8 +18,13 @@ No key lives on any Sprite. SDKs that insist on one get the placeholder `sprites
 | **AgentMail** | The family inbox and the three test senders; labels mark handled mail | `adapters/mail.py` |
 | **Box** | The archive: wills, verdicts, quarantine, genome, obituaries, voices | `adapters/archive.py` |
 | **Pinecone** | Approved memories with citations, for recall and "Ask an ancestor" | `adapters/vectors.py` |
-| **Ollama Cloud** | The brain of every generation (Anthropic as fallback) | `adapters/llm.py` |
+| **Ollama Cloud** | The brain of every generation | `adapters/llm.py` |
 | **ElevenLabs** | A voice for each generation, and its eulogy | `adapters/voice.py` |
+| **Apify** | Reads the first link in an email with RAG Web Browser, so the page goes through the gate and the court too | `adapters/pages.py` |
+| **Anthropic**, **Groq** | Backup brains, tried in order only when Ollama fails | `adapters/llm.py` |
+| **Cloudflare** | Email Service for the owner's own test emails; Workers AI as an optional brain or route to Jev | `adapters/mail.py`, `adapters/llm.py`, `adapters/jev.py` |
+
+Cloudflare and Groq have no built-in connector, so they use Custom API connectors, written `custom_api/<id>` in `PROBATE_CONNECTIONS`.
 
 ## Jev
 
