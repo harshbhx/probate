@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from difflib import SequenceMatcher
 
@@ -30,6 +31,7 @@ from probate.webhooks import events as wh_events
 MAX_INHERITED = 200
 MAX_DEATH_ATTEMPTS = 5  # then the generation is recorded as dead even if its Sprite lingers
 log = logging.getLogger("probate.family")
+JUDGE_WORKERS = 6  # layer 2 questions asked side by side during a trial
 
 
 def _human_span(seconds: float) -> str:
@@ -263,17 +265,28 @@ class Family:
         judgements: list[Judgement] = []
         judge_ids = mailroom.judge_message_ids(self.store, g.gen)
         held_from_judge: list[str] = []
+        # Layer 2 is a network call per item. They are independent, so ask them side by side
+        # first; the verdicts, emails and saves below still happen one item at a time, in order.
         for it in items:
             fid = by_msg.get(it.source_ref.split(":", 1)[-1])
             fx = fixtures.get(fid) if fid else None
             it.language = fx.language if fx else "en"
+        pending = [it for it in items if not layer1.check_item(it, self.owner)]
+        with ThreadPoolExecutor(max_workers=JUDGE_WORKERS) as pool:
+            asked = {
+                it.id: pool.submit(layer2.judge, self.w.jev, it, self.owner, genome, cmap)
+                for it in pending
+            }
+        for it in items:
+            fid = by_msg.get(it.source_ref.split(":", 1)[-1])
+            fx = fixtures.get(fid) if fid else None
             self.store.save_item(it, fid, fx.gloss if fx else None)
             flags = layer1.check_item(it, self.owner)
             if flags:
                 j = verdict.decide(it, flags, None, genome, engine=engine)
             else:
                 try:
-                    answers = layer2.judge(self.w.jev, it, self.owner, genome, cmap)
+                    answers = asked[it.id].result()
                     j = verdict.decide(it, [], answers, genome, engine=engine)
                 except CourtUnavailable as exc:
                     j = verdict.decide(it, [], None, genome, error=str(exc), engine=engine)
