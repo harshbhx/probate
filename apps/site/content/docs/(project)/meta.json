@@ -3,5 +3,12 @@
   "description": "Hacksgiving, security, research and answers",
   "icon": "Gavel",
   "root": true,
-  "pages": ["hacksgiving", "security", "research", "faq", "glossary"]
+  "pages": [
+    "hacksgiving",
+    "security",
+    "accessibility",
+    "research",
+    "faq",
+    "glossary"
+  ]
 }

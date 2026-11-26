@@ -29,13 +29,16 @@ export const FOOTER: { title: string; links: FootLink[] }[] = [
       { label: 'The court', href: '/docs/concepts/court' },
       { label: 'Architecture', href: '/docs/architecture/overview' },
       { label: 'API reference', href: '/docs/reference/api' },
+      { label: 'Accessibility', href: '/docs/accessibility' },
       { label: 'FAQ', href: '/docs/faq' },
     ],
   },
   {
     title: 'Project',
     links: [
+      { label: 'All links', href: '/links' },
       ...(githubUrl ? [{ label: 'Source on GitHub', href: githubUrl }] : []),
+      { label: 'Datasets on Hugging Face', href: 'https://huggingface.co/datasets/harshbhx/probate-attack-suite' },
       ...(videoUrl ? [{ label: 'The video', href: videoUrl }] : []),
       ...(articleUrl ? [{ label: 'The write-up', href: articleUrl }] : []),
       { label: 'For judges', href: '/docs/for-judges' },

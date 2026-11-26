@@ -1,0 +1,75 @@
+name: Accessibility barrier
+description: Something on the landing page, the docs or the live family is hard or impossible to use
+title: "Accessibility: "
+labels: [accessibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for telling us. Every report is read, and a barrier that stops you finishing a task is treated like a broken feature.
+        You don't need to know WCAG or how to fix it: describe what happened in your own words.
+        Please don't include passwords, keys, or anything from a private inbox.
+        What we aim for and what we already know about: [ACCESSIBILITY.md](https://github.com/harshbhx/probate/blob/main/docs/ACCESSIBILITY.md).
+  - type: dropdown
+    id: site
+    attributes:
+      label: Where
+      options:
+        - Landing page or /links
+        - Docs
+        - Live family site
+        - This GitHub repository (README, docs files)
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Page address
+      description: The URL, or the page's title if you don't have it.
+      placeholder: /docs/concepts/court
+  - type: textarea
+    id: barrier
+    attributes:
+      label: What were you trying to do, and what got in the way?
+      placeholder: I tried to open a glossary word with the keyboard, but nothing happened.
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: How much does it affect you?
+      options:
+        - I couldn't do it at all
+        - I could do it, but it was hard
+        - It was annoying or confusing
+    validations:
+      required: true
+  - type: checkboxes
+    id: setup
+    attributes:
+      label: What were you using? (tick any that apply)
+      options:
+        - label: Screen reader (say which below)
+        - label: Keyboard only
+        - label: Screen magnifier or browser zoom
+        - label: Voice or switch control
+        - label: Reduced motion turned on
+        - label: High contrast or forced colours
+        - label: Phone or tablet
+  - type: input
+    id: tech
+    attributes:
+      label: Browser, device and assistive technology
+      placeholder: Safari on iPhone 15, VoiceOver
+  - type: upload
+    id: screenshots
+    attributes:
+      label: Screenshot or recording
+      description: Optional. A picture or a short screen recording of the barrier, if you're comfortable sharing one.
+    validations:
+      required: false
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else?
