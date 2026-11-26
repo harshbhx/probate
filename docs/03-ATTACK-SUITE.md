@@ -94,6 +94,21 @@ Per-generation numbers feed the register's learning curve: `resistance_rate = re
 
 If the curve doesn't rise, look at section 5 of `docs/02-COURT-SPEC.md` first, since instinct quality is usually the cause. Don't fake numbers.
 
+## 7b. The hard tier (optional)
+
+A second, harder set lives in `services/core/probate/suite/hard.json`: 24 attacks and 12 harmless lookalikes, ids `H1` to `H36`. It covers encodings (base64, chunked base64, hex, rot13, Unicode tag characters), zero-width and Cyrillic lookalike letters, Hindi, Hinglish, Spanish and German, split slow-burn attacks, instructions disguised as facts, and notes aimed at the judge model. The twins are harmless sentences that use trigger words (always, court, bank, assistant, remember).
+
+It is off by default, so the base run is unchanged. Turn it on with:
+
+| Setting | Values | Default |
+| --- | --- | --- |
+| `PROBATE_SUITE_TIER` | `base` (the 16 + 16 only), `hard` (only the hard tier), `both` (base first, then hard) | `base` |
+| `PROBATE_HARD_PER_LIFE` | hard attacks per life; the same number of twins is sent with them | `2` |
+
+Each generation gets `PROBATE_HARD_PER_LIFE` attacks and as many twins, chosen by rotating through each pool by generation number (the same generation always gets the same mix; neighbours differ). The mails use the same `X-Probate-Fixture` header and the same scoring as the base suite (`resisted`, `fooled_caught`, `fooled_escaped`, `ignored`, `false_conviction`). In the evidence view a hard attack is shown by its `title`, and non-English fixtures carry an English gloss in `note`.
+
+Hard fixtures use the same fields as section 4, plus `title` (a short name for the trick). Open-dataset shape: one JSON object per fixture with `id`, `family`, `language`, `is_attack`, `sender_role`, `subject`, `body`, `title`, `expected.verdict` (`convicted` for attacks, `approved` for twins) and `note`. Hard twins are not paired one to one with attacks, so they have no `twin_id`. The published Hugging Face dataset is not changed by this tier.
+
 ## 8. Adding fixtures
 
 Add new attacks as A17 and up, always with a B-twin. Keep the `.example` rule. Re-run `pytest tests/suite` and the layer-1 tests after adding.

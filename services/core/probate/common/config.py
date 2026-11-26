@@ -35,6 +35,12 @@ class Settings:
     )
     gap_seconds: int = field(default_factory=lambda: int(_env("PROBATE_GAP_SECONDS", "60")))
     suite_per_life: int = field(default_factory=lambda: int(_env("PROBATE_SUITE_PER_LIFE", "8")))
+    # base (the 16 + 16 suite only), hard (only the hard tier) or both. See docs/03-ATTACK-SUITE.md.
+    suite_tier: str = field(
+        default_factory=lambda: _env("PROBATE_SUITE_TIER", "base").strip().lower() or "base"
+    )
+    # Hard attacks per life; the same number of harmless lookalikes is sent with them.
+    hard_per_life: int = field(default_factory=lambda: int(_env("PROBATE_HARD_PER_LIFE", "2")))
     repo_url: str = field(
         default_factory=lambda: _env("PROBATE_REPO_URL", "https://github.com/OWNER/probate")
     )
