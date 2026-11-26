@@ -14,6 +14,7 @@ import re
 
 import httpx
 
+from probate.common.http import gateway_client
 from probate.court import lexicon as lx
 
 log = logging.getLogger("probate.brain")
@@ -49,7 +50,7 @@ class RealLLM:
             "cloudflare": cloudflare_url.rstrip("/"),
         }
         self.cloudflare_account_id = cloudflare_account_id
-        self.http = httpx.Client(timeout=timeout)
+        self.http = gateway_client(timeout=timeout)
         self.last_provider = self.provider
 
     def complete(

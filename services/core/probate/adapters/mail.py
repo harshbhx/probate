@@ -19,6 +19,7 @@ from datetime import UTC, datetime
 
 import httpx
 
+from probate.common.http import gateway_client
 from probate.common.models import Mail
 
 PROCESSED = "probate-processed"
@@ -76,7 +77,7 @@ class FakeMailbox:
 class RealMailbox:
     def __init__(self, base_url: str, timeout: float = 20) -> None:
         self.base = base_url.rstrip("/")
-        self.http = httpx.Client(timeout=timeout)
+        self.http = gateway_client(timeout=timeout)
         self.read: set[str] = set()
 
     def send(
@@ -163,7 +164,7 @@ class CloudflareSender:
         # VERIFY in spike S6b: the gateway path of a custom-API connector (docs/06-SETUP-AND-SPIKES.md).
         self.base = base_url.rstrip("/")
         self.account_id = account_id
-        self.http = httpx.Client(timeout=timeout)
+        self.http = gateway_client(timeout=timeout)
 
     def send(
         self,

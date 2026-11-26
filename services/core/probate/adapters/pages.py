@@ -16,6 +16,8 @@ from dataclasses import dataclass
 
 import httpx
 
+from probate.common.http import gateway_client
+
 MAX_PAGE_CHARS = 3000
 LINK_RE = re.compile(r"https?://[^\s<>()\"']+", re.IGNORECASE)
 
@@ -62,7 +64,7 @@ class ApifyPages:
         self.base_url = base_url.rstrip("/")
         self.actor = actor
         self.scraper = scraper
-        self.client = httpx.Client(timeout=timeout)
+        self.client = gateway_client(timeout=timeout)
 
     def read(self, url: str) -> Page:
         body = {"query": url, "maxResults": 1, "scrapingTool": self.scraper}

@@ -16,6 +16,7 @@ from typing import ClassVar
 
 import httpx
 
+from probate.common.http import gateway_client
 from probate.common.models import JevAnswer
 from probate.court import lexicon as lx
 
@@ -42,7 +43,7 @@ class RealJev:
     def __init__(self, base_url: str | None = None, model: str = "jev-latest", timeout: float = 20):
         self.base_url = (base_url or os.environ.get("TYPESAFE_BASE_URL", "")).rstrip("/")
         self.model = model
-        self.client = httpx.Client(timeout=timeout)
+        self.client = gateway_client(timeout=timeout)
 
     def ask(self, state: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
         body = {
@@ -94,7 +95,7 @@ class CloudflareJev:
         self.base_url = base_url.rstrip("/")
         self.account_id = account_id
         self.model = model
-        self.client = httpx.Client(timeout=timeout)
+        self.client = gateway_client(timeout=timeout)
 
     def ask(self, state: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
         if not self.account_id:
