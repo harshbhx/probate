@@ -50,6 +50,21 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | Courthouse disk full | `df -h`; prune `/home/sprite/data/audio` older than 7 days (audio is also in Box) |
 | Site down | `POST .../services/courthouse/restart`; if the Sprite is wedged, `python scripts/deploy.py --name probate-courthouse-2` (the wills and verdicts are also in Box; there's no automatic rebuild of SQLite from Box yet) |
 
+## 3a. Back up, delete, and restore the Courthouse
+
+A Courthouse that is paused or stopped costs almost nothing, but a deleted one costs nothing at all. The family's whole memory is one SQLite file, so you can save it, delete the Sprite, and bring the family back later exactly where it stopped.
+
+```sh
+# 1. Pause (POST /admin/pause), then save a consistent copy of the database to your machine.
+#    Run this on the Courthouse Sprite and read the file back: it uses the SQLite backup API.
+sprite exec -s probate-courthouse -- python3 -c "import sqlite3; s=sqlite3.connect('/home/sprite/data/probate.db'); d=sqlite3.connect('/home/sprite/backup.db'); s.backup(d)"
+# 2. Check the copy on your machine (integrity ok, the generations you expect), then delete the Sprite.
+# 3. Later, deploy a new Courthouse and put the saved database on it before it starts:
+python scripts/deploy.py --restore-db path/to/probate.db
+```
+
+`--restore-db` only writes the database to a **new** Courthouse; it never replaces one that is already there. A restored Courthouse comes up **paused** (the pause is stored in the database), so nothing is born and no mail is sent until you `POST /admin/resume`. Generation numbers continue (the next is the last plus one) and the learned instincts are kept. Box keeps the wills, and the connectors are in your Sprites dashboard, so only the database needs saving. Never copy the Sprite's `.env` into a backup.
+
 ## 4. Demo day (Sat Nov 28)
 
 - **Fri night:** lifespan 10 minutes, suite 8 per life, run the family overnight. Target 10+ generations by morning.
