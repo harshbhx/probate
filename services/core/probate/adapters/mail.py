@@ -101,7 +101,11 @@ class RealMailbox:
                 for a in attachments
             ]  # VERIFY in spike S6: attachment field names
         r = self.http.post(f"{self.base}/v0/inboxes/{from_inbox}/messages/send", json=body)
-        r.raise_for_status()
+        if r.status_code >= 400:
+            # Say why: the status line alone ("400 Bad Request") hides AgentMail's own reason.
+            raise RuntimeError(
+                f"AgentMail refused the send from {from_inbox} ({r.status_code}): {r.text[:400]}"
+            )
         return r.json().get("message_id", "")
 
     def list_new(self, inbox: str) -> list[Mail]:
