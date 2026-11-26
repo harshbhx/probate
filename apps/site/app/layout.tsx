@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Provider } from '@/components/provider';
+import { WebMCP } from '@/components/webmcp';
 import { appName, siteUrl, tagline } from '@/lib/shared';
 import './global.css';
 
@@ -18,6 +19,8 @@ export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {/* Agentic Resource Discovery: what this site offers AI agents (app/.well-known/ard.json). */}
+        <link rel="ard" href="/.well-known/ard.json" type="application/json" />
         {/* The scroll effects start text at opacity 0 or 0.16 in the HTML and raise it with JavaScript. Without JS,
             show everything. */}
         <noscript>
@@ -26,6 +29,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
       </head>
       <body className="flex min-h-screen flex-col bg-night text-moon antialiased">
         <Provider>{children}</Provider>
+        <WebMCP />
       </body>
     </html>
   );
