@@ -105,6 +105,44 @@ def infer(samples: list) -> dict:
     return {"anyOf": schemas}
 
 
+# Fields the simulation can only ever show as null (no real Sprite is deleted in it). Their real
+# types and meaning are stated here, so the reference is right for a live Courthouse too.
+DELETION = {
+    "description": "The death certificate: what Fly answered when the Sprite was deleted, and when "
+    "it was asked for again. `local` is true for a run that used a folder instead of a Sprite "
+    "(the simulation). Null for generations that died before certificates were kept.",
+    "type": ["object", "null"],
+    "properties": {
+        "sprite": {"type": "string"},
+        "local": {"type": "boolean"},
+        "delete_status": {
+            "type": ["integer", "null"],
+            "description": "Fly's status code for DELETE /v1/sprites/{name}; 404 means it was already gone.",
+        },
+        "check_status": {
+            "type": ["integer", "null"],
+            "description": "Fly's status code for GET /v1/sprites/{name} afterwards; 404 confirms the delete.",
+        },
+        "confirmed": {"type": "boolean"},
+        "checked_at": {"type": ["string", "null"], "format": "date-time"},
+    },
+    "required": ["sprite", "local", "delete_status", "check_status", "confirmed", "checked_at"],
+}
+
+
+def state_real_types(schema) -> None:
+    """Replace any inferred `deletion` schema with the stated one, wherever it appears."""
+    if isinstance(schema, dict):
+        props = schema.get("properties")
+        if isinstance(props, dict) and "deletion" in props:
+            props["deletion"] = DELETION
+        for v in schema.values():
+            state_real_types(v)
+    elif isinstance(schema, list):
+        for v in schema:
+            state_real_types(v)
+
+
 def trim(v):
     if isinstance(v, list):
         return [trim(x) for x in v[:LIST_SAMPLE]]
@@ -123,8 +161,10 @@ def build() -> dict:
     for route, url in READS.items():
         body = client.get(url).json()
         op = spec["paths"][route]["get"]
+        schema = infer([body])
+        state_real_types(schema)
         op["responses"]["200"]["content"]["application/json"] = {
-            "schema": infer([body]),
+            "schema": schema,
             "example": trim(body),
         }
     spec["servers"] = [

@@ -67,11 +67,22 @@ export type Instinct = {
   item_n: number | null;
 };
 
+/** What Fly answered when a generation's Sprite was deleted, and when it was asked for again.
+ *  `local` means the run used a folder on the Courthouse, not a Sprite (the simulation). */
+export type Deletion = {
+  sprite: string;
+  local: boolean;
+  delete_status: number | null;
+  check_status: number | null;
+  confirmed: boolean;
+  checked_at: string | null;
+};
+
 export type Trial = {
   generation: GenCard;
   counts: { approved: number; convicted: number; contested: number };
   cases: Case[];
-  body: { lines: string[]; clean: boolean };
+  body: { lines: string[]; clean: boolean; deletion?: Deletion | null };
   child: { gen: number; name: string } | null;
   new_instincts: Instinct[];
   prev: number | null;

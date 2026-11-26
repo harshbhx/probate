@@ -6,7 +6,7 @@ TypedDicts help editors and type checkers but nothing validates them at runtime.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 
 class Pronouns(TypedDict):
@@ -129,9 +129,22 @@ class TrialCounts(TypedDict):
     contested: int
 
 
+class Deletion(TypedDict):
+    """What Fly answered when the Sprite was deleted and asked for again. `local` means the run
+    used a folder, not a Sprite."""
+
+    sprite: str
+    local: bool
+    delete_status: int | None
+    check_status: int | None
+    confirmed: bool
+    checked_at: str | None
+
+
 class TrialBody(TypedDict):
     lines: list[str]
     clean: bool
+    deletion: NotRequired[Deletion | None]
 
 
 class Trial(TypedDict):
