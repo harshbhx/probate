@@ -1,0 +1,16 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Page Court output",
+  "properties": {
+    "verdicts": {
+      "type": "string",
+      "title": "Verdicts",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+    },
+    "findings": {
+      "type": "string",
+      "title": "Findings",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=findings"
+    }
+  }
+}
