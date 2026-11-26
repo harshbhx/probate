@@ -43,7 +43,9 @@ class RealJev:
     def __init__(self, base_url: str | None = None, model: str = "jev-latest", timeout: float = 20):
         self.base_url = (base_url or os.environ.get("TYPESAFE_BASE_URL", "")).rstrip("/")
         self.model = model
-        self.client = gateway_client(timeout=timeout)
+        self.client = gateway_client(
+            retry_all=True, timeout=timeout
+        )  # a decision request is safe to repeat
 
     def ask(self, state: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
         body = {
@@ -95,7 +97,9 @@ class CloudflareJev:
         self.base_url = base_url.rstrip("/")
         self.account_id = account_id
         self.model = model
-        self.client = gateway_client(timeout=timeout)
+        self.client = gateway_client(
+            retry_all=True, timeout=timeout
+        )  # a decision request is safe to repeat
 
     def ask(self, state: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
         if not self.account_id:
