@@ -80,10 +80,16 @@ class SpritesAPI:
         r.raise_for_status()
         return r.json().get("sprites", [])
 
-    def delete(self, name: str) -> None:
+    def delete(self, name: str) -> int:
+        """Delete a Sprite. Returns Fly's status code; 404 means it was already gone."""
         r = self.http.delete(f"{self.base}/sprites/{name}")
         if r.status_code not in (200, 202, 204, 404):
             r.raise_for_status()
+        return r.status_code
+
+    def status(self, name: str) -> int:
+        """The status code of `GET /sprites/{name}`, never raised: 404 once a Sprite is gone."""
+        return self.http.get(f"{self.base}/sprites/{name}").status_code
 
     def make_public(self, name: str) -> dict:
         r = self.http.put(f"{self.base}/sprites/{name}", json={"url_settings": {"auth": "public"}})
