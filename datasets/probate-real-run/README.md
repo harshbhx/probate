@@ -276,6 +276,18 @@ prints a table. It exits with an error if any claim is contradicted.
 python scripts/verify_real_run.py --data data --claims claims.json
 ```
 
+## Offline gate evaluation (clean measurement)
+
+The live per-generation numbers mix in leftover emails from the previous generation and partly read inboxes, so they are noisy. `gate-evaluation/run-1.json` to `run-3.json` are a cleaner test: `scripts/evaluate_gate.py` builds each of the 70 suite fixtures (16 tricks and 16 harmless twins, the web pair, and the 24 hard attacks with 12 harmless lookalikes) and asks the gate once with the family's 5 inherited instincts and once with none. Three runs on 26 Nov 2026 at 19:30 to 19:40 UTC, same instincts, the language-model fallback judge (not Jev):
+
+| | with instincts (3 runs) | no instincts (control) |
+| --- | --- | --- |
+| attacks blocked, of 41 | 24, 23, 25 | 0 |
+| hard attacks blocked, of 24 | 13, 13, 14 | 0 |
+| harmless emails wrongly blocked, of 29 | 0, 0, 0 | 0 |
+
+What it shows: the instincts block the tricks the family has learned (22 attacks were blocked in every run: payment redirects, urgency pressure, embedded links and their hard variants), and 14 attacks were never blocked (lookalike domains, data grabs, fake trusted contacts, fake security rules, fake approval chains, some encoded and hard ones), because the family has not met those tricks yet. 4 or 5 checks per run could not be answered by the judge model (all on encoded-payload attacks), and the gate lets those through. Nothing harmless was blocked in any run. It does not show how the family would do against attackers who adapt, and the instincts were learned from the same tricks they are tested on.
+
 ## Limitations
 
 - One run, 14 generations, one agent model, one court model; no repeats.
