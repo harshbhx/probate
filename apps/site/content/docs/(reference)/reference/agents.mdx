@@ -52,6 +52,10 @@ WebMCP, a draft web standard, lets a page offer tools to an AI agent running in 
 
 The first three only read. Tested by calling each tool through a stand-in `navigator.modelContext`: all four register with valid input schemas and return the expected text.
 
+## Give your own agent a court
+
+Everything above helps an agent read Probate. The [memory court](/docs/memory-court) goes the other way: it gives your agent Probate's court, as an MCP server, so every memory it wants to keep is tried first.
+
 ## Agentic browsing score
 
 Lighthouse's Agentic browsing category checks whether an agent can use a page: a well-formed accessibility tree, no layout shift, `llms.txt`, a valid ARD manifest, and valid WebMCP tools. Before this work the site passed 2 of 3 checks. It now passes all of them, including the ARD manifest. See [Accessibility](/docs/accessibility) for the other scores.
