@@ -1,6 +1,9 @@
 """Render Probate's README visuals: one design for every GIF and still.
 
-    python3 render.py [banner stats tryit lineage court memory curve architecture footer]
+    python3 render.py [banner stats lineage court curve architecture footer tryit memory]
+
+The README uses seven of them (docs/media). The rest are spares in the brand kit (brand/visuals),
+drawn in the same design for posts, slides and docs.
 
 Every visual shares one frame (the seal and name, the section, step ticks, and the register line
 along the bottom), one type scale and the Night Court colours, so the README reads as one piece.
@@ -45,24 +48,25 @@ from playwright.async_api import async_playwright
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-OUT = pathlib.Path(os.environ.get("PROBATE_README_OUT") or REPO / "docs" / "media")  # set PROBATE_README_OUT to draft elsewhere
+DRAFT = os.environ.get("PROBATE_README_OUT")  # set it to draft everything in one folder instead
+DEST = {"readme": REPO / "docs" / "media", "brand": REPO / "brand" / "visuals"}
 NM = REPO / "node_modules"
 FACES = json.loads((HERE / "faces.json").read_text())
 ICONS = json.loads((HERE / "icons.json").read_text())
 WORK = pathlib.Path(tempfile.gettempdir()) / "probate-readme-anim"
 
-# name: (width, height, duration ms, loop, device scale, poster ms)
+# name: (width, height, duration ms, loop, device scale, poster ms, where it goes)
 # duration 0 is a still (PNG at 2x). loop=False plays once and holds the last frame.
 SCENES = {
-    "banner": (960, 300, 4200, False, 4 / 3, 4200),
-    "stats": (960, 250, 0, False, 2, 0),
-    "tryit": (960, 468, 0, False, 2, 0),
-    "lineage": (960, 540, 15400, True, 1, 15400),
-    "court": (960, 540, 8600, True, 1, 8600),
-    "memory": (960, 540, 9800, True, 1, 9800),
-    "curve": (960, 540, 5600, True, 1, 5600),
-    "architecture": (960, 640, 22600, True, 1, 22600),
-    "footer": (960, 260, 4800, False, 4 / 3, 4800),
+    "banner": (960, 300, 4200, False, 4 / 3, 4200, "readme"),
+    "stats": (960, 250, 0, False, 2, 0, "readme"),
+    "tryit": (960, 468, 0, False, 2, 0, "brand"),
+    "lineage": (960, 540, 15400, True, 1, 15400, "readme"),
+    "court": (960, 540, 8600, True, 1, 8600, "readme"),
+    "memory": (960, 540, 9800, True, 1, 9800, "brand"),
+    "curve": (960, 540, 5600, True, 1, 5600, "readme"),
+    "architecture": (960, 640, 22600, True, 1, 22600, "readme"),
+    "footer": (960, 260, 4800, False, 4 / 3, 4800, "readme"),
 }
 FPS = 25
 HOLD = 2.6  # seconds a looping scene rests on its last frame before it starts again
@@ -198,7 +202,9 @@ async def render(names: list[str]) -> None:
     async with async_playwright() as p:
         b = await p.chromium.launch()
         for name in names:
-            w, h, dur, loop, dsf, poster = SCENES[name]
+            w, h, dur, loop, dsf, poster, where = SCENES[name]
+            out = pathlib.Path(DRAFT) if DRAFT else DEST[where]
+            out.mkdir(parents=True, exist_ok=True)
             page_file = WORK / f"{name}.html"
             page_file.write_text(fill((HERE / "scenes" / f"{name}.html").read_text()))
             pg = await b.new_page(viewport={"width": w, "height": h}, device_scale_factor=dsf)
@@ -207,8 +213,8 @@ async def render(names: list[str]) -> None:
             await pg.wait_for_timeout(150)
 
             if not dur:  # a still
-                await pg.screenshot(path=str(OUT / f"{name}.png"))
-                print(f"{name}.png  {(OUT / f'{name}.png').stat().st_size // 1024} KB")
+                await pg.screenshot(path=str(out / f"{name}.png"))
+                print(f"{name}.png  {(out / f'{name}.png').stat().st_size // 1024} KB")
                 await pg.close()
                 continue
             frames = WORK / f"frames-{name}"
@@ -219,18 +225,18 @@ async def render(names: list[str]) -> None:
                 await seek(pg, i * 1000 / FPS)
                 await pg.screenshot(path=str(frames / f"{i:04d}.png"))
             await seek(pg, poster)
-            await pg.screenshot(path=str(OUT / f"{name}.png"))
+            await pg.screenshot(path=str(out / f"{name}.png"))
             hold = HOLD if loop else 1.0
             subprocess.run(
                 [
                     "ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", str(frames / "%04d.png"),
                     "-vf", f"tpad=stop_mode=clone:stop_duration={hold},split[a][b];"
                     "[a]palettegen=max_colors=192:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
-                    "-loop", "0" if loop else "-1", str(OUT / f"{name}.gif"),
+                    "-loop", "0" if loop else "-1", str(out / f"{name}.gif"),
                 ],
                 check=True,
             )
-            size = (OUT / f"{name}.gif").stat().st_size // 1024
+            size = (out / f"{name}.gif").stat().st_size // 1024
             print(f"{name}.gif  {n} frames  {size} KB")
             await pg.close()
         await b.close()
