@@ -1,5 +1,7 @@
 # Page Court: prompt-injection check for AI agents
 
+[![Apify Actor](https://img.shields.io/badge/Apify-Page%20Court-097b78)](https://apify.com/harsh_bhanu/page-court) [![license: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/harshbhx/probate/blob/main/LICENSE) [![repo](https://img.shields.io/badge/repo-harshbhx%2Fprobate-blue?logo=github)](https://github.com/harshbhx/probate)
+
 **Apify Store: [apify.com/harsh_bhanu/page-court](https://apify.com/harsh_bhanu/page-court)**
 
 **Put a web page on trial before your AI agent trusts it.** Page Court reads a page the way an agent would and reports anything aimed at the agent rather than at people: orders for its future self, new payees, fake system messages, notes to whoever judges it, and text hidden in encoded or invisible form. It looks in the places people can't see too: text hidden with CSS, `aria-hidden` text, HTML comments, meta descriptions and long `alt` or `title` attributes.
@@ -88,6 +90,37 @@ The court checks read English, Spanish, German and Hinglish. `agent_directed` is
 - Pages are fetched without a browser, so text that only appears after JavaScript runs isn't seen. For those, read the page with [RAG Web Browser](https://apify.com/apify/rag-web-browser) first and pass its Markdown in `texts`.
 - Up to 3 MB per page and 100,000 characters of text are read.
 
-## About
+## Usage
 
-Built by [Harsh Bhanushali](https://github.com/harshbhx) for [Fly.io Hacksgiving 2026](https://fly.io) as part of Probate, an email agent that lives one generation at a time and passes down only what a court approves. Source and tests: https://github.com/harshbhx/probate/tree/main/actors/page-court. MIT licensed.
+Run it from the [Store page](https://apify.com/harsh_bhanu/page-court), or over the API:
+
+```sh
+curl -X POST "https://api.apify.com/v2/acts/harsh_bhanu~page-court/run-sync-get-dataset-items" \
+  -H "Authorization: Bearer $APIFY_TOKEN" -H "Content-Type: application/json" \
+  -d '{"startUrls": [{"url": "https://probate.dualmindlab.tech/suite/billing-update.html"}]}'
+```
+
+## Part of Probate
+
+This is one piece of [Probate](https://github.com/harshbhx/probate), an email agent that lives one generation at a time and passes down only what a court approves. Built for Fly.io Hacksgiving 2026.
+
+- Repository: [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- Live site: [probate.dualmindlab.tech](https://probate.dualmindlab.tech)
+- Docs for this package: [Everything we built](https://probate.dualmindlab.tech/docs/products)
+- The story: [the Probate write-up](https://probate.dualmindlab.tech/article)
+- Related: [probate-court-checks](https://pypi.org/project/probate-court-checks/) (PyPI), [probate-memory-court](https://pypi.org/project/probate-memory-court/) (PyPI), [probate-mcp](https://www.npmjs.com/package/probate-mcp) (npm)
+- Releases: [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0), [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0)
+- Dataset: [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) on Hugging Face
+
+## Development
+
+The Actor source and tests are in this folder (`src/`, `tests/`).
+
+```sh
+pip install -r requirements-dev.txt
+ruff check . && python -m pytest -q
+```
+
+## License
+
+MIT. Copyright (c) 2026 Harsh Bhanushali.
