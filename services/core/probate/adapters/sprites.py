@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-import httpx
+from probate.common.http import gateway_client
 
 API = "https://api.sprites.dev/v1"
 
@@ -51,14 +51,10 @@ def parse_frames(raw: bytes) -> ExecResult | None:
 class SpritesAPI:
     def __init__(self, token: str, base: str = API, timeout: float = 180) -> None:
         self.base = base.rstrip("/")
-        self.http = httpx.Client(
+        self.http = gateway_client(
+            retry_all=True,  # every call here (exec, files, services) is safe to repeat
             timeout=timeout,
             headers={"Authorization": f"Bearer {token}"},
-            # No kept-alive connections: reusing one the server already closed raises "SSL: UNEXPECTED_EOF".
-            # A failed connect is retried.
-            transport=httpx.HTTPTransport(
-                retries=3, limits=httpx.Limits(max_keepalive_connections=0)
-            ),
         )
 
     # Sprites
