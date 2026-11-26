@@ -31,3 +31,8 @@ def test_other_routes_stay_same_origin(client):
     r = client.get("/healthz", headers={"Origin": "https://probate-site.example"})
     assert r.status_code == 200
     assert "access-control-allow-origin" not in r.headers
+
+
+def test_fake_mode_reports_simulation(client):
+    assert client.get("/api/summary").json()["mode"] == "simulation"
+    assert client.get("/healthz").json()["mode"] == "simulation"
