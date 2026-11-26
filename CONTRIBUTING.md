@@ -41,7 +41,7 @@ make lint       # ruff, plus TypeScript checks for apps/web and apps/site
 make build      # production build of the live site and the landing + docs
 ```
 
-CI (`.github/workflows/ci.yml`) runs ruff, pytest, a 6-generation simulation, the faces tests,
+CI (`.github/workflows/ci.yml`) runs only the jobs for the paths you changed (see `docs/CICD.md`, section 8a; `ci-ok` is the single required check) and runs ruff, pytest, a 6-generation simulation, the faces tests,
 the type checks and the build. A change is done when `make test` and `make lint` pass.
 
 Extra rules from `AGENTS.md`:

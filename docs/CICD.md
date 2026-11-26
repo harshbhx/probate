@@ -26,13 +26,13 @@ flowchart LR
 
 | File | Runs on | Permissions (job level) | Secrets and variables | What it does |
 | --- | --- | --- | --- | --- |
-| `ci.yml` | push to main, pull requests | (existing, unchanged) | none | Courthouse tests and lint, web tests, types, build. |
-| `preview.yml` | pull request opened, synchronize, reopened, closed; same-repo PRs only | `prepare`: none. `build`: contents read. `deploy`: pull-requests write. `cleanup`: pull-requests write | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; optional variable `CF_WORKERS_SUBDOMAIN` | Builds both sites, deploys two Workers, keeps one sticky PR comment, deletes the Workers on close. |
-| `deploy-site.yml` | push to main touching `apps/site`, `apps/web`, `packages`; manual | `build`: contents read. `deploy`: contents read | environment `production`: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; variables `PROBATE_LIVE_URL`, `PROBATE_SITE_URL` | Builds landing + docs and deploys Worker `probate-site`. Never overlaps, never cancelled. |
+| `ci.yml` | push to main, pull requests, manual | `changes` and each test job: contents read. `ci-ok`: none | none | A `changes` job picks the areas the diff touches; only their jobs run (section 8); `ci-ok` is the one required check. |
+| `preview.yml` | pull request opened, synchronize, reopened, closed, only when site, web, their shared packages, `services/core` or the preview scripts change; same-repo PRs only | `prepare`: none. `build`: contents read. `deploy`: pull-requests write. `cleanup`: pull-requests write | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; optional variable `CF_WORKERS_SUBDOMAIN` | Builds both sites, deploys two Workers, keeps one sticky PR comment, deletes the Workers on close. |
+| `deploy-site.yml` | push to main touching `apps/site`, `apps/web`, `packages/{faces,tokens,moments}`, the root `package*.json`; manual | `build`: contents read. `deploy`: contents read | environment `production`: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; variables `PROBATE_LIVE_URL`, `PROBATE_SITE_URL` | Builds landing + docs and deploys Worker `probate-site`. Never overlaps, never cancelled. |
 | `deploy-courthouse.yml` | manual only | contents read | environment `sprites`: `COURTHOUSE_ENV`, optional `OWNER_YAML`; variable `PROBATE_SITE_URL` | `scripts/deploy.py --check` by default; a real deploy needs `mode = deploy` plus a ticked confirmation, from main. |
 | `release.yml` | tags `kinfaces-v*`, `court-checks-v*`, `client-v*`, `client-py-v*`, `mcp-v*`; manual | `plan`/`build`: contents read. publish jobs: contents read, id-token write. `github-release`: contents write | environment `release`: `NPM_TOKEN` (npm only); PyPI uses OIDC | Build, test, pack, then publish behind approval and create a GitHub Release. Dry run by default when started by hand. |
-| `codeql.yml` | pull requests to main, push to main, Mondays, manual | contents read, security-events write, actions read | none | CodeQL for JavaScript/TypeScript, Python and the workflow files. |
-| `dependency-review.yml` | pull requests | contents read | none | Fails a PR that adds a dependency with a high or critical advisory. |
+| `codeql.yml` | pull requests to main and push to main (not docs-only changes), Mondays, manual | contents read, security-events write, actions read | none | CodeQL for JavaScript/TypeScript, Python and the workflow files. |
+| `dependency-review.yml` | pull requests touching `package.json`, the lockfile, `pyproject.toml`, `requirements*.txt` or `.github/` | contents read | none | Fails a PR that adds a dependency with a high or critical advisory. |
 | `secret-scan.yml` | pull requests, push to main, Mondays, manual | contents read | none | gitleaks over the PR's commits (or the whole history on main). |
 | `actionlint.yml` | pull requests and pushes touching `.github/`, manual | contents read | none | Lints the workflows (and their shell through shellcheck). |
 | `github-packages.yml` | manual only | contents read, packages write | none (uses the workflow's own `GITHUB_TOKEN`) | Publishes scoped mirror copies of the npm packages (`@harshbhx/kinfaces`, `@harshbhx/probate-client`) to GitHub Packages. The unscoped names are meant for npm; GitHub's registry only accepts names scoped to the owner, so the scope is added at publish time only. Python packages cannot go to GitHub Packages (use PyPI). |
@@ -134,9 +134,32 @@ No token is stored. On pypi.org: Your account > Publishing > Add a new pending p
 Settings > Branches (or a ruleset) for `main`:
 
 - Require a pull request before merging; require branches to be up to date.
-- Required status checks: `core`, `web` (from `ci.yml`), `Analyze (javascript-typescript)`, `Analyze (python)`, `Analyze (actions)`, `review` (dependency review), `gitleaks`, `actionlint`. Do not require `preview`, since it skips without secrets. Note that `actionlint` only runs when `.github/` changes, so require it only if you use a ruleset that tolerates skipped checks, or remove its `paths:` filter.
+- Required status checks: only `ci-ok` (from `ci.yml`). It always runs and passes when every job that ran passed or was skipped, so a docs-only change can merge and a path filter can never leave a required check stuck on "expected". Optionally also require `gitleaks` (never path-filtered). Do not require the per-job names (`core`, `web`, ...), `Analyze (...)`, `review`, `actionlint` or `preview`: they are skipped by path filters or by missing secrets, and a skipped required check blocks the merge.
 - Block force pushes and deletions. Require linear history if you prefer squash merges.
 - Add a tag ruleset for `*-v*` so only the owner can create release tags.
+
+## 8a. Which paths trigger which checks
+
+`ci.yml` runs a `changes` job first. It diffs the pull request (or the push) against its base with plain `git diff`, matches the changed files against the table below and runs only the matching jobs. `ci-ok` runs last, always. A change that matches nothing (for example only `docs/**` or `*.md`) runs no test suite, and `ci-ok` still turns green. Pushes to main, manual runs and edits to `ci.yml` or `.github/actions/` run every job.
+
+| Changed path | Jobs that run |
+| --- | --- |
+| `services/core/**`, `config/**`, `fixtures/**` | `core`, `client-ts`, `client-py` |
+| `packages/court-checks/**`, `datasets/probate-attack-suite/**` | `court-checks` |
+| `packages/memory-court/**` | `memory-court` |
+| `actors/page-court/**` | `page-court` |
+| `apps/site/**` | `site` (types, build) |
+| `apps/web/**`, `packages/mcp/**` | `web` (faces tests, types, build) |
+| `packages/faces/**`, `packages/tokens/**`, `packages/moments/**` | `site`, `web` |
+| `apps/edge/**` | `edge` |
+| `packages/client/**` | `client-ts` |
+| `packages/client-py/**` | `client-py` |
+| root `package.json`, `package-lock.json` | `site`, `web`, `edge`, `client-ts` |
+| `docs/**`, `*.md`, anything else | none |
+
+Other workflows: `preview.yml` and `deploy-site.yml` have their own `paths:` (see the table in section 2). `codeql.yml` skips docs-only changes. `dependency-review.yml` runs when a manifest or lockfile changes. `actionlint.yml` runs when `.github/` changes. `secret-scan.yml` always runs. Pull request runs of every workflow are cancelled by a newer push; runs on main, previews, deploys and releases are never cancelled. Tag releases (`*-v*`) and the manual workflows are unaffected. The axe accessibility pass is still manual (`docs/ACCESSIBILITY.md`).
+
+**The one check to require is `ci-ok`.**
 
 ## 9. Rolling back
 
