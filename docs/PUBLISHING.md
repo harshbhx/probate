@@ -55,3 +55,23 @@ huggingface-cli upload harshbhx/probate-simulated-runs datasets/probate-simulate
 
 Check the dataset viewer renders on each page after upload. `build.py` and `export_sim.py`
 are uploaded too; that is intentional (they document provenance).
+
+## 3. Real-run dataset (Hugging Face)
+
+`datasets/probate-real-run/` holds the dataset card, `claims.json` and `data/`. The data is
+exported from the collector's snapshots of the real run; nothing is typed by hand. Refresh,
+verify, then publish (the run keeps going, so refresh right before):
+
+```sh
+python scripts/export_real_run.py --run-logs <collector folder holding db/ and api/>
+python scripts/verify_real_run.py          # must print "All claims hold"; fails loudly otherwise
+cd services/core && python -m pytest tests/test_real_run_dataset.py -q && cd ../..
+huggingface-cli repo create probate-real-run --type dataset
+huggingface-cli upload harshbhx/probate-real-run datasets/probate-real-run . --repo-type dataset
+```
+
+The exporter redacts the owner's addresses and name and refuses to write if a secret pattern
+remains; the test scans every output file as well. If the verifier contradicts a claim, read the
+data and fix `claims.json` and the card's numbers, never the other way round. Upload `scripts/`
+copies of the two scripts next to the data if you want provenance on the page, as with the other
+datasets.
