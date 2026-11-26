@@ -137,12 +137,6 @@ const PAGE_POINTS = [
     href: `${repo}/tree/main/actors/page-court`,
     link: 'The Actor',
   },
-  {
-    title: 'A connector for every Sprite',
-    body: 'An Apify connector for Fly’s community catalog, so any Sprite can run Actors without holding an Apify token.',
-    href: `${repo}/tree/main/integrations/sprites-connectors`,
-    link: 'The connector',
-  },
 ];
 
 export function PagesOnTrial() {
@@ -197,11 +191,6 @@ const TREE: TreeNode[] = [
         name: 'actors/page-court/',
         note: 'the Apify Actor',
         children: [{ name: 'src/scan.py', note: 'visible and hidden text, on trial', href: `${repo}/blob/main/actors/page-court/src/scan.py` }],
-      },
-      {
-        name: 'integrations/sprites-connectors/',
-        note: 'an Apify connector for Sprites',
-        children: [{ name: 'apify/connector.json', href: `${repo}/blob/main/integrations/sprites-connectors/apify/connector.json` }],
       },
       {
         name: 'apps/',

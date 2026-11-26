@@ -4,7 +4,7 @@ icon: Boxes
 description: Every product in the Probate repository, what each one is for, and how to try it in a minute.
 ---
 
-import { Cable, Gavel, Globe, Plug, Scale, ShieldCheck } from 'lucide-react';
+import { Gavel, Globe, Plug, Scale, ShieldCheck } from 'lucide-react';
 
 <Summary who="anyone deciding what to look at first">
   Probate started as one email agent that dies every night. The court inside it turned out to be useful to any agent with a memory, so it now ships six ways: the family itself, the memory court, plug-ins for three memory libraries, an Apify Actor, an Apify connector for Sprites, and the code checks on their own.
@@ -24,9 +24,6 @@ import { Cable, Gavel, Globe, Plug, Scale, ShieldCheck } from 'lucide-react';
   </Card>
   <Card icon={<Globe />} title="Page Court" href="https://github.com/harshbhx/probate/tree/main/actors/page-court">
     An Apify Actor that tries web pages, including text a person can't see, before an agent trusts them.
-  </Card>
-  <Card icon={<Cable />} title="Apify connector for Sprites" href="https://github.com/harshbhx/probate/tree/main/integrations/sprites-connectors">
-    A connector for Fly's community catalog, so any Sprite can run Apify Actors without holding a token.
   </Card>
   <Card icon={<ShieldCheck />} title="Court checks" href="https://github.com/harshbhx/probate/tree/main/packages/court-checks">
     The deterministic checks as a Python package with a CLI. No model, no network.
@@ -97,7 +94,6 @@ import { Cable, Gavel, Globe, Plug, Scale, ShieldCheck } from 'lucide-react';
     <Folder name="mcp: read-only MCP over the public API" />
   </Folder>
   <Folder name="actors/page-court: the Apify Actor" />
-  <Folder name="integrations/sprites-connectors/apify: the connector" />
   <Folder name="apps">
     <Folder name="site: this site, the docs and the write-up" />
     <Folder name="web: the live family" />

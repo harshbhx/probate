@@ -37,7 +37,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Code** | This repository, plus the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and four [packages](#packages) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
 | **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
-| **On Apify** | [Page Court](actors/page-court), an Actor that checks pages for tricks aimed at agents, and an [Apify connector for Sprites](integrations/sprites-connectors) |
+| **On Apify** | [Page Court](actors/page-court), an Actor that checks pages for tricks aimed at agents |
 | **For AI agents** | An [ARD manifest](apps/site/app/.well-known/ard.json/route.ts), two Agent Skills and four WebMCP tools, so an agent can find and use Probate on its own: [what each one does](apps/site/content/docs/%28reference%29/reference/agents.mdx). Lighthouse Agentic browsing: 100 |
 | **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
 | **Everything we built** | Six products and how to try each in a minute: [`/docs/products`](apps/site/content/docs/%28guide%29/products.mdx) |
@@ -309,7 +309,7 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 | Box | The family archive |
 | Pinecone | Ancestral memory, and recall by meaning in the memory court |
 | Ollama | The brain of every generation, and the memory court's second judge for anyone without a TypeSafe key |
-| Apify | Reads the pages that emails link to, so tricks hidden on the web go to trial too (card P1, tested in simulation); the [Page Court](actors/page-court) Actor; and an [Apify connector](integrations/sprites-connectors) for Fly's Sprites catalog |
+| Apify | Reads the pages that emails link to, so tricks hidden on the web go to trial too (card P1, tested in simulation); and the [Page Court](actors/page-court) Actor, which a Sprite can run through Fly's built-in Apify connector |
 
 **Coming before submission:** judges can email the family a trick and watch it handled live; each trial shows Fly's own "not found" reply as proof the Sprite was deleted; the home page shows a live feed of the living generation.
 
