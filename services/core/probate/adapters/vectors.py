@@ -9,8 +9,7 @@ from __future__ import annotations
 import json
 import re
 
-import httpx
-
+from probate.common.http import gateway_client
 from probate.common.models import MemoryItem
 
 API_VERSION = "2026-04"
@@ -46,7 +45,7 @@ class FakeVectors:
 class PineconeVectors:
     def __init__(self, base_url: str, timeout: float = 20) -> None:
         self.base = base_url.rstrip("/")  # VERIFY in spike S7: gateway path to the index host
-        self.http = httpx.Client(timeout=timeout, headers={"X-Pinecone-Api-Version": API_VERSION})
+        self.http = gateway_client(timeout=timeout, headers={"X-Pinecone-Api-Version": API_VERSION})
 
     def upsert(self, items: list[MemoryItem], namespace: str = "family") -> None:
         if not items:

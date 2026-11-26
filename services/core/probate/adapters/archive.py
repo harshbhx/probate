@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import httpx
+from probate.common.http import gateway_client
 
 
 class LocalArchive:
@@ -53,7 +53,7 @@ class BoxArchive:
         self.upload = (upload_base_url or base_url).rstrip(
             "/"
         )  # VERIFY in spike S5: upload host via gateway
-        self.http = httpx.Client(timeout=timeout)
+        self.http = gateway_client(timeout=timeout)
         self.folders: dict[str, str] = {"": "0"}
         self.files: dict[str, str] = {}
 

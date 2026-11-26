@@ -5,7 +5,7 @@ The fake returns None, and the UI then shows the transcript only.
 
 from __future__ import annotations
 
-import httpx
+from probate.common.http import gateway_client
 
 VOICE_POOL = [
     "voice-pool-01",
@@ -34,7 +34,7 @@ class ElevenLabsVoice:
     ) -> None:
         self.base = base_url.rstrip("/")
         self.model = model
-        self.http = httpx.Client(timeout=timeout)
+        self.http = gateway_client(timeout=timeout)
 
     def speak(self, text: str, voice_id: str | None) -> bytes | None:
         if not voice_id:
