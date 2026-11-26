@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: 'Newsreader'; src: url('{{NEWSREADER}}') format('woff2-variations'); font-weight: 200 800; }
+@font-face { font-family: 'Geist'; src: url('{{GEIST}}') format('woff2-variations'); font-weight: 100 900; }
+{{FACESCSS}}
+* { margin: 0; box-sizing: border-box; }
+body { width: 1280px; height: 640px; background: #08090c; color: #edeff3; font-family: 'Geist', sans-serif; overflow: hidden; }
+.card { position: relative; width: 1280px; height: 640px; padding: 72px 88px; display: flex; flex-direction: column; }
+.card::after { content: ''; position: absolute; inset: 24px; border: 1px solid #1f2228; border-radius: 28px; pointer-events: none; }
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand svg { width: 52px; height: 52px; }
+.brand span { font: 500 30px 'Newsreader', serif; letter-spacing: -0.01em; }
+h1 { margin-top: 54px; font: 420 92px/0.98 'Newsreader', serif; letter-spacing: -0.03em; }
+h1 em { font-style: normal; color: #d9b46a; }
+p.sub { margin-top: 18px; font: 400 36px/1.2 'Newsreader', serif; color: #c3c8d1; }
+.row { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; }
+.faces { display: flex; align-items: flex-end; gap: 14px; }
+.f svg { width: 58px; height: 58px; display: block; }
+.f.live svg { width: 84px; height: 84px; }
+.meta { text-align: right; font-size: 21px; line-height: 1.5; color: #959ca8; }
+.meta b { color: #edeff3; font-weight: 500; }
+</style></head><body>
+<div class="card">
+  <div class="brand">{{LOGO}}<span>Probate</span></div>
+  <h1>My agent dies <em>every night.</em></h1>
+  <p class="sub">A court decides what its child inherits.</p>
+  <div class="row">
+    <div class="faces">{{FACES}}</div>
+    <div class="meta"><b>Fly.io Hacksgiving 2026</b><br>github.com/harshbhx/probate</div>
+  </div>
+</div>
+</body></html>
