@@ -16,6 +16,8 @@ export const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL ?? '';
 // The write-up lives on this site (/article) unless it is published elsewhere too.
 export const articleUrl = process.env.NEXT_PUBLIC_ARTICLE_URL || '/article';
 export const postUrl = process.env.NEXT_PUBLIC_POST_URL ?? '';
+// The PageSpeed Insights run on the live landing page: 100 in every category, mobile and desktop.
+export const pageSpeedUrl = 'https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7';
 // Page Court's listing on the Apify Store.
 export const pageCourtUrl = 'https://apify.com/harsh_bhanu/page-court';
 

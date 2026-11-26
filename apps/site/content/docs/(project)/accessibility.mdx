@@ -5,21 +5,23 @@ description: PageSpeed and Lighthouse scores, what axe found on every page, and 
 ---
 
 <Summary who="anyone checking the sites">
-  Google PageSpeed gives the landing page 100 for Accessibility, Best Practices and SEO on phones. axe finds no WCAG A or AA problems on any of the 48 pages of the landing page and docs, on a phone or a laptop screen.
+  Google PageSpeed gives the live landing page 100 in every category, on mobile and on desktop ([the report](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7)). axe finds no WCAG A or AA problems on any of the 48 pages of the landing page and docs, on a phone or a laptop screen.
 </Summary>
 
 ## PageSpeed scores
 
-PageSpeed Insights, mobile, on the live landing page, Nov 26, 2026:
+PageSpeed Insights on the live landing page, Nov 26, 2026. The scores are the same on mobile and on desktop: [open the report](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7).
 
-<StatRow note="Performance lost 8 points to layout shift alone; the next section says how that was fixed.">
+<StatRow note="Mobile and desktop alike.">
+  <Stat value="100" label="Performance" tone="good" />
   <Stat value="100" label="Accessibility" tone="good" />
   <Stat value="100" label="Best Practices" tone="good" />
   <Stat value="100" label="SEO" tone="good" />
-  <Stat value="92" label="Performance, before the fix" />
 </StatRow>
 
-The animated "every night." in the headline changed its width on every frame, so the text around it moved (layout shift 0.15). Agentic browsing (2 of 3) counts the same shift. The animation now sits on top of the real text and never resizes it, so layout shift is 0.
+### How it got there
+
+PageSpeed's first run on phones gave Performance 92. The animated "every night." in the headline changed its width on every frame, so the text around it moved (layout shift 0.15). Agentic browsing (2 of 3) counts the same shift. The animation now sits on top of the real text and never resizes it, so layout shift is 0.
 
 After that fix, and two more that cut the work a docs page does while loading, Lighthouse 13.6 on our own machine gives:
 
@@ -28,7 +30,7 @@ After that fix, and two more that cut the work a docs page does while loading, L
 | Landing page | 100 | 100 | 100 | 100 | 91 to 96 | 100 |
 | Docs pages | 100 | 100 | 100 | 100 | 93 to 97 | 100 |
 
-The phone Performance range is what our test machine measures for main-thread time, which varies between runs. PageSpeed's own run gave full marks for main-thread time and paint speed, so the live page should score 100 once the fix is deployed. This page will show that run.
+The phone Performance range is what our test machine measures for main-thread time, which varies between runs. PageSpeed's own run on the deployed fix is the 100 above.
 
 What changed on the docs pages:
 

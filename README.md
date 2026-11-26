@@ -18,7 +18,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
 ![Tests](https://img.shields.io/badge/tests-352_passing-5be3a9?style=flat-square)
-[![Accessibility 100](https://img.shields.io/badge/PageSpeed_accessibility-100-5be3a9?style=flat-square)](docs/ACCESSIBILITY.md)
+[![PageSpeed 100, mobile and desktop](https://img.shields.io/badge/PageSpeed-100_mobile_and_desktop-5be3a9?style=flat-square)](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7)
 [![Datasets on Hugging Face](https://img.shields.io/badge/datasets-Hugging_Face-ffcc4d?style=flat-square)](https://huggingface.co/datasets/harshbhx/probate-attack-suite)
 
 [**For judges**](apps/site/content/docs/%28guide%29/for-judges.mdx) · [**How it works**](#how-it-works) · [**The court**](#the-court) · [**Memory court**](#the-memory-court-for-any-agent) · [**Results**](#results) · [**Architecture**](#architecture) · [**Run it**](#run-it-yourself) · [**All links**](#everything-in-one-place) · [**About the author**](#about-the-author)
@@ -39,7 +39,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
 | **On Apify** | [Page Court](https://apify.com/harsh_bhanu/page-court), an Actor that checks pages for tricks aimed at agents ([source](actors/page-court)) |
 | **For AI agents** | An [ARD manifest](apps/site/app/.well-known/ard.json/route.ts), two Agent Skills and four WebMCP tools, so an agent can find and use Probate on its own: [what each one does](apps/site/content/docs/%28reference%29/reference/agents.mdx). Lighthouse Agentic browsing: 100 |
-| **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
+| **Speed and accessibility** | PageSpeed: 100 in every category, on mobile and desktop ([the report](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7)). Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
 | **Everything we built** | Six products and how to try each in a minute: [`/docs/products`](apps/site/content/docs/%28guide%29/products.mdx) |
 | **The write-up** | "My agent dies every night", hosted on the site at `/article` from [one Markdown file](apps/site/content/article/my-agent-dies-every-night.md) |
 | **Live family, video** | Linked here on submission day, Nov 28 |

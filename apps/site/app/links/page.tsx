@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
 import { FamilyFace } from 'kinfaces/react';
 import Link from '@/components/intent-link';
-import { appName } from '@/lib/shared';
+import { appName, pageSpeedUrl } from '@/lib/shared';
 import { linkGroups, type Item } from '@/lib/links';
 
 export const metadata: Metadata = {
@@ -75,7 +75,10 @@ export default function LinksPage() {
         <Link href="/" className="text-mist underline decoration-gilt/50 underline-offset-[3px] hover:text-moon">
           probate home
         </Link>
-        {' · '}PageSpeed: Accessibility, Best Practices and SEO 100
+        {' · '}
+        <a href={pageSpeedUrl} className="text-mist underline decoration-gilt/50 underline-offset-[3px] hover:text-moon">
+          PageSpeed 100 in every category, on mobile and desktop
+        </a>
       </p>
     </main>
   );
