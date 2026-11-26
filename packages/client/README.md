@@ -1,20 +1,24 @@
 # probate-client
 
-A small typed client for the [Probate](https://github.com/harshbhx/probate) Courthouse public API.
-No runtime dependencies. It uses the global `fetch`, so it runs on Node 18+, browsers and Workers.
+A small typed client for the Probate Courthouse public API, with no runtime dependencies.
 
-Not yet published to npm. Until then, build it from the repo (`npm ci && npm run build -w probate-client`).
+[![npm](https://img.shields.io/npm/v/probate-client)](https://www.npmjs.com/package/probate-client) [![license: MIT](https://img.shields.io/npm/l/probate-client)](https://github.com/harshbhx/probate/blob/main/packages/client/LICENSE) [![repo](https://img.shields.io/badge/repo-harshbhx%2Fprobate-blue?logo=github)](https://github.com/harshbhx/probate)
+
+It uses the global `fetch`, so it runs on Node 18+, browsers and Workers. Also mirrored on GitHub Packages as `@harshbhx/probate-client`.
+
+## Install
 
 ```sh
 npm install probate-client
 ```
 
-## Use
+## Usage
 
 ```ts
 import { ProbateClient, ApiError } from "probate-client";
 
-const probate = new ProbateClient({ baseUrl: "https://your-courthouse.example" });
+// The Courthouse API runs where you start it (`make api` in the repo serves http://localhost:8080).
+const probate = new ProbateClient({ baseUrl: "http://localhost:8080" });
 
 const summary = await probate.summary();
 console.log(summary.living?.name, summary.counts.instincts);
@@ -70,12 +74,26 @@ with `status`, `message` and the parsed `body`. Nothing is retried.
   generations) lacks.
 - No retries, no pagination helpers, no caching.
 
-## Develop
+## Part of Probate
+
+This is one piece of [Probate](https://github.com/harshbhx/probate), an email agent that lives one generation at a time and passes down only what a court approves. Built for Fly.io Hacksgiving 2026.
+
+- Repository: [github.com/harshbhx/probate](https://github.com/harshbhx/probate)
+- Live site: [probate.dualmindlab.tech](https://probate.dualmindlab.tech)
+- Docs for this package: [HTTP API reference](https://probate.dualmindlab.tech/docs/reference/api) and [Everything we built](https://probate.dualmindlab.tech/docs/products)
+- The story: [the Probate write-up](https://probate.dualmindlab.tech/article)
+- Related: [probate-client](https://pypi.org/project/probate-client/) (PyPI), [probate-mcp](https://www.npmjs.com/package/probate-mcp) (npm), [kinfaces](https://www.npmjs.com/package/kinfaces) (npm), [probate-memory-court](https://pypi.org/project/probate-memory-court/) (PyPI)
+- Releases: [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0), [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0)
+
+## Development
 
 ```sh
 npm ci
+npm run build -w probate-client
 npm run lint -w probate-client
 npm test -w probate-client   # needs services/core/.venv (pip install -e '.[dev]'), or set PROBATE_PYTHON
 ```
 
-MIT licensed.
+## License
+
+MIT. Copyright (c) 2026 Harsh Bhanushali.
