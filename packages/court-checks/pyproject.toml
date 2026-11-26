@@ -33,7 +33,7 @@ probate-check = "probate_court_checks.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/harshbhx/probate"
-Source = "https://github.com/harshbhx/probate/tree/main/packages/court-checks"
+Repository = "https://github.com/harshbhx/probate"
 Issues = "https://github.com/harshbhx/probate/issues"
 
 [tool.setuptools.packages.find]

@@ -25,8 +25,7 @@ classifiers = [
 ]
 dependencies = [
   "mcp>=2.3,<3",
-  # Not on PyPI yet: the court checks come from Probate's v0.2.0 release.
-  "probate-court-checks @ https://github.com/harshbhx/probate/releases/download/v0.2.0/probate_court_checks-0.2.0-py3-none-any.whl",
+  "probate-court-checks>=0.2.0",
 ]
 
 [project.optional-dependencies]
@@ -39,10 +38,11 @@ dev = ["pytest>=8", "ruff>=0.6", "langgraph>=0.4", "letta-client>=1"]
 
 [project.scripts]
 probate-memory = "probate_memory.cli:main"
+probate-memory-court = "probate_memory.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/harshbhx/probate/tree/main/packages/memory-court"
-Source = "https://github.com/harshbhx/probate"
+Homepage = "https://github.com/harshbhx/probate"
+Repository = "https://github.com/harshbhx/probate"
 Issues = "https://github.com/harshbhx/probate/issues"
 
 [tool.setuptools.packages.find]
