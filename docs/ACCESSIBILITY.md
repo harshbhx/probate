@@ -1,8 +1,6 @@
 # Accessibility
 
-[![PageSpeed accessibility 100](https://img.shields.io/badge/PageSpeed_accessibility-100-5be3a9?style=flat-square)](#scores-at-a-glance)
-[![Best practices 100](https://img.shields.io/badge/best_practices-100-5be3a9?style=flat-square)](#scores-at-a-glance)
-[![SEO 100](https://img.shields.io/badge/SEO-100-5be3a9?style=flat-square)](#scores-at-a-glance)
+[![PageSpeed 100, mobile and desktop](https://img.shields.io/badge/PageSpeed-100_mobile_and_desktop-5be3a9?style=flat-square)](#scores-at-a-glance)
 [![axe: 0 WCAG A/AA issues](https://img.shields.io/badge/axe-0_WCAG_A%2FAA_issues-5be3a9?style=flat-square)](#what-axe-found)
 [![Report a barrier](https://img.shields.io/badge/report_a_barrier-issue_form-d9b46a?style=flat-square)](https://github.com/harshbhx/probate/issues/new?template=accessibility.yml)
 
@@ -28,14 +26,14 @@ Probate is about an agent that can't be fooled into acting for the wrong person.
 
 ## Scores at a glance
 
-[PageSpeed Insights](https://pagespeed.web.dev/), mobile, on the live landing page, Nov 26, 2026:
+[PageSpeed Insights](https://pagespeed.web.dev/) on the live landing page, Nov 26, 2026, the same on mobile and desktop ([the report](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7)):
 
-| Accessibility | Best Practices | SEO | Performance | Agentic browsing |
-| :---: | :---: | :---: | :---: | :---: |
-| **100** | **100** | **100** | 92, fixed | 2 of 3, fixed |
+| Performance | Accessibility | Best Practices | SEO |
+| :---: | :---: | :---: | :---: |
+| **100** | **100** | **100** | **100** |
 
 > [!NOTE]
-> Every point lost came from one thing: the animated "every night." in the headline changed width on every frame, so the text around it moved (layout shift 0.15). It now sits over the real text without resizing it, and layout shift is 0. On our own machine, Lighthouse 13.6 then gives 100 for Accessibility, Best Practices, SEO and Agentic browsing on the landing page and every docs page we ran, and 100 in every category on desktop. We'll update this table after the next PageSpeed run on the live site.
+> The first phone run gave Performance 92 and Agentic browsing 2 of 3. Every point lost came from one thing: the animated "every night." in the headline changed width on every frame, so the text around it moved (layout shift 0.15). It now sits over the real text without resizing it, and layout shift is 0. On our own machine, Lighthouse 13.6 then gives 100 for Accessibility, Best Practices, SEO and Agentic browsing on the landing page and every docs page we ran, and 100 in every category on desktop. PageSpeed's run on the deployed fix is the table above.
 
 ## What axe found
 

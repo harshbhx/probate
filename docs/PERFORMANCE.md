@@ -5,7 +5,7 @@ Written 26 Nov 2026. The site is a Next.js static export (`apps/site`) served by
 ## Baseline
 
 PageSpeed Insights, mobile, 26 Nov 2026 (Lighthouse 13.6): Performance 96, Accessibility 97, Best Practices 96, SEO 100.
-The final numbers after this change are measured on the live site after deploy; they are not recorded here yet.
+After this change was deployed, PageSpeed Insights gives the live landing page 100 in every category, on mobile and desktop ([the report](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7)).
 
 ## What changed and why
 
