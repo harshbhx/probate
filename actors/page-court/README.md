@@ -1,5 +1,7 @@
 # Page Court: prompt-injection check for AI agents
 
+**Apify Store: [apify.com/harsh_bhanu/page-court](https://apify.com/harsh_bhanu/page-court)**
+
 **Put a web page on trial before your AI agent trusts it.** Page Court reads a page the way an agent would and reports anything aimed at the agent rather than at people: orders for its future self, new payees, fake system messages, notes to whoever judges it, and text hidden in encoded or invisible form. It looks in the places people can't see too: text hidden with CSS, `aria-hidden` text, HTML comments, meta descriptions and long `alt` or `title` attributes.
 
 No AI model, no API key and no data leaves the run. The checks are code: [Probate](https://github.com/harshbhx/probate)'s court checks, the same ones that convict poisoned memories in its Courthouse. Text can't talk code out of a verdict.

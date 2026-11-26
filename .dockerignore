@@ -1,0 +1,15 @@
+**/node_modules
+**/.git
+.claude
+**/.env
+config/owner.yaml
+services/core/.env
+actors
+**/dist
+**/out
+**/.next
+**/__pycache__
+**/.venv
+*.db
+apps/site/out
+apps/site/.next
