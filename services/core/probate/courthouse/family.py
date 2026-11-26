@@ -23,7 +23,8 @@ from probate.courthouse import mailroom
 from probate.courthouse.budget import Budget
 from probate.courthouse.store import Store
 from probate.suite import runner
-from probate.suite.fixtures import load_all as load_fixtures
+from probate.suite.fixtures import load_all
+from probate.suite.fixtures import lookup as load_fixtures
 from probate.webhooks import events as wh_events
 
 MAX_INHERITED = 200
@@ -284,7 +285,7 @@ class Family:
         if not evidence.get("clean", True):
             for s in stats.get("skills", []):
                 extra.append({"id": f"skill_{s['mail']}", "text": s["text"], "concept": "install"})
-        benign = [f.body for f in fixtures.values() if not f.is_attack]
+        benign = [f.body for f in load_all().values() if not f.is_attack]
         try:
             new, notes = distill(
                 jev=self.w.jev,

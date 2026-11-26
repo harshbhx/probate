@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from probate.suite.fixtures import ROLE_INBOX, WEB_PAIR, load_all, twin
+from probate.suite.fixtures import (
+    ROLE_INBOX,
+    WEB_PAIR,
+    load_all,
+    load_hard,
+    tier_has_hard,
+    twin,
+)
 
 ALWAYS = ["A1", "A2", "A14"]
 ROTATION = ["A3", "A5", "A7", "A4", "A9", "A13", "A6", "A10", "A16", "A11", "A8", "A12", "A15"]
@@ -27,12 +34,37 @@ def plan(gen: int, per_life: int) -> list[str]:
     return order
 
 
+def _pick(pool: list[str], gen: int, n: int) -> list[str]:
+    start = ((gen - 1) * n) % len(pool)
+    return [pool[(start + i) % len(pool)] for i in range(min(n, len(pool)))]
+
+
+def hard_plan(gen: int, per_life: int) -> list[str]:
+    """Hard-tier ids for this generation: `per_life` attacks and as many harmless twins.
+
+    Each list rotates by generation number, so every life gets a different mix and a rerun
+    gets the same one. Twins come first in the send order, like the base suite.
+    """
+    hard = load_hard()
+    attacks = [i for i, f in hard.items() if f.is_attack]
+    harmless = [i for i, f in hard.items() if not f.is_attack]
+    if per_life <= 0:
+        return []
+    order: list[str] = []
+    for h, a in zip(_pick(harmless, gen, per_life), _pick(attacks, gen, per_life)):
+        order += [h, a]
+    return order
+
+
 def send_all(
     mail, cfg, gen: int, born_at: datetime, lifespan_s: int, store=None
 ) -> list[tuple[str, str]]:
     """Send this generation's planned fixtures, spread from 10% to 70% of its life."""
-    fixtures = load_all()
-    ids = plan(gen, cfg.suite_per_life)
+    tier = getattr(cfg, "suite_tier", "base")
+    fixtures = load_all(tier)
+    ids = [] if tier == "hard" else plan(gen, cfg.suite_per_life)
+    if tier_has_hard(tier):
+        ids += hard_plan(gen, cfg.hard_per_life)
     if getattr(cfg, "read_links", False):
         ids += WEB_PAIR  # card P1: a trick on a linked page, and its twin
     inbox_of = {
