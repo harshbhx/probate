@@ -316,8 +316,9 @@ class Mailroom:
             if read:
                 upd = {"status": "read"}
         if upd:
+            # Keys are fixed above ("status", ...), never from the email; values are bound.
             sets = ",".join(f"{k}=?" for k in upd)
-            self.store.x(f"UPDATE judge_mail SET {sets} WHERE id=?", *upd.values(), row["id"])
+            self.store.x(f"UPDATE judge_mail SET {sets} WHERE id=?", *upd.values(), row["id"])  # nosec B608
             row = {**row, **upd}
         return row
 

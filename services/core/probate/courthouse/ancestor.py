@@ -51,7 +51,8 @@ def ask(store: Store, w, cfg: Settings, gen: int, question: str, ip: str = "") -
     audio = w.voice.speak(answer, g.voice_id)
     path = None
     if audio:
-        path = f"gen-{gen:03d}-ask-{hashlib.sha1(question.encode()).hexdigest()[:8]}.mp3"
+        key = hashlib.sha1(question.encode(), usedforsecurity=False).hexdigest()[:8]
+        path = f"gen-{gen:03d}-ask-{key}.mp3"
         (cfg.data_dir / "audio").mkdir(parents=True, exist_ok=True)
         (cfg.data_dir / "audio" / path).write_bytes(audio)
     store.x(
