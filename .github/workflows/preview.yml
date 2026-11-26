@@ -16,11 +16,27 @@ name: preview
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
+    # Only changes that alter what the two preview sites show. The `closed` cleanup runs for the
+    # same set, which is exactly the set of PRs that can have created a preview.
+    paths:
+      - apps/site/**
+      - apps/web/**
+      - packages/faces/**
+      - packages/tokens/**
+      - packages/moments/**
+      - services/core/**
+      - config/**
+      - scripts/preview_*.py
+      - package.json
+      - package-lock.json
+      - .github/workflows/preview.yml
+      - .github/actions/**
 
 permissions: {}
 
 concurrency:
   group: preview-pr-${{ github.event.pull_request.number }}
+  # Never cancelled: a half-finished deploy or cleanup would leave a Worker behind.
   cancel-in-progress: false
 
 env:
