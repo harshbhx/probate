@@ -23,7 +23,9 @@ HIDDEN_STYLE = re.compile(
     r"|(?:left|top|text-indent)\s*:\s*-\d{3,}px|clip\s*:\s*rect\(\s*0",
     re.IGNORECASE,
 )
-INVISIBLE = re.compile(r"[​-‏⁠-⁤﻿­\U000e0000-\U000e007f]")
+INVISIBLE = re.compile(
+    "[\u200b-\u200f\u2060-\u2064\ufeff\u00ad\U000e0000-\U000e007f]"
+)  # zero-width, bidi marks, tags
 SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
 SKIP_TAGS = ("script", "style", "noscript", "template", "svg", "head")
 
