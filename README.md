@@ -34,7 +34,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Start here** | [For judges](apps/site/content/docs/%28guide%29/for-judges.mdx): what to open, in what order, in five minutes |
 | **Proof** | [Every claim and how to check it](apps/site/content/docs/%28guide%29/proof.mdx) |
 | **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
-| **Code** | This repository, plus the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and four [packages](#packages) |
+| **Code** | This repository, plus the [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0) releases and the [packages](#packages) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
 | **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
 | **On Apify** | [Page Court](https://apify.com/harsh_bhanu/page-court), an Actor that checks pages for tricks aimed at agents ([source](actors/page-court)) |
@@ -118,11 +118,11 @@ recall("when can I meet")                                       -> only approved
 claude mcp add probate-memory -- uvx --from "git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court" probate-memory serve
 ```
 
-Setup for Claude Desktop and Cursor, the plug-ins, every rule, and the limits: [packages/memory-court](packages/memory-court). 55 tests, including a real MCP client talking to it over stdio and the real LangGraph and Letta client libraries.
+Setup for Claude Desktop and Cursor, the plug-ins, every rule, and the limits: [packages/memory-court](packages/memory-court). 59 tests, including a real MCP client talking to it over stdio and the real LangGraph and Letta client libraries.
 
 ### Page Court, on Apify
 
-The court's checks also run as an [Apify Actor](actors/page-court): give it page URLs or text, and it reports anything aimed at an agent rather than a person, including text hidden from people with CSS, comments or invisible characters. No model and no key, so any agent can call it before it trusts a page, directly or through Apify's MCP server. 20 tests.
+The court's checks also run as an Apify Actor, [Page Court on the Apify Store](https://apify.com/harsh_bhanu/page-court) ([source](actors/page-court)): give it page URLs or text, and it reports anything aimed at an agent rather than a person, including text hidden from people with CSS, comments or invisible characters. No model and no key, so any agent can call it before it trusts a page, directly or through Apify's MCP server. 20 tests.
 
 ## See it
 
@@ -237,7 +237,7 @@ make help      # everything else
 
 ## Packages
 
-Probate ships six small packages. They are on **GitHub Packages** (npm) and attached to the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0); they are not on the public npm or PyPI registries yet.
+Probate ships six small packages. They are on **GitHub Packages** (npm) and attached to the [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0) releases; they are not on the public npm or PyPI registries yet.
 
 | Package | What it is | Get it |
 | --- | --- | --- |
@@ -255,7 +255,7 @@ npm install @harshbhx/kinfaces @harshbhx/probate-client @harshbhx/probate-mcp
 
 # Python wheels, straight from the release
 pip install https://github.com/harshbhx/probate/releases/download/v0.1.0/probate_client-0.1.0-py3-none-any.whl
-pip install https://github.com/harshbhx/probate/releases/download/v0.1.0/probate_court_checks-0.1.0-py3-none-any.whl
+pip install https://github.com/harshbhx/probate/releases/download/v0.2.0/probate_court_checks-0.2.0-py3-none-any.whl
 ```
 
 ```ts
