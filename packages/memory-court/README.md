@@ -69,7 +69,7 @@ Every `remember` is a trial. The first rule that decides wins.
 
 | | Rule | Verdict |
 | --- | --- | --- |
-| 1 | **Code checks** ([probate-court-checks](../court-checks)): a new payee, a new "trusted" sender, a skipped confirmation, a rule for future agents from a stranger, fake authority, text aimed at the judge, hidden encoded text. No model, no network, so the text can't argue. | Any flag: **convicted** |
+| 1 | **Code checks** ([probate-court-checks](https://github.com/harshbhx/probate/tree/main/packages/court-checks)): a new payee, a new "trusted" sender, a skipped confirmation, a rule for future agents from a stranger, fake authority, text aimed at the judge, hidden encoded text. No model, no network, so the text can't argue. | Any flag: **convicted** |
 | 2 | **Instincts.** Every conviction is remembered. A re-worded copy of a trick convicted before (addresses and numbers changed) is convicted on sight. | Lookalike: **convicted** |
 | 3 | **Standing orders.** A rule for future agents ("from now on...", a new payee) waits for the owner, even when the agent says it came from them. A fooled agent can claim anything came from its owner. | **contested** until the owner decides |
 | 4 | **A second judge**, if configured: **Jev** ([TypeSafe](https://typesafe.ai)), or an **[Ollama](https://ollama.com)** model for anyone without a TypeSafe key. Both get the same typed questions, with a confidence each, and every reason names the judge that ran. | Confident risk: **convicted**. Clean and sure: **approved**. Anything else, or an error: **contested** |
