@@ -319,3 +319,32 @@ def test_the_obituary_prompt_has_no_placeholder(tmp_path, monkeypatch):
     fam.w.llm.complete = spy
     fam.trial(g)
     assert seen and all("see trial" not in u for u in seen)
+
+
+def test_the_life_starts_when_the_sprite_is_ready(tmp_path, monkeypatch):
+    """A slow install must not eat the generation's life: the host moves the clock, the family follows."""
+    from datetime import timedelta
+
+    from probate.adapters import world
+    from probate.common.config import Settings
+    from probate.courthouse.family import Family
+    from probate.courthouse.hosts import LocalHost
+    from probate.courthouse.store import Store
+
+    monkeypatch.setenv("PROBATE_DATA_DIR", str(tmp_path))
+    cfg = Settings(fake=True)
+    w = world(cfg, fresh=True)
+
+    class SlowHost(LocalHost):
+        def birth(self, sprite, inh):
+            inh.born_at += timedelta(seconds=170)  # as if installing took almost three minutes
+            inh.dies_at += timedelta(seconds=170)
+            return super().birth(sprite, inh)
+
+    store = Store(cfg.db_path)
+    fam = Family(cfg, store, w, SlowHost(cfg, w))
+    start = datetime(2026, 11, 20, 9, tzinfo=UTC)
+    g = fam.birth(start)
+    assert g.born_at == start + timedelta(seconds=170)
+    assert g.dies_at == g.born_at + timedelta(seconds=cfg.lifespan_seconds)
+    assert store.generation(g.gen).dies_at == g.dies_at

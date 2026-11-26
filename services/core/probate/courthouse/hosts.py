@@ -7,7 +7,7 @@ import json
 import logging
 import shlex
 import shutil
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from probate.adapters.sprites import ExecResult, SpritesAPI
 from probate.common.bundle import INSTALL, make_bundle
@@ -150,6 +150,13 @@ class SpritesHost:
         # The child gets the Courthouse's own code, not whatever is on GitHub right now.
         self.api.write_file(sprite, "bundle.tgz", make_bundle())
         self._run(sprite, ["bash", "-lc", INSTALL])
+        # The life starts when the Sprite is ready, not when birth began: installing can take
+        # minutes, and a life clock that ran during it would leave the generation almost no time.
+        late = (datetime.now(UTC) - inh.born_at).total_seconds()
+        if late > 5:
+            shift = timedelta(seconds=late)
+            inh.born_at += shift
+            inh.dies_at += shift
         self.api.write_file(sprite, "app/inheritance.json", inh.model_dump_json(indent=2).encode())
         baseline = self._cli(sprite, "baseline")
         env_args = " ".join(f"{k}={shlex.quote(v)}" for k, v in self._env().items())

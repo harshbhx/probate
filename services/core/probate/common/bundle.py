@@ -19,8 +19,8 @@ SKIP_FILES = {".env"}
 # Installs the bundle on a fresh Sprite (Ubuntu 25.10, PEP 668 managed Python).
 INSTALL = (
     "set -e; mkdir -p app; tar xzf bundle.tgz -C app; rm bundle.tgz; "
-    "python3 -m pip install --user --break-system-packages -q -e 'app/services/core[vendors]' "
-    "|| uv pip install --system --break-system-packages -q -e 'app/services/core[vendors]'"
+    "python3 -m pip install --user --break-system-packages -q -e 'app/services/core' "
+    "|| uv pip install --system --break-system-packages -q -e 'app/services/core'"
 )
 
 

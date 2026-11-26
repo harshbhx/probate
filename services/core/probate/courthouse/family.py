@@ -147,6 +147,10 @@ class Family:
                 gen, "error", f"{name} could not be born: the new Sprite was deleted again."
             )
             raise
+        # A real Sprite can take minutes to install; the host moves the life's start to when it was
+        # ready, so the Courthouse's clock follows the agent's.
+        g.born_at = inh.born_at
+        g.dies_at = inh.dies_at - timedelta(seconds=inherit_slack)
         self.store.set_gen_json(gen, "baseline_json", baseline)
         g.state = "living"
         self.store.save_generation(g)
