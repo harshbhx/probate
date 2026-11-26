@@ -24,7 +24,7 @@ import {
   Trophy,
   User,
 } from 'lucide-react';
-import { articleUrl, githubUrl, liveUrl, postUrl, videoUrl } from '@/lib/shared';
+import { articleUrl, githubUrl, liveUrl, pageCourtUrl, postUrl, videoUrl } from '@/lib/shared';
 
 export type Item = { icon: LucideIcon; label: string; note: string; href: string };
 export type Group = { title: string; items: Item[] };
@@ -60,7 +60,7 @@ export const GROUPS: Group[] = [
       { icon: Code2, label: 'Source code', note: 'Open source, with the attack suite and 352 tests', href: repo },
       { icon: Boxes, label: 'Everything we built', note: 'Six products, and how to try each in a minute', href: '/docs/products' },
       { icon: Scale, label: 'The memory court', note: 'The court for any AI agent: MCP, Mem0, LangGraph, Letta', href: '/docs/memory-court' },
-      { icon: Globe, label: 'Page Court on Apify', note: 'Checks pages for tricks aimed at agents', href: `${repo}/tree/main/actors/page-court` },
+      { icon: Globe, label: 'Page Court on Apify', note: 'On the Apify Store: checks pages for tricks aimed at agents', href: pageCourtUrl },
       { icon: Package, label: 'Packages', note: 'kinfaces, the API clients and the court checks', href: `${repo}#packages` },
       { icon: Database, label: 'Dataset: the attack suite', note: '16 tricks and their 16 harmless twins, in four languages', href: `${HF}/probate-attack-suite` },
       { icon: Table2, label: 'Dataset: simulated runs', note: '12 generations and 96 outcomes, from stand-in models (simulated)', href: `${HF}/probate-simulated-runs` },
