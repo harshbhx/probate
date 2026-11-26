@@ -30,7 +30,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
+# The plug-ins (probate_memory.integrations). Mem0 and Letta are duck-typed and need nothing extra
+# to import; these extras just install the library being guarded.
+mem0 = ["mem0ai>=1"]
+langgraph = ["langgraph>=0.4"]
+letta = ["letta-client>=1"]
+dev = ["pytest>=8", "ruff>=0.6", "langgraph>=0.4", "letta-client>=1"]
 
 [project.scripts]
 probate-memory = "probate_memory.cli:main"
