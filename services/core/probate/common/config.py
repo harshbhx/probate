@@ -196,6 +196,16 @@ class Settings:
         return self.on_demand and not self.fake
 
     @property
+    def court_engine(self) -> str:
+        """Who answers layer 2 of the court, in plain words. Shown with every result."""
+        if self.fake:
+            return "Simulated judge"
+        return {
+            "cloudflare": "Jev (through Cloudflare Workers AI)",
+            "llm": "Language-model fallback (not Jev)",
+        }.get(self.jev_provider, "Jev (TypeSafe)")
+
+    @property
     def on_demand(self) -> bool:
         return self.mode == "on_demand"
 

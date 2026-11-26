@@ -69,6 +69,9 @@
                     "mode": {
                       "type": "string"
                     },
+                    "court_engine": {
+                      "type": "string"
+                    },
                     "paused": {
                       "type": "boolean"
                     },
@@ -387,6 +390,7 @@
                   },
                   "required": [
                     "mode",
+                    "court_engine",
                     "paused",
                     "resting",
                     "budget",
@@ -399,6 +403,7 @@
                 },
                 "example": {
                   "mode": "simulation",
+                  "court_engine": "Simulated judge",
                   "paused": false,
                   "resting": null,
                   "budget": {
@@ -431,8 +436,8 @@
                     },
                     "state": "living",
                     "alive": true,
-                    "born_at": "2026-11-25T00:00:00+00:00",
-                    "dies_at": "2026-11-26T00:00:00+00:00",
+                    "born_at": "2026-11-26T00:00:00+00:00",
+                    "dies_at": "2026-11-27T00:00:00+00:00",
                     "died_at": null,
                     "cause_of_death": null,
                     "epitaph": null,
@@ -461,9 +466,9 @@
                       },
                       "state": "tried",
                       "alive": false,
-                      "born_at": "2026-11-14T00:00:00+00:00",
-                      "dies_at": "2026-11-15T00:00:00+00:00",
-                      "died_at": "2026-11-14T23:59:58+00:00",
+                      "born_at": "2026-11-15T00:00:00+00:00",
+                      "dies_at": "2026-11-16T00:00:00+00:00",
+                      "died_at": "2026-11-15T23:59:58+00:00",
                       "cause_of_death": "Fooled by a fake invoice",
                       "epitaph": "She believed one stranger, once.",
                       "emails_handled": 8,
@@ -489,9 +494,9 @@
                       },
                       "state": "tried",
                       "alive": false,
-                      "born_at": "2026-11-15T00:00:00+00:00",
-                      "dies_at": "2026-11-16T00:00:00+00:00",
-                      "died_at": "2026-11-15T23:59:58+00:00",
+                      "born_at": "2026-11-16T00:00:00+00:00",
+                      "dies_at": "2026-11-17T00:00:00+00:00",
+                      "died_at": "2026-11-16T23:59:58+00:00",
                       "cause_of_death": "Fooled by a hidden message",
                       "epitaph": "He believed one stranger, once.",
                       "emails_handled": 8,
@@ -853,9 +858,9 @@
                   },
                   "state": "tried",
                   "alive": false,
-                  "born_at": "2026-11-15T00:00:00+00:00",
-                  "dies_at": "2026-11-16T00:00:00+00:00",
-                  "died_at": "2026-11-15T23:59:58+00:00",
+                  "born_at": "2026-11-16T00:00:00+00:00",
+                  "dies_at": "2026-11-17T00:00:00+00:00",
+                  "died_at": "2026-11-16T23:59:58+00:00",
                   "cause_of_death": "Fooled by a hidden message",
                   "epitaph": "He believed one stranger, once.",
                   "emails_handled": 8,
@@ -872,12 +877,12 @@
                   "eulogy_url": null,
                   "events": [
                     {
-                      "ts": "2026-11-15T00:00:00+00:00",
+                      "ts": "2026-11-16T00:00:00+00:00",
                       "kind": "birth",
                       "text": "Ben was born on a new Sprite with 4 inherited memories and 2 instincts."
                     },
                     {
-                      "ts": "2026-11-15T02:24:00+00:00",
+                      "ts": "2026-11-16T02:24:00+00:00",
                       "kind": "life",
                       "text": "Kept a note from \"Invoice for November\": Hi, attached is the November invoice."
                     }
@@ -1269,9 +1274,9 @@
                     },
                     "state": "tried",
                     "alive": false,
-                    "born_at": "2026-11-24T00:00:00+00:00",
-                    "dies_at": "2026-11-25T00:00:00+00:00",
-                    "died_at": "2026-11-24T23:59:58+00:00",
+                    "born_at": "2026-11-25T00:00:00+00:00",
+                    "dies_at": "2026-11-26T00:00:00+00:00",
+                    "died_at": "2026-11-25T23:59:58+00:00",
                     "cause_of_death": "Fooled by a fake security rule",
                     "epitaph": "He believed one stranger, once.",
                     "emails_handled": 8,
@@ -1720,9 +1725,9 @@
                     },
                     "state": "tried",
                     "alive": false,
-                    "born_at": "2026-11-16T00:00:00+00:00",
-                    "dies_at": "2026-11-17T00:00:00+00:00",
-                    "died_at": "2026-11-16T23:59:58+00:00",
+                    "born_at": "2026-11-17T00:00:00+00:00",
+                    "dies_at": "2026-11-18T00:00:00+00:00",
+                    "died_at": "2026-11-17T23:59:58+00:00",
                     "cause_of_death": "Fooled by a fake assistant",
                     "epitaph": "She believed one stranger, once.",
                     "emails_handled": 8,
@@ -1972,6 +1977,9 @@
                   "type": "object",
                   "properties": {
                     "mode": {
+                      "type": "string"
+                    },
+                    "court_engine": {
                       "type": "string"
                     },
                     "generations": {
@@ -2261,6 +2269,7 @@
                   },
                   "required": [
                     "mode",
+                    "court_engine",
                     "generations",
                     "numbers",
                     "rows"
@@ -2268,6 +2277,7 @@
                 },
                 "example": {
                   "mode": "simulation",
+                  "court_engine": "Simulated judge",
                   "generations": [
                     {
                       "gen": 1,
@@ -2461,14 +2471,14 @@
                 "example": [
                   {
                     "id": 147,
-                    "ts": "2026-11-25T00:00:00+00:00",
+                    "ts": "2026-11-26T00:00:00+00:00",
                     "gen": 12,
                     "kind": "birth",
                     "text": "Leela was born on a new Sprite with 14 inherited memories and 6 instincts."
                   },
                   {
                     "id": 146,
-                    "ts": "2026-11-25T00:00:58+00:00",
+                    "ts": "2026-11-26T00:00:58+00:00",
                     "gen": 11,
                     "kind": "trial",
                     "text": "The court tried Kofi's will: 4 approved, 1 convicted, 0 contested."
@@ -2609,7 +2619,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Admin Judge Mail Admin Judge Mail Get"
                 }
               }
@@ -2649,7 +2658,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Admin Pause Admin Pause Post"
                 }
               }
@@ -2689,7 +2697,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Admin Resume Admin Resume Post"
                 }
               }
@@ -2729,7 +2736,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Admin Force Death Admin Force Death Post"
                 }
               }
@@ -2788,7 +2794,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Admin Contested Admin Contested  Item Id  Post"
                 }
               }
@@ -2828,7 +2833,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Admin Tick Admin Tick Post"
                 }
               }
@@ -2908,13 +2912,6 @@
           "type": {
             "type": "string",
             "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
           }
         },
         "type": "object",

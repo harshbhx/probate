@@ -63,6 +63,7 @@ class Curve(TypedDict):
 
 class Summary(TypedDict):
     mode: str
+    court_engine: str
     paused: bool
     resting: Literal["budget"] | None
     budget: Budget
@@ -202,6 +203,7 @@ class EvidenceNumbers(TypedDict):
 
 class Evidence(TypedDict):
     mode: str
+    court_engine: str
     generations: list[EvidenceGeneration]
     numbers: EvidenceNumbers
     rows: list[EvidenceRow]
