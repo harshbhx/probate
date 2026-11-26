@@ -1,38 +1,133 @@
 {
   "actorSpecification": 1,
-  "fields": {},
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "The page that was checked"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The page title"
+      },
+      "verdict": {
+        "type": "string",
+        "description": "clean, suspicious or attack"
+      },
+      "summary": {
+        "type": "string",
+        "description": "One sentence on why"
+      },
+      "findings": {
+        "type": "array",
+        "description": "Each check that fired",
+        "items": {
+          "type": "object"
+        }
+      },
+      "checks": {
+        "type": "array",
+        "description": "Names of the checks that fired",
+        "items": {
+          "type": "string"
+        }
+      },
+      "hidden_chars": {
+        "type": "integer",
+        "description": "Characters a person cannot see"
+      },
+      "visible_chars": {
+        "type": "integer",
+        "description": "Characters a person can see"
+      }
+    },
+    "additionalProperties": true
+  },
   "views": {
     "overview": {
       "title": "Verdicts",
       "transformation": {
-        "fields": ["url", "verdict", "summary", "checks", "hidden_chars", "title"]
+        "fields": [
+          "url",
+          "verdict",
+          "summary",
+          "checks",
+          "hidden_chars",
+          "title"
+        ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": { "label": "Page", "format": "link" },
-          "verdict": { "label": "Verdict", "format": "text" },
-          "summary": { "label": "Why", "format": "text" },
-          "checks": { "label": "Checks that fired", "format": "array" },
-          "hidden_chars": { "label": "Hidden characters", "format": "number" },
-          "title": { "label": "Title", "format": "text" }
+          "url": {
+            "label": "Page",
+            "format": "link"
+          },
+          "verdict": {
+            "label": "Verdict",
+            "format": "text"
+          },
+          "summary": {
+            "label": "Why",
+            "format": "text"
+          },
+          "checks": {
+            "label": "Checks that fired",
+            "format": "array"
+          },
+          "hidden_chars": {
+            "label": "Hidden characters",
+            "format": "number"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          }
         }
       }
     },
     "findings": {
       "title": "Findings",
       "transformation": {
-        "unwind": ["findings"],
-        "fields": ["url", "check", "where", "excerpt", "reason"]
+        "unwind": [
+          "findings"
+        ],
+        "fields": [
+          "url",
+          "check",
+          "where",
+          "excerpt",
+          "reason"
+        ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": { "label": "Page", "format": "link" },
-          "check": { "label": "Check", "format": "text" },
-          "where": { "label": "Where", "format": "text" },
-          "excerpt": { "label": "What fired", "format": "text" },
-          "reason": { "label": "Reason", "format": "text" }
+          "url": {
+            "label": "Page",
+            "format": "link"
+          },
+          "check": {
+            "label": "Check",
+            "format": "text"
+          },
+          "where": {
+            "label": "Where",
+            "format": "text"
+          },
+          "excerpt": {
+            "label": "What fired",
+            "format": "text"
+          },
+          "reason": {
+            "label": "Reason",
+            "format": "text"
+          }
         }
       }
     }
