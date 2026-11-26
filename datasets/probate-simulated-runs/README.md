@@ -29,7 +29,7 @@ configs:
 > `PROBATE_FAKE=1`, which replaces every language model, mail service and server with
 > scripted stand-ins. No real model was attacked, no real defence was measured, and none of
 > the numbers say anything about how any real agent behaves. Every row has `simulated: true`.
-> Real-run data does not exist yet.
+> The real run is a separate dataset: [probate-real-run](../probate-real-run/).
 
 ## Why it exists
 
