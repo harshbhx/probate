@@ -49,10 +49,11 @@ class BoxArchive:
     def __init__(
         self, base_url: str, upload_base_url: str | None = None, timeout: float = 30
     ) -> None:
-        self.base = base_url.rstrip("/")
-        self.upload = (upload_base_url or base_url).rstrip(
-            "/"
-        )  # VERIFY in spike S5: upload host via gateway
+        # The connector's gateway URL serves the Box API under /2.0 and direct uploads under
+        # /upload (https://api.sprites.dev/v1/gateway/box/<id>/2.0/... and .../upload/...).
+        root = base_url.rstrip("/")
+        self.base = root if root.endswith("/2.0") else root + "/2.0"
+        self.upload = (upload_base_url or root.removesuffix("/2.0") + "/upload").rstrip("/")
         self.http = gateway_client(timeout=timeout)
         self.folders: dict[str, str] = {"": "0"}
         self.files: dict[str, str] = {}
@@ -76,9 +77,34 @@ class BoxArchive:
             self.folders[key] = fid
         return self.folders[key]
 
+    def _find(self, path: str) -> str | None:
+        """The Box file ID for a path. A file written by another process (a generation's will, read
+        later by the Courthouse) is not in this process's cache, so look it up by name."""
+        if path in self.files:
+            return self.files[path]
+        name = path.rstrip("/").split("/")[-1]
+        folder = self._folder(path)
+        offset = 0
+        while True:
+            r = self.http.get(
+                f"{self.base}/folders/{folder}/items",
+                params={"limit": 1000, "offset": offset, "fields": "id,name,type"},
+            )
+            if r.status_code != 200:
+                return None
+            data = r.json()
+            entries = data.get("entries", [])
+            for entry in entries:
+                if entry.get("type") == "file" and entry.get("name") == name:
+                    self.files[path] = entry["id"]
+                    return entry["id"]
+            offset += len(entries)
+            if not entries or offset >= data.get("total_count", 0):
+                return None
+
     def put_bytes(self, path: str, data: bytes) -> str:
         name = path.rstrip("/").split("/")[-1]
-        if path in self.files:
+        if self._find(path):
             r = self.http.post(
                 f"{self.upload}/files/{self.files[path]}/content", files={"file": (name, data)}
             )
@@ -101,11 +127,11 @@ class BoxArchive:
         return self.put_bytes(path, text.encode())
 
     def get_text(self, path: str) -> str | None:
-        fid = self.files.get(path)
+        fid = self._find(path)
         if not fid:
             return None
         r = self.http.get(f"{self.base}/files/{fid}/content", follow_redirects=True)
         return r.text if r.status_code == 200 else None
 
     def append_text(self, path: str, text: str) -> str:
-        return self.put_text(path, (self.get_text(path) or "") + text, encoding="utf-8")
+        return self.put_text(path, (self.get_text(path) or "") + text)
