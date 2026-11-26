@@ -62,3 +62,10 @@ def test_distill_survives_a_reply_that_is_not_json():
         jev=Jev(), llm=Llm(), gen=1, gen_name="Ada", convicted=[item], genome=[], benign_texts=[]
     )
     assert new == [] and notes  # no crash, and it says it learned nothing
+
+
+def test_evidence_orders_every_kind_of_fixture_id():
+    from probate.courthouse.views import _fixture_order
+
+    ids = ["B2", "A10", "A2", "W1h", "H7", "W1", "A1", "B10"]
+    assert sorted(ids, key=_fixture_order) == ["A1", "A2", "A10", "B2", "B10", "H7", "W1", "W1h"]
