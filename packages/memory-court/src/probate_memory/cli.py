@@ -18,7 +18,8 @@ import sys
 from probate_memory import __version__
 from probate_memory.config import owner_from_env
 from probate_memory.court import CONTESTED, SOURCES, judge
-from probate_memory.jev import Jev
+from probate_memory.ollama import second_judge_from_env
+from probate_memory.pinecone import PineconeRecall
 from probate_memory.store import APPROVED, Store
 
 
@@ -53,16 +54,16 @@ def main(argv: list[str] | None = None) -> int:
     if a.cmd == "serve":
         from probate_memory.server import build_server
 
-        build_server(Store(a.db)).run("stdio")
+        build_server(Store(a.db, PineconeRecall.from_env())).run("stdio")
         return 0
 
     if a.cmd == "check":
-        store = Store(a.db)
-        j = judge(a.text, a.source, owner_from_env(), store.instincts(), Jev.from_env())
+        store = Store(a.db, PineconeRecall.from_env())
+        j = judge(a.text, a.source, owner_from_env(), store.instincts(), second_judge_from_env())
         print(json.dumps({"verdict": j.verdict, "reason": j.reason, "flags": j.flags}, indent=2))
         return 0 if j.verdict == APPROVED else 1
 
-    store = Store(a.db)
+    store = Store(a.db, PineconeRecall.from_env())
     if a.cmd in ("approve", "reject"):
         try:
             m = store.decide(a.id, a.cmd == "approve")
