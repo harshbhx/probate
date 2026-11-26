@@ -135,10 +135,11 @@ class RealLLM:
             return content
         if provider != "anthropic":
             raise ValueError(f"unknown brain provider {provider!r}")
+        # No `temperature`: current Claude models reject it ("`temperature` is deprecated for this
+        # model", HTTP 400), so it is left to the model's default.
         body = {
             "model": model,
             "max_tokens": 1200,
-            "temperature": temperature,
             "system": system,
             "messages": [{"role": "user", "content": user}],
         }
