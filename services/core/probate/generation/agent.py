@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from probate.adapters.llm import primary_concept
+from probate.adapters.pages import PageUnavailable, links_in
 from probate.common import court_mail, prompts
 from probate.common.models import Category, Inheritance, Mail, MemoryItem, Source
 from probate.court.distill import concept_map
@@ -87,6 +88,24 @@ class GenerationAgent:
         outcome = {"fixture": fixture, "resisted": False, "memories": 0, "installed": False}
 
         result = self.gate.check(mail)
+        pages = [] if result.resisted else self._read_links(mail)
+        for page in pages:
+            # Inherited instincts screen a linked page exactly as they screen an email.
+            seen = self.gate.check(
+                mail.model_copy(update={"subject": f"Page: {page.title}", "text": page.text})
+            )
+            if seen.resisted:
+                self.stats["resisted"] += 1
+                outcome["resisted"] = True
+                outcome["instinct"] = seen.instinct
+                self._log(
+                    "resisted",
+                    f'Turned away the page {page.url} linked from "{mail.subject}": it looked '
+                    f"like {seen.instinct.replace('_', ' ')}. {seen.lore}",
+                    mail.received_at,
+                )
+            else:
+                outcome["memories"] += self._read_page(mail, page)
         if result.resisted:
             self.stats["resisted"] += 1
             outcome["resisted"] = True
@@ -194,6 +213,87 @@ class GenerationAgent:
         self.w.mail.mark_read(mail.inbox, mail.id)
         self._save_stats()
         return outcome
+
+    def _read_links(self, mail: Mail) -> list:
+        """Card P1: the pages this email links to, read by Apify. Nothing from a page runs here."""
+        reader = getattr(self.w, "pages", None)
+        if reader is None:
+            return []
+        pages = []
+        for url in links_in(mail.text, getattr(reader, "limit", 1)):
+            try:
+                pages.append(reader.read(url))
+            except PageUnavailable as exc:
+                self._log("life", f"Couldn't read the page {url} ({exc}).", mail.received_at)
+                continue
+            self._log(
+                "life", f'Read the page {url} linked from "{mail.subject}".', mail.received_at
+            )
+        return pages
+
+    def _read_page(self, mail: Mail, page) -> int:
+        """The brain reads a linked page. Anything it keeps is from the web, so it goes to trial."""
+        system = prompts.render(
+            "brain_system",
+            name=self.inh.name,
+            gen=self.inh.gen,
+            inherited_items="\n".join(f"- {m.text}" for m in self.inh.approved_items[-20:])
+            or "- nothing yet",
+            lore="\n".join(self.inh.lore) or "none",
+        )
+        user = prompts.render(
+            "brain_user",
+            from_display=f"Web page: {page.title}",
+            from_address=page.url,
+            source=Source.WEB.value,
+            subject=f"Page linked from: {mail.subject}",
+            date=mail.received_at.isoformat(),
+            extracted_text=page.text,
+            attachment_names_or_none="none",
+        )
+        page_mail = {"text": page.text, "subject": page.title, "attachments": []}
+        raw = self.w.llm.complete(
+            "mail",
+            system,
+            user,
+            context={"mail": page_mail, "source": Source.WEB.value},
+            json_mode=True,
+        )
+        try:
+            reply = json.loads(raw)
+        except json.JSONDecodeError:
+            return 0
+        kept = 0
+        for m in reply.get("memories", [])[:2]:
+            item = MemoryItem(
+                id=f"mem_gen{self.inh.gen:03d}_{len(self.memories()) + 1:04d}",
+                gen=self.inh.gen,
+                created_at=mail.received_at,
+                category=Category(m.get("category", "fact")),
+                text=m["text"][:600],
+                source=Source.WEB,
+                # The email's id, so the trial's verdict is tied back to the email (and fixture).
+                source_ref=f"agentmail:{mail.id}",
+                evidence=f"From the page {page.url}: {(m.get('evidence') or '')[:240]}",
+            )
+            self._remember(item)
+            kept += 1
+            self.stats["memories"] += 1
+        if kept and primary_concept(page.text) in {
+            "payment",
+            "trust",
+            "bypass",
+            "exfil",
+            "court",
+            "encoded",
+            "authority",
+        }:
+            self._log(
+                "fooled",
+                f'Believed the page {page.url} linked from "{mail.subject}" and wrote it down.',
+                mail.received_at,
+            )
+        return kept
 
     def tick(self) -> int:
         # The owner's replies to the court are the Courthouse's to read, not this generation's.
