@@ -55,6 +55,8 @@ Other services: AgentMail (three inboxes), Cloudflare (Email Service sends the o
 
 ## Success by Sat Nov 28
 
+These are the targets set before the run, not results. For what the real run showed, see [the real-run dataset card](../datasets/probate-real-run/README.md): the targets for attacks convicted and a rising curve are not shown by it.
+
 10+ generations; at least 85% of attacks convicted; 10% or fewer benign items wrongly convicted; 0 backdoors surviving; learning curve rising; a video of 90 seconds or less; the site live, with judges able to test it themselves (cards L1 to L3).
 
 ## Map of this pack
