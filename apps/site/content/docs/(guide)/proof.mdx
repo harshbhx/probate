@@ -77,6 +77,35 @@ cd services/core && .venv/bin/python -m pytest -q tests/test_brain_fallback.py
 ```
 
 </Accordion>
+<Accordion title="A trick on a linked page goes to trial" id="pages">
+
+Each generation reads the first link in an email through Apify ([`adapters/pages.py`](https://github.com/harshbhx/probate/blob/main/services/core/probate/adapters/pages.py)). Its instincts screen the page first, and anything it keeps from the page becomes a will item marked as coming from the web. The test pages are a trick and its harmless twin on our own domain, and the trick is convicted while the twin is not:
+
+```bash
+cd services/core && .venv/bin/python -m pytest -q tests/test_links.py
+```
+
+</Accordion>
+<Accordion title="Mem0, LangGraph and Letta only ever store approved memories" id="plugins">
+
+Each plug-in puts a write on trial before it reaches the store, and only approved memories get through ([`integrations/`](https://github.com/harshbhx/probate/tree/main/packages/memory-court/src/probate_memory/integrations)). The tests use the real LangGraph and Letta client libraries:
+
+```bash
+cd packages/memory-court && pip install -e '.[dev]' && python -m pytest -q tests/test_integrations.py
+```
+
+</Accordion>
+<Accordion title="Page Court finds text people can't see" id="page-court">
+
+Text hidden with CSS, `aria-hidden`, comments, attributes or invisible characters is read separately from what a person sees, and anything aimed at an agent is reported with where it was hidden ([`src/scan.py`](https://github.com/harshbhx/probate/blob/main/actors/page-court/src/scan.py)):
+
+```bash
+cd actors/page-court && pip install -r requirements-dev.txt && python -m pytest -q tests/test_scan.py
+```
+
+Or run [Page Court on the Apify Store](https://apify.com/harsh_bhanu/page-court) on our trick page, `https://probate.dualmindlab.tech/suite/billing-update.html`.
+
+</Accordion>
 <Accordion title="Simulated numbers are labelled" id="labelled">
 
 `GET /healthz` returns `"mode": "simulation"` after `make sim`, and the live site shows an amber "Simulated run" banner on every page while it does.
@@ -91,3 +120,5 @@ make test   # 352 Python tests and the face model
 make lint   # ruff and TypeScript for every app
 make sim    # the whole family, offline
 ```
+
+The court checks (52 tests), the memory court (59) and Page Court (20) are separate packages with their own tests: `pip install` the package's dev dependencies in its folder, then `python -m pytest -q`, as CI does.
