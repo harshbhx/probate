@@ -1,7 +1,8 @@
 {
-  "name": "@probate/mcp",
+  "name": "probate-mcp",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/harshbhx/probate.git", "directory": "packages/mcp" },
   "description": "A read-only MCP server for the Probate Courthouse's public API: the family, its trials, its instincts and its evidence.",
   "type": "module",
   "bin": { "probate-mcp": "./dist/server.js" },

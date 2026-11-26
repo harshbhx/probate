@@ -1,5 +1,5 @@
 // Smoke test: starts the built server over stdio, lists its tools, calls each read tool once and checks the
-// answer. Needs a Courthouse at PROBATE_API_URL (default http://localhost:8080). Run: npm run smoke -w @probate/mcp
+// answer. Needs a Courthouse at PROBATE_API_URL (default http://localhost:8080). Run: npm run smoke -w probate-mcp
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { fileURLToPath } from 'node:url';

@@ -47,13 +47,14 @@ jobs:
         run: |
           npm test -w kinfaces
           npm run build -w probate-client
+          npm run build -w probate-mcp
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
-          for dir in packages/faces packages/client; do
+          for dir in packages/faces packages/client packages/mcp; do
             name="$(node -p "require('./$dir/package.json').name")"
             version="$(node -p "require('./$dir/package.json').version")"
             echo "::group::$SCOPE/$name@$version"
@@ -62,7 +63,17 @@ jobs:
             if [ "$DRY_RUN" = "true" ]; then
               npm publish --ignore-scripts --dry-run
             else
-              npm publish --ignore-scripts
+              # A version that is already published is skipped, so the run can be repeated.
+              if ! out="$(npm publish --ignore-scripts 2>&1)"; then
+                echo "$out"
+                if echo "$out" | grep -qiE "previously published|cannot publish over|E409"; then
+                  echo "Already published, skipping."
+                else
+                  exit 1
+                fi
+              else
+                echo "$out"
+              fi
             fi
             cd - >/dev/null
             echo "::endgroup::"
