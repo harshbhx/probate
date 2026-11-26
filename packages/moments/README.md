@@ -1,5 +1,7 @@
 # @probate/moments
 
+**Internal package.** Private and not published to npm. It is used by the Probate web app and is documented here for people working in the [repository](https://github.com/harshbhx/probate).
+
 Five one-shot pixel art moments, made with [pixelfx](https://github.com/patch-gg/pixelfx) (MIT, by patch-gg; its
 simulation core adapts Hugo Duprez's Sprite Fusion effects, MIT):
 
@@ -39,3 +41,7 @@ busiest moment. The table lives in `src/index.tsx`.
 
 Rules (docs/04-DESIGN.md): each moment plays once, only when it means something, never loops, and never plays
 under reduced motion.
+
+## Part of Probate
+
+Part of [Probate](https://github.com/harshbhx/probate), [live site](https://probate.dualmindlab.tech) and [write-up](https://probate.dualmindlab.tech/article). Licenses and credits for the effects are in `LICENSE-pixelfx.txt` and `NOTICE-pixelfx.md`.

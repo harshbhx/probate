@@ -2,7 +2,7 @@
   "name": "@probate/moments",
   "version": "0.1.0",
   "private": true,
-  "description": "Two one-shot pixel art moments from pixelfx: a conviction lands, an instinct is learned.",
+  "description": "Five one-shot pixel art moments from pixelfx: a conviction lands, an instinct is learned, a generation is born, dies or resists.",
   "type": "module",
   "exports": { ".": "./src/index.tsx" },
   "peerDependencies": { "react": "*" }
