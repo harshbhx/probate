@@ -14,6 +14,7 @@ import { TextReveal } from '@/components/fx/TextReveal';
 import { Quotes } from '@/components/landing/quotes';
 import { LifeStory, LineageFilm, TryCourt, VerdictStack } from '@/components/landing/deferred';
 import { LinksHub } from '@/components/landing/links-hub';
+import { AnyAgent, InTheBox, PagesOnTrial } from '@/components/landing/products';
 import { githubUrl, liveUrl } from '@/lib/shared';
 
 // Night Court v7 landing page: one lit courtroom, then the story in order (a day, a will, a trial, a child).
@@ -31,6 +32,7 @@ export default function HomePage() {
       />
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
         <Section
+          eager
           id="life"
           title="One day, one life, one trial"
           lede="The Courthouse lives forever on its own Sprite. Generations come and go beside it, one at a time. Scroll through one of them."
@@ -137,6 +139,31 @@ export default function HomePage() {
           <Bento />
         </Section>
 
+        <Section
+          id="any-agent"
+          title="One court, for any agent’s memory"
+          lede="Email was the first family, not the limit. Any agent that remembers can be poisoned, so the same court now stands in front of Claude, Cursor, Mem0, LangGraph and Letta."
+        >
+          <AnyAgent />
+        </Section>
+
+        <Section
+          id="pages"
+          title="Pages go on trial too"
+          lede="A harmless email can link to a page that isn’t. The family reads linked pages through Apify, and the same checks ship as an Actor for any agent."
+        >
+          <PagesOnTrial />
+        </Section>
+
+        <Section
+          eager
+          id="box"
+          title="Everything in the box"
+          lede="One repository, six things you can use today. Open a folder to see what is inside it."
+        >
+          <InTheBox />
+        </Section>
+
         <Faq />
       </div>
       <LinksHub />
@@ -145,9 +172,10 @@ export default function HomePage() {
   );
 }
 
-function Section({ id, title, lede, children }: { id: string; title: string; lede: string; children: React.ReactNode }) {
+function Section({ id, title, lede, children, eager }: { id: string; title: string; lede: string; children: React.ReactNode; eager?: boolean }) {
+  // Below-the-fold sections skip rendering work until they come near the screen (.cv in global.css).
   return (
-    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-20 border-t border-line py-16 first:border-t-0 md:py-28">
+    <section id={id} aria-labelledby={`${id}-t`} className={`scroll-mt-20 border-t border-line py-16 first:border-t-0 md:py-28 ${eager ? '' : 'cv'}`}>
       <Reveal>
         <h2 id={`${id}-t`} className="max-w-3xl font-display text-[36px] font-[420] leading-[1.08] tracking-[-0.02em] sm:text-display-lg">
           {title}
@@ -214,7 +242,10 @@ function Hero() {
         </div>
         <p className="mt-8 max-w-2xl text-[14px] leading-snug text-dim">
           Every number and trial on this page comes from a simulated run with stand-in models.
-          {liveUrl ? ' The live family’s trials are on the live site.' : ''}
+          {liveUrl ? ' The live family’s trials are on the live site.' : ''}{' '}
+          <Link href="/article" className="text-silver underline decoration-gilt/50 underline-offset-[4px] hover:decoration-gilt">
+            Read the write-up
+          </Link>
         </p>
       </div>
     </section>
@@ -229,6 +260,7 @@ const PARTS = [
   { name: 'Box', role: 'the archive' },
   { name: 'Pinecone', role: 'inherited memory' },
   { name: 'ElevenLabs', role: 'the eulogy' },
+  { name: 'Apify', role: 'reads linked pages' },
 ];
 
 function BuiltOn() {
@@ -238,7 +270,7 @@ function BuiltOn() {
         <h2 id="built" className="text-[14px] text-mist">
           What the family runs on
         </h2>
-        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4 lg:grid-cols-7">
+        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4 lg:grid-cols-8">
           {PARTS.map((p) => (
             <li key={p.name} className="border-l border-line-strong pl-4">
               <div className="text-[17px] font-medium tracking-[-0.01em] text-moon">{p.name}</div>
@@ -296,7 +328,7 @@ const NUMBERS: { value: number; suffix: string; label: string; sub: string }[] =
 
 function Evidence() {
   return (
-    <section id="evidence" aria-labelledby="evidence-t" className="scroll-mt-20 border-t border-line py-16 md:py-28">
+    <section id="evidence" aria-labelledby="evidence-t" className="cv scroll-mt-20 border-t border-line py-16 md:py-28">
       <Reveal>
         <h2 id="evidence-t" className="max-w-3xl font-display text-[36px] font-[420] leading-[1.08] tracking-[-0.02em] sm:text-display-lg">
           Proof, not a promise

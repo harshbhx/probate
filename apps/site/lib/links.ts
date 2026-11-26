@@ -5,6 +5,7 @@ import {
   Accessibility,
   BookOpen,
   Bot,
+  Boxes,
   Braces,
   ClipboardCheck,
   Code2,
@@ -57,6 +58,7 @@ export const GROUPS: Group[] = [
     title: 'Code and data',
     items: [
       { icon: Code2, label: 'Source code', note: 'Open source, with the attack suite and 352 tests', href: repo },
+      { icon: Boxes, label: 'Everything we built', note: 'Six products, and how to try each in a minute', href: '/docs/products' },
       { icon: Scale, label: 'The memory court', note: 'The court for any AI agent: MCP, Mem0, LangGraph, Letta', href: '/docs/memory-court' },
       { icon: Globe, label: 'Page Court on Apify', note: 'Checks pages for tricks aimed at agents', href: `${repo}/tree/main/actors/page-court` },
       { icon: Package, label: 'Packages', note: 'kinfaces, the API clients and the court checks', href: `${repo}#packages` },

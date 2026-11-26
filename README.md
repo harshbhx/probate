@@ -40,7 +40,9 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **On Apify** | [Page Court](actors/page-court), an Actor that checks pages for tricks aimed at agents, and an [Apify connector for Sprites](integrations/sprites-connectors) |
 | **For AI agents** | An [ARD manifest](apps/site/app/.well-known/ard.json/route.ts), two Agent Skills and four WebMCP tools, so an agent can find and use Probate on its own: [what each one does](apps/site/content/docs/%28reference%29/reference/agents.mdx). Lighthouse Agentic browsing: 100 |
 | **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
-| **Live family, video, write-up** | Linked here on submission day, Nov 28 |
+| **Everything we built** | Six products and how to try each in a minute: [`/docs/products`](apps/site/content/docs/%28guide%29/products.mdx) |
+| **The write-up** | "My agent dies every night", hosted on the site at `/article` from [one Markdown file](apps/site/content/article/my-agent-dies-every-night.md) |
+| **Live family, video** | Linked here on submission day, Nov 28 |
 
 The site has all of these on one phone-sized page, `/links`, for a bio or a QR code, and the landing page lists them under "Everything about Probate". Each link appears there once it has an address.
 

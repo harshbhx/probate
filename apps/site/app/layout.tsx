@@ -24,7 +24,11 @@ export default function Layout({ children }: LayoutProps<'/'>) {
         {/* The scroll effects start text at opacity 0 or 0.16 in the HTML and raise it with JavaScript. Without JS,
             show everything. */}
         <noscript>
-          <style>{'[style*="opacity:0"]:not([style*="position:absolute"]){opacity:1!important;transform:none!important}'}</style>
+          <style>
+            {'[style*="opacity:0"]:not([style*="position:absolute"]){opacity:1!important;transform:none!important}' +
+              '.term .term-line,.alist .alist-item{opacity:1!important;transform:none!important;animation:none!important}' +
+              '.term .term-type{clip-path:none!important}.beams .beam{stroke-dashoffset:0!important}'}
+          </style>
         </noscript>
       </head>
       <body className="flex min-h-screen flex-col bg-night text-moon antialiased">
