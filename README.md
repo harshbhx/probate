@@ -17,7 +17,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 [![Fly.io Hacksgiving 2026](https://img.shields.io/badge/Fly.io-Hacksgiving_2026-8b5cf6?style=flat-square)](https://fly.io/hacksgiving/)
 ![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square)
 ![React](https://img.shields.io/badge/React_19-Vite-61dafb?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-341_passing-5be3a9?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-352_passing-5be3a9?style=flat-square)
 [![Accessibility 100](https://img.shields.io/badge/PageSpeed_accessibility-100-5be3a9?style=flat-square)](docs/ACCESSIBILITY.md)
 [![Datasets on Hugging Face](https://img.shields.io/badge/datasets-Hugging_Face-ffcc4d?style=flat-square)](https://huggingface.co/datasets/harshbhx/probate-attack-suite)
 
@@ -36,7 +36,8 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
 | **Code** | This repository, plus the [v0.1.0 release](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and four [packages](#packages) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
-| **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others: [packages/memory-court](packages/memory-court) |
+| **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
+| **On Apify** | [Page Court](actors/page-court), an Actor that checks pages for tricks aimed at agents, and an [Apify connector for Sprites](integrations/sprites-connectors) |
 | **For AI agents** | An [ARD manifest](apps/site/app/.well-known/ard.json/route.ts), two Agent Skills and four WebMCP tools, so an agent can find and use Probate on its own: [what each one does](apps/site/content/docs/%28reference%29/reference/agents.mdx). Lighthouse Agentic browsing: 100 |
 | **Accessibility** | PageSpeed: Accessibility, Best Practices and SEO 100. Every page checked with axe: [what was found](docs/ACCESSIBILITY.md) |
 | **Live family, video, write-up** | Linked here on submission day, Nov 28 |
@@ -106,7 +107,8 @@ remember("Keep my replies under five sentences from now on.", source="user")    
 recall("when can I meet")                                       -> only approved memories, best match first
 ```
 
-- **The same rules:** code checks convict; a re-worded copy of a past trick is convicted on sight (instincts); Jev is the second judge when configured; any error holds the memory, never approves it.
+- **The same rules:** code checks convict; a re-worded copy of a past trick is convicted on sight (instincts); Jev is the second judge when configured, or an Ollama model for anyone without a TypeSafe key; any error holds the memory, never approves it.
+- **In front of the memory you already use.** Plug-ins for [Mem0](https://github.com/mem0ai/mem0), [LangGraph](https://langchain-ai.github.io/langgraph/) stores and [Letta](https://docs.letta.com) archival memory put each write on trial first. Recall can search by meaning through Pinecone, and only approved memories are ever indexed.
 - **Only the owner decides.** A rule for future agents waits for the owner even when the agent says it came from them, and there is no tool to approve it: the owner runs `probate-memory approve <id>` in a terminal, where a fooled agent can't reach.
 - **Local by default.** Memories stay in a SQLite file on your machine.
 
@@ -114,7 +116,11 @@ recall("when can I meet")                                       -> only approved
 claude mcp add probate-memory -- uvx --from "git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court" probate-memory serve
 ```
 
-Setup for Claude Desktop and Cursor, every rule, and the limits: [packages/memory-court](packages/memory-court). 29 tests, including a real MCP client talking to it over stdio.
+Setup for Claude Desktop and Cursor, the plug-ins, every rule, and the limits: [packages/memory-court](packages/memory-court). 55 tests, including a real MCP client talking to it over stdio and the real LangGraph and Letta client libraries.
+
+### Page Court, on Apify
+
+The court's checks also run as an [Apify Actor](actors/page-court): give it page URLs or text, and it reports anything aimed at an agent rather than a person, including text hidden from people with CSS, comments or invisible characters. No model and no key, so any agent can call it before it trusts a page, directly or through Apify's MCP server. 20 tests.
 
 ## See it
 
@@ -194,6 +200,7 @@ The brain never leaves a generation stuck. If the main model fails, the next one
 | [Groq](https://groq.com) | Optional backup brain, tried first if Ollama fails |
 | [ElevenLabs](https://elevenlabs.io) | Each generation's voice, for eulogies and "Ask an ancestor" |
 | [Anthropic Claude](https://anthropic.com) | A brain (Claude Haiku), or the last backup if every brain before it fails |
+| [Apify](https://apify.com) | Reads the pages that emails link to, through a Sprites connector, so a trick hidden on a web page goes to trial too. The court's checks also ship as the [Page Court](actors/page-court) Actor |
 
 ## Run it yourself
 
@@ -209,7 +216,7 @@ make setup     # Python venv + npm install
 make sim       # simulate 12 generations offline with stand-in models
 make dev       # API on :8080 and the live family site on :5173
 make site      # landing page and docs on :3001
-make test      # 341 Python tests and the face model
+make test      # 352 Python tests and the face model
 make api-spec  # re-export the API schema the docs reference is built from
 make help      # everything else
 ```
@@ -271,6 +278,8 @@ packages/mcp/          a read-only MCP server over the Courthouse's public API (
 packages/memory-court/ memory with a court for any MCP agent (probate-memory-court)
 packages/moments/      the one-shot pixel moments (a conviction lands, an instinct is learned)
 packages/tokens/       Night Court design tokens, shared by both sites
+actors/page-court/     Page Court, an Apify Actor that checks pages for tricks aimed at agents
+integrations/          an Apify connector for Fly's community Sprites connectors catalog
 services/core/         the Courthouse, the court and the generation agent (Python, FastAPI)
 fixtures/              the attack suite: 16 tricks and 16 harmless twins
 scripts/               deploy.py, ship.sh, export_site_data.py, export_openapi.py, product_shots.py
@@ -296,9 +305,9 @@ Built during [Fly.io Hacksgiving](https://fly.io/hacksgiving/), Nov 23 to 29, 20
 | Fly.io | A Sprite for every life, real deletion at death, connectors, and the Courthouse |
 | TypeSafe | Jev is the court's second layer and every inherited instinct |
 | Box | The family archive |
-| Pinecone | Ancestral memory |
-| Ollama | The brain of every generation |
-| Apify | In progress: reading the pages that emails link to, so tricks hidden on the web go to trial too |
+| Pinecone | Ancestral memory, and recall by meaning in the memory court |
+| Ollama | The brain of every generation, and the memory court's second judge for anyone without a TypeSafe key |
+| Apify | Reads the pages that emails link to, so tricks hidden on the web go to trial too (card P1, tested in simulation); the [Page Court](actors/page-court) Actor; and an [Apify connector](integrations/sprites-connectors) for Fly's Sprites catalog |
 
 **Coming before submission:** judges can email the family a trick and watch it handled live; each trial shows Fly's own "not found" reply as proof the Sprite was deleted; the home page shows a live feed of the living generation.
 
