@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 from probate.common.config import settings
 from probate.common.names import PRONOUNS
@@ -244,6 +245,12 @@ def _deletion(evidence: dict) -> dict | None:
     }
 
 
+def _fixture_order(fid: str) -> tuple:
+    """Fixture ids are a letter, a number and sometimes a suffix (A1, B12, W1h, H7)."""
+    m = re.match(r"([A-Za-z]+)(\d*)(.*)", fid)
+    return (m.group(1), int(m.group(2) or 0), m.group(3)) if m else (fid, 0, "")
+
+
 def evidence(store: Store) -> dict:
     fixtures = load_fixtures()
     gens = [g for g in store.generations() if g.state == "tried"]
@@ -256,7 +263,7 @@ def evidence(store: Store) -> dict:
                 "instinct": r["instinct"],
             }
     rows = []
-    for fid in sorted(matrix, key=lambda f: (f[0], int(f[1:]))):
+    for fid in sorted(matrix, key=_fixture_order):
         fx = fixtures[fid]
         rows.append(
             {
