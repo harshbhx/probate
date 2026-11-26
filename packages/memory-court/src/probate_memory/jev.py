@@ -80,6 +80,9 @@ def state_for(text: str, source: str, owner_domains: list[str], about: str = "")
 class Jev:
     """A tiny client with no dependencies beyond the standard library."""
 
+    name = "Jev"
+    label = "TypeSafe Jev"
+
     def __init__(self, base_url: str, api_key: str, model: str = "jev-latest", timeout: float = 20):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
