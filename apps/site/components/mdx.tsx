@@ -11,6 +11,9 @@ import { Verdict } from './verdict';
 import { Face, FamilyStrip } from './family';
 import { Diagram } from './diagram';
 import * as Kit from './docs-kit';
+import { CourtBeams } from './landing/court-beams';
+import { PageVerdicts } from './landing/page-verdicts';
+import { MemoryTerminal } from './landing/products';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -32,6 +35,9 @@ export function getMDXComponents(components?: MDXComponents) {
     Face,
     FamilyStrip,
     Diagram,
+    CourtBeams,
+    PageVerdicts,
+    MemoryTerminal,
     ...Kit,
     ...components,
   } satisfies MDXComponents;
