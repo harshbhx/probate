@@ -18,6 +18,8 @@ from probate_memory import __version__
 from probate_memory.config import owner_from_env
 from probate_memory.court import APPROVED, CONTESTED, MAX_TEXT, judge
 from probate_memory.jev import Jev
+from probate_memory.ollama import OllamaJudge, second_judge_from_env
+from probate_memory.pinecone import PineconeRecall
 from probate_memory.store import Store
 
 SourceName = Literal["user", "trusted_contact", "unknown_sender", "web", "tool_output"]
@@ -37,11 +39,13 @@ Tell the person the verdict plainly. Only say something is remembered when the v
 
 
 def build_server(
-    store: Store | None = None, owner: OwnerProfile | None = None, jev: Jev | None | bool = True
+    store: Store | None = None,
+    owner: OwnerProfile | None = None,
+    jev: Jev | OllamaJudge | None | bool = True,
 ) -> MCPServer:
-    store = store or Store()
+    store = store or Store(vectors=PineconeRecall.from_env())
     owner = owner or owner_from_env()
-    second = Jev.from_env() if jev is True else (jev or None)
+    second = second_judge_from_env() if jev is True else (jev or None)
     mcp = MCPServer(
         name="probate-memory-court",
         title="Probate memory court",
@@ -137,7 +141,10 @@ def build_server(
         waiting = [m.id for m in store.trials(100, CONTESTED)]
         return {
             "totals": store.counts(),
-            "second_judge": "TypeSafe Jev" if second else "none (code checks and instincts only)",
+            "second_judge": getattr(second, "label", "TypeSafe Jev")
+            if second
+            else "none (code checks and instincts only)",
+            "recall": "by meaning (Pinecone)" if store.vectors else "by words (local)",
             "waiting_for_owner": waiting,
             "recent": [
                 {
