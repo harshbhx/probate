@@ -247,7 +247,7 @@ const STEPS = [
   },
   {
     title: "Trial",
-    body: "Code checks catch the obvious: payment changes, bypass orders, hidden text in any script. Then Jev scores every item, with its own confidence. Unsure means held for the owner.",
+    body: "Code checks catch the obvious: payment changes, bypass orders, hidden text in any script. Then the court's judge (Jev when connected, a labelled fallback otherwise) scores every item, with its own confidence. Unsure means held for the owner.",
     code: "POST /v1/gateway/typesafe/…/v1/systemone",
   },
   {

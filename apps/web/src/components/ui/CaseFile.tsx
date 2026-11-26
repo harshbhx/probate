@@ -87,7 +87,7 @@ export function CaseFile({ c, live }: { c: Case; live?: boolean }) {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-[14px] text-dim">What Jev scored</h3>
+                    <h3 className="text-[14px] text-dim">What the judge scored</h3>
                     {!c.scores.length && (
                       <p className="mt-2 text-[14px] text-mist">Not asked. The code checks were enough to decide.</p>
                     )}

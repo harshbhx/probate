@@ -46,6 +46,11 @@ class Settings:
     owner_sender: str = field(
         default_factory=lambda: _env("PROBATE_OWNER_SENDER", "harsh@dualmindlab.tech")
     )
+    # Off by default: when on, an owner decision by email also needs the provider's own
+    # authentication result (DKIM or SPF pass) in the message headers. See the threat model.
+    require_verified_sender: bool = field(
+        default_factory=lambda: _env("PROBATE_REQUIRE_VERIFIED_SENDER", "0") == "1"
+    )
     cf_account_id: str = field(default_factory=lambda: _env("PROBATE_CF_ACCOUNT_ID"))
     friend_inbox: str = field(
         default_factory=lambda: _env("PROBATE_FRIEND_INBOX", "probate-friend@agentmail.to")

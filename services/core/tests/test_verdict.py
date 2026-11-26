@@ -49,3 +49,30 @@ def test_unsure_court_contests():
 
 def test_error_fails_closed():
     assert decide(ITEM, [], None, [], error="timeout").verdict == Verdict.CONTESTED
+
+
+def test_reasons_name_the_real_engine_not_jev():
+    """RT-12/RT-15: a fallback verdict must never say Jev found it."""
+    from probate.adapters.jev import FakeJev, LLMJev
+    from probate.court.verdict import engine_name, scores_line
+
+    fallback = engine_name(LLMJev(None))
+    assert fallback == "language-model fallback (not Jev)"
+    j = decide(ITEM, [], answers(weakens_security=0.8), [], engine=fallback)
+    assert "Jev found" not in j.reason and "not Jev" in j.reason
+    assert "not Jev" in scores_line(j, fallback)
+    assert "not Jev" in decide(ITEM, [], None, [], error="x", engine=fallback).reason
+    assert "not Jev" in engine_name(FakeJev())
+    assert engine_name(object()) == "Jev"  # a real Jev adapter has no label
+    assert "Jev found it" in decide(ITEM, [], answers(weakens_security=0.8), []).reason
+
+
+def test_owner_reply_verification_reads_the_providers_result():
+    """RT-04: the optional check needs a DKIM or SPF pass in the headers."""
+    from probate.common.court_mail import verified
+
+    assert verified({"Authentication-Results": "mx; dkim=pass header.d=x.com"})
+    assert verified({"authentication-results": "spf=pass"})
+    assert not verified({"Authentication-Results": "dkim=fail"})
+    assert not verified({})
+    assert not verified(None)

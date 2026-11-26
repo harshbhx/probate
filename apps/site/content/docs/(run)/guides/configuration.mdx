@@ -16,6 +16,7 @@ Never committed. `make deploy` uploads it to the Courthouse and forces `PROBATE_
 | `TYPESAFE_BASE_URL` | `https://api.sprites.dev/v1/gateway/typesafe/<id>` | Jev through the gateway |
 | `TYPESAFE_API_KEY` | `sprites` | Placeholder; the gateway adds the real key |
 | `PROBATE_FAMILY_INBOX` | | The family's AgentMail inbox |
+| `PROBATE_REQUIRE_VERIFIED_SENDER` | `0` | Set to `1` to ignore owner decisions by email unless the message headers show a DKIM or SPF pass |
 | `PROBATE_OWNER_SENDER` | `harsh@dualmindlab.tech` | The owner's own address; the suite's test emails leave from it through Cloudflare Email Service |
 | `PROBATE_CF_ACCOUNT_ID` | | The Cloudflare account that sends them (key lives in the `cloudflare` connector) |
 | `PROBATE_FRIEND_INBOX` | | Test sender standing in for a trusted contact |

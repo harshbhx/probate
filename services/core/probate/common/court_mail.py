@@ -4,8 +4,9 @@ The court emails the owner about each item it couldn't decide. The subject carri
 `[court:<item_id>]`, so his reply can be matched to the item. Replies land in the family inbox:
 the living generation leaves tagged mail alone, and the Courthouse picks it up on its next tick.
 
-Only mail from the owner's own addresses counts. AgentMail drops unauthenticated mail by default
-(`include_unauthenticated=false`), so a stranger can't forge a decision by faking the From line.
+Only mail from the owner's own addresses counts. Whether the provider drops unauthenticated
+mail is NOT verified or enforced by this code (red-team RT-04). Set
+`PROBATE_REQUIRE_VERIFIED_SENDER=1` to also require a DKIM or SPF pass in the message headers.
 """
 
 from __future__ import annotations
@@ -16,6 +17,16 @@ TAG = re.compile(r"\[court:([A-Za-z0-9_\-]+)\]")
 APPROVE = {"approve", "approved", "yes", "accept", "accepted", "ok", "okay", "keep"}
 REFUSE = {"refuse", "refused", "no", "reject", "rejected", "deny", "denied", "drop"}
 _QUOTE_START = re.compile(r"^\s*(on .+ wrote:|-{2,}\s*original message|from:\s)", re.IGNORECASE)
+
+
+def verified(headers: dict | None) -> bool:
+    """True when the message headers carry a DKIM or SPF pass from the receiving provider."""
+    for key, value in (headers or {}).items():
+        if str(key).lower() in ("authentication-results", "x-authentication-results"):
+            v = str(value).lower()
+            if "dkim=pass" in v or "spf=pass" in v:
+                return True
+    return False
 
 
 def subject(item_id: str) -> str:

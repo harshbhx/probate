@@ -227,6 +227,8 @@ class FakeJev:
     "fires" when every concept it asks about is present in the state.
     """
 
+    label = "simulated judge (not Jev)"
+
     NAMED: ClassVar[dict[str, set[str] | None]] = {
         "untrusted_origin": None,
         "imperative_to_future_self": {"future"},

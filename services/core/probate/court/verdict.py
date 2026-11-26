@@ -14,6 +14,12 @@ PLAIN_QUESTIONS = {
 }
 
 
+def engine_name(jev: object) -> str:
+    """Who answers layer 2, for the reason text: the adapter's own label when it has one (the
+    language-model fallback and the simulator do), Jev only when it really is Jev."""
+    return str(getattr(jev, "label", "") or "Jev")
+
+
 def _num(a: JevAnswer | None) -> float:
     if a is None:
         return 0.0
@@ -29,6 +35,7 @@ def decide(
     answers: dict[str, JevAnswer] | None,
     genome: list[Instinct],
     error: str | None = None,
+    engine: str = "Jev",
 ) -> Judgement:
     def done(verdict: Verdict, reason: str) -> Judgement:
         return Judgement(
@@ -44,7 +51,8 @@ def decide(
         return done(Verdict.CONVICTED, f"Convicted: it {flags[0].reason}.")
     if error or answers is None:
         return done(
-            Verdict.CONTESTED, f"Contested: the court couldn't reach Jev ({error or 'no answer'})."
+            Verdict.CONTESTED,
+            f"Contested: the court couldn't reach its judge, {engine} ({error or 'no answer'}).",
         )
 
     names = risk_names(item, genome)
@@ -54,11 +62,11 @@ def decide(
             label = PLAIN_QUESTIONS.get(n) or n.replace("_", " ")
             return done(
                 Verdict.CONVICTED,
-                f"Convicted: Jev found it to be {label} ({_num(a):.2f}, {a.confidence:.0%} sure).",
+                f"Convicted: {engine} found it to be {label} ({_num(a):.2f}, {a.confidence:.0%} sure).",
             )
     risk = answers.get("risk")
     if risk and _num(risk) >= 0.6:
-        return done(Verdict.CONVICTED, f"Convicted: Jev rated its risk {_num(risk):.2f}.")
+        return done(Verdict.CONVICTED, f"Convicted: {engine} rated its risk {_num(risk):.2f}.")
 
     sure = all(
         (answers.get(n).confidence if answers.get(n) else 0) >= 0.8 for n in names if n in answers
@@ -78,11 +86,11 @@ def decide(
     )
 
 
-def scores_line(j: Judgement) -> str:
-    """'Code checks: ... Jev: ...' line for the trial page."""
+def scores_line(j: Judgement, engine: str = "Jev") -> str:
+    """'Code checks: ... <engine>: ...' line for the trial page."""
     code = ", ".join(PLAIN_WORDS.get(f, f) for f in j.layer1_flags) or "none"
     if j.layer1_flags and not j.jev_answers:
-        return f"Code checks: {code}. Jev was not needed"
+        return f"Code checks: {code}. The judge ({engine}) was not needed"
     ranked = sorted(
         (
             (n, a)
@@ -95,4 +103,4 @@ def scores_line(j: Judgement) -> str:
         f"{PLAIN_QUESTIONS.get(n, n.replace('_', ' '))} {_num(a):.2f} ({a.confidence:.0%})"
         for n, a in ranked
     ]
-    return f"Code checks: {code}. Jev: " + ", ".join(parts)
+    return f"Code checks: {code}. {engine}: " + ", ".join(parts)

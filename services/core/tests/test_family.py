@@ -302,3 +302,20 @@ def test_lifecycle_lock_serialises_steps(tmp_path, monkeypatch):
     [t.join() for t in ts]
     assert inside["max"] == 1
     assert len(store.generations()) == 1
+
+
+def test_the_obituary_prompt_has_no_placeholder(tmp_path, monkeypatch):
+    """RT-12: 'see trial' must not leak into the obituary prompt."""
+    _cfg, _store, _host, fam, _s = _fam(tmp_path, monkeypatch)
+    g = fam.birth(datetime(2026, 11, 20, 9, tzinfo=UTC))
+    g = fam.death(g, datetime(2026, 11, 20, 10, tzinfo=UTC))
+    seen = []
+    real = fam.w.llm.complete
+
+    def spy(kind, system, user, **kw):
+        seen.append(user)
+        return real(kind, system, user, **kw)
+
+    fam.w.llm.complete = spy
+    fam.trial(g)
+    assert seen and all("see trial" not in u for u in seen)
