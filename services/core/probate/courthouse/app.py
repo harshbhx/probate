@@ -564,9 +564,10 @@ def admin_force_death(x_probate_admin: str | None = Header(None)) -> dict:
         if died is None:
             raise HTTPException(409, "No demo life is living right now")
         return {"died": died}
-    living = _need(store.living())
-    g = family.death(living)
-    family.trial(g)
+    with family.lifecycle_lock:
+        living = _need(store.living())
+        g = family.death(living)
+        scheduler.try_trial(g)
     return {"died": g.gen}
 
 

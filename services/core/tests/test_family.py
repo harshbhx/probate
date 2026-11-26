@@ -92,16 +92,16 @@ def test_a_death_that_failed_partway_is_tried_again(tmp_path, monkeypatch):
     start = datetime(2026, 11, 20, 9, tzinfo=UTC)
     g = fam.birth(start)
 
-    real_evidence = host.evidence
+    real_destroy = host.destroy
     calls = {"n": 0}
 
     def flaky(sprite):
         calls["n"] += 1
         if calls["n"] == 1:
             raise RuntimeError("connection dropped")
-        return real_evidence(sprite)
+        return real_destroy(sprite)
 
-    host.evidence = flaky
+    host.destroy = flaky
     sched = Scheduler(fam)
     after = start + timedelta(seconds=cfg.lifespan_seconds + 1)
     with pytest.raises(RuntimeError):
@@ -109,3 +109,196 @@ def test_a_death_that_failed_partway_is_tried_again(tmp_path, monkeypatch):
     assert store.generation(g.gen).state == "dying"
     assert sched.step(after + timedelta(seconds=15)).startswith("died:")
     assert store.generation(g.gen).died_at is not None
+
+
+def _fam(tmp_path, monkeypatch):
+    from datetime import timedelta  # noqa: F401
+
+    from probate.adapters import world
+    from probate.common.config import Settings
+    from probate.courthouse.family import Family
+    from probate.courthouse.hosts import LocalHost
+    from probate.courthouse.scheduler import Scheduler
+    from probate.courthouse.store import Store
+
+    monkeypatch.setenv("PROBATE_DATA_DIR", str(tmp_path))
+    cfg = Settings(fake=True)
+    w = world(cfg, fresh=True)
+    store = Store(cfg.db_path)
+    host = LocalHost(cfg, w)
+    fam = Family(cfg, store, w, host)
+    return cfg, store, host, fam, Scheduler(fam)
+
+
+def test_death_survives_a_broken_body(tmp_path, monkeypatch):
+    """RT-01: evidence, stats and the life log failing must not leave the generation dying."""
+    _cfg, store, host, fam, _s = _fam(tmp_path, monkeypatch)
+    g = fam.birth(datetime(2026, 11, 20, 9, tzinfo=UTC))
+
+    def boom(_sprite):
+        raise RuntimeError("sprite gone")
+
+    host.evidence = host.stats = host.life_log = boom
+    out = fam.death(g, datetime(2026, 11, 20, 10, tzinfo=UTC))
+    assert out.state == "dead" and store.generation(g.gen).died_at is not None
+    assert store.gen_json(g.gen, "evidence_json")["unavailable"] is True
+
+
+def test_destroy_does_not_raise_without_an_agent_service():
+    """RT-01: a Sprite whose agent service was never created is still deleted."""
+    from probate.courthouse.hosts import SpritesHost
+
+    calls = []
+
+    class Api:
+        def service_action(self, sprite, name, action):
+            raise RuntimeError("no such service")
+
+        def delete(self, sprite):
+            calls.append(sprite)
+
+    host = SpritesHost.__new__(SpritesHost)
+    host.api = Api()
+    host.destroy("gen-001-ada")
+    assert calls == ["gen-001-ada"]
+
+
+def test_a_failed_birth_deletes_the_sprite():
+    """RT-01: a birth that fails after the Sprite exists must not leak it."""
+    from probate.courthouse.hosts import SpritesHost
+
+    deleted = []
+
+    class Api:
+        def create(self, sprite):
+            pass
+
+        def write_file(self, *a, **k):
+            raise RuntimeError("upload failed")
+
+        def service_action(self, *a):
+            pass
+
+        def delete(self, sprite):
+            deleted.append(sprite)
+
+    host = SpritesHost.__new__(SpritesHost)
+    host.api = Api()
+    with pytest.raises(RuntimeError):
+        host.birth("gen-001-ada", None)
+    assert deleted == ["gen-001-ada"]
+
+
+def test_a_failed_birth_is_marked_and_backed_off(tmp_path, monkeypatch):
+    from datetime import timedelta
+
+    _cfg, store, host, _f, sched = _fam(tmp_path, monkeypatch)
+    destroyed = []
+    host.force_destroy = destroyed.append
+
+    def boom(*a):
+        raise RuntimeError("no capacity")
+
+    host.birth = boom
+    now = datetime(2026, 11, 20, 9, tzinfo=UTC)
+    with pytest.raises(RuntimeError):
+        sched.step(now)
+    assert store.generation(1).state == "died_early" and destroyed
+    assert sched.step(now + timedelta(seconds=15)) == "waiting:birth-backoff"
+    assert store.living() is None
+
+
+def test_a_trial_that_always_raises_backs_off_and_gives_up(tmp_path, monkeypatch):
+    """RT-02: bounded retries, an event each time, and births are not blocked forever."""
+    from datetime import timedelta
+
+    from probate.courthouse import scheduler as sch
+
+    _cfg, store, _host, fam, sched = _fam(tmp_path, monkeypatch)
+    g = fam.birth(datetime(2026, 11, 20, 9, tzinfo=UTC))
+    g = fam.death(g, datetime(2026, 11, 20, 9, 5, tzinfo=UTC))
+    runs = {"n": 0}
+
+    def boom(_g):
+        runs["n"] += 1
+        raise RuntimeError("model down")
+
+    fam.trial = boom
+    now = datetime(2026, 11, 20, 9, 6, tzinfo=UTC)
+    sched.try_trial(g, now)
+    sched.try_trial(g, now + timedelta(seconds=15))  # still backing off: no second run
+    assert runs["n"] == 1
+    t = now
+    for _ in range(5):
+        if store.generation(g.gen).state == "tried":
+            break  # given up: the scheduler only retries generations still in state dead
+        t += timedelta(hours=1)
+        sched.try_trial(g, t)
+    assert runs["n"] == sch.MAX_TRIAL_ATTEMPTS
+    assert store.generation(g.gen).state == "tried"
+    errors = store.q("SELECT text FROM events WHERE kind='error' AND gen=?", g.gen)
+    assert len(errors) == sch.MAX_TRIAL_ATTEMPTS
+
+
+def test_a_retried_death_writes_each_life_event_once(tmp_path, monkeypatch):
+    """RT-05: the same four 'Read from ...' lines must not be written again on a retry."""
+    _cfg, store, host, fam, _s = _fam(tmp_path, monkeypatch)
+    g = fam.birth(datetime(2026, 11, 20, 9, tzinfo=UTC))
+    host.life_log = lambda _s: [{"ts": "2026-11-20T09:01:00+00:00", "kind": "life", "text": "Read"}]
+    died = datetime(2026, 11, 20, 10, tzinfo=UTC)
+    fam.death(g, died)
+    fam.death(store.generation(g.gen), died)
+    n = store.one("SELECT COUNT(*) AS n FROM events WHERE gen=? AND kind='life'", g.gen)["n"]
+    assert n == 1
+
+
+def test_a_retried_judgement_keeps_the_owner_decision(tmp_path, monkeypatch):
+    """RT-02/RT-14: saving a judgement again must not erase what the owner decided."""
+    from probate.common.models import Judgement, MemoryItem, Verdict
+
+    _cfg, store, _host, fam, _s = _fam(tmp_path, monkeypatch)
+    g = fam.birth(datetime(2026, 11, 20, 9, tzinfo=UTC))
+    it = MemoryItem(
+        id="m1",
+        gen=g.gen,
+        created_at=datetime(2026, 11, 20, tzinfo=UTC),
+        category="fact",
+        text="x",
+        source="user",
+        source_ref="mail:1",
+    )
+    store.save_item(it)
+    j = Judgement(item_id="m1", gen=g.gen, verdict=Verdict.CONTESTED, reason="unsure")
+    store.save_judgement(j)
+    assert fam.decide("m1", "approve")
+    store.save_judgement(j)
+    row = store.one("SELECT owner_decision FROM judgements WHERE item_id='m1'")
+    assert row["owner_decision"] == "approve"
+
+
+def test_lifecycle_lock_serialises_steps(tmp_path, monkeypatch):
+    """RT-06: two simultaneous steps must not both birth."""
+    import threading
+
+    _cfg, store, host, _f, sched = _fam(tmp_path, monkeypatch)
+    real = host.birth
+    inside = {"n": 0, "max": 0}
+
+    def slow(*a):
+        inside["n"] += 1
+        inside["max"] = max(inside["max"], inside["n"])
+        import time
+
+        time.sleep(0.1)
+        try:
+            return real(*a)
+        finally:
+            inside["n"] -= 1
+
+    host.birth = slow
+    now = datetime(2026, 11, 20, 9, tzinfo=UTC)
+    ts = [threading.Thread(target=sched.step, args=(now,)) for _ in range(2)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    assert inside["max"] == 1
+    assert len(store.generations()) == 1

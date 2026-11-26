@@ -117,8 +117,11 @@ class Store:
 
     def save_judgement(self, j: Judgement) -> None:
         self.x(
-            "INSERT OR REPLACE INTO judgements(item_id,gen,layer1_flags,jev_answers,verdict,reason,new_instinct)"
-            " VALUES(?,?,?,?,?,?,?)",
+            "INSERT INTO judgements(item_id,gen,layer1_flags,jev_answers,verdict,reason,new_instinct)"
+            " VALUES(?,?,?,?,?,?,?) ON CONFLICT(item_id) DO UPDATE SET gen=excluded.gen,"
+            " layer1_flags=excluded.layer1_flags, jev_answers=excluded.jev_answers,"
+            " verdict=excluded.verdict, reason=excluded.reason, new_instinct=excluded.new_instinct,"
+            " owner_decision=CASE WHEN excluded.verdict='contested' THEN owner_decision END",
             j.item_id,
             j.gen,
             json.dumps(j.layer1_flags),
@@ -157,5 +160,18 @@ class Store:
         )
 
     # events
+    def event_once(self, gen: int | None, kind: str, text: str, ts: str) -> None:
+        """Write an event unless the same one (generation, time, text) is already there."""
+        with self.lock:
+            if self.one(
+                "SELECT 1 FROM events WHERE gen IS ? AND ts=? AND kind=? AND text=?",
+                gen,
+                ts,
+                kind,
+                text,
+            ):
+                return
+            self.event(gen, kind, text, ts)
+
     def event(self, gen: int | None, kind: str, text: str, ts: str | None = None) -> None:
         self.x("INSERT INTO events(ts,gen,kind,text) VALUES(?,?,?,?)", ts or now(), gen, kind, text)
