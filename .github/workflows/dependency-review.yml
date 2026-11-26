@@ -7,12 +7,19 @@ name: dependency-review
 
 on:
   pull_request:
+    paths:
+      - "**/package.json"
+      - package-lock.json
+      - "**/pyproject.toml"
+      - "**/requirements*.txt"
+      - .github/workflows/**
+      - .github/actions/**
 
 permissions: {}
 
 concurrency:
   group: dependency-review-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   review:
