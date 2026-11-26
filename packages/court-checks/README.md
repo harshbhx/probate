@@ -11,7 +11,7 @@ checked cannot argue with it or talk it out of its verdict.
 ## Install
 
 ```sh
-pip install probate-court-checks      # Python 3.11+
+pip install probate-court-checks      # Python 3.11+, from PyPI
 ```
 
 ## Use

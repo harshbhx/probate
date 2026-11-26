@@ -115,7 +115,7 @@ recall("when can I meet")                                       -> only approved
 - **Local by default.** Memories stay in a SQLite file on your machine.
 
 ```sh
-claude mcp add probate-memory -- uvx --from "git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court" probate-memory serve
+claude mcp add probate-memory -- uvx probate-memory-court serve
 ```
 
 Setup for Claude Desktop and Cursor, the plug-ins, every rule, and the limits: [packages/memory-court](packages/memory-court). 59 tests, including a real MCP client talking to it over stdio and the real LangGraph and Letta client libraries.
@@ -244,18 +244,17 @@ Probate ships six small packages. They are on **GitHub Packages** (npm) and atta
 | [`kinfaces`](packages/faces) | The faces of the family: a plain SVG API plus an optional React component | `@harshbhx/kinfaces` on GitHub Packages, or the release `.tgz` |
 | [`probate-client`](packages/client) (TypeScript) | A typed client for the Courthouse's public API | `@harshbhx/probate-client` on GitHub Packages, or the release `.tgz` |
 | [`probate-mcp`](packages/mcp) | A read-only MCP server for the Courthouse's public API: the family, its trials, its instincts and its evidence | `@harshbhx/probate-mcp` on GitHub Packages |
-| [`probate-client`](packages/client-py) (Python) | The same client for Python, sync and async | the release wheel |
-| [`probate-court-checks`](packages/court-checks) | The court's deterministic text checks, with a small CLI | the release wheel |
-| [`probate-memory-court`](packages/memory-court) | Memory with a court for any MCP agent: every memory is tried before it is saved | `uvx --from "git+https://github.com/harshbhx/probate#subdirectory=packages/memory-court" probate-memory serve` |
+| [`probate-client`](packages/client-py) (Python) | The same client for Python, sync and async | `pip install probate-client` ([PyPI](https://pypi.org/project/probate-client/)) |
+| [`probate-court-checks`](packages/court-checks) | The court's deterministic text checks, with a small CLI | `pip install probate-court-checks` ([PyPI](https://pypi.org/project/probate-court-checks/)) |
+| [`probate-memory-court`](packages/memory-court) | Memory with a court for any MCP agent: every memory is tried before it is saved | `uvx probate-memory-court serve` ([PyPI](https://pypi.org/project/probate-memory-court/)) |
 
 ```bash
 # npm, from GitHub Packages (a token with read:packages is needed to install)
 npm config set @harshbhx:registry https://npm.pkg.github.com
 npm install @harshbhx/kinfaces @harshbhx/probate-client @harshbhx/probate-mcp
 
-# Python wheels, straight from the release
-pip install https://github.com/harshbhx/probate/releases/download/v0.1.0/probate_client-0.1.0-py3-none-any.whl
-pip install https://github.com/harshbhx/probate/releases/download/v0.2.0/probate_court_checks-0.2.0-py3-none-any.whl
+# Python, from PyPI
+pip install probate-client probate-court-checks probate-memory-court
 ```
 
 ```ts
