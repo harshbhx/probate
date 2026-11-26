@@ -11,6 +11,7 @@ import {
   Database,
   FileText,
   Gavel,
+  Globe,
   Mail,
   MessageCircle,
   Package,
@@ -55,8 +56,9 @@ export const GROUPS: Group[] = [
   {
     title: 'Code and data',
     items: [
-      { icon: Code2, label: 'Source code', note: 'Open source, with the attack suite and 341 tests', href: repo },
-      { icon: Scale, label: 'The memory court', note: 'The court for any AI agent, as an MCP server', href: '/docs/memory-court' },
+      { icon: Code2, label: 'Source code', note: 'Open source, with the attack suite and 352 tests', href: repo },
+      { icon: Scale, label: 'The memory court', note: 'The court for any AI agent: MCP, Mem0, LangGraph, Letta', href: '/docs/memory-court' },
+      { icon: Globe, label: 'Page Court on Apify', note: 'Checks pages for tricks aimed at agents', href: `${repo}/tree/main/actors/page-court` },
       { icon: Package, label: 'Packages', note: 'kinfaces, the API clients and the court checks', href: `${repo}#packages` },
       { icon: Database, label: 'Dataset: the attack suite', note: '16 tricks and their 16 harmless twins, in four languages', href: `${HF}/probate-attack-suite` },
       { icon: Table2, label: 'Dataset: simulated runs', note: '12 generations and 96 outcomes, from stand-in models (simulated)', href: `${HF}/probate-simulated-runs` },
