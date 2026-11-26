@@ -22,6 +22,7 @@ Fly dashboard → your org → **Sprites → Connectors → Add connector**. For
 | ElevenLabs | ElevenLabs API key | Eulogies and ancestor answers |
 | Ollama Cloud | Ollama account key | The brain |
 | Anthropic | Anthropic key (Claude for Startups credits) | Brain fallback and distillation |
+| Apify (set up Nov 26) | Apify API token, upstream `https://api.apify.com` | Reads the pages emails link to (card P1). Put its connection ID in `PROBATE_CONNECTIONS` as `"apify": "<id>"`; if it was added as a Custom API connector, write `"apify": "custom_api/<id>"` |
 | Custom API (optional) | Sprites API token | Lets the Courthouse create and delete Sprites without holding the key (try it in S1) |
 
 After adding each one, open its detail page, copy the **API Usage** example and the connection ID into `SPIKE-RESULTS.md` (IDs only, no keys).
