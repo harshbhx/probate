@@ -99,6 +99,23 @@ Text-to-speech returning mp3 for a `voice_id`; list voices for the voice pool. R
 
 The Box connector manages files in a Box account, including downloading them to the Sprite. Upstream API `https://api.box.com/2.0`: create folder `POST /folders`, list `GET /folders/{id}/items`, upload `POST /files/content` (multipart; files up to 50 MB in one request), new version `POST /files/{id}/content`, download `GET /files/{id}/content`. Keep a folder-ID cache (`/Probate`, `wills`, `verdicts`, `obituaries`, `voices`) in SQLite. Spike S5 confirms the gateway path for the upload host.
 
+## 10. Apify (via the `apify` connector, card P1)
+
+Reads the pages that emails link to. Nothing from a page runs on the Sprite; Apify fetches it on its side and returns text.
+
+| Item | Value |
+| --- | --- |
+| Upstream | `https://api.apify.com`, bearer token (the connector adds it) |
+| Read a page | `POST /v2/acts/apify~rag-web-browser/run-sync-get-dataset-items` `{"query": "<url>", "maxResults": 1, "scrapingTool": "raw-http"}` |
+| Answer | A list of dataset items: `[{"metadata": {"url", "title"}, "markdown": "..."}]`; we keep `markdown` (cut to 3,000 characters) and `metadata.title` |
+| Failure | Any non-2xx answer, an empty list or an empty page becomes `PageUnavailable`; the email is still handled and the page is skipped |
+| Settings | `PROBATE_CONNECTIONS` entry `"apify": "<connection id>"` (or `"custom_api/<id>"` for a Custom API connector), `PROBATE_LINKS_PER_MAIL` (default 1, 0 turns it off), `PROBATE_APIFY_ACTOR`, `PROBATE_PAGES_BASE` |
+| Not used | The actor's Standby mode: it answers on its own host, which the connector doesn't cover |
+
+The gateway URL for a Custom API connector is `https://api.sprites.dev/v1/gateway/custom_api/<id>/<path>`; `Settings.gateway()` handles both forms.
+
+Docs: https://apify.com/apify/rag-web-browser and https://docs.apify.com/api/v2/act-run-sync-get-dataset-items-post
+
 ## Sources
 
 - Sprites API overview: https://sprites.dev/api
