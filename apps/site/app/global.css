@@ -308,3 +308,131 @@ body {
     --p: 1;
   }
 }
+
+/* ---------------------------------------------------------------- landing, v8: components for every product
+   Terminal (Magic UI), Animated Beam (Magic UI), Animated List (Magic UI). Each plays once when its block scrolls
+   into view (components/fx/InView.tsx sets data-in) and then stays still. Under reduced motion none of this runs,
+   and everything is visible from the start. */
+.landing-code pre {
+  margin: 0;
+  background: transparent !important;
+}
+.landing-code code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Terminal: lines appear in turn; commands type in with a stepped clip (no layout change). */
+  .term .term-line {
+    opacity: 0;
+  }
+  .term[data-in] .term-line {
+    animation: term-show 0.01s linear forwards;
+    animation-delay: var(--d, 0s);
+  }
+  .term .term-type {
+    clip-path: inset(0 100% 0 0);
+  }
+  .term[data-in] .term-type {
+    animation: term-type var(--dur, 0.8s) steps(var(--n, 20), end) forwards;
+    animation-delay: var(--d, 0s);
+  }
+
+  /* Beams: each draws once, sources first, then the three outcomes. */
+  .beams .beam {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .beams[data-in] .beam {
+    animation: beam-draw 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 0.09s);
+  }
+  .beams[data-in] .beam-out {
+    animation-delay: calc(0.7s + (var(--i, 0) - 6) * 0.15s);
+  }
+  .beams .beam-court {
+    opacity: 0.55;
+    transition: opacity 0.4s ease 0.55s;
+  }
+  .beams[data-in] .beam-court {
+    opacity: 1;
+  }
+
+  /* Animated list: cases are called one by one. */
+  .alist .alist-item {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .alist[data-in] .alist-item {
+    animation: alist-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 0.35s);
+  }
+}
+@keyframes term-show {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes term-type {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes beam-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes alist-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------- the write-up (/article)
+   A book page, not a docs page: Newsreader for the reading text at a size meant for a long read, Geist kept for
+   lists, tables and code, where scanning matters more than reading. */
+.article-body.prose {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.72;
+  color: var(--color-silver);
+}
+.article-body.prose :where(h2):not(:where(.not-prose *)) {
+  font-size: 2rem;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin-top: 2.4em;
+  color: var(--color-moon);
+}
+.article-body.prose :where(ul, ol, table, pre):not(:where(.not-prose *)) {
+  font-family: var(--font-sans);
+  font-size: 17px;
+}
+.article-body.prose :where(strong):not(:where(.not-prose *)) {
+  color: var(--color-moon);
+}
+.article-body.prose > p:first-of-type::first-letter {
+  float: left;
+  font-size: 4.1em;
+  line-height: 0.82;
+  padding: 0.06em 0.12em 0 0;
+  color: var(--color-gilt);
+}
+.article-body.prose :where(img):not(:where(.not-prose *)) {
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+}
+@media (max-width: 640px) {
+  .article-body.prose {
+    font-size: 18.5px;
+  }
+}
+
+/* Landing sections below the fold: the browser skips their layout and paint until they come near the screen,
+   which keeps the first load light on phones. The remembered size keeps the scrollbar steady. */
+.cv {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1100px;
+}
