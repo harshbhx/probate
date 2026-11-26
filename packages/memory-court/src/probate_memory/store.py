@@ -81,7 +81,9 @@ def _words(text: str) -> list[str]:
 
 
 class Store:
-    def __init__(self, path: Path | str | None = None):
+    def __init__(self, path: Path | str | None = None, vectors=None):
+        # Optional recall by meaning (pinecone.py). Holds approved memories only.
+        self.vectors = vectors
         self.path = Path(path) if path else default_path()
         if str(self.path) != ":memory:":
             self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -117,7 +119,19 @@ class Store:
                 (mid, json.dumps(sorted(shingles(text))), summary, _now()),
             )
         self.db.commit()
+        if j.verdict == APPROVED:
+            self._index(mid, text, about, source)
         return self.get(mid)  # type: ignore[return-value]
+
+    def _index(self, mid: int, text: str, about: str, source: str) -> None:
+        if self.vectors is None:
+            return
+        from probate_memory.pinecone import VectorsUnavailable
+
+        try:
+            self.vectors.upsert(mid, text, about, source)
+        except VectorsUnavailable:
+            pass  # word search still finds it; the court's record is in SQLite either way
 
     def get(self, mid: int) -> Memory | None:
         r = self.db.execute("select * from memories where id = ?", (mid,)).fetchone()
@@ -156,6 +170,8 @@ class Store:
             (status, reason, _now(), mid),
         )
         self.db.commit()
+        if approve:
+            self._index(mid, m.text, m.about, m.source)
         return self.get(mid)  # type: ignore[return-value]
 
     # what agents can do with approved memories
@@ -166,10 +182,37 @@ class Store:
             (FORGOTTEN, _now(), mid, APPROVED),
         )
         self.db.commit()
+        if cur.rowcount == 1 and self.vectors is not None:
+            from probate_memory.pinecone import VectorsUnavailable
+
+            try:
+                self.vectors.delete(mid)
+            except VectorsUnavailable:
+                pass  # recall re-checks the status in SQLite, so a forgotten memory never returns
         return cur.rowcount == 1
 
     def recall(self, query: str, limit: int = 5) -> list[tuple[Memory, float]]:
-        """Approved memories ranked by BM25 against the query; newest first for an empty query."""
+        """Approved memories for a query: by meaning through Pinecone when it is set up, otherwise
+        (or if it fails) ranked by BM25. Every hit is re-checked against SQLite, so only memories
+        that are approved right now come back."""
+        if self.vectors is not None and _words(query):
+            from probate_memory.pinecone import VectorsUnavailable
+
+            try:
+                hits = self.vectors.search(query, limit * 2)
+            except VectorsUnavailable:
+                hits = None
+            if hits is not None:
+                out = []
+                for mid, score in hits:
+                    m = self.get(mid)
+                    if m and m.status == APPROVED:
+                        out.append((m, score))
+                if out:
+                    return out[:limit]
+        return self._recall_words(query, limit)
+
+    def _recall_words(self, query: str, limit: int) -> list[tuple[Memory, float]]:
         rows = [
             self._mem(r)
             for r in self.db.execute(
