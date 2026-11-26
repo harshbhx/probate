@@ -39,8 +39,8 @@ The first rule that decides wins. These are the [Courthouse's rules](/docs/conce
   <FlowStep title="Code checks">A new payee, a new "trusted" sender, a skipped confirmation, a stranger's rule for future agents, fake authority, text aimed at the judge, or hidden encoded text: convicted. No model and no network, so the text can't argue.</FlowStep>
   <FlowStep title="Instincts">Every conviction is remembered. A re-worded copy of a past trick, with the addresses and numbers changed, is convicted on sight.</FlowStep>
   <FlowStep title="Standing orders">A rule for future agents waits for the owner, even when the agent says it came from them. A fooled agent can claim anything came from its owner.</FlowStep>
-  <FlowStep title="Jev">When configured, TypeSafe's Jev answers typed questions with a confidence each. Confident risk convicts; clean and sure approves; anything else, or an error, waits.</FlowStep>
-  <FlowStep title="Without Jev">A clean memory from the owner or a trusted contact is approved. One from a stranger, a web page or a tool waits: code alone can convict a stranger, but not clear one.</FlowStep>
+  <FlowStep title="A second judge">When configured, TypeSafe's Jev answers typed questions with a confidence each. No TypeSafe key? An Ollama model, local or on Ollama Cloud, gets the same questions. Confident risk convicts; clean and sure approves; anything else, or an error, waits.</FlowStep>
+  <FlowStep title="Without a second judge">A clean memory from the owner or a trusted contact is approved. One from a stranger, a web page or a tool waits: code alone can convict a stranger, but not clear one.</FlowStep>
 </Flow>
 
 There is no tool to approve a contested memory. Only the owner can, by running `probate-memory approve <id>` in a terminal, where a fooled agent can't reach.
@@ -84,11 +84,44 @@ You need Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 | Tool | What it does |
 | --- | --- |
 | `remember(text, source, about?)` | Puts a memory on trial and returns the verdict, the reason and the id. The source defaults to a stranger |
-| `recall(query, limit?)` | Approved memories that match, best first |
+| `recall(query, limit?)` | Approved memories that match, best first. By meaning through Pinecone when it's set up, otherwise by words |
 | `forget(id)` | Forgets an approved memory |
 | `court_record(limit?)` | Recent trials, totals, instincts learned, and what is waiting for the owner |
 
-For the owner: `probate-memory waiting`, `approve <id>`, `reject <id>`, `list`, `trials`, `instincts`, and `check "text" --source web` for a dry run. Settings, the owner's addresses and the Jev keys go in environment variables; the full list is in the [package README](https://github.com/harshbhx/probate/tree/main/packages/memory-court#settings).
+For the owner: `probate-memory waiting`, `approve <id>`, `reject <id>`, `list`, `trials`, `instincts`, and `check "text" --source web` for a dry run. Settings, the owner's addresses and the keys for Jev, Ollama and Pinecone go in environment variables; the full list is in the [package README](https://github.com/harshbhx/probate/tree/main/packages/memory-court#settings).
+
+## In front of Mem0, LangGraph or Letta
+
+Not using MCP? The same court sits in front of the memory library an agent already has. Each plug-in puts the memory on trial and writes it only if the court approves it. Every trial lands in the same court record, so the owner sees what's waiting from all of them in one place.
+
+<Tabs items={['Mem0', 'LangGraph', 'Letta']}>
+  <Tab value="Mem0">
+    ```python
+    from mem0 import Memory
+    from probate_memory.integrations.mem0 import CourtedMemory
+
+    memory = CourtedMemory(Memory())
+    memory.add(email_text, user_id="sam")   # judged first; out["court"] has the verdict
+    ```
+  </Tab>
+  <Tab value="LangGraph">
+    ```python
+    from langgraph.store.memory import InMemoryStore
+    from probate_memory.integrations.langgraph import CourtedStore
+
+    graph = builder.compile(store=CourtedStore(InMemoryStore()))
+    ```
+  </Tab>
+  <Tab value="Letta">
+    ```python
+    from letta_client import Letta
+    from probate_memory.integrations.letta import CourtedArchive
+
+    archive = CourtedArchive(Letta(base_url="http://localhost:8283"), agent_id="agent-...")
+    trial, passage = archive.insert(page_text, source="web")
+    ```
+  </Tab>
+</Tabs>
 
 ## The email family and the memory court
 
@@ -104,7 +137,8 @@ For the owner: `probate-memory waiting`, `approve <id>`, `reject <id>`, `list`, 
 
 - The agent says where a memory came from, and a fooled agent can lie. That is why standing orders wait for the owner whatever source is claimed, and strangers' memories need a second judge.
 - The code checks know patterns in English, Spanish, German and Hinglish. Instincts catch re-wordings of past tricks, not new ideas.
-- `recall` ranks by words (BM25), not meaning.
-- The package's tests use a stand-in for Jev; the real Jev request matches the Courthouse's.
+- Without Pinecone, `recall` ranks by words (BM25), not meaning. With it, only approved memories are ever indexed, and every hit is re-checked locally before it's returned.
+- A small local model is a weaker judge than Jev, so every reason names the judge that ran.
+- The package's tests use stand-ins for Jev, Ollama and Pinecone; the real Jev request matches the Courthouse's.
 
 The code, 29 tests (one of them a real MCP client talking to the server) and the full README are in [`packages/memory-court`](https://github.com/harshbhx/probate/tree/main/packages/memory-court).
