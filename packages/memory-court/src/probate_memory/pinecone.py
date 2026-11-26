@@ -33,7 +33,9 @@ class PineconeRecall:
         self, host: str, api_key: str, namespace: str = "memory-court", timeout: float = 15
     ):
         host = host.rstrip("/")
-        self.host = host if host.startswith("http") else f"https://{host}"
+        self.host = host if host.startswith(("https://", "http://")) else f"https://{host}"
+        if "://" in self.host.split("://", 1)[1]:
+            raise ValueError("PROBATE_MEMORY_PINECONE_HOST must be a host name or an https URL")
         self.api_key = api_key
         self.namespace = namespace
         self.timeout = timeout
@@ -58,7 +60,7 @@ class PineconeRecall:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            with urllib.request.urlopen(req, timeout=self.timeout) as r:  # nosec B310 (http(s) only)
                 raw = r.read()
         except urllib.error.HTTPError as exc:
             raise VectorsUnavailable(f"Pinecone returned {exc.code}") from exc

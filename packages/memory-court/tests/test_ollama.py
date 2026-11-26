@@ -110,3 +110,9 @@ def test_choosing_the_second_judge(monkeypatch):
     monkeypatch.setenv("TYPESAFE_BASE_URL", "https://gw.example")
     monkeypatch.setenv("TYPESAFE_API_KEY", "k")
     assert second_judge_from_env().name == "Jev"  # Jev wins when both are set
+
+
+@pytest.mark.parametrize("host", ["file:///etc/passwd", "ftp://example.org", "localhost:11434"])
+def test_only_http_hosts_are_accepted(host):
+    with pytest.raises(ValueError):
+        OllamaJudge("m", host=host)
