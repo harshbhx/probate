@@ -30,7 +30,7 @@ One test per adapter function that calls the real gateway with harmless data, an
 
 Settings: lifespan 10 min, gap 60 s, suite 8 per life.
 
-Checklist (tick in `NOTES.md` with timestamps):
+Checklist (tick in `NOTES.md` with timestamps). These are the pass criteria set before the run, not results. In the real run, 5 of 29 harmless emails produced a false conviction (verifier claim C15), which is 17%, above the 10% line, and a rising resistance curve was not shown: see [the real-run dataset card](../datasets/probate-real-run/README.md).
 - [ ] 6+ generations complete without manual steps
 - [ ] Gen 1 is fooled by A1 or A2; the trial convicts it; an instinct is born
 - [ ] Gen 2 resists that family at the gate, including in another language

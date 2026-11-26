@@ -1,11 +1,25 @@
 ---
 title: Results
 icon: ChartLine
-description: Does the family actually get harder to fool? The numbers, and what each one rests on.
+description: Does the family actually get harder to fool? The real-run numbers and the labelled simulated ones, and what each rests on.
 ---
 
-<Callout type="warn" title="These numbers are simulated">
-  They come from `make sim`: twelve generations with stand-in models and a keyword-matching stand-in for Jev. They show how the system behaves, not how well the real models judge. The live run on Fly.io Sprites replaces them, and this page will say so.
+<Callout type="info" title="The real run, in short">
+  One run on Fly Sprites on 26 Nov 2026, 18 generations. Small numbers: read them as observations, not proof that a family learns. Layer 2 of the court was a language-model fallback (Claude Haiku), not Jev. The data is in the [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md) (also on [Hugging Face](https://huggingface.co/datasets/harshbhx/probate-real-run)) and the numbers can be recomputed with the [verifier](https://github.com/harshbhx/probate/blob/main/scripts/verify_real_run.py).
+</Callout>
+
+## Real run on Fly Sprites
+
+- **Instincts.** The family learned 6 instincts from real failures.
+- **Generations 1 to 12 say nothing about learning.** Their gate failed open (a bug, fixed at generation 13), so their 0% resistance is not evidence.
+- **From generation 13 the gate worked.** Attacks resisted: generation 13, 1 of 4; 14, 4 of 4; 15, 3 of 4; 16 (the first with the optional hard tier on), 1 of 6. Generations 17 and 18 have no attack results. The 18th died with no emails because AgentMail's plan limits sending to 100 emails a day; the family is paused. These live numbers mix in leftover emails from the previous generation.
+- **Clean evidence: an offline test** of 70 fixtures with the 5 instincts learned by generation 16, run three times. With instincts, 23 to 25 of 41 attacks were blocked (24, 23 and 25), and 0 of 29 harmless emails were wrongly blocked in every run. The control with no instincts blocked 0. The hard tier blocked 13 or 14 of 24, with 0 of 12 harmless lookalikes blocked.
+- **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks), and the gate lets those through. The court also wrongly convicted 5 of 29 memories derived from harmless emails. The instincts were learned from the same tricks they are tested on.
+
+## Simulated numbers
+
+<Callout type="warn" title="The numbers below are simulated">
+  They come from `make sim`: twelve generations with stand-in models and a keyword-matching stand-in for Jev. They show how the system behaves, not how well the real models judge. The real run is described above; it does not reproduce this curve.
 </Callout>
 
 <StatRow note="Simulated run, 12 generations. Source: GET /api/evidence after make sim.">

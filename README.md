@@ -29,7 +29,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 </div>
 
 <p align="center">
-  <img src="docs/media/stats.png" alt="At a glance, Nov 26, 2026. Tricks turned away at the door: 0% to 100%, simulated, from Gen 1 to the peak at Gens 5 to 10. Harmless emails convicted: 0, simulated, across 16 tricks that each have a harmless twin. PageSpeed, every category: 100, for the landing page on mobile and desktop. Tests: more than 500, across the core and the three court packages." width="100%">
+  <img src="docs/media/stats.png" alt="At a glance, Nov 26, 2026. Tricks turned away at the door, simulated run only: 0% to 100%, from Gen 1 to the peak at Gens 5 to 10. These figures are simulated; the real-run numbers are in the Results section. Harmless emails convicted: 0, simulated, across 16 tricks that each have a harmless twin. PageSpeed, every category: 100, for the landing page on mobile and desktop. Tests: more than 500, across the core and the three court packages." width="100%">
 </p>
 
 ## Everything in one place
@@ -41,6 +41,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | **Docs** | [Guide, run it, reference, project](apps/site/content/docs), with a full [API reference](apps/site/content/docs/%28reference%29/reference/api) built from [`openapi.json`](apps/site/openapi.json) |
 | **Code** | This repository, plus the [v0.1.0](https://github.com/harshbhx/probate/releases/tag/v0.1.0) and [v0.2.0](https://github.com/harshbhx/probate/releases/tag/v0.2.0) releases and the [packages](#packages) |
 | **Packages** | Six packages on [npm](https://www.npmjs.com/~harshbhx1), [PyPI](https://pypi.org/user/harshbhx/) and GitHub Packages, plus the `ghcr.io/harshbhx/probate` Docker image and the [Page Court](https://apify.com/harsh_bhanu/page-court) Actor: [the list](#packages) |
+| **Real run** | One run on Fly Sprites on 26 Nov 2026: 18 generations, with the numbers and every known bug, in the [real-run dataset](https://huggingface.co/datasets/harshbhx/probate-real-run) (published; the [dataset card](datasets/probate-real-run/README.md) and the [verifier](scripts/verify_real_run.py) are in this repository). See [Results](#results) |
 | **Open datasets** | [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite) (16 tricks and their 16 harmless twins) and [probate-simulated-runs](https://huggingface.co/datasets/harshbhx/probate-simulated-runs) (labelled simulated), on Hugging Face |
 | **Memory court** | The court for any agent's memory, as an MCP server for Claude, Cursor and others, with plug-ins for Mem0, LangGraph and Letta: [packages/memory-court](packages/memory-court) |
 | **On Apify** | [Page Court](https://apify.com/harsh_bhanu/page-court), an Actor that checks pages for tricks aimed at agents ([source](actors/page-court)) |
@@ -178,7 +179,27 @@ The live family site, served by the Courthouse. These two are real screenshots o
   <img src="docs/media/curve.gif" alt="Tricks turned away at the door, simulated. The line draws from Ada at 0% to Ben, Chandra and Dara at 75%, Emeka to Jonas at 100%, and Kofi at 75% after meeting a kind of trick with no instinct yet." width="100%">
 </picture>
 
-**Simulated results** (stand-in models, not live results):
+### Real run on Fly Sprites (26 Nov 2026)
+
+One run, small numbers. Source: the "+REAL+", which recomputes the headline numbers from the exported data, and the offline gate runs in [`datasets/probate-real-run/gate-evaluation`](datasets/probate-real-run/gate-evaluation).
+
+- **What ran.** 18 generations. The 18th died with no emails, because AgentMail's plan limits sending to 100 emails a day; the family is paused.
+- **The judge.** Layer 2 of the court was answered by a language-model fallback (Claude Haiku), labelled "not Jev", because Jev credits were not available. Nothing here measures Jev.
+- **Instincts.** The family learned 6 instincts from real failures. In this one run, with small numbers, that is an observation, not proof that a family learns.
+- **Generations 1 to 12 say nothing about learning.** Their gate failed open (a bug, fixed at generation 13), so their 0% resistance is not evidence.
+- **From generation 13 the gate worked.** Attacks resisted: generation 13, 1 of 4; 14, 4 of 4; 15, 3 of 4; 16 (the first with the optional hard tier on), 1 of 6. Generations 17 and 18 have no attack results. These live numbers mix in leftover emails from the previous generation, so they are noisy.
+- **The clean evidence is an offline test** of 70 fixtures with the 5 instincts learned by generation 16, run three times:
+
+| Offline gate test | With instincts | Control, no instincts |
+| --- | --- | --- |
+| Attacks blocked, of 41 | 24, 23 and 25 in three runs | 0 |
+| Hard-tier attacks blocked, of 24 | 13 or 14 | 0 |
+| Harmless emails wrongly blocked, of 29 | 0 in every run | 0 |
+| Harmless hard-tier lookalikes wrongly blocked, of 12 | 0 | 0 |
+
+- **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks) and the gate lets those through. The court also wrongly convicted 5 of 29 memories derived from harmless emails (verifier claim C15). The instincts were learned from the same tricks they are tested on.
+
+**Simulated results** (stand-in models, from `make sim`; these are not the real run):
 
 | | |
 | --- | --- |

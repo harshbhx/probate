@@ -65,6 +65,7 @@ export const GROUPS: Group[] = [
       { icon: Globe, label: 'Page Court on Apify', note: 'On the Apify Store: checks pages for tricks aimed at agents', href: pageCourtUrl },
       { icon: Package, label: 'Packages', note: 'kinfaces, the API clients and the court checks', href: `${repo}#packages` },
       { icon: Database, label: 'Dataset: the attack suite', note: '16 tricks and their 16 harmless twins, in four languages', href: `${HF}/probate-attack-suite` },
+      { icon: Table2, label: 'Dataset: the real run', note: 'One real run on Fly Sprites, with its bugs and a verifier, on Hugging Face', href: 'https://huggingface.co/datasets/harshbhx/probate-real-run' },
       { icon: Table2, label: 'Dataset: simulated runs', note: '12 generations and 96 outcomes, from stand-in models (simulated)', href: `${HF}/probate-simulated-runs` },
       { icon: Bot, label: 'For AI agents', note: 'Agent Skills, WebMCP tools and an ARD manifest', href: '/docs/reference/agents' },
     ],
