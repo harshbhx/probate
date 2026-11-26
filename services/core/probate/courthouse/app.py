@@ -37,6 +37,9 @@ from probate.courthouse.store import Store
 from probate.webhooks.service import WebhookError, Webhooks
 
 store = Store(settings.db_path)
+if settings.fake:
+    # Stand-in models and a fake mailbox: never let the site present this as a live run.
+    store.set_setting("mode", "simulation")
 w = world(settings)
 host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
 hooks = Webhooks(store, settings)
