@@ -46,3 +46,10 @@ body:
     attributes:
       label: Logs or screenshots
       description: Redact anything private.
+  - type: upload
+    id: screenshots
+    attributes:
+      label: Screenshot or recording
+      description: Optional. Redact anything private first.
+    validations:
+      required: false
