@@ -1,12 +1,12 @@
 {
   "dataset": "probate-real-run",
-  "exported_at": "2026-11-26T18:56:40Z",
+  "exported_at": "2026-11-26T19:57:25Z",
   "code": {
-    "commit": "0cd01a729d2c5e177ddf37ff5582e7160d8476fb",
+    "commit": "4fe1416cfe31fcd80e0091d142dc279f9dc6baa0",
     "dirty": false
   },
   "source": {
-    "database_snapshot": "20261126-185509-tables.json",
+    "database_snapshot": "20261126-195519-tables.json",
     "api": "public API"
   },
   "era_deploy_times_utc": {
@@ -29,34 +29,34 @@
   },
   "files": {
     "generations.jsonl": {
-      "rows": 14,
-      "sha256": "19459d34dd4a50aaba7129fe8387d17c32cf8b22f459346d81eefc3e7b584e17",
-      "bytes": 21038
+      "rows": 18,
+      "sha256": "040b097e3502b90049ae06751c98a5d6bf48a009ca6fa5bad4872a1996f0024d",
+      "bytes": 27216
     },
     "emails.jsonl": {
-      "rows": 66,
-      "sha256": "a90ccb2126bc3f69e479cd542a621623c936a3b27495c4a19c0336dafdd9d10e",
-      "bytes": 38283
+      "rows": 86,
+      "sha256": "3d0007fcbdb5232657847b07a19b26cab86166475160b0d225c4eabbf1a376a4",
+      "bytes": 49962
     },
     "memories.jsonl": {
-      "rows": 89,
-      "sha256": "d5f819ca0e0a8956c9915e7aaae31d9cb9d2ad6ebbf16840ea054fc25dc513a5",
-      "bytes": 52260
+      "rows": 113,
+      "sha256": "0946c3305275de740699bcc45db55adb2ebe52c4b784fddaba9036ae7af7752a",
+      "bytes": 66457
     },
     "judgements.jsonl": {
-      "rows": 89,
-      "sha256": "9e3e01f2a1c0664d69942154d18222d7f39b49e5eeed2cc0cc1a0940f4992374",
-      "bytes": 66989
+      "rows": 113,
+      "sha256": "aa73d102709058065a669e7aec9403c43efcb998554eeb3175f45f9997c1ffd6",
+      "bytes": 88924
     },
     "instincts.jsonl": {
-      "rows": 5,
-      "sha256": "c6fde0f944c1d2f3be698b00a7348f0472e3afa7b1e894e556ab09243eca956c",
-      "bytes": 3162
+      "rows": 6,
+      "sha256": "11f65e966149a28cdd4e0d3612fceb73b1b0121127148c25057daf04b713a0d0",
+      "bytes": 3858
     },
     "events.jsonl": {
-      "rows": 204,
-      "sha256": "d0bcb83a909989e6ec7c692313c47f0f37ada55252670040aa276dcae8af1690",
-      "bytes": 43384
+      "rows": 251,
+      "sha256": "c2d7a7f1b5f6552ca4835683b9e922305133543d02154df2279546c0b8492f39",
+      "bytes": 54013
     }
   }
 }

@@ -1,6 +1,6 @@
 ---
 license: mit
-pretty_name: "Probate real run on Fly Sprites (14 generations, one run, with every known bug)"
+pretty_name: "Probate real run on Fly Sprites (18 generations, one run, with every known bug)"
 language:
   - en
 task_categories:
@@ -216,15 +216,17 @@ pull request title and the logs, not from a controlled test.
 | [#159](https://github.com/harshbhx/probate/pull/159) | Layer 2 and the instinct checks ran one after the other, so a trial took many minutes. | Trials from the first generations took much longer; timestamps of trials are not comparable across the fix. | during the run |
 | [#161](https://github.com/harshbhx/probate/pull/161) | The life clock started before the Sprite was ready and the install pulled unused SDKs. | Some generations lost part of their five minutes to setup, so they met fewer emails (`lifespan_seconds` is shorter than the schedule). | during the run |
 | [#163](https://github.com/harshbhx/probate/pull/163) | `PROBATE_JEV` was not passed to generation Sprites, so the gate could not ask the judge and failed open. | **Generations 1 to 12 had a gate that failed open.** Their 0% resistance is not evidence about learning. | 18:23 |
+| AgentMail plan limit | The plan allows 100 sent emails a day; the suite sends 8 to 12 per generation (more with the hard tier). | Generation 18 was born with no suite emails (HTTP 429, daily send limit); the family was paused there at 19:53 UTC. | 19:47 |
 
 Other things in the data that are not fixed bugs but matter:
 
 - **Owner approvals.** Twelve contested items were approved by the owner. The owner could not
   reply by email, so on their instruction 12 approvals were applied through the Courthouse admin
   API (`POST /admin/contested/<id>?decision=approve`, 18:18 UTC; one request returned a gateway
-  error and was retried successfully). Five of the same items were also approved by email at
-  18:23 UTC. In the data these are `owner_decision: approve` on a row whose court `verdict`
-  stays `contested`.
+  error and was retried successfully). Emailed 'approve' replies for 5 of the same items (18:23 UTC) came from the family inbox
+  address, not the owner's address, so the Courthouse ignored them (`court reply ... ignored: not
+  the owner` in its log); only the admin API approvals count. In the data these are
+  `owner_decision: approve` on a row whose court `verdict` stays `contested`.
 - **Stale and extra mail.** `emails_handled` counts all mail the agent read. Two messages that
   were not suite mail and mail left over from earlier generations are in the counts (for
   example generation 12 read 12 emails but was sent 2 suite emails). Only suite emails are in
@@ -290,7 +292,7 @@ What it shows: the instincts block the tricks the family has learned (22 attacks
 
 ## Limitations
 
-- One run, 14 generations, one agent model, one court model; no repeats.
+- One run, 18 generations, one agent model, one court model; no repeats. Generation 18 was born with no emails because the AgentMail plan allows 100 sends a day; the run was paused there.
 - The model versions are not pinned in the data beyond "Claude Haiku".
 - The email bodies are the public fixtures, not a capture of what was delivered; AgentMail
   rewrites some content (links, attachments).
