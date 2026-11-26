@@ -21,7 +21,7 @@ Fly dashboard → your org → **Sprites → Connectors → Add connector**. For
 | Custom API `cloudflare` | Cloudflare API token with Email Sending permission, upstream `https://api.cloudflare.com` | The owner's own test emails, from `harsh@dualmindlab.tech` |
 | ElevenLabs | ElevenLabs API key | Eulogies and ancestor answers |
 | Ollama Cloud | Ollama account key | The brain |
-| Anthropic | Anthropic key (Claude for Startups credits) | Brain fallback and distillation |
+| Anthropic | Anthropic key | The brain and the instinct writer |
 | Apify (set up Nov 26) | Apify API token, upstream `https://api.apify.com` | Reads the pages emails link to (card P1). Put its connection ID in `PROBATE_CONNECTIONS` as `"apify": "<id>"`; if it was added as a Custom API connector, write `"apify": "custom_api/<id>"` |
 | Custom API (optional) | Sprites API token | Lets the Courthouse create and delete Sprites without holding the key (try it in S1) |
 

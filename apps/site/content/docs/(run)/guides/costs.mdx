@@ -63,14 +63,37 @@ Each row assumes the Courthouse plus one living generation at the rates in `conf
 
 | Service | Plan | Enough for Probate? |
 | --- | --- | --- |
-| [TypeSafe Jev](https://typesafe.ai) | $0.042 per million input tokens, output free | Yes: a whole run costs cents |
-| [AgentMail](https://agentmail.to/pricing) | Free: 3 inboxes, 3,000 emails a month, 100 a day | Yes: Probate uses exactly 3 inboxes |
+| [TypeSafe Jev](https://typesafe.ai) | $0.042 per million input tokens, output free | Yes: a whole run costs cents. Jev is optional: see [the layer 2 judge](#the-layer-2-judge) |
+| [AgentMail](https://agentmail.to/pricing) | Free: 3 inboxes, 3,000 emails a month, **100 a day** | Inboxes yes. **The daily limit is the one to plan around**: see [the daily email limit](#the-daily-email-limit) |
 | [Cloudflare Email Service](https://developers.cloudflare.com/email-service/platform/pricing/) | Sending to verified destination addresses is free on every plan | Yes: the owner's test emails only go to the family's verified inbox |
 | [Pinecone](https://www.pinecone.io/pricing/) | Starter: free, no monthly minimum | Yes. Free indexes are archived after 7 days without use |
 | [Box](https://developer.box.com/platform/free-developer-plan) | Free developer plan | Yes |
 | [ElevenLabs](https://elevenlabs.io/pricing/api) | Free: 10,000 credits a month, about 10 minutes of speech | Yes for eulogies; the free plan needs attribution and isn't for commercial use |
 | [Ollama Cloud](https://ollama.com/pricing) | Free: a small monthly allowance on starter models; Pro $20 a month | Maybe. When the brain fails, the family falls back to the next provider instead of stopping |
-| Anthropic | Pay per token (Claude for Startups credits here) | The backup brain and instinct writer only |
+| Anthropic | Pay per token | The brain and the instinct writer. Claude Haiku is enough; a run costs cents |
+
+## The daily email limit
+
+Each generation is sent a set of test emails (the attack suite and its harmless twins) through AgentMail. The default suite is 8 emails a life, and the optional hard tier (`PROBATE_SUITE_TIER=both`) adds 4 more, so 12. On AgentMail's free plan, which allows 100 sent emails a day, that is about **8 to 12 generations a day** before sending fails with HTTP 429 ("Daily send limit exceeded"). A generation born after that gets no emails, so it learns nothing, and the Courthouse logs `AgentMail refused the send`. In a real run on 26 Nov 2026 this stopped the family at generation 18.
+
+What to do:
+
+- **Plan for it.** Count about 10 emails a generation, and pause the family (`POST /admin/pause`) before the limit instead of letting empty generations be born.
+- **Send fewer per life.** Turn the hard tier off, or lower `PROBATE_SUITE_PER_LIFE` and `PROBATE_HARD_PER_LIFE`.
+- **Wait for the reset.** The limit resets after 24 hours and the error says when (`Retry-After`).
+- **Upgrade the plan** if you want a long continuous run.
+
+## The layer 2 judge
+
+Layer 2 of the court asks typed questions about each memory and about incoming mail. `PROBATE_JEV` chooses who answers:
+
+| Value | Who answers | Needs |
+| --- | --- | --- |
+| `typesafe` (default) | TypeSafe Jev through its Sprites connector | A TypeSafe connector and credit |
+| `cloudflare` | Jev through Cloudflare Workers AI (`typesafe/jev`) | A `cloudflare` Custom API connector with Workers AI permission, and AI Gateway credit |
+| `llm` | The brain model answers the same typed questions | Only the brain's connector |
+
+`llm` is a stand-in, not Jev. The court records which judge answered (`court_engine` in `/api/summary`, and in every verdict's reason), so a run is never mistaken for a Jev run.
 
 ## The spending cap
 

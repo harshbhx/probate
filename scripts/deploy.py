@@ -72,6 +72,21 @@ def render_env(env: dict[str, str]) -> bytes:
     return ("\n".join(f"{k}={shlex.quote(v)}" for k, v in merged.items()) + "\n").encode()
 
 
+def restore_database(api, name: str, path: Path) -> str:
+    """Put a saved database on the Courthouse before it starts, so the family continues where it
+    stopped (for example after the Sprite was deleted). It never overwrites a database that is
+    already there. Returns what it did, for the progress line."""
+    if not path.is_file():
+        sys.exit(f"--restore-db: {path} is not a file")
+    data = path.read_bytes()
+    if not data.startswith(b"SQLite format 3"):
+        sys.exit(f"--restore-db: {path} is not a SQLite database")
+    if api.read_file(name, "data/probate.db"):
+        return "a database is already on the Courthouse; left it alone"
+    api.write_file(name, "data/probate.db", data)
+    return f"restored {len(data) // 1024} KiB from {path.name}"
+
+
 def step(msg: str) -> None:
     print(f"→ {msg}", flush=True)
 
@@ -84,6 +99,11 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--name", default="probate-courthouse")
     ap.add_argument("--check", action="store_true", help="validate config and bundle, then stop")
+    ap.add_argument(
+        "--restore-db",
+        type=Path,
+        help="a saved probate.db to put on a NEW Courthouse before it starts (never overwrites one that exists)",
+    )
     args = ap.parse_args()
 
     env = read_env()
@@ -104,6 +124,8 @@ def main() -> None:
     res = api.exec(args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite")
     if res.exit_code:
         sys.exit(f"install failed ({res.exit_code}):\n{res.stderr[-1500:]}")
+    if args.restore_db:
+        step("database: " + restore_database(api, args.name, args.restore_db))
 
     step("writing .env")
     api.write_file(args.name, "app/services/core/.env", render_env(env), mode="0600")
