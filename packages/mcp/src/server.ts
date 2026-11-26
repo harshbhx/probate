@@ -5,7 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { baseUrl, CourthouseError, getJson } from './api.js';
 
-const server = new McpServer({ name: 'probate', version: '0.1.0' });
+const server = new McpServer({ name: 'probate', version: '0.1.1' });
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
 const gen = z.number().int().min(1).describe('Generation number, starting at 1');
 

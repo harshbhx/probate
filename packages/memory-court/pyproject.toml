@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "probate-memory-court"
-version = "0.2.0"
+version = "0.2.1"
 description = "Memory with a court, for any AI agent: an MCP server that puts every memory on trial before it is saved, so a poisoned one is never remembered."
 readme = "README.md"
 requires-python = ">=3.11"
