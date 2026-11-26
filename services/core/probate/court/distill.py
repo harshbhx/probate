@@ -97,7 +97,14 @@ def distill(
                 context={"pattern": group["pattern"], "gen": gen, "gen_name": gen_name},
                 json_mode=True,
             )
-            spec = json.loads(raw)
+            try:
+                spec = json.loads(raw)
+                spec["name"], spec["question"], spec["lore"]
+            except (json.JSONDecodeError, KeyError, TypeError):
+                feedback = (
+                    "Your last reply was not the JSON object asked for. Reply with JSON only."
+                )
+                continue
             if spec["name"] in existing:
                 log.append(f"The family already has the instinct {spec['name']}.")
                 break

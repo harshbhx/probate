@@ -57,7 +57,9 @@ class RealLLM:
             "cloudflare": cloudflare_url.rstrip("/"),
         }
         self.cloudflare_account_id = cloudflare_account_id
-        self.http = gateway_client(timeout=timeout)
+        self.http = gateway_client(
+            retry_all=True, timeout=timeout
+        )  # a model request is safe to repeat
         self.last_provider = self.provider
 
     def complete(
@@ -125,6 +127,9 @@ class RealLLM:
             body = {
                 "model": model,
                 "temperature": temperature,
+                # gpt-oss spends tokens on its reasoning before the answer; without a limit that
+                # leaves room for little more than a fragment of JSON.
+                "max_tokens": 4096,
                 "messages": [
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},

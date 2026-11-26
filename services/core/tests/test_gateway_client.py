@@ -17,3 +17,14 @@ def test_adapters_use_it():
         RealMailbox("http://a").http,
     ):
         assert http._transport._pool._max_keepalive_connections == 0
+
+
+def test_model_and_decision_requests_are_repeatable():
+    from probate.adapters.jev import CloudflareJev, RealJev
+
+    assert RealLLM("anthropic:m", "http://o", "http://a").http.retry_all is True
+    assert RealJev("http://x").client.retry_all is True
+    assert CloudflareJev("http://x", "acct").client.retry_all is True
+    from probate.adapters.mail import RealMailbox
+
+    assert RealMailbox("http://a").http.retry_all is False  # a send must not be repeated
