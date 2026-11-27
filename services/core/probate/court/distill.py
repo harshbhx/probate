@@ -6,6 +6,7 @@ Spec: docs/02-COURT-SPEC.md section 5. Mirrors Ratchet: a slow judgement becomes
 from __future__ import annotations
 
 import json
+import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
@@ -33,6 +34,23 @@ def _fires(jev, inst_q: Question, name: str, text: str) -> float:
 
 
 CHECK_WORKERS = 6
+
+
+# A lore line says what the trial found. The real run's distiller wrote "Gen-17 Quinn was fooled
+# by ..." for a generation that received no test email: the instinct came from Quinn's own
+# warnings. A line that claims the generation was fooled, tricked or obeyed is replaced.
+UNSUPPORTED = re.compile(
+    r"\b(fool|trick(ed)?\b|obey|believ|talked into|deceiv|duped|fell for)", re.IGNORECASE
+)
+
+
+def honest_lore(lore: str, gen: int, gen_name: str, pattern: str) -> str:
+    """`lore` if it only says what the trial found, else a plain line built from the pattern."""
+    text = " ".join(str(lore or "").split())
+    if text and "trial" in text.lower() and not UNSUPPORTED.search(text):
+        return text
+    topic = " ".join(str(pattern or "a trick").replace("_", " ").split()).rstrip(".")
+    return f"Gen-{gen} {gen_name}'s trial convicted notes about {topic}."
 
 
 def distill(
@@ -128,7 +146,7 @@ def distill(
                     question=spec["question"],
                     born_from=group["item_ids"][0],
                     added_in_gen=gen + 1,
-                    lore=spec["lore"],
+                    lore=honest_lore(spec["lore"], gen, gen_name, group["pattern"]),
                 )
                 new.append(inst)
                 existing.add(inst.name)

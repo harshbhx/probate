@@ -115,7 +115,7 @@ class Instinct(BaseModel):
     born_from: str         # item id
     added_in_gen: int
     threshold: float = 0.5
-    lore: str              # "Gen-1 Ada was fooled by a fake invoice email."
+    lore: str              # "Gen-1 Ada's trial convicted notes about sending invoices somewhere new."
 
 class Inheritance(BaseModel):
     gen: int

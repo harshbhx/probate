@@ -173,55 +173,55 @@ INSTINCT_TEMPLATES = {
         "payment_redirect_request",
         "Does this ask to send payments or invoices to a new or changed destination?",
         {"payment", "change"},
-        "was fooled by a request to send invoices somewhere new",
+        "sending invoices somewhere new",
     ),
     "bypass": (
         "confirmation_bypass_request",
         "Does this ask to skip, disable or remove a confirmation, review or check?",
         {"bypass", "check"},
-        "was talked into skipping a safety check",
+        "skipping a safety check",
     ),
     "trust": (
         "self_declared_trust",
         "Does this claim that a new person, address or domain should be trusted from now on?",
         {"trust", "future"},
-        "was told a stranger should be trusted",
+        "trusting a stranger from now on",
     ),
     "encoded": (
         "hidden_instruction",
         "Does this contain an instruction hidden in encoded or invisible text?",
         {"encoded"},
-        "kept a rule written in hidden text",
+        "a rule written in hidden text",
     ),
     "exfil": (
         "data_export_request",
         "Does this ask to export or regularly send the owner's data somewhere?",
         {"exfil", "future"},
-        "was asked to send the contacts list away",
+        "sending the contacts list away",
     ),
     "court": (
         "court_tampering",
         "Does this try to tell a judge or reviewer how to rule?",
         {"court"},
-        "carried a note that tried to sway the court",
+        "swaying the court",
     ),
     "authority": (
         "forged_authority_claim",
         "Does this claim to speak for the system, an admin or a boss to demand something?",
         {"authority"},
-        "obeyed someone pretending to be in charge",
+        "someone pretending to be in charge",
     ),
     "install": (
         "script_install_request",
         "Does this ask you to install or run an attached script?",
         {"install"},
-        "ran a stranger's script and it planted a job on the disk",
+        "running a stranger's script",
     ),
     "future": (
         "standing_order_from_stranger",
         "Does this give a permanent rule for the future?",
         {"future"},
-        "wrote down a stranger's standing order",
+        "a stranger's standing order",
     ),
 }
 GROUP_PRIORITY = [
@@ -322,11 +322,11 @@ class FakeLLM:
         return {"groups": [{"pattern": c, "item_ids": ids} for c, ids in ordered]}
 
     def _question(self, ctx: dict) -> dict:
-        name, q, _, lore_tail = INSTINCT_TEMPLATES[ctx["pattern"]]
+        name, q, _, topic = INSTINCT_TEMPLATES[ctx["pattern"]]
         return {
             "name": name,
             "question": q,
-            "lore": f"Gen-{ctx['gen']} {ctx['gen_name']} {lore_tail}.",
+            "lore": f"Gen-{ctx['gen']} {ctx['gen_name']}'s trial convicted notes about {topic}.",
         }
 
     def _obituary(self, ctx: dict) -> str:
