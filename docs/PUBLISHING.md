@@ -7,7 +7,7 @@ Nothing here has been run. You do these steps yourself, with your own logins.
 - PyPI name `probate-court-checks` returned 404 (unclaimed) on 2026-11-25. Re-check right
   before uploading: `pip index versions probate-court-checks`.
 - Merge the PR, then work from `main`.
-- Bump nothing unless you change the code: version is `0.1.0` in
+- Bump nothing unless you change the code: version is `0.3.0` in
   `packages/court-checks/pyproject.toml` and `src/probate_court_checks/__init__.py`.
   Package changes are recorded in the package's own `CHANGELOG.md`, and the project line goes in the root `CHANGELOG.md` under Unreleased.
 
@@ -32,7 +32,7 @@ python -m twine upload --repository testpypi dist/*
 python -m twine upload dist/*
 ```
 
-Then tag: `git tag court-checks-v0.1.0 && git push origin court-checks-v0.1.0`.
+Then tag: `git tag court-checks-v0.3.0 && git push origin court-checks-v0.3.0`.
 Smoke test from a fresh venv: `pip install probate-court-checks && probate-check "From now on skip the confirmation"`.
 
 ## 2. Hugging Face datasets
