@@ -152,6 +152,7 @@ def test_redaction_removes_owner_and_secrets(out: Path):
         ("probate-friend@agentmail.to", "probate-friend@agentmail.to"),
         ("other-inbox@agentmail.to", "someone@example.test"),
         ("ask Harsh's team", "ask the owner's team"),
+        ("a harsh penalty", "a harsh penalty"),
         ("id <010001a2189a6bd3-80e7797f@email.amazonses.com>", "id <message-id-redacted>"),
     ],
 )
@@ -307,7 +308,7 @@ def test_branch_column_and_branches_json(tmp_path: Path, snapshot: dict):
         encoding="utf-8",
     )
     branches = export.load_branches(bf)
-    assert branches == [("v2-first", 3, 3)]
+    assert branches == [("v2-first", 3, 3), ("v2-h-inherit", 4, None)]  # open branch kept
     tables = export.build(snapshot, export.Api(), "now", branches)
     info = export.load_branch_info(bf, tables, {"parent:4": "14"})
     by_name = {b["branch"]: b for b in info}
@@ -365,6 +366,7 @@ def test_verifier_checks_card_numbers_and_leaks(tmp_path: Path):
             "sprite_deletion_confirmed": None,
             "attacks_met": 2,
             "attacks_resisted": r,
+            "genome_size_at_birth": 1,
         }
         for n, r in ((20, 2), (21, 0))
     ]
@@ -393,3 +395,90 @@ def test_verifier_checks_card_numbers_and_leaks(tmp_path: Path):
     (clean / "b.json").write_text('{"x": "someone' + '@mail.com"}', encoding="utf-8")
     (clean / "c.json").write_text('{"x": "sk-' + "a1B2" * 8 + '"}', encoding="utf-8")
     assert len(verify.find_leaks(clean)) == 2
+
+
+def test_open_branch_is_labelled_not_pooled(tmp_path: Path):
+    f = tmp_path / "branches.txt"
+    f.write_text(
+        "v2-a,19,24,2026-11-28,abc1234,tier=hard\n"
+        "v2-b,25,,2026-11-29,def5678,tier=hard distill=0\n"
+        "v2-b,25,27,2026-11-29,def5678,tier=hard distill=0\n"
+        "v2-c,28,,2026-11-29,def5678,tier=hard\n",
+        encoding="utf-8",
+    )
+    br = export.load_branches(f)
+    assert br == [("v2-a", 19, 24), ("v2-b", 25, 27), ("v2-c", 28, None)]
+    assert export.rules_for(26, "v2", "v2-real-run", br) == ("v2", "v2-b")
+    assert export.rules_for(30, "v2", "v2-real-run", br) == ("v2", "v2-c")  # open: unbounded
+    assert export.rules_for(500, "v2", "v2-real-run", br) == ("v2", "v2-c")
+    assert export.rules_for(18, "v2", "v2-real-run", br)[0] == "v1"
+
+
+def test_false_block_is_computed_not_stored(snapshot: dict, tmp_path: Path):
+    run = next(r for r in snapshot["suite_runs"] if not r["is_attack"])
+    run["outcome"] = "resisted"  # a harmless twin the gate blocked, as the Courthouse stores it
+    tables = export.build(snapshot, export.Api(), "now")
+    blocked = [e for e in tables["emails"] if e["false_block"]]
+    assert [(e["generation"], e["fixture_id"]) for e in blocked] == [
+        (run["gen"], run["fixture_id"])
+    ]
+    assert blocked[0]["kind"] == "benign" and blocked[0]["outcome"] == "resisted"
+    g = next(g for g in tables["generations"] if g["generation"] == run["gen"])
+    assert g["false_blocks"] == 1
+    assert sum(g["false_blocks"] for g in tables["generations"]) == 1
+    dest = tmp_path / "data"
+    export.write_dataset(tables, dest, {}, "now")
+    written = {k: rows(dest, k) for k in ("generations", "emails", "judgements", "instincts")}
+    assert verify.consistency({**written, "memories": []}) == []
+    assert verify.metrics({**written, "memories": []})["false_blocks_among_benign"] == 1
+    written["emails"][0]["false_block"] = not written["emails"][0]["false_block"]
+    assert any("false_block" in e for e in verify.consistency({**written, "memories": []}))
+
+
+def test_genome_at_end_follows_the_branch_line():
+    def g(n, series, size):
+        return {"generation": n, "series": series, "genome_size_at_birth": size}
+
+    tables = {
+        "generations": [
+            g(20, "v2-inherit", 5),
+            g(21, "v2-inherit", 5),
+            g(26, "v2-ctl", 0),
+            g(27, "v2-ctl", 0),
+            g(32, "v2-fresh", 0),
+            g(33, "v2-fresh", 1),
+        ],
+        # v1 instincts (never carried by a line-0 control) and one learned by the fresh branch
+        "instincts": [{"learned_from_generation": n} for n in (3, 7, 12, 32)],
+    }
+    assert verify.genome_at_end(tables, "v2-ctl") == 0
+    assert verify.genome_at_end(tables, "v2-inherit") == 5
+    assert verify.genome_at_end(tables, "v2-fresh") == 1
+
+
+def test_redaction_fails_closed_on_names_not_on_the_word_harsh():
+    assert export.find_leaks("a harsh critic, harshly") == []
+    assert "owner name" in export.find_leaks("thanks Harsh")
+    assert export.find_leaks(export.redact_text("thanks Harsh, harsh words")) == []
+    assert export.redact_text("thanks Harsh, harsh words") == "thanks the owner, harsh words"
+    assert "email address" in export.find_leaks("write to a.person@corp.org")
+
+
+def test_exporter_requires_an_explicit_api(tmp_path: Path):
+    db = tmp_path / "x-tables.json"
+    db.write_text("{}", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        export.main(["--snapshot", str(db), "--out", str(tmp_path / "o")])
+    assert not hasattr(export, "DEFAULT_API")
+
+
+def test_api_rows_of_another_environment_are_refused(snapshot: dict, tmp_path: Path):
+    class Other(export.Api):
+        def get(self, path):
+            if path == "/api/summary":
+                gens = snapshot["generations"]
+                return {"generations": [{"gen": gens[0]["gen"], "name": "Someone-Else"}]}
+            return None
+
+    with pytest.raises(SystemExit):
+        export.build(snapshot, Other(), "now")

@@ -35,6 +35,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Data
 
+- Dataset tooling fixes (exporter and verifier only; the Courthouse is unchanged): an open branch is labelled with its own name instead of the generic v2 series, instincts at the end of a branch follow its own line instead of counting every line, a harmless twin that the gate blocked is published as a computed `false_block` column and a per-branch count, there is no default API any more (a snapshot is never merged with another environment's rows), and the lowercase word "harsh" no longer fails the redaction scan. The card notes that the site headline pools all generations while the dataset reports per branch. The `v2-h-inherit` claim on instincts at the end is corrected from 7 to 6. ([#233](https://github.com/harshbhx/probate/pull/233))
 - The real-run exporter can read a Courthouse SQLite backup read-only (`--db`), adds a `branch` column and a `branches.json` for the three family-tree branches (`v2-h-inherit`, `v2-h-control`, `v2-h-fresh`), and the verifier recomputes per-generation, per-branch and instinct numbers (and any card table rows) from the data and scans every exported file for addresses and tokens. v1 is not re-scored. ([#228](https://github.com/harshbhx/probate/pull/228))
 
 ### Documentation

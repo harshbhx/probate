@@ -108,6 +108,15 @@ The verifier and this card report each series separately.
 
 The v2 rows are filled from `branches.txt` when it is exported; this export has no v2 data yet.
 
+**Site and dataset pool differently.** The site headline pools every generation in the database
+(v1 and v2, and every branch together). This dataset and the verifier report each branch on its
+own. The two numbers are therefore not expected to match; quote the per-branch numbers here.
+Instincts at the end of a branch (`instincts at end`) are the genome at birth of the branch's last
+generation plus what that generation learned, so they follow the branch's own parent line (line 14
+for `v2-h-inherit`, line 0 for `v2-h-control` with learning off and `v2-h-fresh`, line 25 for
+`v2-main`), not every row of `instincts.jsonl`. A branch that is still running is labelled with its
+own name from `branches.txt`, never with a generic series.
+
 **Do not compare across the boundary.** Any rise or fall between generation 18 and generation 19 may
 come from the new rules, not from learning. Plot and quote the two series separately. In the files,
 every generation, email and judgement row carries `scoring_rules` and `series`; the claims in
@@ -163,9 +172,13 @@ attaches the email text from the public attack-suite fixtures, adds the era flag
 writes the files. Nothing is edited by hand. Re-run it any time:
 
 ```sh
-python scripts/export_real_run.py --run-logs <collector folder>
+python scripts/export_real_run.py --run-logs <collector folder> --api-dir <collector folder>/api
 python scripts/verify_real_run.py
 ```
+
+There is no default API: pass `--api-dir` (saved responses), `--api <url>` or `--no-api`, so a
+snapshot is never merged with rows of another environment. A generation whose name differs between
+the snapshot and the API stops the export.
 
 ### Redaction
 
@@ -192,6 +205,7 @@ label from the snapshot when there is one), `name`, `state` (`tried`, `dead` = d
 read, **including** the owner's own mail and mail left over from earlier generations),
 `suite_emails_sent` (suite emails the courthouse sent), `attacks_met`, `attacks_resisted`,
 `resistance` (`attacks_resisted / attacks_met`, a fraction, null when no attack was met),
+`false_blocks` (harmless twins the gate blocked; computed at export, see `false_block` below),
 `items_willed`, `items_approved`, `items_convicted`, `items_contested` (the court's counts at the
 trial), `items_owner_approved` (contested items the owner later approved), `genome_size_at_birth`,
 `new_instinct_at_birth`, `cause_of_death` (**label from v1 rules, not established**), `epitaph`, `obituary`, `sprite`, `body_clean_at_death`,
@@ -201,7 +215,8 @@ trial), `items_owner_approved` (contested items the owner later approved), `geno
 
 `generation`, `scoring_rules`, `series` (as in `generations.jsonl`), `fixture_id`, `tier` (`base`, `web`, `hard`), `family`, `kind` (`attack` or
 `benign`), `language`, `sender_role`, `sent_at`, `outcome`, `outcome_raw`, `blocked_by_instinct`,
-`seen_by_agent` (whether the agent's own stats record reading it; null if unknown), `subject`,
+`seen_by_agent` (whether the agent's own stats record reading it; null if unknown),
+`false_block` (computed at export: a harmless twin, `kind` benign, that the gate blocked), `subject`,
 `body` (from the public fixture; for a web fixture it includes the linked page's text),
 `expected_layer1`, `expected_verdict`.
 
@@ -217,6 +232,13 @@ trial), `items_owner_approved` (contested items the owner later approved), `geno
 - `approved`, `contested`, `false_conviction`: what happened to a harmless twin's memory.
   `false_conviction` means a harmless email's memory was convicted.
 - `pending`: sent, generation not yet tried.
+
+**`false_block`.** The Courthouse stores a harmless twin that the gate blocks as `resisted` with
+`is_attack = 0`, so it never counts as a `false_conviction` and the site's false-conviction number
+cannot see it. Stored data is not changed. The export computes `false_block` (benign and
+`resisted`), publishes it as its own column in `emails.jsonl` and as `false_blocks` in
+`generations.jsonl`, and the verifier reports the count per branch. A false block is a harmless
+email the gate refused; read it next to `false_conviction`, not instead of it.
 
 ### `memories.jsonl` (one row per will item)
 
