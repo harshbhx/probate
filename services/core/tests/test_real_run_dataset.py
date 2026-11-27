@@ -290,3 +290,106 @@ def test_verifier_scopes_claims_to_v1():
     assert [g["generation"] for g in v2["generations"]] == [19, 20] and len(v2["instincts"]) == 1
     base = verify.scope(tables, None, series="v2-base")  # branches are never pooled
     assert [g["generation"] for g in base["generations"]] == [19] and base["instincts"] == []
+
+
+def test_branch_column_and_branches_json(tmp_path: Path, snapshot: dict):
+    bf = tmp_path / "branches.txt"
+    sha = "0123456789abcdef0123456789abcdef01234567"
+    bf.write_text(
+        "\n".join(
+            [
+                "branch,first_gen,last_gen,date,settings",
+                "# a comment, with a comma",
+                "v2-first (base tier, trimmed),3,3,2026-11-27,tier=base suite_per_life=4",
+                f"v2-h-inherit,4,,2026-11-27,{sha},tier=hard hard_per_life=2 lifespan=300",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    branches = export.load_branches(bf)
+    assert branches == [("v2-first", 3, 3)]
+    tables = export.build(snapshot, export.Api(), "now", branches)
+    info = export.load_branch_info(bf, tables, {"parent:4": "14"})
+    by_name = {b["branch"]: b for b in info}
+    assert by_name["v2-h-inherit"]["parent_line"] == 14
+    assert by_name["v2-h-inherit"]["learning"] is True  # the design default
+    assert by_name["v2-h-inherit"]["code_commit"] == sha
+    assert by_name["v2-h-inherit"]["settings"]["hard_per_life"] == "2"
+    assert by_name["v2-first"]["first_generation"] == 3
+    dest = tmp_path / "data"
+    export.write_dataset(tables, dest, {}, "now", None, info)
+    for g in tables["generations"]:
+        assert g["branch"] == ("v1" if g["scoring_rules"] == "v1" else g["series"])
+    for r in tables["memories"] + tables["emails"] + tables["judgements"]:
+        assert "branch" in r
+    written = {k: rows(dest, k) for k in ("generations", "emails", "judgements", "memories")}
+    assert verify.check_branches(written, dest) == []
+    assert scan_dir(dest) == []
+
+
+def test_sqlite_backup_is_read_only(tmp_path: Path, snapshot: dict):
+    import sqlite3
+
+    db = tmp_path / "backup.db"
+    con = sqlite3.connect(db)
+    for table in export.SNAPSHOT_TABLES:
+        cols = list(snapshot[table][0])
+        con.execute(f"create table {table} ({', '.join(cols)})")
+        for row in snapshot[table]:
+            con.execute(
+                f"insert into {table} values ({','.join('?' * len(cols))})",
+                [json.dumps(v) if isinstance(v, (list, dict)) else v for v in row.values()],
+            )
+    con.execute("create table settings (key, value)")
+    con.execute("insert into settings values ('branch', 'v2-x'), ('webhook_secret', 'nope')")
+    con.execute("create table judge_mail (id, excerpt)")
+    con.commit()
+    con.close()
+    snap = export.snapshot_from_sqlite(db)
+    assert len(snap["generations"]) == len(snapshot["generations"])
+    assert [s["key"] for s in snap["settings"]] == ["branch"]  # secrets and visitor tables stay out
+    assert "judge_mail" not in snap
+
+
+def test_verifier_checks_card_numbers_and_leaks(tmp_path: Path):
+    gens = [
+        {
+            "generation": n,
+            "scoring_rules": "v2",
+            "series": "v2-b",
+            "branch": "v2-b",
+            "state": "tried",
+            "gate_working": True,
+            "valid_for_learning": True,
+            "emails_complete": True,
+            "sprite_deletion_confirmed": None,
+            "attacks_met": 2,
+            "attacks_resisted": r,
+        }
+        for n, r in ((20, 2), (21, 0))
+    ]
+    tables = {
+        "generations": gens,
+        "emails": [],
+        "memories": [],
+        "judgements": [],
+        "instincts": [{"learned_from_generation": 5}, {"learned_from_generation": 21}],
+    }
+    card = tmp_path / "README.md"
+    card.write_text(
+        "| v2-b | 20 | 2/2 |\n| v2-b | 21 | 0/2 |\n| v2-b | pooled | 2/4 |\n"
+        "| v2-b | instincts | 1 |\n| v2-b | genome | 2 |\n| v2-c | pooled | TBD |\n",
+        encoding="utf-8",
+    )
+    assert verify.check_card(card, tables) == []
+    card.write_text(
+        "| v2-b | 21 | 1/2 |\n| v2-b | pooled | 3/4 |\n| v2-z | 20 | 2/2 |\n", encoding="utf-8"
+    )
+    assert len(verify.check_card(card, tables)) == 3
+    clean = tmp_path / "d"
+    clean.mkdir()
+    (clean / "a.jsonl").write_text('{"x": "probate-ab12@agentmail.to, a@b.example"}\n', "utf-8")
+    assert verify.find_leaks(clean) == []
+    (clean / "b.json").write_text('{"x": "someone' + '@mail.com"}', encoding="utf-8")
+    (clean / "c.json").write_text('{"x": "sk-' + "a1B2" * 8 + '"}', encoding="utf-8")
+    assert len(verify.find_leaks(clean)) == 2
