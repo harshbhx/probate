@@ -103,7 +103,14 @@ class Scheduler:
                 self.try_trial(g, now)
                 return f"died:{g.gen}"
             self.ensure_suite(living, now)
-            self.family.host.tick(living.sprite)
+            st = self.family.host.tick(living.sprite)
+            if isinstance(st, dict) and st.get("restarted"):
+                self.store.event(
+                    living.gen,
+                    "error",
+                    f"{living.name}'s agent had stopped reading mail for {st.get('loop_age')} "
+                    "seconds; the Courthouse restarted it.",
+                )
             return f"living:{living.gen}"
         dead = [g for g in self.store.generations() if g.died_at]
         if dead and now < dead[-1].died_at + timedelta(seconds=self.family.cfg.gap_seconds):

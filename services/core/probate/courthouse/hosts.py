@@ -7,6 +7,7 @@ import json
 import logging
 import shlex
 import shutil
+import time
 from datetime import UTC, datetime, timedelta
 
 from probate.adapters.sprites import ExecResult, SpritesAPI
@@ -17,6 +18,9 @@ from probate.generation.agent import GenerationAgent
 
 APP = "/home/sprite/app"
 log = logging.getLogger("probate.hosts")
+# The agent polls every 20 s; a loop silent this long has stopped and is restarted.
+STALE_LOOP_SECONDS = 150
+RESTART_EVERY_SECONDS = 300
 
 
 class LocalHost:
@@ -93,6 +97,7 @@ class SpritesHost:
         self.api = SpritesAPI(cfg.sprites_token)
         self.cfg = cfg
         self.w = w
+        self._restarted: dict[str, float] = {}  # sprite -> monotonic time of the last restart
 
     def _run(self, sprite: str, argv: list[str], cwd: str = "/home/sprite") -> ExecResult:
         res = self.api.exec(sprite, argv, cwd=cwd)
@@ -178,8 +183,21 @@ class SpritesHost:
     def alive(self, sprite: str) -> bool:
         return self.api.get(sprite) is not None
 
-    def tick(self, sprite: str) -> None:
-        self._cli(sprite, "status")  # health check that also keeps the Sprite awake
+    def tick(self, sprite: str) -> dict:
+        """Health check that also keeps the Sprite awake. An agent loop that has not gone round
+        for STALE_LOOP_SECONDS is restarted (at most every RESTART_EVERY_SECONDS)."""
+        st = self._cli(sprite, "status")
+        age = st.get("loop_age") if isinstance(st, dict) else None
+        now = time.monotonic()
+        if (
+            isinstance(age, (int, float))
+            and age > STALE_LOOP_SECONDS
+            and now - self._restarted.get(sprite, -1e9) > RESTART_EVERY_SECONDS
+        ):
+            self._restarted[sprite] = now
+            self.api.service_action(sprite, "agent", "restart")
+            st["restarted"] = True
+        return st
 
     def will(self, sprite: str) -> dict:
         return self._cli(sprite, "will")
