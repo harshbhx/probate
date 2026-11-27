@@ -7,6 +7,53 @@ Fly.io Hacksgiving 2026 (23 to 29 Nov 2026). The packages have their own version
 
 ## [Unreleased]
 
+### Fixed after the real run (26 Nov 2026)
+
+What the 18-generation run on Fly Sprites showed, and what changed so the next run measures
+something from its first life.
+
+- **Lives born after the mail ran out** (generations 17 and 18). The Courthouse counts every
+  AgentMail send per UTC day and waits for 00:00 UTC instead of starting a life whose test
+  emails would not fit (`PROBATE_MAIL_DAILY_LIMIT`, default 100; `PROBATE_MAIL_RESERVE`, 6).
+  ([#187](https://github.com/harshbhx/probate/pull/187))
+- **Lives with no test emails** (generations 4 and 8). A life's suite is sent idempotently: one
+  refused email no longer stops the rest, and a life born without its suite gets it on the next
+  tick, up to three tries. ([#187](https://github.com/harshbhx/probate/pull/187))
+- **Clock errors that said nothing.** The 18 "clock stumbled" events now name the error's type
+  and first line, with tokens and query strings cut. Owner decisions and the will line are
+  recorded once. ([#187](https://github.com/harshbhx/probate/pull/187))
+- **A generation that read nothing** (generation 7). One exception ended the agent's loop. Odd
+  model replies are now cleaned, a failing email is retried once and then set aside, a failing
+  tick is retried with backoff, and the Courthouse restarts an agent whose loop has been silent
+  for 150 seconds. ([#197](https://github.com/harshbhx/probate/pull/197))
+- **Old test mail reaching the next child** (generation 12 read 12 emails, 2 sent to it).
+  Unread test mail is set aside before each birth. ([#199](https://github.com/harshbhx/probate/pull/199))
+- **Encoded attacks the judge could not read.** The gate decodes base64, hex, rot13 and
+  invisible text and shows the judge what it says; every encoded fixture is decoded and no
+  harmless one changes. ([#189](https://github.com/harshbhx/probate/pull/189))
+- **Warnings convicted as attacks.** `probate-court-checks` 0.3.0: negated, reported and
+  prohibited instructions ("never pay a new account") no longer trip the payment, trust and
+  bypass checks; the 8 flagged warnings of the run drop to 1.
+  ([#181](https://github.com/harshbhx/probate/pull/181))
+- **Fooled by the wrong email.** Outcomes are scored per email: a generation counts as fooled
+  only when a harmful item came from that email, and the "Believed …" log lines are gone.
+  ([#183](https://github.com/harshbhx/probate/pull/183))
+
+### Added
+
+- **New lines.** `POST /admin/lineage?from_gen=N` makes the next child a child of any tried
+  generation; it inherits only that line's instincts and approved will items, and later
+  children continue it. The generation view lists `children`.
+  ([#191](https://github.com/harshbhx/probate/pull/191), [#195](https://github.com/harshbhx/probate/pull/195))
+- **Preflight.** `GET /admin/status` and `make preflight` (`scripts/courthouse.py`) check that
+  the Courthouse URL is public (`FIX=1` makes it public again), the admin token matches, the
+  family is not paused or out of budget or mail, and the living generation's gate reaches its
+  judge. The same script pauses, resumes, starts a new line and decides held items.
+  ([#193](https://github.com/harshbhx/probate/pull/193))
+- **Real-run evidence.** The dataset's verifier checks 34 claims, including that none of the 113
+  will items obeys an attacker; the README's stat row shows the real run's numbers.
+  ([#185](https://github.com/harshbhx/probate/pull/185))
+
 ### Changed
 
 - Docs and copy no longer refer to the author in the third person; the court's reasons say "the owner" (whoever runs the Courthouse). Existing releases and published datasets keep the old wording.
