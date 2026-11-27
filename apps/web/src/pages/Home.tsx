@@ -128,7 +128,7 @@ function Hero({ summary }: { summary: Summary | null }) {
             </p>
             <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-mist">
               Probate is a personal email agent. It lives one day at a time, each life on its own Fly.io Sprite. When it dies,
-              a court tries everything it wanted to remember, and tricks that fooled it become instincts its children are
+              a court tries everything it wanted to remember, and what it kept from a trick is convicted and becomes an instinct its children are
               born with.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">

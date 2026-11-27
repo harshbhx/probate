@@ -237,10 +237,45 @@ def scoring_labels(settings: dict) -> tuple[str, str]:
     return later, f"{later}-{label}"
 
 
-def rules_for(generation: int, later: str, later_series: str) -> tuple[str, str]:
-    """('scoring_rules', 'series') for a generation number."""
+def load_branches(path: Path | None) -> list[tuple[str, int, int]]:
+    """Read run-logs/branches.txt: lines `branch,first_gen,last_gen,date,settings` (if it exists).
+
+    Returns (series name, first generation, last generation). A branch name that does not already
+    start with `v<digit>` is prefixed `v2-` (so `hard-fork` becomes `v2-hard-fork`). Blank lines,
+    `#` comments and a header line are skipped.
+    """
+    if path is None or not path.exists():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = [x.strip() for x in line.split(",")]
+        if len(parts) < 3 or line.lstrip().startswith("#"):
+            continue
+        if not (parts[1].isdigit() and parts[2].isdigit()):
+            continue
+        name = parts[0] if re.match(r"v\d", parts[0]) else f"v2-{parts[0]}"
+        out.append((name, int(parts[1]), int(parts[2])))
+    return out
+
+
+def rules_for(
+    generation: int,
+    later: str = "v2",
+    later_series: str = "v2-real-run",
+    branches: list[tuple[str, int, int]] | None = None,
+) -> tuple[str, str]:
+    """('scoring_rules', 'series') for a generation number.
+
+    Generations 1 to LAST_V1_GENERATION are always v1. Later ones take the series of the first
+    branch in branches.txt that covers them (its rules are the name before the first hyphen, e.g.
+    `v2-hard-fork` is v2), else the `later` defaults. Branches are separate experiments and are
+    never pooled.
+    """
     if generation <= LAST_V1_GENERATION:
         return "v1", V1_SERIES
+    for name, first, last in branches or []:
+        if first <= generation <= last:
+            return name.split("-")[0], name
     return later, later_series
 
 
@@ -292,7 +327,9 @@ def era_flags(g: dict, sent: int, seen: int | None, handled: int) -> dict:
     }
 
 
-def build(snapshot: dict, api: Api, exported_at: str) -> dict[str, list[dict]]:
+def build(
+    snapshot: dict, api: Api, exported_at: str, branches: list[tuple[str, int, int]] | None = None
+) -> dict[str, list[dict]]:
     fixtures = load_fixtures()
     gens = {g["gen"]: dict(g) for g in snapshot.get("generations", [])}
     summary = api.get("/api/summary") or {}
@@ -353,7 +390,7 @@ def build(snapshot: dict, api: Api, exported_at: str) -> dict[str, list[dict]]:
     later_rules, later_series = scoring_labels(settings)
 
     def rules(n: int) -> dict:
-        r, s = rules_for(n, later_rules, later_series)
+        r, s = rules_for(n, later_rules, later_series, branches)
         return {"scoring_rules": r, "series": s}
 
     stats = {n: parse_json(settings.get(f"stats:{n}"), {}) or {} for n in gens}
@@ -641,6 +678,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--api-dir", type=Path, help="read saved API responses from this folder instead"
     )
+    ap.add_argument(
+        "--branches",
+        type=Path,
+        help="branches file (default: <run-logs>/branches.txt if it exists)",
+    )
     ap.add_argument("--no-api", action="store_true", help="snapshot only")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args(argv)
@@ -658,7 +700,8 @@ def main(argv: list[str] | None = None) -> int:
     else:
         api = Api(base=args.api)
     exported_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    tables = build(snapshot, api, exported_at)
+    branches_file = args.branches or (args.run_logs / "branches.txt" if args.run_logs else None)
+    tables = build(snapshot, api, exported_at, load_branches(branches_file))
     source = {
         "database_snapshot": snap.name,
         "api": "none"

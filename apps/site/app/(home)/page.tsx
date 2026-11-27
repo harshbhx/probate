@@ -217,8 +217,8 @@ function Hero() {
             </p>
             <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-mist sm:text-body-lg">
               Probate is a personal email agent that lives one day at a time, each life on its own Sprite. When it dies, a
-              court tries everything it wanted to remember. Tricks that fooled it become instincts its children are born
-              with.
+              court tries everything it wanted to remember. What it kept from a trick is convicted and becomes an instinct its children are
+              born with.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               {liveUrl ? (

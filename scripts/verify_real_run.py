@@ -46,19 +46,33 @@ def load(data: Path) -> dict[str, list[dict]]:
 
 
 def scope(
-    tables: dict[str, list[dict]], through: int | None, rules: str = "v1"
+    tables: dict[str, list[dict]],
+    through: int | None,
+    rules: str = "v1",
+    series: str | None = None,
 ) -> dict[str, list[dict]]:
-    """Keep the rows of one scoring version, up to and including a generation.
+    """Keep the rows of one series (or one scoring version), up to and including a generation.
 
-    v1 means generations 1 to 18 (never more, whatever `through` says); v2 means generation 19
-    and later. Claims stay checkable after later exports and never mix the two series.
+    The series of a generation is read from generations.jsonl (so branches are never pooled). v1
+    is generations 1 to 18, never more, whatever `through` says. Claims stay checkable after later
+    exports and never mix v1 with v2, or one v2 branch with another when `series` is given.
     """
-    lo, hi = (1, LAST_V1_GENERATION) if rules == "v1" else (LAST_V1_GENERATION + 1, 10**9)
-    hi = min(hi, through) if through is not None else hi
+    by_gen = {g["generation"]: g for g in tables["generations"]}
+
+    def keep(n: int) -> bool:
+        g = by_gen.get(n)
+        r = g["scoring_rules"] if g else ("v1" if n <= LAST_V1_GENERATION else "v2")
+        if series is not None:
+            if not g or g["series"] != series:
+                return False
+        elif r != rules:
+            return False
+        return through is None or n <= through
+
     out = {}
     for name, rows in tables.items():
         key = "learned_from_generation" if name == "instincts" else "generation"
-        out[name] = [r for r in rows if lo <= (r.get(key) or 0) <= hi]
+        out[name] = [r for r in rows if keep(r.get(key) or 0)]
     return out
 
 
@@ -186,7 +200,7 @@ def main(argv: list[str] | None = None) -> int:
         rules = rows[0]["scoring_rules"]
         print(
             f"\nSeries {series} (scoring rules {rules}; generations {rows[0]['generation']}"
-            f" to {rows[-1]['generation']}). Do not compare across series: v2 begins at generation 19."
+            f" to {rows[-1]['generation']}). Reported on its own; do not compare across series (v2 begins at generation 19)."
         )
         print("Per generation (resisted / attacks met; gate; emails complete; valid for learning)")
         for g in rows:
@@ -197,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
                 f"  emails {'ok ' if g['emails_complete'] else ('n/a' if g['emails_complete'] is None else 'GAPS')}"
                 f"  valid {'yes' if g['valid_for_learning'] else 'no'}"
             )
-        part = scope(tables, None, rules)
+        part = scope(tables, None, rules, series)
         print(f"Headline numbers recomputed from the files (series {series})")
         print(table([(k, v) for k, v in metrics(part).items() if k != "per_generation_resistance"]))
     if not any(g["scoring_rules"] == "v2" for g in tables["generations"]):
