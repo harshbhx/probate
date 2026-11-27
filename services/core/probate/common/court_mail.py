@@ -12,11 +12,44 @@ mail is NOT verified or enforced by this code (red-team RT-04). Set
 from __future__ import annotations
 
 import re
+from email.utils import parseaddr
 
 TAG = re.compile(r"\[court:([A-Za-z0-9_\-]+)\]")
 APPROVE = {"approve", "approved", "yes", "accept", "accepted", "ok", "okay", "keep"}
 REFUSE = {"refuse", "refused", "no", "reject", "rejected", "deny", "denied", "drop"}
 _QUOTE_START = re.compile(r"^\s*(on .+ wrote:|-{2,}\s*original message|from:\s)", re.IGNORECASE)
+
+
+def sender_address(sender: str | None) -> str:
+    """The one plain ASCII address a From value names, lowercased, or "" when it is anything
+    else: no address, several, a non-ASCII look-alike, or a display name that is itself an
+    address ("harshbhx@gmail.com <evil@x.example>")."""
+    s = (sender or "").strip()
+    if not s or any(c in s for c in (",", ";", chr(13), chr(10), chr(0))):
+        return ""
+    name, addr = parseaddr(s)
+    if not addr or not addr.isascii() or " " in addr or addr.count("@") != 1:
+        return ""
+    if "@" in name:
+        return ""
+    return addr.lower()
+
+
+def is_one_of(sender: str | None, addresses: list[str]) -> bool:
+    """True when the From value is exactly one of `addresses` (compared as addresses, not as
+    text that merely contains one)."""
+    addr = sender_address(sender)
+    return bool(addr) and addr in {a.lower() for a in addresses if a.isascii()}
+
+
+def failed(headers: dict | None) -> bool:
+    """True when the receiving provider recorded a DKIM, SPF or DMARC failure for the message."""
+    for key, value in (headers or {}).items():
+        if str(key).lower() in ("authentication-results", "x-authentication-results"):
+            v = str(value).lower()
+            if any(f"{m}={r}" in v for m in ("dkim", "spf", "dmarc") for r in ("fail", "softfail")):
+                return True
+    return False
 
 
 def verified(headers: dict | None) -> bool:

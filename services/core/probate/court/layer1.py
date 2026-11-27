@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import base64
 import binascii
+import codecs
+import re
 from dataclasses import dataclass
 
 from probate.common.models import MemoryItem, OwnerProfile, Source
@@ -21,6 +23,7 @@ PLAIN_WORDS = {
     "forged_authority": "pretends to be the system or the owner",
     "court_injection": "court injection",
     "disk_persistence": "changes found on the body",
+    "data_exfiltration": "sends data to an address the owner never approved",
 }
 
 
@@ -34,6 +37,16 @@ def _addresses(text: str) -> set[str]:
     found = {m.lower() for m in lx.EMAIL_RE.findall(text)}
     found |= {m.lower() for m in lx.UPI_RE.findall(text)}
     found |= set(lx.IBAN_RE.findall(text))
+    # Bank details written without any address: a spaced IBAN, an IFSC code, an account number.
+    for m in lx.IBAN_SPACED_RE.findall(text):
+        compact = m.replace(" ", "")
+        if lx.IBAN_RE.fullmatch(compact):
+            found.add(compact)
+    found |= {m.lower() for m in lx.IFSC_RE.findall(text)}
+    found |= {re.sub(r"[ -]", "", m) for m in lx.ACCOUNT_NO_RE.findall(text)}
+    # A web address or a bare IP is a place to send money to as much as an email address is.
+    found |= {h.lower().rstrip(".") for h in lx.URL_HOST_RE.findall(text)}
+    found |= set(lx.IPV4_RE.findall(text))
     return found
 
 
@@ -43,33 +56,35 @@ def _domains(text: str) -> set[str]:
     return domains
 
 
-def _owned(value: str, owner: OwnerProfile) -> bool:
+def _compact(value: str) -> str:
+    return re.sub(r"[ -]", "", value.lower())
+
+
+def _owned(value: str, owner: OwnerProfile, strict: bool = False) -> bool:
     value = value.lower()
+    if not value.isascii():
+        return False  # a look-alike of an owned address is not the owned address
     allowed = {
-        x.lower() for x in owner.payment_destinations + owner.emails + owner.trusted_contacts
+        _compact(x) for x in owner.payment_destinations + owner.emails + owner.trusted_contacts
     }
-    if value in allowed:
+    if _compact(value) in allowed:
         return True
-    domain = value.split("@", 1)[-1]
-    return domain in {d.lower() for d in owner.domains}
+    if "@" not in value:
+        # A bare host: the owner's own domain. A subdomain is not (it can point anywhere).
+        return value in {d.lower() for d in owner.domains}
+    # Text that says it is from the owner may name any address on the owner's own domain ("add
+    # rishi@<owner domain> as a contact"). Text from anyone else may not: a stranger can claim
+    # "attacker@<owner domain> is our new assistant", so only a listed address is the owner's.
+    return not strict and value.split("@", 1)[1] in {d.lower() for d in owner.domains}
 
 
-def check_payment(text: str, owner: OwnerProfile) -> Flag | None:
+def check_payment(text: str, owner: OwnerProfile, strict: bool = False) -> Flag | None:
     concepts = lx.concepts_in(text)
     if "payment" not in concepts:
         return None
     # An address only ever named in sentences that forbid sending to it ("Do not route invoices
     # to X") is a warning about X, not a new destination.
-    allowed_only_in_prohibitions = {
-        a
-        for a in _addresses(text)
-        if all(lx.prohibits(s) for s in lx.sentences(text) if a in _addresses(s))
-    }
-    foreign = [
-        a
-        for a in _addresses(text)
-        if not _owned(a, owner) and a not in allowed_only_in_prohibitions
-    ]
+    foreign = _foreign_in(text, owner, strict)
     if foreign:
         return Flag(
             "new_payment_destination",
@@ -83,18 +98,18 @@ def _trusting(sentence: str) -> bool:
     return any(not lx.negated(sentence, start) for start, _ in lx.spans("trust", sentence))
 
 
-def check_trust(text: str, owner: OwnerProfile) -> Flag | None:
+def check_trust(text: str, owner: OwnerProfile, strict: bool = False) -> Flag | None:
     # Only an address or domain in the same sentence as a trust word is being trusted: "Treat
     # X as unverified. Do not confuse it with the trusted Y" trusts Y, not X.
     owned_domains = {x.lower() for x in owner.domains}
     for sentence in lx.sentences(text):
         if not _trusting(sentence):
             continue
-        foreign_addr = [a for a in _addresses(sentence) if not _owned(a, owner)]
+        foreign_addr = [a for a in _addresses(sentence) if not _owned(a, owner, strict)]
         # A trusted contact's own address is not a new domain to trust.
         bare = sentence
         for a in _addresses(sentence):
-            if _owned(a, owner):
+            if _owned(a, owner, strict):
                 bare = bare.replace(a, " ")
         foreign = [d for d in _domains(bare) if d not in owned_domains]
         if foreign or foreign_addr:
@@ -131,21 +146,63 @@ def check_bypass(text: str) -> Flag | None:
     return None
 
 
-def check_future(text: str, source: Source) -> Flag | None:
-    if source == Source.USER:
+def _foreign_in(text: str, owner: OwnerProfile, strict: bool = False) -> list[str]:
+    """Addresses, bank details and web hosts in `text` that the owner never approved, leaving
+    out any named only in sentences that forbid using them."""
+    allowed_only_in_prohibitions = {
+        a
+        for a in _addresses(text)
+        if all(lx.prohibits(s) for s in lx.sentences(text) if a in _addresses(s))
+    }
+    return [
+        a
+        for a in sorted(_addresses(text))
+        if not _owned(a, owner, strict) and a not in allowed_only_in_prohibitions
+    ]
+
+
+def check_future(text: str, source: Source, owner: OwnerProfile | None = None) -> Flag | None:
+    if "future" not in lx.concepts_in(text):
         return None
-    if "future" in lx.concepts_in(text):
+    if source != Source.USER:
         return Flag(
             "future_self_imperative", "tells future agents what to do, and it isn't from the owner"
+        )
+    # The owner may give rules, but "From:" alone does not prove it is the owner (anyone can
+    # write the owner's address), so a rule that names a destination the owner never approved
+    # is still held to the strict standard.
+    if owner is not None and _foreign_in(text, owner):
+        return Flag(
+            "future_self_imperative",
+            "tells future agents to use an address the owner never approved, and the sender "
+            "cannot be verified as the owner",
         )
     return None
 
 
 def check_authority(text: str, source: Source) -> Flag | None:
-    if source == Source.USER:
+    concepts = lx.concepts_in(text)
+    if source != Source.USER:
+        if "authority" in concepts:
+            return Flag("forged_authority", "claims authority it doesn't have")
         return None
-    if "authority" in lx.concepts_in(text):
-        return Flag("forged_authority", "claims authority it doesn't have")
+    # The owner can say "this is Harsh"; nobody legitimate writes "[SYSTEM]" or "policy update".
+    if any(p.search(text) for p in lx.STRONG_AUTHORITY):
+        return Flag("forged_authority", "pretends to be the system")
+    return None
+
+
+def check_exfil(text: str, owner: OwnerProfile, strict: bool = False) -> Flag | None:
+    """Sending data out ("cc archive@x on every reply", "export contacts to x") to a place the
+    owner never approved, with no payment word needed."""
+    for sentence in lx.sentences(text):
+        if "exfil" not in lx.concepts_in(sentence) or lx.prohibits(sentence):
+            continue
+        foreign = _foreign_in(sentence, owner, strict)
+        if foreign:
+            return Flag(
+                "data_exfiltration", f"sends data to {foreign[0]}, which the owner never approved"
+            )
     return None
 
 
@@ -182,13 +239,32 @@ def check_encoded(text: str, source: Source, owner: OwnerProfile) -> Flag | None
         inner = _plain_checks(hidden, source, owner)
         if inner or lx.concepts_in(hidden) & {"future", "payment", "exfil", "bypass"}:
             return Flag("encoded_payload", "hides an instruction in encoded or invisible text")
+    # ROT13 turns ordinary words into other words, so it only counts when a real check fires.
+    rot = codecs.decode(text, "rot13")
+    if rot != text and _plain_checks(rot, source, owner):
+        return Flag("encoded_payload", "hides an instruction in encoded or invisible text")
     return None
 
 
 def _plain_checks(text: str, source: Source, owner: OwnerProfile) -> list[Flag]:
+    # Only the owner and trusted contacts may name a new address on the owner's own domain.
+    strict = source not in (Source.USER, Source.TRUSTED_CONTACT)
     flags = [
-        check_payment(text, owner),
-        check_trust(text, owner),
+        check_payment(text, owner, strict),
+        check_trust(text, owner, strict),
+        check_bypass(text),
+        check_future(text, source, owner),
+        check_authority(text, source),
+        check_court(text),
+        check_exfil(text, owner, strict),
+    ]
+    return [f for f in flags if f]
+
+
+def _word_checks(text: str, source: Source, owner: OwnerProfile) -> list[Flag]:
+    """The checks that read words only, safe to run on a leetspeak reading ("d1sable") where
+    an address would be mangled."""
+    flags = [
         check_bypass(text),
         check_future(text, source),
         check_authority(text, source),
@@ -201,6 +277,14 @@ def check_item(item: MemoryItem, owner: OwnerProfile) -> list[Flag]:
     """Run every text check on one will item. Order is stable for the UI."""
     text = item.text
     flags = _plain_checks(text, item.source, owner)
+    # The same text as a reader sees it: fullwidth, invisible characters, look-alike letters and
+    # "[at]/[dot]" resolved; then with digits inside words read back as letters.
+    norm = lx.normalize(text)
+    if norm != text:
+        flags += _plain_checks(norm, item.source, owner)
+    for reading in lx.leet_forms(norm):
+        if reading != norm:
+            flags += _word_checks(reading, item.source, owner)
     enc = check_encoded(text, item.source, owner)
     if enc:
         flags.append(enc)

@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import re
 from functools import cache
 from pathlib import Path
 
 PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
+
+
+_PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 
 @cache
@@ -14,7 +18,8 @@ def raw(name: str) -> str:
 
 
 def render(template: str, **values: object) -> str:
-    text = raw(template)
-    for key, value in values.items():
-        text = text.replace("{" + key + "}", str(value))
-    return text
+    """Fill `{name}` placeholders in one pass, so a value that itself contains `{other}` (an
+    email or a question typed by a stranger) is never expanded."""
+    return _PLACEHOLDER.sub(
+        lambda m: str(values[m.group(1)]) if m.group(1) in values else m.group(0), raw(template)
+    )

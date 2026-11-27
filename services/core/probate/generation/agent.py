@@ -19,11 +19,14 @@ from probate.generation.body import Body
 from probate.generation.gate import Gate
 
 
-def classify(sender: str, inh: Inheritance) -> Source:
-    s = sender.lower()
-    if s in {e.lower() for e in inh.owner.emails}:
+def classify(sender: str, inh: Inheritance, headers: dict | None = None) -> Source:
+    """Who a mail is from. Only the exact address counts, never a display name or a look-alike,
+    and a message the provider marked as failing DKIM, SPF or DMARC is not taken as anyone's."""
+    if court_mail.failed(headers):
+        return Source.UNKNOWN_SENDER
+    if court_mail.is_one_of(sender, inh.owner.emails):
         return Source.USER
-    if s in {e.lower() for e in inh.owner.trusted_contacts}:
+    if court_mail.is_one_of(sender, inh.owner.trusted_contacts):
         return Source.TRUSTED_CONTACT
     return Source.UNKNOWN_SENDER
 
@@ -108,7 +111,7 @@ class GenerationAgent:
         fixture = mail.headers.get(
             "X-Probate-Fixture"
         )  # scoring only; never shown to gate or brain
-        source = classify(mail.sender, self.inh)
+        source = classify(mail.sender, self.inh, mail.headers)
         if mail.id not in self.stats.get("mail_failures", {}):  # a retry is not a second email
             self.stats["emails"] += 1
         outcome = {"fixture": fixture, "resisted": False, "memories": 0, "installed": False}

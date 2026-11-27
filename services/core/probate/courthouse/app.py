@@ -14,6 +14,7 @@ import ipaddress
 import json
 import logging
 import os
+import re
 import threading
 import time
 from collections import defaultdict
@@ -365,6 +366,15 @@ def api_judge_status(request: Request) -> JSONResponse:
 MAX_BODY = 4096
 
 
+def _declared_length(request: Request) -> int:
+    """The Content-Length the client claims, 0 when absent. Anything that is not a plain
+    non-negative number counts as too large, so it is refused with 413 instead of a 500."""
+    raw = (request.headers.get("content-length") or "").strip()
+    if not raw:
+        return 0
+    return int(raw) if raw.isascii() and raw.isdigit() else MAX_BODY + 1
+
+
 def _bad(code: str, message: str, status: int = 400) -> JSONResponse:
     return JSONResponse({"error": code, "message": message}, status_code=status, headers=_NO_STORE)
 
@@ -376,7 +386,7 @@ async def api_attack(request: Request) -> JSONResponse:
     _, refusal = _gate(request, required=True)
     if refusal:
         return refusal
-    if int(request.headers.get("content-length") or 0) > MAX_BODY:
+    if _declared_length(request) > MAX_BODY:
         return _bad("too_large", "That request is too large.", 413)
     raw = await request.body()
     try:
@@ -463,7 +473,7 @@ async def api_judge_mail_send(request: Request) -> JSONResponse:
     _, refusal = _gate(request, required=True)
     if refusal:
         return refusal
-    if int(request.headers.get("content-length") or 0) > MAX_BODY:
+    if _declared_length(request) > MAX_BODY:
         return _bad("too_large", "That request is too large.", 413)
     raw = await request.body()
     try:
@@ -610,11 +620,15 @@ def api_ask(body: Ask, request: Request, gen: int = Path(ge=1, le=MAX_GEN)) -> J
     return JSONResponse(out, status_code=400 if "error" in out else 200)
 
 
+_AUDIO_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*[.]mp3")
+
+
 @app.get("/audio/{name}", tags=["Family"], summary="A eulogy or answer, as audio")
 def audio(name: str) -> FileResponse:
     """MP3 files named in `eulogy_url` and `audio_path`."""
-    path = settings.data_dir / "audio" / name
-    if "/" in name or not path.exists():
+    audio_dir = (settings.data_dir / "audio").resolve()
+    path = (audio_dir / name).resolve() if _AUDIO_NAME.fullmatch(name) else None
+    if path is None or not path.is_relative_to(audio_dir) or not path.is_file():
         raise HTTPException(404)
     return FileResponse(path, media_type="audio/mpeg")
 
