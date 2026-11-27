@@ -112,6 +112,12 @@ def main() -> None:
         "--name", help="sprite name (default: the environment's, else probate-courthouse)"
     )
     ap.add_argument("--env", help="a named environment from config/environments.yaml")
+    ap.add_argument(
+        "--allow-brain-change",
+        action="store_true",
+        help="let the environment replace PROBATE_BRAIN, PROBATE_BRAIN_FALLBACKS or PROBATE_JEV "
+        "set differently in services/core/.env",
+    )
     ap.add_argument("--check", action="store_true", help="validate config and bundle, then stop")
     ap.add_argument(
         "--restore-db",
@@ -129,6 +135,11 @@ def main() -> None:
     url_file = target.url_file if target else URL_FILE
 
     env = read_env()
+    extra, notes = envs.guard(extra, env, args.allow_brain_change)
+    print("Effective settings on the Sprite (no secrets):")
+    print("\n".join(envs.effective(env, extra)))
+    for n in notes:
+        print(f"  note: {n}")
     bundle = make_bundle(web=True)
     step(f"bundle ready: {len(bundle) // 1024} KiB")
     if not (ROOT / "config" / "owner.yaml").exists():

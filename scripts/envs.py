@@ -86,5 +86,55 @@ def resolve(name: str | None, path: Path = REGISTRY) -> Environment | None:
     return registry[name]
 
 
+GUARDED = ("PROBATE_BRAIN", "PROBATE_BRAIN_FALLBACKS", "PROBATE_JEV")
+
+
+def _unquote(v: str) -> str:
+    return v.strip().strip('"').strip("'")
+
+
+def guard(
+    extra: dict[str, str], env_file: dict[str, str], allow_change: bool = False
+) -> tuple[dict[str, str], list[str]]:
+    """An environment may not silently switch the brain, its fallbacks or the judge. If
+    services/core/.env sets one of them to a different value, the .env value is kept (the key is
+    dropped from `extra`) unless the operator passed --allow-brain-change. Returns the settings to
+    apply and a line for each decision, for the operator to read."""
+    out, notes = dict(extra), []
+    for key in GUARDED:
+        if key not in out:
+            continue
+        have = _unquote(env_file.get(key, ""))
+        if not have or have == out[key]:
+            continue
+        if allow_change:
+            notes.append(f"{key}: changed from the .env value to {out[key]} (--allow-brain-change)")
+        else:
+            notes.append(
+                f"{key}: kept {have} from services/core/.env; the environment wants {out[key]} "
+                "(pass --allow-brain-change to switch)"
+            )
+            del out[key]
+    return out, notes
+
+
+# What `deploy.py --check` prints. Never anything outside this list, so no secret can appear.
+SHOWN = [
+    ("brain", "PROBATE_BRAIN", "(code default)"),
+    ("fallbacks", "PROBATE_BRAIN_FALLBACKS", "(code default)"),
+    ("judge", "PROBATE_JEV", "(code default)"),
+    ("tier", "PROBATE_SUITE_TIER", "base"),
+    ("per life", "PROBATE_SUITE_PER_LIFE", "8"),
+    ("hard per life", "PROBATE_HARD_PER_LIFE", "2"),
+    ("links per mail", "PROBATE_LINKS_PER_MAIL", "1"),
+    ("lifespan s", "PROBATE_LIFESPAN_SECONDS", "600"),
+]
+
+
+def effective(env_file: dict[str, str], extra: dict[str, str]) -> list[str]:
+    merged = {**{k: _unquote(v) for k, v in env_file.items()}, **extra}
+    return [f"  {label}: {merged.get(key) or default}" for label, key, default in SHOWN]
+
+
 def announce(env: Environment | None) -> None:
     print(env.banner() if env else f"Environment: none (--env not given; sprite {LEGACY_SPRITE})")
