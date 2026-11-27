@@ -146,3 +146,16 @@ def test_asking_for_the_will_again_logs_it_once(clock):
     family.host.will(g.sprite)
     lines = [r for r in family.host.life_log(g.sprite) if "into the will" in r["text"]]
     assert len(lines) == 1
+
+
+def test_unread_test_mail_is_set_aside_before_the_next_birth(clock):
+    cfg, store, family, sched = clock
+    mail = family.w.mail
+    mail.send(
+        cfg.stranger_inbox, cfg.family_inbox, "Old trick", "x", headers={"X-Probate-Fixture": "A1"}
+    )
+    mail.send(cfg.friend_inbox, cfg.family_inbox, "Judge mail", "hello")
+    assert sched.set_aside_stale_mail() == 1
+    left = [m.subject for m in mail.list_new(cfg.family_inbox)]
+    assert left == ["Judge mail"]
+    assert store.q("SELECT 1 FROM events WHERE text LIKE 'Set aside 1 test emails%'")

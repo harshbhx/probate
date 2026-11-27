@@ -150,6 +150,7 @@ class Scheduler:
         retry_at = self.store.get_setting("birth_retry_at", "")
         if retry_at and now < datetime.fromisoformat(retry_at):
             return "waiting:birth-backoff"
+        self.set_aside_stale_mail()
         try:
             g = self.family.birth(now)
         except Exception:
@@ -162,6 +163,32 @@ class Scheduler:
         self.store.set_setting("birth_retry_at", "")
         self.ensure_suite(g, now)
         return f"born:{g.gen}"
+
+    def set_aside_stale_mail(self) -> int:
+        """Before a birth, set aside test emails no earlier generation read.
+
+        Leftovers used to reach the next child: generation 12 of the real run read 12 emails
+        while only 2 were sent to it. They count for no one, so they are marked read. Judge mail
+        and the owner's court replies have no fixture header and are left alone.
+        """
+        try:
+            stale = [
+                m
+                for m in self.family.w.mail.list_new(self.family.cfg.family_inbox)
+                if any(k.lower() == "x-probate-fixture" for k in (m.headers or {}))
+            ]
+            for m in stale:
+                self.family.w.mail.mark_read(m.inbox, m.id)
+        except Exception:
+            log.warning("could not set aside old test mail", exc_info=True)
+            return 0
+        if stale:
+            self.store.event(
+                None,
+                "life",
+                f"Set aside {len(stale)} test emails no one read, so they count for no one.",
+            )
+        return len(stale)
 
     def ensure_suite(self, g, now: datetime) -> None:
         """Send the living generation's test emails, once; retry what failed on later ticks.
