@@ -27,7 +27,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Added
 
-- kinfaces 0.2.0 (not yet published): `familyTree` and `familyTreeSvg` for whole family trees, `faceDataUri`, a `background` option for light pages, runnable examples and a rewritten README. ([#PR](https://github.com/harshbhx/probate/pull/PR))
+- kinfaces 0.2.0 (not yet published): `familyTree` and `familyTreeSvg` for whole family trees, `faceDataUri`, a `background` option for light pages, runnable examples and a rewritten README. ([#230](https://github.com/harshbhx/probate/pull/230))
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ### Data
