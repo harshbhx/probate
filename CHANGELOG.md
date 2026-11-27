@@ -39,6 +39,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Documentation
 
+- Docs only: one consistent lifespan wording (design one day, real run 5-minute lives, demo 120 s), a note that the live demo Courthouse is deployed on demand, court-checks 0.3.0 marked as fixed on main with PyPI at 0.2.1, `uv` and Windows prerequisites, the v2 family-tree table on the results page, and scope added to broad claims.
 - The README is rebuilt as a front door: contents index, then the problem, the fix, a 60-second try, Mermaid diagrams of the life cycle, the two-layer court and the architecture, a results chart drawn by `scripts/make_results_chart.py`, how to verify the numbers, and an honest limitations section. Numbers for the two family-tree runs still in progress are placeholders. ([#229](https://github.com/harshbhx/probate/pull/229))
 - A beta naming policy in `docs/PUBLISHING.md`: `beta-N` for tags, dataset revisions and releases until the final submission, then `v1.0.0`. ([#220](https://github.com/harshbhx/probate/pull/220))
 

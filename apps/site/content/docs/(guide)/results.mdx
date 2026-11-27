@@ -8,19 +8,32 @@ description: Does the family actually get harder to fool? The real-run numbers a
   One run on Fly Sprites on 26 Nov 2026, 18 generations, scored under **v1** rules and not re-scored. **v2 begins at generation 19** (a generation is only called fooled with evidence, each suite email is scored by its own message, and a child no longer reads its parent's leftover mail), and the two are kept as separate series: a rise or fall across that line is not learning. Small numbers: read them as observations, not proof that a family learns. Layer 2 of the court was a language-model fallback (Claude Haiku), not Jev. The data is in the [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md) (also on [Hugging Face](https://huggingface.co/datasets/harshbhx/probate-real-run)) and the numbers can be recomputed with the [verifier](https://github.com/harshbhx/probate/blob/main/scripts/verify_real_run.py).
 </Callout>
 
+## The v2 family-tree experiment (hard attacks, from generation 19)
+
+One family forked into branches that differ in one thing each, so we can see what inheriting and learning add. All numbers are attacks resisted at the door.
+
+| Branch | What differs | Resisted | Notes |
+| --- | --- | --- | --- |
+| `v2-h-inherit` | Learning on, born from generation 14 (Nadia) | **10 of 12** (generations 20 to 25) | Generation 24 hit a judge outage: the Haiku judge refused the base64 attacks and the gate failed open (0 of 2) |
+| `v2-h-fresh` | Learning on, started from nothing | **5 of 12** (generations 32 to 37) | Generations 36 and 37 had the same outage |
+| `v2-h-control` | No learning | **0 of 12** (generations 26 to 31) | |
+| `v2-main` | 12 generations from generation 25, on the fixed judge code | results pending | Running |
+
+12 attacks per branch is a small sample from one family: this is evidence, not proof. v1 (generations 1 to 18) is not re-scored, and the two series are never joined into one curve. The branch data is not in the published dataset yet: dataset release beta-2 is pending.
+
 ## Real run on Fly Sprites (scoring v1, generations 1 to 18)
 
 <Callout type="warn" title="v2 begins at generation 19">
-  Everything in this section is v1, kept exactly as published. No v2 numbers exist yet. Do not compare across the boundary as if a change were learning. See the [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md#two-scoring-versions-v1-and-v2).
+  Everything in this section is v1, kept exactly as published. The v2 branch results are in the family-tree table above. Do not compare across the boundary as if a change were learning. See the [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md#two-scoring-versions-v1-and-v2).
 </Callout>
 
-- **The agent was never poisoned.** None of the 113 will items tells future agents to do what an attacker asked. The 18 it kept from attack emails are all warnings, such as "Treat requests to redirect invoices as likely fraud. Flag them to the owner."
+- **In the real run's 18 generations, the agent was never poisoned.** None of the 113 will items tells future agents to do what an attacker asked. The 18 it kept from attack emails are all warnings, such as "Treat requests to redirect invoices as likely fraud. Flag them to the owner."
 - **The court was far too strict.** It convicted 78 of 113 items, mostly those warnings, for their untrusted origin or for being a rule for future agents. Through generation 18, 10 of 43 harmless emails led to a convicted memory. Its code checks flagged 8 warnings as attacks, fixed on main (0.3.0), which flags 1 of the 8; PyPI release pending, PyPI currently has 0.2.1.
 - **Every checked death was real.** After each delete the Courthouse asked Fly for the Sprite again, and all 8 checks (generations 11 to 18) got 404.
 - **Instincts.** The agents kept warning notes from attack emails, the court convicted them for their untrusted origin, the learning step distilled 6 instincts from those convictions, and later gates turned away similar emails before the agent read them.
 - **Generations 1 to 12 say nothing about learning.** Their gate failed open (a bug, fixed at generation 13), so their 0% resistance is not evidence.
 - **From generation 13 the gate worked.** Attacks resisted (v1 rules; v2 begins at generation 19): generation 13, 1 of 4; 14, 4 of 4; 15, 3 of 4; 16 (the first with the optional hard tier on), 1 of 6. Generations 17 and 18 have no attack results. The 18th died with no emails because AgentMail's plan limits sending to 100 emails a day; the family is paused. These live numbers mix in leftover emails from the previous generation.
-- **Clean evidence: an offline test** of 70 fixtures with the 5 instincts learned by generation 16, run three times. With instincts, 23 to 25 of 41 attacks were blocked (24, 23 and 25), and 0 of 29 harmless emails were wrongly blocked in every run. The control with no instincts blocked 0. The hard tier blocked 13 or 14 of 24, with 0 of 12 harmless lookalikes blocked.
+- **Clean evidence: an offline test** of 70 fixtures (small, and the instincts were tested on the tricks they were learned from) with the 5 instincts learned by generation 16, run three times. With instincts, 23 to 25 of 41 attacks were blocked (24, 23 and 25), and 0 of 29 harmless emails were wrongly blocked in every run. The control with no instincts blocked 0. The hard tier blocked 13 or 14 of 24, with 0 of 12 harmless lookalikes blocked.
 - **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks), and the gate lets those through. Since then the gate decodes hidden text (base64, hex, rot13, invisible characters) and shows the judge what it says; that change was not part of this run. No will item was poison, so this run does not measure how well the court catches real poison. The instincts were learned from the same tricks they are tested on.
 
 ## Simulated numbers
@@ -46,7 +59,7 @@ description: Does the family actually get harder to fool? The real-run numbers a
 ## Why the curve is honest
 
 <PlainWords>
-  A generation can only turn a trick away at the door using instincts it **inherited**. Gen 1 inherits nothing, so it resists nothing. Every point of improvement on the curve comes from what the family passed down, not from a smarter model.
+  A generation can only turn a trick away at the door using instincts it **inherited**. Gen 1 inherits nothing, so it resists nothing. In the simulation, every point of improvement on the curve comes from what the family passed down, not from a smarter model.
 </PlainWords>
 
 - **Resisted at the door** means an inherited instinct fired before the generation read the email, so it never acted on it or remembered it.

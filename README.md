@@ -21,7 +21,7 @@
 A personal email agent that lives one day at a time, each life on its own [Fly.io Sprite](https://sprites.dev).<br>
 **The owner** is whoever runs the Courthouse; their inbox is the one the family works.<br>
 When it dies, a court tries everything it wanted to remember. Lessons pass down. Tricks get convicted.<br>
-The family gets harder to fool with every generation.<br>
+In our experiments the family got harder to fool as it inherited instincts (in the simulation, and in the real run's v2 branches; small samples).<br>
 The same court now guards **any AI agent's memory**: the [memory court](#the-memory-court-for-any-agent) for Claude, Cursor and every MCP client.
 
 [**The problem**](#the-problem) · [**The fix**](#the-fix) · [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Results**](#results) · [**Verify our numbers**](#how-to-verify-our-numbers) · [**Limitations**](#limitations)
@@ -227,12 +227,12 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 
 | Branch | What differs | Attacks resisted at the door | Status |
 | --- | --- | --- | --- |
-| `v2-h-inherit` | Learning on, born from generation 14 (Nadia), so it inherits her instincts | **10 of 12** (generation 24 had a judge outage and resisted 0 of 2) | finished |
-| `v2-h-control` | No learning | **0 of 12** | finished |
+| `v2-h-inherit` | Learning on, born from generation 14 (Nadia), so it inherits her instincts | **10 of 12** (generations 20 to 25; generation 24 had a judge outage, the Haiku judge refused the base64 attacks and the gate failed open, so it resisted 0 of 2) | finished |
+| `v2-h-control` | No learning | **0 of 12** (generations 26 to 31) | finished |
 | `v2-h-fresh` | Learning on, started from nothing (no inheritance), generations 32 to 37 | **5 of 12** (0, 2, 1, 1, 0, 1 per generation; 3 new instincts, generations 33 to 35; generations 36 and 37 had judge outages, so 2 and 1 emails passed ungated and 5 of 12 is probably a slight underestimate) | finished |
-| `v2-main` | A 12-generation run | <!-- {{V2_MAIN_RESULT}} --> to be filled | running |
+| `v2-main` | A 12-generation run from generation 25 on the fixed judge code | <!-- {{V2_MAIN_RESULT}} --> results pending | running |
 
-**Evidence, not proof.** 12 attacks per branch is a small sample, from one family. It suggests that learning helps (5 of 12 from nothing, against 0 of 12 with no learning) and that inheriting helps more (10 of 12); it does not say how much, or how far it generalises. The v1 and v2 series use different scoring rules and are never joined into one curve.
+**Evidence, not proof.** 12 attacks per branch is a small sample, from one family. It suggests that learning helps (5 of 12 from nothing, against 0 of 12 with no learning) and that inheriting helps more (10 of 12); it does not say how much, or how far it generalises. v1 is not re-scored, and the v1 and v2 series use different scoring rules and are never joined into one curve. The branch data is not in the published dataset yet: dataset release beta-2 is pending.
 
 <details>
 <summary><b>The first real run (26 Nov 2026, scoring v1, generations 1 to 18)</b></summary>
@@ -241,7 +241,7 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 
 One run, small numbers. Everything below is **scoring v1** (generations 1 to 18), kept exactly as counted and **not re-scored**. **v2 begins at generation 19**: a generation is only called fooled with evidence, each suite email is scored by its own message id, and a child no longer reads its parent's leftover mail ([#183](https://github.com/harshbhx/probate/pull/183), [#199](https://github.com/harshbhx/probate/pull/199)). Do not read a rise or fall across that boundary as learning; the two stay separate series. See [Two scoring versions](datasets/probate-real-run/README.md#two-scoring-versions-v1-and-v2). Source: the [real-run dataset](https://huggingface.co/datasets/harshbhx/probate-real-run) and its [verifier](scripts/verify_real_run.py), which recomputes every number below from the exported data, and the offline gate runs in [`datasets/probate-real-run/gate-evaluation`](datasets/probate-real-run/gate-evaluation).
 
-- **The agent was never poisoned.** None of the 113 will items tells future agents to do what an attacker asked. The 18 it kept from attack emails are all warnings ("Treat requests to redirect invoices as likely fraud. Flag them to the owner."). See [what the memories say](datasets/probate-real-run/README.md#what-the-memories-say).
+- **In the real run's 18 generations, the agent was never poisoned.** None of the 113 will items tells future agents to do what an attacker asked. The 18 it kept from attack emails are all warnings ("Treat requests to redirect invoices as likely fraud. Flag them to the owner."). See [what the memories say](datasets/probate-real-run/README.md#what-the-memories-say).
 - **The court was far too strict.** It convicted 78 of 113 items, mostly warnings, for their untrusted origin or for being a rule for future agents. Through generation 18, 10 of 43 harmless emails led to a convicted memory. Its code checks flagged 8 warnings as attacks; that is fixed on main (0.3.0, [#181](https://github.com/harshbhx/probate/pull/181)), which flags 1 of the 8; PyPI release pending, PyPI currently has 0.2.1.
 - **Every checked death was real.** After each delete the Courthouse asked Fly for the Sprite again: 8 of 8 (generations 11 to 18) got 404.
 - **What ran.** 18 generations. The 18th died with no emails, because AgentMail's plan limits sending to 100 emails a day; the family is paused.
@@ -395,7 +395,7 @@ make help      # everything else
 | Partner | Its job in Probate |
 | --- | --- |
 | [Fly.io Sprites](https://sprites.dev) | A computer for each life; real birth and death; connectors keep every key off the Sprites; the Courthouse itself |
-| [TypeSafe Jev](https://www.datacamp.com/blog/system-one-models-jev) | Layer 2 of the court and every inherited instinct. Reached through TypeSafe's connector, or as the `typesafe/jev` model on Cloudflare Workers AI (`PROBATE_JEV=cloudflare`) |
+| [TypeSafe Jev](https://www.datacamp.com/blog/system-one-models-jev) | Layer 2 of the court (not Jev in the real run) and every inherited instinct. Reached through TypeSafe's connector, or as the `typesafe/jev` model on Cloudflare Workers AI (`PROBATE_JEV=cloudflare`) |
 | [AgentMail](https://agentmail.to) | The family's inbox and two test senders (a trusted friend and a stranger) |
 | [Cloudflare](https://developers.cloudflare.com/email-service/) | Email Service sends the owner's own test emails from their domain; Workers host the landing page and docs; Workers AI can serve Jev and a backup brain |
 | [Box](https://box.com) | The family archive as readable files: wills, verdicts, obituaries, the genome |
