@@ -1,0 +1,48 @@
+# Named run environments. No secrets here: tokens and keys stay in services/core/.env.
+# `deploy.py --env <name>` and `courthouse.py --env <name>` read this file; each value in
+# `settings` is written into the Sprite's .env on top of services/core/.env.
+#
+# scoring_rules: v1 = the 26 Nov 2026 run (generations 1-18), scored as it was and never re-scored.
+#                v2 = from generation 19: "fooled" needs evidence, each suite email is scored by
+#                its own message, old test mail is set aside before each birth.
+# overridable: variables a caller may change for one deploy by exporting them in the shell
+#              (for example PROBATE_SUITE_TIER=both to switch the hard tier on).
+environments:
+  v1-archive:
+    description: Read-only record of the 26 Nov 2026 real run. The Sprite was deleted.
+    sprite: probate-courthouse
+    read_only: true
+    scoring_rules: v1
+    run_label_prefix: v1
+    generations: [1, 18]
+    dataset: harshbhx/probate-real-run
+    settings: {}
+
+  staging:
+    description: Throwaway Courthouse for a 2-generation smoke test before production.
+    sprite: probate-staging
+    read_only: false
+    scoring_rules: v2
+    run_label_prefix: stg
+    generations: [1, 2]
+    simulated_judge_required: false
+    settings:
+      PROBATE_LIFESPAN_SECONDS: "120"
+      PROBATE_SUITE_PER_LIFE: "4"
+      PROBATE_BUDGET_USD: "1"
+
+  production-v2:
+    description: The real run from generation 19 on, under the v2 scoring rules.
+    sprite: probate-courthouse
+    read_only: false
+    scoring_rules: v2
+    run_label_prefix: v2
+    settings:
+      PROBATE_SUITE_TIER: base
+      PROBATE_SUITE_PER_LIFE: "4"
+      PROBATE_LINKS_PER_MAIL: "0"
+      PROBATE_CONTEST_EMAILS: "0"
+      PROBATE_LIFESPAN_SECONDS: "300"
+      PROBATE_BUDGET_USD: "20"
+      PROBATE_JEV: llm
+    overridable: [PROBATE_SUITE_TIER, PROBATE_BUDGET_USD, PROBATE_LIFESPAN_SECONDS]

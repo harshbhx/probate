@@ -7,7 +7,9 @@ SIMDATA := .data/sim
 # Addresses baked into the real builds so links, social cards and the Docs link point at the deployed sites.
 REPO      ?= harshbhx/probate
 SITE_URL  ?= $(shell cat .data/site-url.txt 2>/dev/null)
-LIVE_URL  ?= $(shell cat .data/courthouse-url.txt 2>/dev/null)
+# ENV=<name> picks a named environment from config/environments.yaml (staging, production-v2, ...).
+ENVARG    := $(if $(ENV),--env $(ENV),)
+LIVE_URL  ?= $(shell cat .data/courthouse-url$(if $(ENV),-$(ENV),).txt 2>/dev/null)
 WEB_ENV   := VITE_DOCS_URL="$(SITE_URL)" VITE_REPO_URL="https://github.com/$(REPO)"
 SITE_ENV  := NEXT_PUBLIC_SITE_URL="$(or $(SITE_URL),https://example.invalid)" NEXT_PUBLIC_LIVE_URL="$(LIVE_URL)" NEXT_PUBLIC_GITHUB_REPO="$(REPO)"
 
@@ -55,17 +57,17 @@ serve: ## The built live site and API on :8080, the way the Courthouse serves it
 
 deploy-check: ## Validate .env and the bundle without touching Sprites
 	$(WEB_ENV) npm run build -w @probate/web
-	$(PY) scripts/deploy.py --check
+	$(PY) scripts/deploy.py $(ENVARG) --check
 
-deploy: ## Deploy or update the Courthouse Sprite
+deploy: ## Deploy or update the Courthouse Sprite (ENV=staging or production-v2)
 	$(WEB_ENV) npm run build -w @probate/web
-	$(PY) scripts/deploy.py
+	$(PY) scripts/deploy.py $(ENVARG)
 
 preflight: ## Check the Courthouse is public, reachable and ready to run (FIX=1 makes the URL public)
-	$(PY) scripts/courthouse.py preflight --deep $(if $(FIX),--fix,)
+	$(PY) scripts/courthouse.py $(ENVARG) preflight --deep $(if $(FIX),--fix,)
 
 status: ## The family's run status: alive, paused, today's mail, budget, recent errors
-	$(PY) scripts/courthouse.py status
+	$(PY) scripts/courthouse.py $(ENVARG) status
 
 api-spec: ## Re-export the API schema the docs reference is built from (apps/site/openapi.json)
 	$(PY) scripts/export_openapi.py
