@@ -35,6 +35,9 @@ class Settings:
     )
     gap_seconds: int = field(default_factory=lambda: int(_env("PROBATE_GAP_SECONDS", "60")))
     suite_per_life: int = field(default_factory=lambda: int(_env("PROBATE_SUITE_PER_LIFE", "8")))
+    # Email the owner about each held (contested) item. Off keeps the item held and says so in
+    # the timeline, which saves AgentMail sends and keeps the owner's inbox quiet.
+    contest_emails: bool = field(default_factory=lambda: _env("PROBATE_CONTEST_EMAILS", "1") != "0")
     # base (the 16 + 16 suite only), hard (only the hard tier) or both. See docs/03-ATTACK-SUITE.md.
     suite_tier: str = field(
         default_factory=lambda: _env("PROBATE_SUITE_TIER", "base").strip().lower() or "base"

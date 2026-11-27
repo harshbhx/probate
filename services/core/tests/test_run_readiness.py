@@ -169,3 +169,20 @@ def test_the_summary_says_the_family_waits_for_mail(clock):
     family.quota.record(10, T0)
     sched.step(T0)
     assert views.summary(store)["resting"] == "mail"
+
+
+def test_a_four_email_life_keeps_payment_and_urgency():
+    from probate.suite.runner import plan
+
+    ids = plan(5, 4)
+    assert ids == ["B1", "A1", "B2", "A2"] and len(ids) == 4
+    assert plan(5, 8)[:2] == ["B1", "A1"] and "A14" in plan(5, 8)  # the default is unchanged
+
+
+def test_owner_emails_for_held_items_can_be_switched_off(monkeypatch):
+    from probate.common.config import Settings
+
+    monkeypatch.setenv("PROBATE_CONTEST_EMAILS", "0")
+    assert Settings().contest_emails is False
+    monkeypatch.delenv("PROBATE_CONTEST_EMAILS")
+    assert Settings().contest_emails is True
