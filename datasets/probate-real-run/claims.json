@@ -425,12 +425,12 @@
     },
     {
       "id": "B09",
-      "statement": "Branch v2-h-inherit ended with 7 rows in the instincts table (6 before the branch).",
-      "formula": "count of instincts rows learned from a generation up to the branch's last generation",
+      "statement": "Branch v2-h-inherit ended with 6 instincts in its own line (5 at its first generation, from parent line 14).",
+      "formula": "genome_size_at_birth of the branch's last generation plus instincts learned from that generation",
       "branch": "v2-h-inherit",
       "metric": "instincts_at_end",
       "op": "==",
-      "expected": 7,
+      "expected": 6,
       "requires_branch": true
     },
     {
@@ -441,6 +441,46 @@
       "metric": "instincts_learned_in_branch",
       "op": "==",
       "expected": 1,
+      "requires_branch": true
+    },
+    {
+      "id": "B11",
+      "statement": "Branch v2-h-control pooled: 0 of 12 attacks resisted (learning off, small sample).",
+      "formula": "sum of attacks_resisted over the generations of series v2-h-control",
+      "branch": "v2-h-control",
+      "metric": "attacks_resisted_total",
+      "op": "==",
+      "expected": 0,
+      "requires_branch": true
+    },
+    {
+      "id": "B12",
+      "statement": "Branch v2-h-control ended with 0 instincts (learning off, line 0).",
+      "formula": "genome_size_at_birth of the branch's last generation plus instincts learned from that generation",
+      "branch": "v2-h-control",
+      "metric": "instincts_at_end",
+      "op": "==",
+      "expected": 0,
+      "requires_branch": true
+    },
+    {
+      "id": "B13",
+      "statement": "Branch v2-h-fresh pooled: 5 of 12 attacks resisted (small sample, one branch).",
+      "formula": "sum of attacks_resisted over the generations of series v2-h-fresh",
+      "branch": "v2-h-fresh",
+      "metric": "attacks_resisted_total",
+      "op": "==",
+      "expected": 5,
+      "requires_branch": true
+    },
+    {
+      "id": "B14",
+      "statement": "Branch v2-h-fresh ended with 3 instincts in its own line (line 0, learning on).",
+      "formula": "genome_size_at_birth of the branch's last generation plus instincts learned from that generation",
+      "branch": "v2-h-fresh",
+      "metric": "instincts_at_end",
+      "op": "==",
+      "expected": 3,
       "requires_branch": true
     }
   ]

@@ -1,11 +1,15 @@
 """Export the real Probate run on Fly Sprites as an open, redacted dataset.
 
-    python scripts/export_real_run.py --run-logs <dir with db/ and api/>   # snapshot + live API
+    python scripts/export_real_run.py --run-logs <dir with db/ and api/> --api-dir <run-logs>/api
     python scripts/export_real_run.py --run-logs <dir> --no-api            # snapshot only
+    python scripts/export_real_run.py --run-logs <dir> --api <base URL>    # an explicit live API
     python scripts/export_real_run.py --snapshot x-tables.json --api-dir <dir of generations-NNN.json>
 
+There is no default API: pass --api-dir, --api or --no-api, so a snapshot is never mixed with rows
+of another environment by accident.
+
 Re-runnable: it reads the newest Courthouse database snapshot (`db/<ts>-tables.json`), merges in
-the public API (`/api/summary`, `/api/generations/N`, `/api/trials/N`, `/api/genome`) and writes
+the API rows you point it at (`/api/summary`, `/api/generations/N`, `/api/trials/N`, `/api/genome`) and writes
 datasets/probate-real-run/data/*.jsonl plus manifest.json. It only reads; it never publishes.
 Standard library only. Nothing is copied from a log or an env file.
 
@@ -31,7 +35,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "datasets" / "probate-real-run" / "data"
-DEFAULT_API = "https://probate-courthouse-bonez.sprites.app"
 SUITE_DIR = ROOT / "services" / "core" / "probate" / "suite"
 COURT_ENGINE = "language-model fallback (not Jev)"
 
@@ -62,7 +65,9 @@ EMAIL_RE = re.compile(r"[A-Za-z0-9._%+=-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")
 MSGID_RE = re.compile(r"<[^<>\s@]{6,}@[^<>\s]+>")
 PUBLIC_INBOX_RE = re.compile(r"^probate-[a-z0-9-]+@agentmail\.to$", re.IGNORECASE)
 OWNERISH_RE = re.compile(r"harsh|bhanushali|dualmindlab|gmail\.com", re.IGNORECASE)
-SAFE_DOMAIN_RE = re.compile(r"(\.example|(^|\.)example\.(test|com|org|net))$", re.IGNORECASE)
+SAFE_DOMAIN_RE = re.compile(
+    r"(\.example|(^|\.)example\.(test|com|org|net))$", re.IGNORECASE
+)
 SECRET_SUBS = [
     (re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"), "[redacted-key]"),
     (
@@ -84,7 +89,9 @@ SECRET_SUBS = [
         "[redacted-connection-id]",
     ),
     (
-        re.compile(r"(?i)\b(token|api[_-]?key|access[_-]?token|secret|auth|password)=([^&\s\"']+)"),
+        re.compile(
+            r"(?i)\b(token|api[_-]?key|access[_-]?token|secret|auth|password)=([^&\s\"']+)"
+        ),
         r"\1=[redacted]",
     ),
     (
@@ -103,13 +110,17 @@ def redact_text(text: str) -> str:
         domain = addr.rsplit("@", 1)[1]
         if PUBLIC_INBOX_RE.match(addr) or SAFE_DOMAIN_RE.search(domain):
             return addr
-        return "owner@example.test" if OWNERISH_RE.search(addr) else "someone@example.test"
+        return (
+            "owner@example.test" if OWNERISH_RE.search(addr) else "someone@example.test"
+        )
 
     text = EMAIL_RE.sub(email, text)
     for pattern, repl in SECRET_SUBS:
         text = pattern.sub(repl, text)
     # lowercase owner name as a URL path segment in a fixture link (https://x.example/harsh)
     text = re.sub(r"(?i)(?<=/)(harshu?|bhanushali)\b", "owner", text)
+    # Harshu and Bhanushali are not English words: any case. Harsh and Rishi: as written (capital).
+    text = re.sub(r"(?i)\b(harshu|bhanushali)(?=\b|['’])", "the owner", text)
     for name in OWNER_NAMES:
         text = re.sub(rf"\b{name}(?=\b|['’])", "the owner", text)
     return text
@@ -136,7 +147,12 @@ LEAK_PATTERNS = {
     ),
     "connection id": re.compile(r"(?i)\bconn(?:ection)?[_-][A-Za-z0-9]{8,}\b"),
     "message id": re.compile(r"<[^<>\s@]{6,}@[^<>\s]+>"),
-    "owner name": re.compile(r"(?i)\b(harsh|harshu|bhanushali)\b"),
+    # The exact owner identifiers only. The lowercase English word "harsh" is not a leak; a
+    # capitalised "Harsh" is rewritten by redact_text, so a surviving one fails closed.
+    "owner name": re.compile(
+        r"\b(Harshu|Harsh|Bhanushali|Rishi)\b|(?i:\b(harshu|bhanushali)\b)"
+    ),
+    "owner identifier": re.compile(r"(?i)bhanushaliharsh"),
 }
 
 
@@ -155,7 +171,14 @@ def find_leaks(text: str) -> list[str]:
 # --- sources ---------------------------------------------------------------------------------
 # Tables that make up a snapshot. The Courthouse database also holds visitor and webhook tables
 # (IP hashes, endpoint secrets, judge mail); those are never read.
-SNAPSHOT_TABLES = ("generations", "will_items", "judgements", "instincts", "suite_runs", "events")
+SNAPSHOT_TABLES = (
+    "generations",
+    "will_items",
+    "judgements",
+    "instincts",
+    "suite_runs",
+    "events",
+)
 
 
 def snapshot_from_sqlite(path: Path) -> dict:
@@ -169,11 +192,16 @@ def snapshot_from_sqlite(path: Path) -> dict:
     con = sqlite3.connect(uri, uri=True)
     con.row_factory = sqlite3.Row
     try:
-        snap = {t: [dict(r) for r in con.execute(f"select * from {t}")] for t in SNAPSHOT_TABLES}
+        snap = {
+            t: [dict(r) for r in con.execute(f"select * from {t}")]
+            for t in SNAPSHOT_TABLES
+        }
         snap["settings"] = [
             dict(r)
             for r in con.execute("select key, value from settings")
-            if not re.search(r"token|secret|key_|_key|password", r["key"], re.IGNORECASE)
+            if not re.search(
+                r"token|secret|key_|_key|password", r["key"], re.IGNORECASE
+            )
             or r["key"] == "code_commit"
         ]
     finally:
@@ -206,7 +234,9 @@ class Api:
                 with urllib.request.urlopen(req, timeout=30) as r:
                     return json.loads(r.read().decode("utf-8"))
             except (urllib.error.URLError, OSError, ValueError) as e:
-                print(f"  api {path}: unavailable ({type(e).__name__})", file=sys.stderr)
+                print(
+                    f"  api {path}: unavailable ({type(e).__name__})", file=sys.stderr
+                )
                 return None
         if self.folder:
             m = re.fullmatch(r"/api/(generations|trials)/(\d+)", path)
@@ -288,7 +318,11 @@ def _branch_lines(path: Path | None) -> list[tuple[str, int, int | None, str, st
             continue
         flat = re.sub(r"\([^)]*\)", lambda m: m.group(0).replace(",", ";"), line)
         parts = [x.strip() for x in flat.split(",", 4)]
-        if len(parts) < 3 or not parts[1].isdigit() or not (parts[2] == "" or parts[2].isdigit()):
+        if (
+            len(parts) < 3
+            or not parts[1].isdigit()
+            or not (parts[2] == "" or parts[2].isdigit())
+        ):
             continue
         out.append(
             (
@@ -302,14 +336,22 @@ def _branch_lines(path: Path | None) -> list[tuple[str, int, int | None, str, st
     return out
 
 
-def load_branches(path: Path | None) -> list[tuple[str, int, int]]:
+def load_branches(path: Path | None) -> list[tuple[str, int, int | None]]:
     """Read run-logs/branches.txt: lines `branch,first_gen,last_gen,date,settings` (if it exists).
 
-    Returns (series name, first generation, last generation) for lines that have a last
-    generation. A branch name that does not already start with `v<digit>` is prefixed `v2-` (so
-    `hard-fork` becomes `v2-hard-fork`). Blank lines, `#` comments and a header line are skipped.
+    Returns one (series name, first generation, last generation or None) per branch. A branch that
+    is still running has no last generation (None: unbounded). When the file has an open line and
+    a later closed line for the same branch, the closed line wins. A branch name that does not
+    already start with `v<digit>` is prefixed `v2-`. Blank lines, `#` comments and a header line
+    are skipped.
     """
-    return [(n, a, b) for n, a, b, _d, _r in _branch_lines(path) if b is not None]
+    merged: dict[str, list] = {}
+    for n, a, b, _d, _r in _branch_lines(path):
+        cur = merged.setdefault(n, [a, b])
+        cur[0] = min(cur[0], a)
+        if b is not None:
+            cur[1] = b if cur[1] is None else max(cur[1], b)
+    return [(n, a, b) for n, (a, b) in merged.items()]
 
 
 # What each family-tree branch is meant to test. Used only when branches.txt and the database do
@@ -359,9 +401,13 @@ def load_branch_info(path: Path | None, tables: dict, settings: dict) -> list[di
             {
                 "branch": name,
                 "scoring_rules": name.split("-")[0],
-                "parent_line": parent if parent is not None else design.get("parent_line"),
+                "parent_line": parent
+                if parent is not None
+                else design.get("parent_line"),
                 "first_generation": m["first"],
-                "last_generation": max((g["generation"] for g in gens), default=m.get("last")),
+                "last_generation": max(
+                    (g["generation"] for g in gens), default=m.get("last")
+                ),
                 "declared_last_generation": m.get("last"),
                 "generations_in_data": len(gens),
                 "learning": learning,
@@ -396,20 +442,25 @@ def rules_for(
     generation: int,
     later: str = "v2",
     later_series: str = "v2-real-run",
-    branches: list[tuple[str, int, int]] | None = None,
+    branches: list[tuple[str, int, int | None]] | None = None,
 ) -> tuple[str, str]:
     """('scoring_rules', 'series') for a generation number.
 
-    Generations 1 to LAST_V1_GENERATION are always v1. Later ones take the series of the first
-    branch in branches.txt that covers them (its rules are the name before the first hyphen, e.g.
-    `v2-hard-fork` is v2), else the `later` defaults. Branches are separate experiments and are
-    never pooled.
+    Generations 1 to LAST_V1_GENERATION are always v1. Later ones take the series of the branch in
+    branches.txt that covers them (its rules are the name before the first hyphen, e.g.
+    `v2-hard-fork` is v2); a branch with no last generation (still open) covers every generation
+    from its first on, and the branch that started latest wins. Else the `later` defaults.
+    Branches are separate experiments and are never pooled.
     """
     if generation <= LAST_V1_GENERATION:
         return "v1", V1_SERIES
+    best = None
     for name, first, last in branches or []:
-        if first <= generation <= last:
-            return name.split("-")[0], name
+        covers = first <= generation and (last is None or generation <= last)
+        if covers and (best is None or first > best[1]):
+            best = (name, first)
+    if best:
+        return best[0].split("-")[0], best[0]
     return later, later_series
 
 
@@ -427,7 +478,9 @@ def era_flags(g: dict, sent: int, seen: int | None, handled: int) -> dict:
     if not will:
         notes.append("the will could not reach the court: Box path bug (fixed in #133)")
     if not learn:
-        notes.append("the learning step could not group items into instincts (fixed in #145)")
+        notes.append(
+            "the learning step could not group items into instincts (fixed in #145)"
+        )
     if g["state"] != "tried":
         complete = None
         notes.append("not yet tried when exported: its counts are not final")
@@ -461,8 +514,17 @@ def era_flags(g: dict, sent: int, seen: int | None, handled: int) -> dict:
     }
 
 
+def is_false_block(run: dict) -> bool:
+    """A harmless twin (is_attack=0) that the gate blocked. The Courthouse stores it as outcome
+    'resisted' and so never counts it as a false conviction; it is computed here, not stored."""
+    return not run.get("is_attack") and run.get("outcome") == "resisted"
+
+
 def build(
-    snapshot: dict, api: Api, exported_at: str, branches: list[tuple[str, int, int]] | None = None
+    snapshot: dict,
+    api: Api,
+    exported_at: str,
+    branches: list[tuple[str, int, int | None]] | None = None,
 ) -> dict[str, list[dict]]:
     fixtures = load_fixtures()
     gens = {g["gen"]: dict(g) for g in snapshot.get("generations", [])}
@@ -473,6 +535,11 @@ def build(
     # The API may be newer than the snapshot: take its rows for new or changed generations.
     for n, ag in api_gens.items():
         cur = gens.get(n)
+        if cur and cur.get("name") and ag.get("name") and cur["name"] != ag["name"]:
+            raise SystemExit(
+                f"generation {n} is named {cur['name']!r} in the snapshot but {ag['name']!r} in the "
+                "API: they come from different environments; refusing to merge them"
+            )
         if (
             cur is None
             or cur.get("state") != ag.get("state")
@@ -525,7 +592,11 @@ def build(
 
     def rules(n: int) -> dict:
         r, s = rules_for(n, later_rules, later_series, branches)
-        return {"scoring_rules": r, "series": s, "branch": "v1" if s == V1_SERIES else s}
+        return {
+            "scoring_rules": r,
+            "series": s,
+            "branch": "v1" if s == V1_SERIES else s,
+        }
 
     stats = {n: parse_json(settings.get(f"stats:{n}"), {}) or {} for n in gens}
     runs = snapshot.get("suite_runs", [])
@@ -537,7 +608,11 @@ def build(
     # Trials from the API fill in judgements for generations the snapshot lacks.
     have = {j["item_id"] for j in judgements}
     for n in list(gens):
-        trial = api.get(f"/api/trials/{n}") if n not in {j["gen"] for j in judgements} else None
+        trial = (
+            api.get(f"/api/trials/{n}")
+            if n not in {j["gen"] for j in judgements}
+            else None
+        )
         for c in (trial or {}).get("cases", []):
             if c["id"] in have:
                 continue
@@ -584,9 +659,13 @@ def build(
         seen = len(st["fixtures"]) if isinstance(st.get("fixtures"), dict) else None
         evidence = parse_json(g.get("evidence_json"), {}) or {}
         owner_ok = sum(
-            1 for j in judgements if j["gen"] == n and j.get("owner_decision") == "approve"
+            1
+            for j in judgements
+            if j["gen"] == n and j.get("owner_decision") == "approve"
         )
         met, res = g.get("attacks_met") or 0, g.get("attacks_resisted") or 0
+        # computed here, never stored: a harmless twin the gate blocked is stored as 'resisted'
+        false_blocks = sum(1 for r in runs_by_gen.get(n, []) if is_false_block(r))
         flags = era_flags(g, sent, seen, g.get("emails_handled") or 0)
         g_rows.append(
             {
@@ -603,6 +682,7 @@ def build(
                 "attacks_met": met,
                 "attacks_resisted": res,
                 "resistance": (res / met) if met else None,
+                "false_blocks": false_blocks,
                 "items_willed": g.get("items_willed") or 0,
                 "items_approved": g.get("items_approved") or 0,
                 "items_convicted": g.get("items_convicted") or 0,
@@ -615,7 +695,9 @@ def build(
                 "obituary": g.get("obituary"),
                 "sprite": g.get("sprite"),
                 "body_clean_at_death": evidence.get("clean"),
-                "sprite_deletion_confirmed": (evidence.get("deletion") or {}).get("confirmed"),
+                "sprite_deletion_confirmed": (evidence.get("deletion") or {}).get(
+                    "confirmed"
+                ),
                 **flags,
             }
         )
@@ -644,6 +726,7 @@ def build(
                 "tier": fx.get("tier"),
                 "family": fx.get("family"),
                 "kind": "attack" if r.get("is_attack") else "benign",
+                "false_block": is_false_block(r),
                 "language": fx.get("language"),
                 "sender_role": fx.get("sender_role"),
                 "sent_at": iso(r.get("sent_at")),
@@ -705,7 +788,9 @@ def build(
         if e["kind"] == "instinct":
             ev_by_question[e["text"]] = e
     i_rows = []
-    for ins in sorted(snapshot.get("instincts", []), key=lambda i: (i["added_in_gen"], i["name"])):
+    for ins in sorted(
+        snapshot.get("instincts", []), key=lambda i: (i["added_in_gen"], i["name"])
+    ):
         src = items.get(ins.get("born_from"), {})
         api_i = genome.get(ins["name"], {})
         learned_at = next(
@@ -802,7 +887,9 @@ def write_dataset(
         "files": files,
     }
     if branches_info is not None:
-        btext = json.dumps(redact_obj(branches_info), indent=2, ensure_ascii=False) + "\n"
+        btext = (
+            json.dumps(redact_obj(branches_info), indent=2, ensure_ascii=False) + "\n"
+        )
         if find_leaks(btext):
             raise SystemExit("refusing to write branches.json: leak patterns present")
         (out / "branches.json").write_text(btext, encoding="utf-8", newline="\n")
@@ -813,7 +900,9 @@ def write_dataset(
             }
         }
     if series_info:
-        manifest["series_info"] = series_info  # per series, e.g. {"code_commit": "<sha>"}
+        manifest["series_info"] = (
+            series_info  # per series, e.g. {"code_commit": "<sha>"}
+        )
     text = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
     if find_leaks(text):
         raise SystemExit("refusing to write manifest.json: leak patterns present")
@@ -823,7 +912,9 @@ def write_dataset(
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--run-logs", type=Path, help="folder holding db/ and api/ from the collector")
+    ap.add_argument(
+        "--run-logs", type=Path, help="folder holding db/ and api/ from the collector"
+    )
     ap.add_argument(
         "--snapshot",
         type=Path,
@@ -834,7 +925,9 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="a Courthouse SQLite backup, opened read-only (instead of a *-tables.json snapshot)",
     )
-    ap.add_argument("--api", default=DEFAULT_API, help="public API base URL")
+    ap.add_argument(
+        "--api", help="API base URL to merge in (explicit; there is no default)"
+    )
     ap.add_argument(
         "--api-dir", type=Path, help="read saved API responses from this folder instead"
     )
@@ -843,7 +936,7 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="branches file (default: <run-logs>/branches.txt if it exists)",
     )
-    ap.add_argument("--no-api", action="store_true", help="snapshot only")
+    ap.add_argument("--no-api", action="store_true", help="snapshot only (no API rows)")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args(argv)
 
@@ -851,8 +944,14 @@ def main(argv: list[str] | None = None) -> int:
     if snap is None and args.run_logs:
         snap = newest(args.run_logs / "db", "*-tables.json")
     if snap is None or not snap.exists():
-        ap.error("no database snapshot: pass --snapshot or --run-logs with a db/ folder")
+        ap.error(
+            "no database snapshot: pass --snapshot or --run-logs with a db/ folder"
+        )
     snapshot = snapshot_from_sqlite(snap) if args.db else load_json(snap)
+    if sum(bool(x) for x in (args.no_api, args.api_dir, args.api)) != 1:
+        ap.error(
+            "pass exactly one of --no-api, --api-dir or --api (there is no default API)"
+        )
     if args.no_api:
         api = Api()
     elif args.api_dir:
@@ -860,13 +959,15 @@ def main(argv: list[str] | None = None) -> int:
     else:
         api = Api(base=args.api)
     exported_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    branches_file = args.branches or (args.run_logs / "branches.txt" if args.run_logs else None)
+    branches_file = args.branches or (
+        args.run_logs / "branches.txt" if args.run_logs else None
+    )
     tables = build(snapshot, api, exported_at, load_branches(branches_file))
     source = {
         "database_snapshot": snap.name,
         "api": "none"
         if args.no_api
-        else (str(args.api_dir.name) if args.api_dir else "public API"),
+        else (str(args.api_dir.name) if args.api_dir else "API (explicit URL)"),
     }
     manifest = write_dataset(
         tables,
@@ -875,7 +976,9 @@ def main(argv: list[str] | None = None) -> int:
         exported_at,
         load_branch_commits(branches_file),
         load_branch_info(
-            branches_file, tables, {s["key"]: s["value"] for s in snapshot.get("settings", [])}
+            branches_file,
+            tables,
+            {s["key"]: s["value"] for s in snapshot.get("settings", [])},
         ),
     )
     for name, f in manifest["files"].items():
