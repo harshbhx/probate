@@ -302,6 +302,7 @@ python scripts/verify_real_run.py
 - **The attack suite is fixed.** 32 emails in four languages; real attackers are more varied. The instincts were learned from the same tricks they are tested on.
 - **A new kind of trick fools one generation first.** The court catches it at trial, and only then does the family know it.
 - **Held means slower.** When the judge is unsure the owner decides, on purpose.
+- **AgentMail's free plan allows 100 sends a day.** That limit shaped how many generations we could run per day, and the first real run stopped at generation 18 because of it.
 - **Test emails go only to our own inboxes**, and disk attacks are harmless canary files. Not yet measured: that an idle Courthouse costs nothing.
 
 More in [`docs/12-THREAT-MODEL.md`](docs/12-THREAT-MODEL.md).
@@ -346,7 +347,7 @@ The court's checks also run as an Apify Actor, [Page Court](https://apify.com/ha
 | [`probate-client`](packages/client) (TypeScript) | A typed client for the Courthouse's public API | `npm install probate-client` ([npm](https://www.npmjs.com/package/probate-client)) |
 | [`probate-client`](packages/client-py) (Python) | The same client, sync and async | `pip install probate-client` ([PyPI](https://pypi.org/project/probate-client/)) |
 | [`probate-mcp`](packages/mcp) | A read-only MCP server over the Courthouse's public API | `npx probate-mcp` ([npm](https://www.npmjs.com/package/probate-mcp)) |
-| `kinfaces` | The family's faces as a standalone package | coming |
+| [`kinfaces`](packages/faces) | The faces of the family: a plain SVG API plus an optional React component | `npm install kinfaces` ([npm](https://www.npmjs.com/package/kinfaces)) |
 
 Also: the `ghcr.io/harshbhx/probate` Docker image, and the [Page Court](https://apify.com/harsh_bhanu/page-court) Apify Actor ([source](actors/page-court)). Each package folder has its own README and changelog; release rules are in [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
 
