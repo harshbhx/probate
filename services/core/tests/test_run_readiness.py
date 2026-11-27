@@ -159,3 +159,13 @@ def test_unread_test_mail_is_set_aside_before_the_next_birth(clock):
     left = [m.subject for m in mail.list_new(cfg.family_inbox)]
     assert left == ["Judge mail"]
     assert store.q("SELECT 1 FROM events WHERE text LIKE 'Set aside 1 test emails%'")
+
+
+def test_the_summary_says_the_family_waits_for_mail(clock):
+    from probate.courthouse import views
+
+    _cfg, store, family, sched = clock
+    family.quota.limit = 10
+    family.quota.record(10, T0)
+    sched.step(T0)
+    assert views.summary(store)["resting"] == "mail"

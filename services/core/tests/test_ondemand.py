@@ -365,3 +365,13 @@ def test_continuous_mode_reports_itself(tmp_path, monkeypatch):
     c = TestClient(app_module.app)
     assert c.get("/api/live").json()["state"] == "continuous"
     assert c.post("/api/lives").status_code == 409
+
+
+def test_no_demo_life_when_the_day_s_mail_is_used_up(tmp_path, monkeypatch):
+    r = Rig(tmp_path, monkeypatch)
+    r.family.quota.limit = 20
+    r.family.quota.record(18, T0)
+    st = r.od.status(T0)
+    assert st["state"] == "budget_exhausted" and st["budget"]["reason"] == "mail"
+    assert r.od.start("1.1.1.1", T0)[0] == 402
+    assert r.od.status(T0 + timedelta(days=1))["state"] == "idle"  # a new UTC day
