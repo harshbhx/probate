@@ -118,6 +118,12 @@ class Settings:
     env_name: str = field(
         default_factory=lambda: _env("PROBATE_ENV_NAME", "local").strip() or "local"
     )
+    # The git commit the code was deployed from (scripts/deploy.py sets it). Recorded in the
+    # database on every start and shown in /api/summary as code_commit.
+    code_commit: str = field(default_factory=lambda: _env("PROBATE_CODE_COMMIT").strip())
+    # 1: a fresh or restored database starts paused, once. The owner resumes when ready; a later
+    # restart does not pause it again.
+    start_paused: bool = field(default_factory=lambda: _env("PROBATE_START_PAUSED", "0") == "1")
     # A branch is a named stretch of a run (for example a control line). Recorded in the database on
     # first start; `courthouse.py branch <name>` changes it while running.
     branch_name: str = field(default_factory=lambda: _env("PROBATE_BRANCH_NAME").strip())

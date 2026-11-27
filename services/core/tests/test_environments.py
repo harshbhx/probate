@@ -21,7 +21,7 @@ def _load(name: str):
 
 def test_registry_defines_the_three_environments():
     reg = envs.load_registry()
-    assert set(reg) == {"v1-archive", "staging", "production-v2"}
+    assert set(reg) == {"v1-archive", "staging", "production-v2", "judges-demo", "local-sim"}
     assert reg["v1-archive"].read_only and reg["v1-archive"].scoring_rules == "v1"
     assert reg["staging"].sprite == "probate-staging"
     assert reg["staging"].settings["PROBATE_LIFESPAN_SECONDS"] == "120"
@@ -99,14 +99,20 @@ def test_settings_pin_agrees_with_the_settings_applied():
         if e.read_only:
             continue
         s, p = e.settings, e.settings_pin
+        demo = s.get("PROBATE_MODE") == "on_demand"
         assert s["PROBATE_BRAIN"] == p["brain"]
         assert s["PROBATE_JEV"] == p["judge"]
         assert s["PROBATE_SUITE_TIER"] == p["tier"]
-        assert int(s["PROBATE_SUITE_PER_LIFE"]) == p["suite_per_life"]
-        assert int(s["PROBATE_LIFESPAN_SECONDS"]) == p["lifespan_seconds"]
+        suite = s["PROBATE_DEMO_SUITE_PER_LIFE" if demo else "PROBATE_SUITE_PER_LIFE"]
+        life = s["PROBATE_DEMO_LIFESPAN_SECONDS" if demo else "PROBATE_LIFESPAN_SECONDS"]
+        assert int(suite) == p["suite_per_life"]
+        assert int(life) == p["lifespan_seconds"]
         assert int(s["PROBATE_LINKS_PER_MAIL"]) == p["links_per_mail"]
         assert s["PROBATE_BRAIN_FALLBACKS"] == p["brain_fallbacks"]
-        assert s["PROBATE_HARD_PER_LIFE"] == str(p["hard_per_life"])
+        if not e.simulated:
+            assert s["PROBATE_HARD_PER_LIFE"] == str(p["hard_per_life"])
+            if "PROBATE_V1_LAST_GEN" in s:
+                assert int(s["PROBATE_V1_LAST_GEN"]) == p["v1_last_gen"]
     archive = envs.load_registry()["v1-archive"]
     assert "judge=llm" in archive.pin_summary()
 
@@ -120,9 +126,50 @@ REAL_BRAIN = {
 
 def test_every_environment_pins_the_real_brain():
     for e in envs.load_registry().values():
+        if e.simulated:
+            continue
         for k, v in REAL_BRAIN.items():
             assert e.settings[k] == v, (e.name, k)
         assert "ollama" not in e.pin_summary()
+
+
+def test_production_and_judges_demo_know_where_v1_ends():
+    reg = envs.load_registry()
+    for name in ("production-v2", "judges-demo"):
+        assert reg[name].settings["PROBATE_V1_LAST_GEN"] == "18"
+
+
+def test_judges_demo_is_on_demand_paused_hard_and_guards_the_mail_quota():
+    s = envs.load_registry()["judges-demo"].settings
+    assert envs.load_registry()["judges-demo"].sprite == "probate-courthouse"
+    assert s["PROBATE_MODE"] == "on_demand" and s["PROBATE_START_PAUSED"] == "1"
+    assert s["PROBATE_SUITE_TIER"] == "hard" and s["PROBATE_HARD_PER_LIFE"] == "2"
+    limit, reserve = int(s["PROBATE_MAIL_DAILY_LIMIT"]), int(s["PROBATE_MAIL_RESERVE"])
+    # Lives use at most limit - reserve; judge mail has its own daily cap; both fit under limit.
+    assert limit == 100 and limit - reserve + int(s["PROBATE_JUDGE_MAIL_PER_DAY"]) < limit
+    assert float(s["PROBATE_DEMO_DAILY_BUDGET_USD"]) <= 2
+
+
+def test_local_sim_is_simulated_and_has_no_sprite():
+    sim = envs.load_registry()["local-sim"]
+    assert sim.sprite is None and sim.simulated and sim.settings["PROBATE_FAKE"] == "1"
+    assert "SIMULATED" in sim.banner()
+
+
+def test_deploy_refuses_the_simulated_environment(monkeypatch, capsys):
+    code, out = _run(_load("deploy"), ["deploy.py", "--env", "local-sim"], monkeypatch, capsys)
+    assert "SIMULATED" in out and "no Sprite" in str(code)
+
+
+def test_effective_report_shows_the_branch_and_control_settings():
+    prod = envs.load_registry()["production-v2"]
+    text = "\n".join(envs.effective({}, prod.sprite_settings({"PROBATE_DISTILL": "0"})))
+    assert "distill: 0" in text and "hard offset: 0" in text and "v1 last gen: 18" in text
+
+
+def test_deploy_commit_is_a_sha():
+    sha = _load("deploy").git_commit()
+    assert sha == "" or len(sha.split("+")[0]) == 40
 
 
 def test_applied_brain_equals_the_owners_env_file():
@@ -164,8 +211,9 @@ def test_effective_report_shows_settings_and_no_secrets():
 def test_branch_log_line_and_first_gen_lookup(tmp_path):
     mod = _load("courthouse")
     log = tmp_path / "branches.txt"
-    log.write_text(mod.branch_line("control", 19, "", "env=x", "2026-11-27"), encoding="utf-8")
-    assert log.read_text(encoding="utf-8") == "control,19,,2026-11-27,env=x\n"
+    line = mod.branch_line("control", 19, "", "env=x", "2026-11-27", commit="abc1234")
+    log.write_text(line, encoding="utf-8")
+    assert log.read_text(encoding="utf-8") == "control,19,,2026-11-27,abc1234,env=x\n"
     assert mod.first_gen_of("control", log) == "19"
     assert mod.first_gen_of("other", log) == ""
 

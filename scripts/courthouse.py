@@ -239,14 +239,15 @@ def first_gen_of(name: str, log: Path = BRANCH_LOG) -> str:
     return ""
 
 
-def branch_line(name: str, first, last, summary: str, today=None) -> str:
+def branch_line(name: str, first, last, summary: str, today=None, commit: str = "") -> str:
+    """branch,first_gen,last_gen,date,commit,settings (commit: the code the Courthouse runs)."""
     today = today or datetime.now(UTC).date()
-    return f"{name},{first},{last},{today},{summary}\n"
+    return f"{name},{first},{last},{today},{commit},{summary}\n"
 
 
 def branch(env: dict[str, str], url: str, name: str, end: bool, target) -> int:
     """Label the run and log it. A branch starts at the next generation; `--end` logs a second
-    line with the last generation so far. Columns: branch,first_gen,last_gen,date,settings."""
+    line with the last generation so far. Columns: branch,first_gen,last_gen,date,commit,settings."""
     headers = {"X-Probate-Admin": env.get("PROBATE_ADMIN_TOKEN", "")}
     st = httpx.get(f"{url}/admin/status", headers=headers, timeout=30)
     if st.status_code != 200:
@@ -263,7 +264,7 @@ def branch(env: dict[str, str], url: str, name: str, end: bool, target) -> int:
             print(f"/admin/branch answered {r.status_code}; nothing recorded.")
             return 1
     summary = (
-        f"env={target.name if target else 'none'} rules={d.get('scoring_rules')} "
+        f"env={target.name if target else 'none'}{' simulated' if target and target.simulated else ''} rules={d.get('scoring_rules')} "
         f"judge={d['judge'].replace(' ', '_')} tier={d['suite_tier']} "
         f"lifespan={d['lifespan_seconds']}"
     )
@@ -271,7 +272,7 @@ def branch(env: dict[str, str], url: str, name: str, end: bool, target) -> int:
         summary += f" pin[{target.pin_summary()}]"
     BRANCH_LOG.parent.mkdir(exist_ok=True)
     with BRANCH_LOG.open("a", encoding="utf-8") as f:
-        f.write(branch_line(name, first, last, summary))
+        f.write(branch_line(name, first, last, summary, commit=d.get("code_commit") or ""))
     print(
         f"branch {name}: first_gen {first}, last_gen {last or 'open'}; logged in {BRANCH_LOG.name}"
     )
@@ -309,7 +310,9 @@ def main() -> None:
     env = read_env()
     url = courthouse_url(env, target.url_file if target else URL_FILE)
     if args.cmd == "preflight":
-        sys.exit(preflight(env, url, args.fix, args.deep, target.sprite if target else SPRITE))
+        sys.exit(
+            preflight(env, url, args.fix, args.deep, (target.sprite if target else None) or SPRITE)
+        )
     if target and target.read_only and args.cmd != "status":
         sys.exit(f"{target.name} is a read-only record; {args.cmd} refused.")
     if not url:

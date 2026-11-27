@@ -81,6 +81,9 @@
                     "branch": {
                       "type": "null"
                     },
+                    "code_commit": {
+                      "type": "null"
+                    },
                     "paused": {
                       "type": "boolean"
                     },
@@ -403,6 +406,7 @@
                     "scoring_rules",
                     "environment",
                     "branch",
+                    "code_commit",
                     "paused",
                     "resting",
                     "budget",
@@ -419,6 +423,7 @@
                   "scoring_rules": "v2",
                   "environment": "local",
                   "branch": null,
+                  "code_commit": null,
                   "paused": false,
                   "resting": null,
                   "budget": {

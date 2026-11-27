@@ -258,6 +258,25 @@ def load_branches(path: Path | None) -> list[tuple[str, int, int]]:
     return out
 
 
+def load_branch_commits(path: Path | None) -> dict[str, dict]:
+    """The code commit each series ran, from run-logs/branches.txt lines
+    `branch,first_gen,last_gen,date,commit,settings`. Lines without a commit (the older
+    five-column form) give nothing. Returns {series name: {"code_commit": sha}}; the last line
+    for a branch wins."""
+    if path is None or not path.exists():
+        return {}
+    out: dict[str, dict] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = [x.strip() for x in line.split(",", 5)]
+        if len(parts) < 6 or line.lstrip().startswith("#") or not parts[1].isdigit():
+            continue
+        if not re.fullmatch(r"[0-9a-f]{7,40}(\+dirty)?", parts[4]):
+            continue
+        name = parts[0] if re.match(r"v\d", parts[0]) else f"v2-{parts[0]}"
+        out[name] = {"code_commit": parts[4]}
+    return out
+
+
 def rules_for(
     generation: int,
     later: str = "v2",
@@ -626,7 +645,13 @@ def git_commit() -> dict:
     }
 
 
-def write_dataset(tables: dict[str, list[dict]], out: Path, source: dict, exported_at: str) -> dict:
+def write_dataset(
+    tables: dict[str, list[dict]],
+    out: Path,
+    source: dict,
+    exported_at: str,
+    series_info: dict[str, dict] | None = None,
+) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     files = {}
     for name, rows in tables.items():
@@ -659,6 +684,8 @@ def write_dataset(tables: dict[str, list[dict]], out: Path, source: dict, export
         "era_deploy_times_utc": {k: {"pr": v[0], "time": v[1]} for k, v in ERA.items()},
         "files": files,
     }
+    if series_info:
+        manifest["series_info"] = series_info  # per series, e.g. {"code_commit": "<sha>"}
     text = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
     if find_leaks(text):
         raise SystemExit("refusing to write manifest.json: leak patterns present")
@@ -708,7 +735,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.no_api
         else (str(args.api_dir.name) if args.api_dir else "public API"),
     }
-    manifest = write_dataset(tables, args.out, source, exported_at)
+    manifest = write_dataset(
+        tables, args.out, source, exported_at, load_branch_commits(branches_file)
+    )
     for name, f in manifest["files"].items():
         print(f"{name:18} {f['rows']:5} rows  sha256 {f['sha256'][:12]}")
     print(

@@ -38,6 +38,32 @@ def test_fake_mode_reports_simulation(client):
     assert client.get("/healthz").json()["mode"] == "simulation"
 
 
+def test_code_commit_recorded_and_start_paused_applies_once(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from probate.common import config
+
+    monkeypatch.setenv("PROBATE_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("PROBATE_CODE_COMMIT", "a" * 40 + "+dirty")
+    monkeypatch.setenv("PROBATE_START_PAUSED", "1")
+    importlib.reload(config)
+    from probate.courthouse import app as app_module
+
+    try:
+        importlib.reload(app_module)
+        s = TestClient(app_module.app).get("/api/summary").json()
+        assert s["code_commit"] == "a" * 40 + "+dirty"
+        assert app_module.store.get_setting("paused") == "1"
+        app_module.store.set_setting("paused", "0")  # the owner resumes
+        importlib.reload(app_module)  # a restart must not pause it again
+        assert app_module.store.get_setting("paused") == "0"
+    finally:
+        monkeypatch.delenv("PROBATE_START_PAUSED")
+        monkeypatch.delenv("PROBATE_CODE_COMMIT")
+        importlib.reload(config)
+        importlib.reload(app_module)
+
+
 def test_summary_carries_the_scoring_rules_and_environment(client):
     from probate.courthouse import app as app_module
 

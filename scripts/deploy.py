@@ -96,6 +96,26 @@ def restore_database(api, name: str, path: Path) -> str:
     return f"restored {len(data) // 1024} KiB from {path.name}"
 
 
+def git_commit() -> str:
+    """The commit of the working tree being deployed; `+dirty` if tracked files have changes."""
+    import subprocess
+
+    try:
+        sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ).stdout.strip()
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "-uno"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return sha + ("+dirty" if dirty else "")
+
+
 def step(msg: str) -> None:
     print(f"→ {msg}", flush=True)
 
@@ -130,14 +150,20 @@ def main() -> None:
     envs.announce(target)
     if target and target.read_only:
         sys.exit(f"{target.name} is a read-only record; deploy refused.")
+    if target and (target.simulated or not target.sprite):
+        sys.exit(f"{target.name} is simulated and has no Sprite; run `make sim` instead.")
     args.name = args.name or (target.sprite if target else envs.LEGACY_SPRITE)
     extra = target.sprite_settings() if target else {}
     url_file = target.url_file if target else URL_FILE
 
     env = read_env()
     extra, notes = envs.guard(extra, env, args.allow_brain_change)
+    commit = git_commit()
+    if commit:
+        extra["PROBATE_CODE_COMMIT"] = commit
     print("Effective settings on the Sprite (no secrets):")
     print("\n".join(envs.effective(env, extra)))
+    print(f"  code commit: {commit or 'unknown (not a git checkout)'}")
     for n in notes:
         print(f"  note: {n}")
     bundle = make_bundle(web=True)
@@ -178,13 +204,19 @@ def main() -> None:
     if not url:
         sys.exit("Deployed, but the API returned no URL. Check `sprite info` for it.")
 
+    if target and target.set_public_url and env.get("PROBATE_PUBLIC_URL") != url:
+        step("setting PROBATE_PUBLIC_URL and restarting")
+        extra["PROBATE_PUBLIC_URL"] = url
+        api.write_file(args.name, "app/services/core/.env", render_env(env, extra), mode="0600")
+        api.service_action(args.name, "courthouse", "restart")
+
     step(f"waiting for {url}/healthz")
     for _ in range(30):
         try:
             if httpx.get(f"{url}/healthz", timeout=10).status_code == 200:
                 url_file.parent.mkdir(exist_ok=True)
                 url_file.write_text(url + "\n", encoding="utf-8")
-                if target and target.name == "production-v2":
+                if target and target.name in ("production-v2", "judges-demo"):
                     URL_FILE.write_text(
                         url + "\n", encoding="utf-8"
                     )  # ship.sh links the docs site to it

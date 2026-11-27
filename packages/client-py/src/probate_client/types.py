@@ -67,6 +67,7 @@ class Summary(TypedDict):
     scoring_rules: str
     environment: str
     branch: str | None
+    code_commit: str | None
     paused: bool
     resting: Literal["budget", "mail"] | None
     budget: Budget

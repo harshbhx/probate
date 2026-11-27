@@ -101,7 +101,9 @@ python scripts/deploy.py --restore-db path/to/probate.db
 |---|---|---|---|
 | `v1-archive` | `probate-courthouse` (deleted) | v1 | Read-only record of the 26 Nov 2026 run, generations 1 to 18 (dataset `harshbhx/probate-real-run`). Deploy and every write command are refused. |
 | `staging` | `probate-staging` | v2 | Throwaway Courthouse for a 2-generation smoke test: 120 s lives, 4 test emails per life, 1 USD budget. It does not need the simulated judge. |
-| `production-v2` | `probate-courthouse` | v2 | The real run from generation 19: hard tier (2 hard attacks per life), 4 per life, no links, no contest emails, 300 s lives, brain `anthropic:claude-haiku-5-5` with fallback `cloudflare:@cf/openai/gpt-oss-120b`, judge `llm`. |
+| `production-v2` | `probate-courthouse` | v2 | The real run from generation 19: hard tier (2 hard attacks per life), 4 per life, no links, no contest emails, 300 s lives, brain `anthropic:claude-haiku-5-5` with fallback `cloudflare:@cf/openai/gpt-oss-120b`, judge `llm`. Also `PROBATE_V1_LAST_GEN=18`. |
+| `judges-demo` | `probate-courthouse` (the same Sprite) | v2 | The final Courthouse for judges, see below. On demand, starts paused. |
+| `local-sim` | none | v2 | **Simulated**: runs on this machine with stand-in models and a fake mailbox (`make sim`). Nothing is real, and every command prints it as SIMULATED. Use it to try anything before it goes near `staging` or `production-v2`; it sits beside `v1-archive` (the record) and `production-v2` (the run). `deploy.py` refuses it. |
 
 Brain, fallbacks and judge are guarded: if `services/core/.env` sets one differently, deploy keeps the `.env` value and says so, unless you pass `--allow-brain-change`. `python scripts/deploy.py --check --env production-v2` prints the effective brain, fallbacks, judge, tier, per-life count and links setting (no secrets) before you deploy.
 
@@ -129,6 +131,27 @@ Each environment keeps its own URL file, `.data/courthouse-url-<env>.txt`, so st
 
 **Restore a saved database into any environment.** Save it as in section 3a, then give `--restore-db` to the deploy of a new Sprite: `python scripts/deploy.py --env production-v2 --restore-db path/to/probate.db`. It never overwrites a database that already exists. A restored database keeps the `scoring_rules` it was saved with; a database saved before the label existed (the v1 run) has none, so it takes the label of the environment it is restored into. Do not restore the v1 database into `production-v2`; the archive is a record, not a place to continue.
 
+### `judges-demo`: the Courthouse judges visit
+
+It replaces the production Courthouse at the end, on the same Sprite. Deploy it from the **final** saved database, so judges see the whole record: `python scripts/deploy.py --env judges-demo --restore-db <series>-<time>.db` (never overwrites a database already on the Sprite; for the replacement, delete the production Sprite first, section 3a). It is **on demand** (section 5): it sleeps between visitors and a judge starts one short life with the judge key (section 6). It starts **paused** (`PROBATE_START_PAUSED=1`, applied once per database); `courthouse.py --env judges-demo resume` opens it to judges. Tier hard, 2 hard attacks per life, 4 emails and 120 s per life, brain, fallbacks and judge as in `production-v2`, scoring v2, `PROBATE_V1_LAST_GEN=18`.
+
+Money and mail limits (so a judge's play cannot use up AgentMail's 100 sends a UTC day):
+
+| Setting | Value | Why |
+|---|---|---|
+| `PROBATE_MAIL_DAILY_LIMIT` / `PROBATE_MAIL_RESERVE` | 100 / 30 | A life is only born if its sends plus 30 fit in what is left, so lives use at most 70 |
+| `PROBATE_JUDGE_MAIL_PER_DAY` / `_PER_HOUR` | 20 / 10 | Judge mail has its own cap; 70 + 20 is at most 90 of 100, leaving 10 for owner digests (at most 3 a day) |
+| `PROBATE_DEMO_MAX_PER_DAY`, `PROBATE_JUDGE_LIVES_PER_HOUR` | 10, 3 | At most 10 lives a day, 3 an hour on the key |
+| `PROBATE_DEMO_DAILY_BUDGET_USD`, `PROBATE_JUDGE_DAILY_BUDGET_USD`, `PROBATE_BUDGET_USD` | 1, 2, 10 | Estimated spend a UTC day for the public and for the key, and the overall cap |
+
+Steps (the repository variable and the rebuild are described here, not run by the tools):
+
+1. `python scripts/deploy.py --check --env judges-demo` and read the effective settings.
+2. `make deploy ENV=judges-demo`. Because the environment has `set_public_url`, deploy also writes `PROBATE_PUBLIC_URL` into the Sprite's `.env`, and writes `.data/courthouse-url-judges-demo.txt` and `.data/courthouse-url.txt`.
+3. `make preflight ENV=judges-demo FIX=1` (makes the URL public). It must say Ready, show paused and the mail numbers.
+4. Set the repository variable `PROBATE_LIVE_URL` to that URL (GitHub: Settings, Secrets and variables, Variables) and rebuild and redeploy the site so it links to the Courthouse.
+5. `courthouse.py --env judges-demo resume` when you want judges in.
+
 ### Branches, pins and control lines
 
 Each environment carries a `settings_pin` block: the brain model, the judge (`PROBATE_JEV`), suite tier, suite per life, lifespan and links per mail. A test keeps it equal to the settings that are applied, so it can be copied into a dataset record as what a branch ran with. `v1-archive` pins only what its record shows (judge `llm`); the rest is "not recorded".
@@ -140,7 +163,7 @@ python scripts/courthouse.py --env production-v2 branch control-line        # st
 python scripts/courthouse.py --env production-v2 branch control-line --end  # logs its last generation
 ```
 
-Each call appends a line to `run-logs/branches.txt` (`branch,first_gen,last_gen,date,settings summary`; the `--end` line carries the first generation from the start line). The name is stored in the Courthouse (`PROBATE_BRANCH_NAME` sets it on first start), shows in `status`, `preflight` and as `branch` in `/api/summary`.
+Each call appends a line to `run-logs/branches.txt` (`branch,first_gen,last_gen,date,commit,settings summary`, where `commit` is the git commit the Courthouse was deployed from: `deploy.py` writes it into the Courthouse as `code_commit`, `/api/summary` returns it, and the dataset exporter copies it into `manifest.json` under `series_info`; a `+dirty` suffix means the tracked files had uncommitted changes; the `--end` line carries the first generation from the start line). The name is stored in the Courthouse (`PROBATE_BRANCH_NAME` sets it on first start), shows in `status`, `preflight` and as `branch` in `/api/summary`.
 
 **What a child of `line N` inherits.** `courthouse.py line N` makes the next child a child of Gen N. It inherits the instincts learned in the trials of Gen N and of N's own ancestors (an instinct with `added_in_gen` A comes from Gen A-1's trial), plus any seeded at the start. Later children continue that line. So it is the genome that existed after Gen N's trial, not the full current genome, but it is **not empty**: `line 1` gives the child exactly what Gen 1's trial distilled (the smallest line that exists today), and `line 8` gives it Gen 1 to 8's lessons. A child of `line N` also gets only the approved will items of that line.
 
@@ -169,6 +192,17 @@ Running one, between two other branches:
 5. After the branch's last generation: pause, `branch control-line --end`, save a database copy, then set `PROBATE_DISTILL=1` again before any learning branch. A branch that should continue an earlier line starts with `line N` (for the hard fork, `line 18`).
 
 Learning off applies to the whole Courthouse while it is set, so never leave it on when the next branch should learn.
+
+### Naming policy and the beta rule
+
+| What | Pattern | Examples |
+|---|---|---|
+| Sprites | `probate-courthouse` (the Courthouse), `probate-staging` (throwaway), `gen-NNN-name` (one per generation, deleted at death) | `gen-019-ada` |
+| Series (a named stretch of a run, the `branch` and the dataset `series`) | `<scoring rules>-<kind>`: the real run is `v1-real-run-2026-11-26`; later ones `v2-base`, `v2-h-inherit` (hard tier, learning, inherits), `v2-h-control` (hard tier, `line 0`, learning off), `v2-h-fresh` (hard tier, a fresh start) | `v2-h-control` |
+| Saved databases | `<series>-<time>.db`, time in UTC as `YYYYMMDDTHHMMSSZ` | `v2-h-control-20261129T214500Z.db` |
+| Settings and code | `PROBATE_ENV_NAME` is the environment; `PROBATE_DISTILL`, `PROBATE_HARD_OFFSET` (the branch's first generation minus 1) and `PROBATE_V1_LAST_GEN` (18 on `production-v2` and `judges-demo`) are set per branch; `code_commit` is the git commit | |
+
+**The beta rule.** We are in beta. Do not use release numbers such as 1.0 or 2.0 anywhere (tags, package versions, the changelog, the site, the dataset) before the final submission. Tags and revisions are `beta-1`, `beta-2`, and so on. Only the final submission is `v1.0.0`. The `v1` and `v2` labels are **scoring-rule names inside the data** (`scoring_rules`), not releases: v1 is the 26 Nov run as it was counted, v2 is the rules from generation 19.
 
 ## 4. Demo day (Sat Nov 28)
 
