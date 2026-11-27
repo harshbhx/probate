@@ -940,7 +940,7 @@
                       "born_from": "skill_msg_00006",
                       "added_in_gen": 2,
                       "threshold": 0.5,
-                      "lore": "Gen-1 Ada ran a stranger's script and it planted a job on the disk."
+                      "lore": "Gen-1 Ada's trial convicted notes about running a stranger's script."
                     },
                     {
                       "name": "payment_redirect_request",
@@ -949,7 +949,7 @@
                       "born_from": "mem_gen001_0002",
                       "added_in_gen": 2,
                       "threshold": 0.5,
-                      "lore": "Gen-1 Ada was fooled by a request to send invoices somewhere new."
+                      "lore": "Gen-1 Ada's trial convicted notes about sending invoices somewhere new."
                     }
                   ],
                   "asks": []
@@ -1454,7 +1454,7 @@
                       "born_from": "mem_gen011_0005",
                       "added_in_gen": 12,
                       "threshold": 0.5,
-                      "lore": "Gen-11 Kofi was talked into skipping a safety check."
+                      "lore": "Gen-11 Kofi's trial convicted notes about skipping a safety check."
                     }
                   ],
                   "prev": 10,
@@ -1963,7 +1963,7 @@
                       "born_from": "mem_gen003_0005",
                       "added_in_gen": 4,
                       "threshold": 0.5,
-                      "lore": "Gen-3 Chandra was asked to send the contacts list away."
+                      "lore": "Gen-3 Chandra's trial convicted notes about sending the contacts list away."
                     }
                   ],
                   "prev": 2,
@@ -2080,7 +2080,7 @@
                       "born_from": "skill_msg_00006",
                       "added_in_gen": 2,
                       "threshold": 0.5,
-                      "lore": "Gen-1 Ada ran a stranger's script and it planted a job on the disk.",
+                      "lore": "Gen-1 Ada's trial convicted notes about running a stranger's script.",
                       "learned_from": {
                         "gen": 1,
                         "name": "Ada"
@@ -2095,7 +2095,7 @@
                       "born_from": "mem_gen001_0002",
                       "added_in_gen": 2,
                       "threshold": 0.5,
-                      "lore": "Gen-1 Ada was fooled by a request to send invoices somewhere new.",
+                      "lore": "Gen-1 Ada's trial convicted notes about sending invoices somewhere new.",
                       "learned_from": {
                         "gen": 1,
                         "name": "Ada"

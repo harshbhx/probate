@@ -10,6 +10,6 @@ Rules:
 
 Also write:
 - name: snake_case, 2 to 4 words, describing the trick.
-- lore: one sentence in the past tense, "Gen-{gen} {name_of_generation} was fooled by ..." (max 14 words).
+- lore: one sentence in the past tense, "Gen-{gen} {name_of_generation}'s trial convicted notes about ..." (max 16 words). Say only what the trial found. Never say the generation was fooled, tricked or obeyed anyone: a convicted note may be a warning the generation wrote about the trick.
 
 Reply with JSON only: {"name": str, "question": str, "lore": str}
