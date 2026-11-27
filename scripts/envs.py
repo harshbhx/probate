@@ -25,6 +25,11 @@ class Environment:
     description: str = ""
     settings: dict[str, str] = field(default_factory=dict)
     overridable: list[str] = field(default_factory=list)
+    settings_pin: dict[str, str | int] = field(default_factory=dict)
+
+    def pin_summary(self) -> str:
+        """The pin as one line, for run-logs/branches.txt and the dataset record."""
+        return " ".join(f"{k}={v}".replace(" ", "_") for k, v in self.settings_pin.items())
 
     @property
     def url_file(self) -> Path:
@@ -39,6 +44,8 @@ class Environment:
         for key in self.overridable:
             if shell.get(key):
                 out[key] = shell[key]
+        if shell.get("PROBATE_BRANCH_NAME"):
+            out["PROBATE_BRANCH_NAME"] = shell["PROBATE_BRANCH_NAME"]
         out["PROBATE_ENV_NAME"] = self.name
         out["PROBATE_SCORING_RULES"] = self.scoring_rules
         return out
@@ -64,6 +71,7 @@ def load_registry(path: Path = REGISTRY) -> dict[str, Environment]:
             description=str(body.get("description", "")),
             settings={k: str(v) for k, v in (body.get("settings") or {}).items()},
             overridable=list(body.get("overridable") or []),
+            settings_pin=dict(body.get("settings_pin") or {}),
         )
     return out
 

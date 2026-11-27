@@ -43,6 +43,8 @@ if settings.fake:
 if not store.get_setting("scoring_rules"):
     # First start of this database: label it. A restored database keeps the label it was saved with.
     store.set_setting("scoring_rules", settings.scoring_rules)
+if settings.branch_name and not store.get_setting("branch"):
+    store.set_setting("branch", settings.branch_name)
 w = world(settings)
 host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
 hooks = Webhooks(store, settings)
@@ -594,6 +596,10 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
         "latest_tried": tried[-1].gen if tried else None,
         "next_gen": family.next_number(),
         "next_parent": int(store.get_setting("next_parent", "") or 0) or None,
+        "next_genome_size": _next_genome_size(),
+        "branch": store.get_setting("branch", "") or None,
+        "scoring_rules": store.get_setting("scoring_rules", settings.scoring_rules),
+        "environment": settings.env_name,
         "mail": {
             "limit": quota.limit or None,
             "used_today": quota.used(),
@@ -617,6 +623,23 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
         except Exception as exc:  # noqa: BLE001 - a status page must not fail on one Sprite
             out["living_log_error"] = type(exc).__name__
     return out
+
+
+def _next_genome_size() -> int:
+    """How many instincts the next child will inherit: those of its parent's line."""
+    n = family.next_number()
+    parent = int(store.get_setting("next_parent", "") or 0) or (n - 1)
+    line = [parent, *store.line_of(parent)] if parent > 0 else []
+    return len(store.genome_for_line(line))
+
+
+@app.post("/admin/branch", tags=["Admin"], summary="Name the current branch of the run")
+def admin_branch(name: str = "", x_probate_admin: str | None = Header(None)) -> dict:
+    """Label the run from now on (for example `control-line`). An empty name clears it."""
+    _admin(x_probate_admin)
+    name = name.strip()[:60]
+    store.set_setting("branch", name)
+    return {"branch": name or None, "next_gen": family.next_number()}
 
 
 @app.post("/admin/pause", tags=["Admin"], summary="Pause births")

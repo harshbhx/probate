@@ -35,6 +35,8 @@ export type Summary = {
   scoring_rules: string;
   /** The named environment (PROBATE_ENV_NAME), for example "production-v2" or "local". */
   environment: string;
+  /** The named branch of the run (courthouse.py branch), or null. */
+  branch: string | null;
   paused: boolean;
   resting: "budget" | "mail" | null;
   budget: { spent: number; limit: number };

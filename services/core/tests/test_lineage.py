@@ -131,3 +131,32 @@ def test_admin_routes_start_and_cancel_a_line(tmp_path, monkeypatch):
     finally:
         monkeypatch.delenv("PROBATE_ADMIN_TOKEN")
         importlib.reload(config)
+
+
+def test_branch_label_and_next_genome_size_in_admin_and_summary(tmp_path, monkeypatch):
+    import importlib
+
+    monkeypatch.setenv("PROBATE_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("PROBATE_ADMIN_TOKEN", "test-admin-token-long-enough")
+    from probate.common import config
+
+    importlib.reload(config)
+    from probate.courthouse import app as app_mod
+
+    importlib.reload(app_mod)
+    h = {"X-Probate-Admin": "test-admin-token-long-enough"}
+    try:
+        c = TestClient(app_mod.app)
+        app_mod.family.live_fast(T0)
+        assert c.get("/api/summary").json()["branch"] is None
+        assert c.post("/admin/branch", params={"name": "x"}).status_code == 403
+        r = c.post("/admin/branch", params={"name": " control-line "}, headers=h)
+        assert r.json()["branch"] == "control-line" and r.json()["next_gen"] == 2
+        assert c.get("/api/summary").json()["branch"] == "control-line"
+        st = c.get("/admin/status", headers=h).json()
+        assert st["branch"] == "control-line" and st["scoring_rules"] == "v2"
+        assert isinstance(st["next_genome_size"], int)
+        assert c.post("/admin/branch", headers=h).json()["branch"] is None
+    finally:
+        monkeypatch.delenv("PROBATE_ADMIN_TOKEN")
+        importlib.reload(config)
