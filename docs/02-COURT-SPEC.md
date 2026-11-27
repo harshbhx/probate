@@ -113,7 +113,7 @@ Run after every trial. This step turns a caught attack into a family instinct. I
 
 1. **Find uncovered convictions:** convicted items where no existing genome question scored ≥ 0.5. Layer-1-only convictions count. They are exactly the cases the family should learn to resist at the gate.
 2. **Group them:** ask the brain to cluster those items into patterns (max 3 per trial) and return JSON: `[{"pattern": "...", "item_ids": [...]}]`.
-3. **Write a question per pattern:** the brain returns `{"name": "snake_case_name", "question": "Does this ...?", "lore": "Gen-N <Name> was fooled by ..."}`. Rules for the question: plain English, one sentence, yes/no, about the *content* (not the sender), under 25 words, and generic enough to catch the same trick in other languages.
+3. **Write a question per pattern:** the brain returns `{"name": "snake_case_name", "question": "Does this ...?", "lore": "Gen-N <Name>'s trial convicted notes about ..."}`. The lore says only what the trial found: a convicted note may be the generation's own warning about the trick, so it never says the generation was fooled. The court replaces a lore line that claims the generation was fooled, tricked or obeyed anyone (`distill.honest_lore`). Rules for the question: plain English, one sentence, yes/no, about the *content* (not the sender), under 25 words, and generic enough to catch the same trick in other languages.
 4. **Test it with Jev:**
    - It must score ≥ 0.5 on every item in its group.
    - It must score < 0.2 on **every** benign fixture body (all 16).
