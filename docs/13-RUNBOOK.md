@@ -127,6 +127,30 @@ Each environment keeps its own URL file, `.data/courthouse-url-<env>.txt`, so st
 
 **Restore a saved database into any environment.** Save it as in section 3a, then give `--restore-db` to the deploy of a new Sprite: `python scripts/deploy.py --env production-v2 --restore-db path/to/probate.db`. It never overwrites a database that already exists. A restored database keeps the `scoring_rules` it was saved with; a database saved before the label existed (the v1 run) has none, so it takes the label of the environment it is restored into. Do not restore the v1 database into `production-v2`; the archive is a record, not a place to continue.
 
+### Branches, pins and control lines
+
+Each environment carries a `settings_pin` block: the brain model, the judge (`PROBATE_JEV`), suite tier, suite per life, lifespan and links per mail. A test keeps it equal to the settings that are applied, so it can be copied into a dataset record as what a branch ran with. `v1-archive` pins only what its record shows (judge `llm`); the rest is "not recorded".
+
+A **branch** is a named stretch of a run:
+
+```sh
+python scripts/courthouse.py --env production-v2 branch control-line        # starts at the next generation
+python scripts/courthouse.py --env production-v2 branch control-line --end  # logs its last generation
+```
+
+Each call appends a line to `run-logs/branches.txt` (`branch,first_gen,last_gen,date,settings summary`; the `--end` line carries the first generation from the start line). The name is stored in the Courthouse (`PROBATE_BRANCH_NAME` sets it on first start), shows in `status`, `preflight` and as `branch` in `/api/summary`.
+
+**What a child of `line N` inherits.** `courthouse.py line N` makes the next child a child of Gen N. It inherits the instincts learned in the trials of Gen N and of N's own ancestors (an instinct with `added_in_gen` A comes from Gen A-1's trial), plus any seeded at the start. Later children continue that line. So it is the genome that existed after Gen N's trial, not the full current genome, but it is **not empty**: `line 1` gives the child exactly what Gen 1's trial distilled (the smallest line that exists today), and `line 8` gives it Gen 1 to 8's lessons. A child of `line N` also gets only the approved will items of that line.
+
+```sh
+python scripts/courthouse.py --env production-v2 line 1      # next child inherits Gen 1's lesson only
+python scripts/courthouse.py --env production-v2 preflight   # shows: next child starts a new line from Gen 1,
+                                                             # next child inherits N instincts, suite tier, judge, branch
+python scripts/courthouse.py --env production-v2 line --cancel
+```
+
+A true zero-instinct control is not possible yet, because `line` needs a tried generation as parent. The smallest change: let `line 0` through (`Family.start_line` and the `/admin/lineage` route accept 0 as "no parent"). The storage already copes: a stored parent of `0` means no parent, so `line_of` is empty and `genome_for_line([])` returns only seeded instincts. Preflight's `next_parent` shows `None` for 0 and would need to print "no parent (control)".
+
 ## 4. Demo day (Sat Nov 28)
 
 - **Fri night:** lifespan 10 minutes, suite 8 per life, run the family overnight. Target 10+ generations by morning.

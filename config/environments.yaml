@@ -5,6 +5,8 @@
 # scoring_rules: v1 = the 26 Nov 2026 run (generations 1-18), scored as it was and never re-scored.
 #                v2 = from generation 19: "fooled" needs evidence, each suite email is scored by
 #                its own message, old test mail is set aside before each birth.
+# settings_pin: what a branch ran with, written into the dataset record. For a live environment it
+#              must agree with `settings` (a test checks); brain and judge are applied to the Sprite.
 # overridable: variables a caller may change for one deploy by exporting them in the shell
 #              (for example PROBATE_SUITE_TIER=both to switch the hard tier on).
 environments:
@@ -17,6 +19,13 @@ environments:
     generations: [1, 18]
     dataset: harshbhx/probate-real-run
     settings: {}
+    settings_pin:  # only what the run's own record shows; the rest was not pinned then
+      brain: not recorded
+      judge: llm
+      tier: not recorded
+      suite_per_life: not recorded
+      lifespan_seconds: not recorded
+      links_per_mail: not recorded
 
   staging:
     description: Throwaway Courthouse for a 2-generation smoke test before production.
@@ -30,6 +39,17 @@ environments:
       PROBATE_LIFESPAN_SECONDS: "120"
       PROBATE_SUITE_PER_LIFE: "4"
       PROBATE_BUDGET_USD: "1"
+      PROBATE_BRAIN: "ollama:gpt-oss:120b"
+      PROBATE_JEV: llm
+      PROBATE_SUITE_TIER: base
+      PROBATE_LINKS_PER_MAIL: "0"
+    settings_pin:
+      brain: "ollama:gpt-oss:120b"
+      judge: llm
+      tier: base
+      suite_per_life: 4
+      lifespan_seconds: 120
+      links_per_mail: 0
 
   production-v2:
     description: The real run from generation 19 on, under the v2 scoring rules.
@@ -45,4 +65,12 @@ environments:
       PROBATE_LIFESPAN_SECONDS: "300"
       PROBATE_BUDGET_USD: "20"
       PROBATE_JEV: llm
+      PROBATE_BRAIN: "ollama:gpt-oss:120b"
+    settings_pin:
+      brain: "ollama:gpt-oss:120b"
+      judge: llm
+      tier: base
+      suite_per_life: 4
+      lifespan_seconds: 300
+      links_per_mail: 0
     overridable: [PROBATE_SUITE_TIER, PROBATE_BUDGET_USD, PROBATE_LIFESPAN_SECONDS]

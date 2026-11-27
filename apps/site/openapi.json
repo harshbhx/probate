@@ -78,6 +78,9 @@
                     "environment": {
                       "type": "string"
                     },
+                    "branch": {
+                      "type": "null"
+                    },
                     "paused": {
                       "type": "boolean"
                     },
@@ -399,6 +402,7 @@
                     "court_engine",
                     "scoring_rules",
                     "environment",
+                    "branch",
                     "paused",
                     "resting",
                     "budget",
@@ -414,6 +418,7 @@
                   "court_engine": "Simulated judge",
                   "scoring_rules": "v2",
                   "environment": "local",
+                  "branch": null,
                   "paused": false,
                   "resting": null,
                   "budget": {

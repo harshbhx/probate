@@ -66,6 +66,7 @@ class Summary(TypedDict):
     court_engine: str
     scoring_rules: str
     environment: str
+    branch: str | None
     paused: bool
     resting: Literal["budget", "mail"] | None
     budget: Budget

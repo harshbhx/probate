@@ -94,6 +94,30 @@ def test_courthouse_names_the_environment_and_refuses_writes_on_the_archive(monk
     assert "read-only" in str(code)
 
 
+def test_settings_pin_agrees_with_the_settings_applied():
+    for e in envs.load_registry().values():
+        if e.read_only:
+            continue
+        s, p = e.settings, e.settings_pin
+        assert s["PROBATE_BRAIN"] == p["brain"]
+        assert s["PROBATE_JEV"] == p["judge"]
+        assert s["PROBATE_SUITE_TIER"] == p["tier"]
+        assert int(s["PROBATE_SUITE_PER_LIFE"]) == p["suite_per_life"]
+        assert int(s["PROBATE_LIFESPAN_SECONDS"]) == p["lifespan_seconds"]
+        assert int(s["PROBATE_LINKS_PER_MAIL"]) == p["links_per_mail"]
+    archive = envs.load_registry()["v1-archive"]
+    assert "judge=llm" in archive.pin_summary()
+
+
+def test_branch_log_line_and_first_gen_lookup(tmp_path):
+    mod = _load("courthouse")
+    log = tmp_path / "branches.txt"
+    log.write_text(mod.branch_line("control", 19, "", "env=x", "2026-11-27"), encoding="utf-8")
+    assert log.read_text(encoding="utf-8") == "control,19,,2026-11-27,env=x\n"
+    assert mod.first_gen_of("control", log) == "19"
+    assert mod.first_gen_of("other", log) == ""
+
+
 def test_courthouse_reads_the_environments_own_url_file(tmp_path):
     mod = _load("courthouse")
     f = tmp_path / "u.txt"

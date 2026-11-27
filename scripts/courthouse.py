@@ -7,6 +7,8 @@
     services/core/.venv/bin/python scripts/courthouse.py pause | resume | tick | force-death
     services/core/.venv/bin/python scripts/courthouse.py line 16            # next child: Gen 16's
     services/core/.venv/bin/python scripts/courthouse.py line --cancel
+    services/core/.venv/bin/python scripts/courthouse.py branch control-line   # label the run from the next generation
+    services/core/.venv/bin/python scripts/courthouse.py branch control-line --end   # log its last generation
     services/core/.venv/bin/python scripts/courthouse.py decide <item_id> approve|refuse
 
 Reads services/core/.env (PROBATE_ADMIN_TOKEN, PROBATE_SPRITES_TOKEN) and the Courthouse URL
@@ -22,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -154,6 +157,10 @@ def preflight(env: dict[str, str], url: str, fix: bool, deep: bool, sprite: str 
         )
         if d.get("next_parent"):
             rep.ok(f"next child starts a new line from Gen {d['next_parent']}")
+        if d.get("next_genome_size") is not None:
+            rep.ok(f"next child inherits {d['next_genome_size']} instincts")
+        if d.get("branch"):
+            rep.ok(f"branch: {d['branch']}")
         m = d["mail"]
         if m["limit"]:
             need = m["next_life_needs"] + m["reserve"]
@@ -213,6 +220,58 @@ def admin(env: dict[str, str], url: str, method: str, path: str, **params) -> in
     return 0 if r.status_code < 400 else 1
 
 
+BRANCH_LOG = ROOT / "run-logs" / "branches.txt"
+
+
+def first_gen_of(name: str, log: Path = BRANCH_LOG) -> str:
+    """The first generation recorded for a branch, or empty if it was never started here."""
+    if log.exists():
+        for line in log.read_text(encoding="utf-8").splitlines():
+            parts = line.split(",", 4)
+            if parts[0] == name and len(parts) > 2 and parts[2] == "":
+                return parts[1]
+    return ""
+
+
+def branch_line(name: str, first, last, summary: str, today=None) -> str:
+    today = today or datetime.now(UTC).date()
+    return f"{name},{first},{last},{today},{summary}\n"
+
+
+def branch(env: dict[str, str], url: str, name: str, end: bool, target) -> int:
+    """Label the run and log it. A branch starts at the next generation; `--end` logs a second
+    line with the last generation so far. Columns: branch,first_gen,last_gen,date,settings."""
+    headers = {"X-Probate-Admin": env.get("PROBATE_ADMIN_TOKEN", "")}
+    st = httpx.get(f"{url}/admin/status", headers=headers, timeout=30)
+    if st.status_code != 200:
+        print(f"/admin/status answered {st.status_code}; nothing recorded.")
+        return 1
+    d = st.json()
+    next_gen = d["next_gen"]
+    if end:
+        first, last = first_gen_of(name), next_gen - 1
+    else:
+        first, last = next_gen, ""
+        r = httpx.post(f"{url}/admin/branch", params={"name": name}, headers=headers, timeout=30)
+        if r.status_code != 200:
+            print(f"/admin/branch answered {r.status_code}; nothing recorded.")
+            return 1
+    summary = (
+        f"env={target.name if target else 'none'} rules={d.get('scoring_rules')} "
+        f"judge={d['judge'].replace(' ', '_')} tier={d['suite_tier']} "
+        f"lifespan={d['lifespan_seconds']}"
+    )
+    if target and target.settings_pin:
+        summary += f" pin[{target.pin_summary()}]"
+    BRANCH_LOG.parent.mkdir(exist_ok=True)
+    with BRANCH_LOG.open("a", encoding="utf-8") as f:
+        f.write(branch_line(name, first, last, summary))
+    print(
+        f"branch {name}: first_gen {first}, last_gen {last or 'open'}; logged in {BRANCH_LOG.name}"
+    )
+    return 0
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--env", help="a named environment from config/environments.yaml")
@@ -227,6 +286,13 @@ def main() -> None:
     ln = sub.add_parser("line")
     ln.add_argument("gen", nargs="?", type=int)
     ln.add_argument("--cancel", action="store_true")
+    br = sub.add_parser(
+        "branch", help="label the run from the next generation (run-logs/branches.txt)"
+    )
+    br.add_argument("name")
+    br.add_argument(
+        "--end", action="store_true", help="log the branch's last generation (latest so far)"
+    )
     dc = sub.add_parser("decide")
     dc.add_argument("item_id")
     dc.add_argument("decision", choices=["approve", "refuse"])
@@ -252,6 +318,8 @@ def main() -> None:
         if not args.gen:
             sys.exit("Say which generation: `courthouse.py line 16`.")
         sys.exit(admin(env, url, "POST", "/admin/lineage", from_gen=args.gen))
+    if args.cmd == "branch":
+        sys.exit(branch(env, url, args.name, args.end, target))
     if args.cmd == "decide":
         sys.exit(
             admin(env, url, "POST", f"/admin/contested/{args.item_id}", decision=args.decision)

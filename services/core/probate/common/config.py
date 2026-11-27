@@ -108,6 +108,9 @@ class Settings:
     env_name: str = field(
         default_factory=lambda: _env("PROBATE_ENV_NAME", "local").strip() or "local"
     )
+    # A branch is a named stretch of a run (for example a control line). Recorded in the database on
+    # first start; `courthouse.py branch <name>` changes it while running.
+    branch_name: str = field(default_factory=lambda: _env("PROBATE_BRANCH_NAME").strip())
     budget_usd: float = field(default_factory=lambda: float(_env("PROBATE_BUDGET_USD", "20")))
     # "continuous" (default): the clock free-runs and a new life starts as soon as one ends.
     # "on_demand": nothing runs until a visitor asks for one short demo life (docs/13-RUNBOOK.md).
