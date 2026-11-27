@@ -20,6 +20,9 @@ APP = "/home/sprite/app"
 log = logging.getLogger("probate.hosts")
 # The agent polls every 20 s; a loop silent this long has stopped and is restarted.
 STALE_LOOP_SECONDS = 150
+# An agent whose loop has never gone round once is given this long, not 150 s: staging lives are
+# 120 s, and a first life whose agent never started would be over before the watchdog looked.
+FIRST_BEAT_SECONDS = 60
 RESTART_EVERY_SECONDS = 300
 
 
@@ -167,6 +170,13 @@ class SpritesHost:
             inh.dies_at += shift
         self.api.write_file(sprite, "app/inheritance.json", inh.model_dump_json(indent=2).encode())
         baseline = self._cli(sprite, "baseline")
+        self._register_agent(sprite)
+        self.api.service_action(sprite, "agent", "start")
+        return baseline
+
+    def _register_agent(self, sprite: str) -> None:
+        """(Re)define the agent service. Idempotent: a restart of a service that was never created
+        would otherwise be a 404 that the API client ignores, and the agent would never run."""
         env_args = " ".join(f"{k}={shlex.quote(v)}" for k, v in self._env().items())
         self.api.put_service(
             sprite,
@@ -177,25 +187,42 @@ class SpritesHost:
                 f"cd {APP}/services/core && exec env {env_args} python3 -m probate.generation.agent",
             ],
         )
-        self.api.service_action(sprite, "agent", "start")
-        return baseline
+
+    def restart_agent(self, sprite: str) -> None:
+        """Restart the agent; if its service was never created or never started, create and start
+        it. Covers a birth that was cut short as well as a loop that stopped."""
+        self._register_agent(sprite)
+        self.api.service_action(sprite, "agent", "restart")
+        try:
+            self.api.service_action(sprite, "agent", "start")  # for a restart that did not start it
+        except Exception:  # noqa: BLE001 - already running is fine
+            log.info("%s: agent start after restart was refused (already running?)", sprite)
 
     def alive(self, sprite: str) -> bool:
         return self.api.get(sprite) is not None
 
     def tick(self, sprite: str) -> dict:
         """Health check that also keeps the Sprite awake. An agent loop that has not gone round
-        for STALE_LOOP_SECONDS is restarted (at most every RESTART_EVERY_SECONDS)."""
+        for STALE_LOOP_SECONDS, or that never went round once in FIRST_BEAT_SECONDS, is restarted
+        (at most every RESTART_EVERY_SECONDS)."""
         st = self._cli(sprite, "status")
         age = st.get("loop_age") if isinstance(st, dict) else None
         now = time.monotonic()
+        never_started = isinstance(st, dict) and st.get("loop_beat") is False
+        limit = FIRST_BEAT_SECONDS if never_started else STALE_LOOP_SECONDS
         if (
             isinstance(age, (int, float))
-            and age > STALE_LOOP_SECONDS
+            and age > limit
             and now - self._restarted.get(sprite, -1e9) > RESTART_EVERY_SECONDS
         ):
             self._restarted[sprite] = now
-            self.api.service_action(sprite, "agent", "restart")
+            log.warning(
+                "%s: agent loop silent for %s s (never started: %s); restarting",
+                sprite,
+                age,
+                never_started,
+            )
+            self.restart_agent(sprite)
             st["restarted"] = True
         return st
 

@@ -113,6 +113,9 @@ class _API:
     def __init__(self):
         self.actions = []
 
+    def put_service(self, sprite, service, cmd, args, http_port=None):
+        pass  # the restart re-registers the service first
+
     def service_action(self, sprite, service, action):
         self.actions.append((sprite, service, action))
 
@@ -120,6 +123,7 @@ class _API:
 def _host(age):
     h = SpritesHost.__new__(SpritesHost)
     h.api, h._restarted = _API(), {}
+    h._env = dict
     h._cli = lambda sprite, cmd: {"state": "living", "loop_age": age}
     return h
 
@@ -128,7 +132,8 @@ def test_a_stopped_agent_is_restarted_once_per_window():
     h = _host(hosts.STALE_LOOP_SECONDS + 10)
     assert h.tick("gen-007-grace").get("restarted")
     assert not h.tick("gen-007-grace").get("restarted")  # not again within the window
-    assert h.api.actions == [("gen-007-grace", "agent", "restart")]
+    assert h.api.actions[0] == ("gen-007-grace", "agent", "restart")
+    assert len(h.api.actions) == 2  # and a start, in case the restart did not start it
     quiet = _host(30)
     assert not quiet.tick("gen-008-hiro").get("restarted") and quiet.api.actions == []
 

@@ -149,6 +149,19 @@ class SpritesAPI:
         )
         r.raise_for_status()
 
+    def service_status(self, name: str, service: str) -> str | None:
+        """The service's state ("running", "starting", "stopped"...), or None if unknown."""
+        try:
+            r = self.http.get(f"{self.base}/sprites/{name}/services/{service}")
+            if r.status_code != 200:
+                return None
+            d = r.json()
+        except Exception:  # noqa: BLE001 - a status check must never fail a deploy
+            return None
+        state = d.get("state") if isinstance(d, dict) else None
+        status = state.get("status") if isinstance(state, dict) else (state or d.get("status"))
+        return str(status).lower() if status else None
+
     def service_action(self, name: str, service: str, action: str) -> None:
         r = self.http.post(f"{self.base}/sprites/{name}/services/{service}/{action}")
         if r.status_code not in (200, 202, 204, 404):
