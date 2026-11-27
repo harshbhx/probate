@@ -588,14 +588,15 @@ class Family:
 
     def read_court_replies(self) -> int:
         """Apply the owner's emailed decisions. Mail that isn't from the owner, or isn't clear, is set aside."""
-        owner = {e.lower() for e in self.owner.emails}
         applied = 0
         for mail in self.w.mail.list_new(self.cfg.family_inbox):
             item_id = court_mail.item_of(mail.subject)
             if not item_id:
                 continue  # ordinary mail belongs to the living generation
             choice = court_mail.decision(mail.text)
-            if mail.sender.lower() not in owner:
+            if not court_mail.is_one_of(mail.sender, self.owner.emails) or court_mail.failed(
+                mail.headers
+            ):
                 log.warning(
                     "court reply for %s from %s ignored: not the owner", item_id, mail.sender
                 )

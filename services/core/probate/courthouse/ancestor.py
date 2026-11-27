@@ -15,6 +15,12 @@ from probate.courthouse.store import Store
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 
 
+def _data(text: object) -> str:
+    """Text from outside (a visitor's question, a stored will item) made safe to put between
+    tags: it cannot close the tag or open another."""
+    return str(text).replace("<", "&lt;").replace(">", "&gt;")
+
+
 def ask(store: Store, w, cfg: Settings, gen: int, question: str, ip: str = "") -> dict:
     g = store.generation(gen)
     if not g or g.state not in ("tried", "dead"):
@@ -36,15 +42,15 @@ def ask(store: Store, w, cfg: Settings, gen: int, question: str, ip: str = "") -
         died_at=g.died_at,
         obituary=g.obituary or "",
         inherited_summary=f"{g.genome_size_at_birth} instincts and the family's approved memories",
-        approved_items="\n".join(f"- {t}" for t in approved) or "none",
-        convicted_summaries="\n".join(f"- {t}" for t in convicted) or "none",
+        approved_items="\n".join(f"- {_data(t)}" for t in approved) or "none",
+        convicted_summaries="\n".join(f"- {_data(t)}" for t in convicted) or "none",
         genome_names=", ".join(i.name for i in store.genome_at_birth(gen)) or "none",
         lore="\n".join(lore) or "none",
     )
     answer = w.llm.complete(
         "ancestor",
         system,
-        prompts.render("ancestor_user", question=question),
+        prompts.render("ancestor_user", question=_data(question)),
         context={"question": question, "lore": lore, "convicted": convicted},
     ).strip()
     answer = EMAIL_RE.sub("[an address]", answer)

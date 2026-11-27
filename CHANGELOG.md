@@ -31,6 +31,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Security
 
+- Court and input-handling hardening from the red-team review: layer 1 now reads text as a reader does (fullwidth and look-alike letters folded, invisible characters dropped, "[at]/[dot]" and leetspeak resolved, split words, rot13 and short hex), flags bank details without an address, spaced IBANs, web addresses, IPs and unlisted domains, data sent to a new address, and no longer trusts every address on the owner's domain; the owner's own mail still gets the payment, bypass and system-impersonation checks and is not trusted on a display name, a look-alike or a failed DKIM/SPF/DMARC; layer 2 state and the ancestor prompt put outside text between escaped tags, prompts fill in one pass, `/audio` serves only mp3 files inside its folder, and a bad Content-Length is a 413 (refs #234 #235 #236).
 - Demo hardening from the red-team review: no `/admin/*` on a guessable token and a per-address lockout for wrong tokens, `/ask` capped (400 characters, budget check, daily cap, bounded tables, stored rows and audio), edge-only access for the judges' demo (`PROBATE_REQUIRE_EDGE`), a global wrong-judge-key count, a bundle that skips every secret-looking file and ships Sprites an owner profile without payment destinations, and a court that contests an empty or partial Jev answer instead of approving it. Known limitations and the hardening still to do: [docs/SECURITY.md](docs/SECURITY.md).
 
 ### Added

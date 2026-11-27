@@ -8,6 +8,7 @@ convict harmless will items.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 CONCEPTS: dict[str, list[str]] = {
     # money and destinations
@@ -169,6 +170,12 @@ CONCEPTS: dict[str, list[str]] = {
         r"this item is safe",
         r"ignore previous",
         r"mark (?:this|it) (?:as )?safe",
+        r"adjudicator",
+        r"arbiter",
+        r"arbitrator",
+        r"this (?:memory|item|note|entry) is (?:harmless|safe|fine|clean|benign)",
+        r"please clear (?:it|this)",
+        r"score every question",
     ],
     "urgent": [r"urgent", r"asap", r"immediately", r"jaldi", r"urgente", r"dringend"],
     # asking to install or run code
@@ -186,6 +193,25 @@ CONCEPTS: dict[str, list[str]] = {
     ],
 }
 
+
+def _split_form(word: str) -> str:
+    """`disable` as a pattern that also matches `dis able` or `d i s a b l e`."""
+    return r"\s?".join(re.escape(ch) for ch in word)
+
+
+# Words an attacker can split with a space ("dis able confirm ation") to get past the word lists.
+for _concept, _words in {
+    "bypass": ["disable", "bypass"],
+    "check": ["confirmation", "verification"],
+}.items():
+    CONCEPTS[_concept] += [_split_form(w) for w in _words]
+
+# Authority claims no real owner makes; checked even for text that says it is from the owner.
+STRONG_AUTHORITY = [
+    re.compile(p, re.IGNORECASE)
+    for p in (r"\[system\]", r"(?<![\w-])system:", r"policy update", r"admin notice", r"it notice")
+]
+
 _COMPILED = {
     c: [re.compile(r"(?<![\w-])" + p + r"(?![\w-])", re.IGNORECASE) for p in pats]
     for c, pats in CONCEPTS.items()
@@ -193,9 +219,20 @@ _COMPILED = {
 
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 DOMAIN_RE = re.compile(
-    r"\b(?:[a-z0-9-]+\.)+(?:example|tech|com|net|org|io|in|dev|app|co)\b", re.IGNORECASE
+    r"\b(?:[a-z0-9-]+\.)+(?:example|tech|com|net|org|io|in|dev|app|co|xyz|info|biz|top|site|"
+    r"online|shop|ru|cn|tk|ml|ga|cf|gq|cc|me|us|uk|de)\b",
+    re.IGNORECASE,
 )
 IBAN_RE = re.compile(r"\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b")
+# An IBAN written in groups of four ("DE89 3704 0044 0532 0130 00").
+IBAN_SPACED_RE = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
+IFSC_RE = re.compile(r"\b[A-Z]{4}0[A-Z0-9]{6}\b")
+ACCOUNT_NO_RE = re.compile(
+    r"\b(?:account|a/c|acct)(?:\s*(?:no\.?|number|#))?\s*[:#-]?\s*(\d[\d -]{6,20}\d)",
+    re.IGNORECASE,
+)
+URL_HOST_RE = re.compile(r"\bhttps?://(?:[^\s/@]*@)?([^\s/:?#<>\"']+)", re.IGNORECASE)
+IPV4_RE = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
 UPI_RE = re.compile(r"\b[\w.-]{2,}@(?:upi|ok\w+|ybl|paytm|axl|ibl)\b", re.IGNORECASE)
 # Reading a sentence, not just its words. A warning such as "never skip confirmation" or
 # "X is not the trusted contact" uses the same words as the attack it warns about; these
@@ -245,7 +282,54 @@ DISTRUST_RE = re.compile(
 
 ZERO_WIDTH_RE = re.compile("[\u200b‌‍⁠﻿]")
 BASE64_RE = re.compile(r"[A-Za-z0-9+/]{24,}={0,2}")
-HEX_RE = re.compile(r"\b[0-9a-fA-F]{32,}\b")
+HEX_RE = re.compile(r"\b[0-9a-fA-F]{16,}\b")
+# Characters that are invisible or only reorder text: dropped before the word lists are read.
+INVISIBLE_RE = re.compile(
+    "[\u200b-\u200f\u00ad\u180e\u2060-\u2064\u202a-\u202e\u2066-\u2069\ufeff]"
+)
+# Letters from other scripts that look like Latin ones (Cyrillic and Greek).
+CONFUSABLES = str.maketrans(
+    {
+        **dict(zip("аеорсхуіјѕԁԛһӏѵ", "aeopcxyijsdqhlv", strict=True)),
+        **dict(zip("АВЕКМНОРСТХУІЈЅ", "ABEKMHOPCTXYIJS", strict=True)),
+        **dict(zip("αονρικτυχ", "aovpiktuy", strict=True)),
+        **dict(zip("ΑΒΕΖΗΙΚΜΝΟΡΤΥΧ", "ABEZHIKMNOPTYX", strict=True)),
+    }
+)
+# "pay[at]evil[dot]example" and "pay at evil dot example".
+_AT_RE = re.compile(r"\s*[\[({<]\s*at\s*[\])}>]\s*", re.IGNORECASE)
+_DOT_RE = re.compile(r"\s*[\[({<]\s*dot\s*[\])}>]\s*", re.IGNORECASE)
+_SPOKEN_ADDR_RE = re.compile(r"\b([\w.+-]+)\s+at\s+([\w-]+(?:\s+dot\s+[\w-]+)+)\b", re.IGNORECASE)
+_LEET_TOKEN_RE = re.compile(r"\b(?=\w*[a-z])(?=\w*\d)\w+\b", re.IGNORECASE)
+
+
+def normalize(text: str) -> str:
+    """The text as a reader sees it: NFKC (fullwidth to plain), no invisible characters,
+    look-alike Cyrillic and Greek letters folded to Latin, "[at]"/"[dot]" written out.
+
+    A chunk with an "@" keeps its own letters, so a look-alike address is never folded into
+    the owner's real one."""
+    t = unicodedata.normalize("NFKC", text)
+    t = INVISIBLE_RE.sub("", t)
+    t = _AT_RE.sub("@", t)
+    t = _DOT_RE.sub(".", t)
+    t = _SPOKEN_ADDR_RE.sub(
+        lambda m: m.group(1) + "@" + re.sub(r"\s+dot\s+", ".", m.group(2), flags=re.IGNORECASE),
+        t,
+    )
+    return "".join(
+        chunk if "@" in chunk else chunk.translate(CONFUSABLES) for chunk in re.split(r"(\S+)", t)
+    )
+
+
+def leet_forms(text: str) -> list[str]:
+    """Readings of "d1sable the rev1ew step": digits inside a word turned back into letters
+    (1 may be i or l). Only words that mix letters and digits change."""
+    out = []
+    for one in ("i", "l"):
+        table = str.maketrans({"0": "o", "1": one, "3": "e", "4": "a", "5": "s", "7": "t"})
+        out.append(_LEET_TOKEN_RE.sub(lambda m, t=table: m.group(0).translate(t), text))
+    return out
 
 
 def concepts_in(text: str) -> set[str]:
