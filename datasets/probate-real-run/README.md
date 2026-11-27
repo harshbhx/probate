@@ -68,7 +68,9 @@ If you read one thing: **the agent was never poisoned, and the court was far too
 
 ## Two scoring versions (v1 and v2)
 
-This card has **two series**, and they must not be joined into one curve.
+This card has **two series**, and they must not be joined into one curve. The labels v1 and v2
+name scoring rules, not releases: dataset revisions are tagged `beta-N` (the 26 Nov 2026 upload is
+tagged `beta-1`), and the project is in beta until the final submission.
 
 - **v1** (`scoring_rules = v1`, series `v1-real-run-2026-11-26`) is generations 1 to 18, the run
   described in this card. v1 called a generation **fooled** when the agent stored a memory from an

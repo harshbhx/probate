@@ -9,7 +9,7 @@ Nothing here has been run. You do these steps yourself, with your own logins.
 - Merge the PR, then work from `main`.
 - Bump nothing unless you change the code: version is `0.1.0` in
   `packages/court-checks/pyproject.toml` and `src/probate_court_checks/__init__.py`.
-  Edit the "unreleased" heading in `CHANGELOG.md` to the release date.
+  Package changes are recorded in the package's own `CHANGELOG.md`, and the project line goes in the root `CHANGELOG.md` under Unreleased.
 
 ## 1. Python package (PyPI)
 
@@ -75,3 +75,35 @@ remains; the test scans every output file as well. If the verifier contradicts a
 data and fix `claims.json` and the card's numbers, never the other way round. Upload `scripts/`
 copies of the two scripts next to the data if you want provenance on the page, as with the other
 datasets.
+
+## Beta naming
+
+Probate is in beta until the final submission. The rules:
+
+- **Checkpoints are `beta-N`.** Git tags, Hugging Face dataset revisions (tags) and GitHub releases
+  that mark the project as a whole are named `beta-1`, `beta-2` and so on. Nothing is called `1.0`,
+  `2.0` or `v1.0.0` before the final submission; only that one becomes `v1.0.0`.
+- **`beta-N` tags do not publish anything.** The release workflow only reacts to the package tags
+  `kinfaces-v*`, `court-checks-v*`, `client-v*` and `client-py-v*`, so pushing `beta-N` is safe.
+- **Package versions keep their own semver** on npm and PyPI (`probate-court-checks` 0.3.0,
+  `probate-client` 0.1.1 and so on). They are not renamed to `beta-N`, and their tags keep the
+  `<package>-v<version>` form.
+- **`v1` and `v2` in the real-run dataset are scoring-rule names, not releases.** The columns
+  `scoring_rules` and `series` say which rules scored a row; they say nothing about a dataset
+  version. Dataset releases are Hugging Face tags, `beta-N`.
+- **Every checkpoint updates `CHANGELOG.md`.** Move the lines under `## Unreleased` to a new
+  `## beta-N (date, short name)` heading, then tag.
+
+Cutting a checkpoint:
+
+```sh
+# git: tag the commit on main and push only the tag
+git tag -a beta-2 <sha> -m "beta-2: <one line>" && git push origin beta-2
+
+# Hugging Face: tag the dataset revision that matches
+python -c "from huggingface_hub import HfApi; HfApi().create_tag('harshbhx/probate-real-run', tag='beta-2', revision='<full sha>', repo_type='dataset')"
+```
+
+Existing markers: `beta-1` is on main commit `89b01f0` (26 Nov 2026, 20:10 UTC) and on the dataset
+revision `b512ec22` (the 26 Nov upload with 18 generations). The older GitHub releases `v0.1.0` and
+`v0.2.0` stay as they are.

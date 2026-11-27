@@ -58,9 +58,15 @@ Extra rules from `AGENTS.md`:
 1. Fork the repo or create a branch from `main`: `feat/short-name`, `fix/short-name`, `docs/short-name`.
 2. Keep each commit one coherent change.
 3. Run `make test` and `make lint` locally.
-4. Open a pull request against `main` and fill in the template. Link the issue it closes.
-5. Keep the PR focused. Many PRs touch `README.md`, CI and the Makefile, so small, additive diffs merge fastest.
-6. Wait for CI to pass and for a review. The maintainer merges.
+4. Add one line to [`CHANGELOG.md`](CHANGELOG.md) under `## Unreleased`, in the group that fits
+   (Added, Changed, Fixed, Removed, Security, Documentation, Data): one plain sentence ending with
+   the pull request link. CI fails a pull request to `main` that changes more than docs and tests
+   without touching `CHANGELOG.md`; a maintainer can add the `no-changelog` label for the rare
+   change that needs no line. The project is in beta, so checkpoints are `beta-N`, never `1.0`
+   (see [docs/PUBLISHING.md](docs/PUBLISHING.md#beta-naming)).
+5. Open a pull request against `main` and fill in the template. Link the issue it closes.
+6. Keep the PR focused. Many PRs touch `README.md`, CI and the Makefile, so small, additive diffs merge fastest.
+7. Wait for CI to pass and for a review. The maintainer merges.
 
 ## Commit style
 
