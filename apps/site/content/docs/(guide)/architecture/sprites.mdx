@@ -13,7 +13,7 @@ Probate uses the Sprites REST API (`https://api.sprites.dev/v1`, bearer token) t
 | `POST /v1/sprites/{name}/exec?cmd=…` | Install the bundle, record the baseline, ask for the will and the disk evidence |
 | `GET /v1/sprites/{name}/fs/read` | Read the memory snapshot if the agent crashed |
 | `PUT /v1/sprites/{name}/services/{svc}` | Run the agent (and the Courthouse) as a service that restarts when the Sprite wakes |
-| `DELETE /v1/sprites/{name}` | Death. Expect `204`, then `GET` returns `404`. Both answers are kept and shown on the trial page as the death certificate |
+| `DELETE /v1/sprites/{name}` | Death. `204`, then `GET` returns `404` (confirmed in the real run: 8 of 8). Both answers are kept and shown on the trial page as the death certificate |
 
 ## The code bundle
 

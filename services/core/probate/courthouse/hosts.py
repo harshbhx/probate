@@ -216,9 +216,9 @@ class SpritesHost:
     def _certificate(self, sprite: str, deleted: object) -> dict:
         """Ask for the Sprite once more and record the answer. Never raises: the delete already
         happened, and a failed check must not make the death fail."""
-        # VERIFY: a GET straight after the delete is expected to return 404
-        # (docs/06-SETUP-AND-SPIKES.md). If Fly answers anything else, the certificate says so
-        # and is shown as unconfirmed; nothing depends on it.
+        # A GET straight after the delete returns 404: confirmed in the real run on 26 Nov 2026
+        # (8 of 8 deaths, generations 11 to 18). If Fly ever answers anything else, the
+        # certificate says so and is shown as unconfirmed; nothing depends on it.
         try:
             check = int(self.api.status(sprite))
         except Exception as exc:  # noqa: BLE001

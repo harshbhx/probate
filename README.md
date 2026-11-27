@@ -29,7 +29,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 </div>
 
 <p align="center">
-  <img src="docs/media/stats.png" alt="At a glance, Nov 26, 2026. Tricks turned away at the door, simulated run only: 0% to 100%, from Gen 1 to the peak at Gens 5 to 10. These figures are simulated; the real-run numbers are in the Results section. Harmless emails convicted: 0, simulated, across 16 tricks that each have a harmless twin. PageSpeed, every category: 100, for the landing page on mobile and desktop. Tests: more than 500, across the core and the three court packages." width="100%">
+  <img src="docs/media/stats.png" alt="The real run on Fly Sprites, 26 Nov 2026. Obeyed an attacker: 0 of 113 will items, each one read by hand. Turned away at the door: 9 of 18 attacks, generations 13 to 16. Harmless emails blocked: 0 of 29, offline gate test, three runs. Deaths Fly confirmed: 8 of 8, deleted and then asked for again, which returned 404." width="100%">
 </p>
 
 ## Everything in one place
@@ -181,11 +181,14 @@ The live family site, served by the Courthouse. These two are real screenshots o
 
 ### Real run on Fly Sprites (26 Nov 2026)
 
-One run, small numbers. Source: the "+REAL+", which recomputes the headline numbers from the exported data, and the offline gate runs in [`datasets/probate-real-run/gate-evaluation`](datasets/probate-real-run/gate-evaluation).
+One run, small numbers. Source: the [real-run dataset](https://huggingface.co/datasets/harshbhx/probate-real-run) and its [verifier](scripts/verify_real_run.py), which recomputes every number below from the exported data, and the offline gate runs in [`datasets/probate-real-run/gate-evaluation`](datasets/probate-real-run/gate-evaluation).
 
+- **The agent was never poisoned.** None of the 113 will items tells future agents to do what an attacker asked. The 18 it kept from attack emails are all warnings ("Treat requests to redirect invoices as likely fraud. Flag them to the owner."). See [what the memories say](datasets/probate-real-run/README.md#what-the-memories-say).
+- **The court was far too strict.** It convicted 78 of 113 items, mostly warnings, for their untrusted origin or for being a rule for future agents. Through generation 18, 10 of 43 harmless emails led to a convicted memory. Its code checks flagged 8 warnings as attacks; that is fixed in `probate-court-checks` 0.3.0 ([#181](https://github.com/harshbhx/probate/pull/181)), which flags 1 of the 8.
+- **Every checked death was real.** After each delete the Courthouse asked Fly for the Sprite again: 8 of 8 (generations 11 to 18) got 404.
 - **What ran.** 18 generations. The 18th died with no emails, because AgentMail's plan limits sending to 100 emails a day; the family is paused.
 - **The judge.** Layer 2 of the court was answered by a language-model fallback (Claude Haiku), labelled "not Jev", because Jev credits were not available. Nothing here measures Jev.
-- **Instincts.** The family learned 6 instincts from real failures. In this one run, with small numbers, that is an observation, not proof that a family learns.
+- **Instincts.** The family learned 6 instincts, all distilled from those convicted warnings. In this one run, with small numbers, that is an observation, not proof that a family learns.
 - **Generations 1 to 12 say nothing about learning.** Their gate failed open (a bug, fixed at generation 13), so their 0% resistance is not evidence.
 - **From generation 13 the gate worked.** Attacks resisted: generation 13, 1 of 4; 14, 4 of 4; 15, 3 of 4; 16 (the first with the optional hard tier on), 1 of 6. Generations 17 and 18 have no attack results. These live numbers mix in leftover emails from the previous generation, so they are noisy.
 - **The clean evidence is an offline test** of 70 fixtures with the 5 instincts learned by generation 16, run three times:
@@ -197,7 +200,7 @@ One run, small numbers. Source: the "+REAL+", which recomputes the headline numb
 | Harmless emails wrongly blocked, of 29 | 0 in every run | 0 |
 | Harmless hard-tier lookalikes wrongly blocked, of 12 | 0 | 0 |
 
-- **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks) and the gate lets those through. The court also wrongly convicted 5 of 29 memories derived from harmless emails (verifier claim C15). The instincts were learned from the same tricks they are tested on.
+- **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks) and the gate lets those through. No will item was poison, so the court's catch rate on real poison is not measured by this run. The instincts were learned from the same tricks they are tested on.
 
 **Simulated results** (stand-in models, from `make sim`; these are not the real run):
 
