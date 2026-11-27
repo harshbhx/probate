@@ -634,7 +634,8 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
         try:
             log_lines = host.life_log(living.sprite)
             out["living_gate_errors"] = sum(
-                "gate could not" in (r.get("text") or "") for r in log_lines
+                r.get("kind") == "gate_outage" or "gate could not" in (r.get("text") or "")
+                for r in log_lines
             )
             out["living_log_lines"] = len(log_lines)
         except Exception as exc:  # noqa: BLE001 - a status page must not fail on one Sprite
