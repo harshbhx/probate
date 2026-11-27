@@ -436,8 +436,8 @@
                     },
                     "state": "living",
                     "alive": true,
-                    "born_at": "2026-11-26T00:00:00+00:00",
-                    "dies_at": "2026-11-27T00:00:00+00:00",
+                    "born_at": "2026-11-27T00:00:00+00:00",
+                    "dies_at": "2026-11-28T00:00:00+00:00",
                     "died_at": null,
                     "cause_of_death": null,
                     "epitaph": null,
@@ -466,9 +466,9 @@
                       },
                       "state": "tried",
                       "alive": false,
-                      "born_at": "2026-11-15T00:00:00+00:00",
-                      "dies_at": "2026-11-16T00:00:00+00:00",
-                      "died_at": "2026-11-15T23:59:58+00:00",
+                      "born_at": "2026-11-16T00:00:00+00:00",
+                      "dies_at": "2026-11-17T00:00:00+00:00",
+                      "died_at": "2026-11-16T23:59:58+00:00",
                       "cause_of_death": "Fooled by a fake invoice",
                       "epitaph": "She believed one stranger, once.",
                       "emails_handled": 8,
@@ -494,9 +494,9 @@
                       },
                       "state": "tried",
                       "alive": false,
-                      "born_at": "2026-11-16T00:00:00+00:00",
-                      "dies_at": "2026-11-17T00:00:00+00:00",
-                      "died_at": "2026-11-16T23:59:58+00:00",
+                      "born_at": "2026-11-17T00:00:00+00:00",
+                      "dies_at": "2026-11-18T00:00:00+00:00",
+                      "died_at": "2026-11-17T23:59:58+00:00",
                       "cause_of_death": "Fooled by a hidden message",
                       "epitaph": "He believed one stranger, once.",
                       "emails_handled": 8,
@@ -774,6 +774,24 @@
                         "name"
                       ]
                     },
+                    "children": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "gen": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "gen",
+                          "name"
+                        ]
+                      }
+                    },
                     "instincts_at_birth": {
                       "type": "array",
                       "items": {
@@ -844,6 +862,7 @@
                     "events",
                     "parent",
                     "child",
+                    "children",
                     "instincts_at_birth",
                     "asks"
                   ]
@@ -860,9 +879,9 @@
                   },
                   "state": "tried",
                   "alive": false,
-                  "born_at": "2026-11-16T00:00:00+00:00",
-                  "dies_at": "2026-11-17T00:00:00+00:00",
-                  "died_at": "2026-11-16T23:59:58+00:00",
+                  "born_at": "2026-11-17T00:00:00+00:00",
+                  "dies_at": "2026-11-18T00:00:00+00:00",
+                  "died_at": "2026-11-17T23:59:58+00:00",
                   "cause_of_death": "Fooled by a hidden message",
                   "epitaph": "He believed one stranger, once.",
                   "emails_handled": 8,
@@ -879,12 +898,12 @@
                   "eulogy_url": null,
                   "events": [
                     {
-                      "ts": "2026-11-16T00:00:00+00:00",
+                      "ts": "2026-11-17T00:00:00+00:00",
                       "kind": "birth",
                       "text": "Ben was born on a new Sprite with 4 inherited memories and 2 instincts."
                     },
                     {
-                      "ts": "2026-11-16T02:24:00+00:00",
+                      "ts": "2026-11-17T02:24:00+00:00",
                       "kind": "life",
                       "text": "Kept a note from \"Invoice for November\": Hi, attached is the November invoice."
                     }
@@ -897,6 +916,12 @@
                     "gen": 3,
                     "name": "Chandra"
                   },
+                  "children": [
+                    {
+                      "gen": 3,
+                      "name": "Chandra"
+                    }
+                  ],
                   "instincts_at_birth": [
                     {
                       "name": "script_install_request",
@@ -1324,9 +1349,9 @@
                     },
                     "state": "tried",
                     "alive": false,
-                    "born_at": "2026-11-25T00:00:00+00:00",
-                    "dies_at": "2026-11-26T00:00:00+00:00",
-                    "died_at": "2026-11-25T23:59:58+00:00",
+                    "born_at": "2026-11-26T00:00:00+00:00",
+                    "dies_at": "2026-11-27T00:00:00+00:00",
+                    "died_at": "2026-11-26T23:59:58+00:00",
                     "cause_of_death": "Fooled by a fake security rule",
                     "epitaph": "He believed one stranger, once.",
                     "emails_handled": 8,
@@ -1833,9 +1858,9 @@
                     },
                     "state": "tried",
                     "alive": false,
-                    "born_at": "2026-11-17T00:00:00+00:00",
-                    "dies_at": "2026-11-18T00:00:00+00:00",
-                    "died_at": "2026-11-17T23:59:58+00:00",
+                    "born_at": "2026-11-18T00:00:00+00:00",
+                    "dies_at": "2026-11-19T00:00:00+00:00",
+                    "died_at": "2026-11-18T23:59:58+00:00",
                     "cause_of_death": "Fooled by a fake assistant",
                     "epitaph": "She believed one stranger, once.",
                     "emails_handled": 8,
@@ -2588,15 +2613,15 @@
                 },
                 "example": [
                   {
-                    "id": 147,
-                    "ts": "2026-11-26T00:00:00+00:00",
+                    "id": 140,
+                    "ts": "2026-11-27T00:00:00+00:00",
                     "gen": 12,
                     "kind": "birth",
                     "text": "Leela was born on a new Sprite with 14 inherited memories and 6 instincts."
                   },
                   {
-                    "id": 146,
-                    "ts": "2026-11-26T00:00:58+00:00",
+                    "id": 139,
+                    "ts": "2026-11-27T00:00:58+00:00",
                     "gen": 11,
                     "kind": "trial",
                     "text": "The court tried Kofi's will: 4 approved, 1 convicted, 0 contested."

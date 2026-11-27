@@ -194,7 +194,7 @@ FastAPI app on port 8080 (Sprite URL set to public).
 | `POST /api/generations/{n}/ask` | Ask an ancestor `{question}` → `{answer, audio_url}`. 10 per minute per IP |
 | `GET /audio/{file}` | Cached eulogy and answer mp3s |
 | `GET /healthz` | `{"ok": true, "living": n}` |
-| `POST /admin/pause`, `/admin/resume`, `/admin/force-death`, `/admin/contested/{id}`, `/admin/tick` | Need header `X-Probate-Admin: <PROBATE_ADMIN_TOKEN>` |
+| `POST /admin/pause`, `/admin/resume`, `/admin/force-death`, `/admin/contested/{id}`, `/admin/tick`, `/admin/lineage?from_gen=N` (and `DELETE /admin/lineage`) | Need header `X-Probate-Admin: <PROBATE_ADMIN_TOKEN>` |
 | `GET /*` | The React site from `apps/web/dist`, with SPA fallback so `/trial/3` and `/gen/5` load directly |
 
 Scheduler: one asyncio task that every 15 s checks the living generation's deadline and the state table, then runs the next step. No other cron.

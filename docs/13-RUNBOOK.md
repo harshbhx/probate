@@ -32,6 +32,7 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | See what's alive | `sprite list --prefix gen-` (generations are named `gen-007-grace`) or the home page |
 | Pause the family | `POST /admin/pause` (finishes the current life, then waits) |
 | Force a death now (for the video) | `POST /admin/force-death` |
+| Start a new line from a generation | `POST /admin/lineage?from_gen=16`. The next child is a child of Gen 16 and inherits only what Gen 16 and its ancestors learned and approved. Every later child continues that line. `DELETE /admin/lineage` cancels it before the birth |
 | Approve or refuse a contested item | Reply "approve" or "refuse" to the court's email, or `POST /admin/contested/{item_id}?decision=approve` (or `refuse`) |
 | Change lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, then `POST .../services/courthouse/restart` |
 | Watch logs | `GET .../services/courthouse/logs?lines=200` |

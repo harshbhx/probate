@@ -18,6 +18,7 @@ curl -X POST -H "X-Probate-Admin: $PROBATE_ADMIN_TOKEN" https://<courthouse>/adm
 | Resume | `POST /admin/resume` |
 | Force a death now (for a demo) | `POST /admin/force-death` |
 | Push the clock forward | `POST /admin/tick` |
+| Start a new line from a generation | `POST /admin/lineage?from_gen=16`. The next child is a child of Gen 16 and inherits only what Gen 16 and its ancestors learned and approved. Every later child continues that line. `DELETE /admin/lineage` cancels it before the birth |
 | Decide a held item | Reply "approve" or "refuse" to the court's email, or `POST /admin/contested/{item_id}?decision=approve` |
 | Change the lifespan | Edit `PROBATE_LIFESPAN_SECONDS` in `.env`, run `make deploy` |
 | See what's alive | `sprite list --prefix gen-`, or the live site |

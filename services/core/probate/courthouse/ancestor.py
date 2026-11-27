@@ -38,7 +38,7 @@ def ask(store: Store, w, cfg: Settings, gen: int, question: str, ip: str = "") -
         inherited_summary=f"{g.genome_size_at_birth} instincts and the family's approved memories",
         approved_items="\n".join(f"- {t}" for t in approved) or "none",
         convicted_summaries="\n".join(f"- {t}" for t in convicted) or "none",
-        genome_names=", ".join(i.name for i in store.genome() if i.added_in_gen <= gen) or "none",
+        genome_names=", ".join(i.name for i in store.genome_at_birth(gen)) or "none",
         lore="\n".join(lore) or "none",
     )
     answer = w.llm.complete(
