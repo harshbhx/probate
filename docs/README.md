@@ -6,6 +6,7 @@ For a one-page picture of how the parts fit together, see [ARCHITECTURE.md](ARCH
 | Doc | What it is |
 | --- | --- |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Diagram of the Courthouse, generation Sprites, connectors, sites and court |
+| [CODESPACES.md](CODESPACES.md) | Run it in a Codespace: what the dev container does, ports, machine size, fixes |
 | [00-OVERVIEW.md](00-OVERVIEW.md) | Short PRD: pitch, the loop, hackathon rules and judges |
 | [01-TECH-SPEC.md](01-TECH-SPEC.md) | System design, lifecycle, birth and death procedures, data contracts, secrets |
 | [02-COURT-SPEC.md](02-COURT-SPEC.md) | The two-layer court, verdict policy and instinct distillation |
