@@ -35,7 +35,11 @@ def test_every_prompt_file_matches_the_prompts_doc_word_for_word():
     doc = (ROOT / "docs" / "10-PROMPTS.md").read_text(encoding="utf-8")
     files = sorted(glob.glob(str(ROOT / "services/core/probate/prompts/*.md")))
     assert files
-    drift = [os.path.basename(f) for f in files if Path(f).read_text().strip("\n") not in doc]
+    drift = [
+        os.path.basename(f)
+        for f in files
+        if Path(f).read_text(encoding="utf-8").strip("\n") not in doc
+    ]
     assert drift == []
 
 
