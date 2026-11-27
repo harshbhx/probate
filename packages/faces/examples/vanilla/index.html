@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>kinfaces, plain HTML</title>
+    <!-- Setup: `npm install kinfaces`, then serve this folder (`npx serve .`). No bundler needed. -->
+    <script type="importmap">
+      { "imports": { "kinfaces": "./node_modules/kinfaces/dist/index.js" } }
+    </script>
+    <link rel="stylesheet" href="./node_modules/kinfaces/dist/faces.css" />
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 40rem; padding: 0 16px; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; }
+      figure { margin: 0; text-align: center; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <h1>Seven generations</h1>
+    <div class="row" id="line"></div>
+    <h2>A family tree</h2>
+    <div id="tree"></div>
+    <script type="module">
+      import { faceSvg, familyTreeSvg } from "kinfaces";
+      const line = document.getElementById("line");
+      for (let gen = 1; gen <= 7; gen++) {
+        const fig = document.createElement("figure");
+        // The visible caption names the person, so the face itself stays decorative (no title).
+        fig.innerHTML = faceSvg("ada", { gen, size: 72, background: "#0A0E17", animate: true }) + `<figcaption>Gen ${gen}</figcaption>`;
+        line.append(fig);
+      }
+      document.getElementById("tree").innerHTML = familyTreeSvg("ada", { generations: 4, branches: 2, background: "#0A0E17", title: "The Ada family, four generations" });
+    </script>
+  </body>
+</html>

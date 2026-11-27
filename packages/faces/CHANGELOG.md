@@ -4,7 +4,19 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-11-28
+
+Backwards compatible API. Includes the no-repeat face window merged from main.
+
+### Added
+
+- `familyTree(seed, generations, branches)`: a branching family as plain data (`TreeNode`), deterministic, every child one inherited change from its parent. Also `flattenTree` and `MAX_TREE_NODES` (a guard against trees that would not fit).
+- `familyTreeSvg(treeOrSeed, options)`: a whole family tree as one standalone SVG string (save it as a picture, or rasterise it to PNG with any SVG tool).
+- `faceDataUri(input, options)`: a face as a `data:image/svg+xml` URI for `<img>`, CSS and email.
+- `background` option (and `FamilyFace` prop): a rounded tile behind the face, so the pale skins read on white pages and in light mode.
+- `examples/` (plain HTML + Node, Vite + React), a `family-tree.svg` gallery, and a README rewritten as a front door: quick starts, API table, inheritance, customisation, accessibility, size, FAQ and a migration note for the Probate app.
+
+### Changed
 
 - No face repeats within `FACE_WINDOW` (10) consecutive generations: a change that would repeat a recent face is re-rolled deterministically. Faces that never collided are unchanged.
 
@@ -29,7 +41,6 @@ First public release, extracted from the Probate monorepo (`packages/faces`).
 - ESM build with `.d.ts` types, `sideEffects: false`, no runtime dependencies.
 
 ### Changed
-
 - Renamed from the private `@probate/faces`. `FamilyFace` and `FaceGlyph` now live in
   `kinfaces/react`; the main entry point is framework-free.
 - Returned traits objects are frozen.

@@ -25,6 +25,8 @@ export interface FaceProps {
   /** Accessible name, e.g. "Ada, generation 1". Without it the face is decorative. */
   title?: string;
   className?: string;
+  /** A CSS colour for a rounded tile behind the face (the pale skins suit dark backgrounds). */
+  background?: string;
 }
 
 function toReact(c: Child, key?: number): ReactNode {
@@ -35,7 +37,7 @@ function toReact(c: Child, key?: number): ReactNode {
   return createElement(n.tag, { ...n.props, key }, ...n.children.map((x, i) => toReact(x, i)));
 }
 
-export function FamilyFace({ size = 64, title, className, ...props }: FaceProps): ReactElement {
+export function FamilyFace({ size = 64, title, className, background, ...props }: FaceProps): ReactElement {
   const ref = useRef<SVGSVGElement>(null);
   const look = usePointerLook(ref, !!props.track && props.life === "alive");
   return (
@@ -50,6 +52,7 @@ export function FamilyFace({ size = 64, title, className, ...props }: FaceProps)
       aria-hidden={title ? undefined : true}
       style={{ overflow: "visible" }}
     >
+      {background ? <rect width="64" height="64" rx="14" fill={background} /> : null}
       <FaceGlyph {...props} look={look} />
     </svg>
   );

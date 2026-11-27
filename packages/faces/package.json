@@ -1,6 +1,6 @@
 {
   "name": "kinfaces",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Deterministic generated faces for a family line: each generation inherits its parent's face with one small change. Framework-free SVG strings, plus an optional React component.",
   "keywords": ["avatar", "avatars", "identicon", "generative", "svg", "faces", "deterministic", "procedural", "lineage", "react", "ssr"],
   "license": "MIT",
@@ -22,7 +22,7 @@
     "./faces.css": "./dist/faces.css",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md", "gallery.svg"],
+  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md", "gallery.svg", "family-tree.svg"],
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "node scripts/build.mjs",
