@@ -25,6 +25,32 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 
 **Unverified until the first real run** (see `# VERIFY:` in `probate/adapters/sprites.py`): the exec response shape (we accept JSON `{exit_code, stdout, stderr}` or raw stdout) and whether `restart` works on a service that never ran (the script falls back to `start`). If install fails silently, run `sprite exec -s probate-courthouse -- python3 -c "import probate"` to check.
 
+## 1a. Before every run: `make preflight`
+
+`make preflight` (on your laptop, reads `services/core/.env`) checks what went wrong in the real run of 26 Nov 2026, so the next run measures something from its first life:
+
+| Check | Why | If it fails |
+| --- | --- | --- |
+| `.env` has the admin token, Sprites token and connections | `make deploy` needs them | Fill them in |
+| The Courthouse URL answers `/healthz` without a Sprites sign-in page | After the run the URL turned private and judges got the sign-in page | `make preflight FIX=1` makes it public again (or `make deploy`) |
+| The admin token is accepted | The laptop's `.env` and the Courthouse's can drift | `make deploy` |
+| Paused, resting, who is alive, which judge answers layer 2 | So nothing is born into a paused or broke family | `scripts/courthouse.py resume` |
+| AgentMail sends left today against what one life needs | Generations 17 and 18 were born after the 100-a-day limit ran out | The clock now waits for 00:00 UTC by itself; raise `PROBATE_MAIL_DAILY_LIMIT` if your plan allows more |
+| The living generation's gate errors (`--deep`) | Generations 1 to 12 had a gate that could not reach its judge and let everything through | Check the judge settings (`PROBATE_JEV`) and `make deploy`; the next child gets the fix |
+| The last clock errors | Each now names its cause | Read the cause; most are one-off network errors |
+| The public site answers 200 | It is what judges open first | `make site-deploy` |
+
+`make status` prints the same family status as JSON. The same script runs the family: `scripts/courthouse.py pause | resume | tick | force-death`, `line 16` (start a new line from Gen 16), `line --cancel`, and `decide <item_id> approve|refuse`.
+
+### Running more generations
+
+1. `git pull`, then `make deploy`. The database lives in `/home/sprite/data` and survives a deploy, so the family continues from where it stopped (the next child is Gen 19 after the real run).
+2. `make preflight FIX=1` until it says Ready.
+3. Optional: `scripts/courthouse.py line 16` to continue from Gen 16 instead of the latest generation.
+4. `scripts/courthouse.py resume`. Watch the first life with `make status`: the first birth event, its test emails (`suite_runs`), and no "gate could not ask the judge" lines (`make preflight` again, which reads the living generation's log).
+5. About 8 lives fit in a day on AgentMail's free plan (8 test emails each, 12 with the hard tier). The clock rests at the limit and starts again after 00:00 UTC; nothing needs doing.
+6. After the run: `scripts/export_real_run.py`, then `scripts/verify_real_run.py`, then update the dataset card.
+
 ## 2. Daily operations
 
 | Task | How |
