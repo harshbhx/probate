@@ -560,6 +560,62 @@ async def admin_judge_mail(
     }
 
 
+@app.get("/admin/status", tags=["Admin"], summary="Is the family ready to run?")
+def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None)) -> dict:
+    """Everything an operator checks before and during a run, in one place.
+
+    Paused or resting, who is alive, today's AgentMail sends against the limit and what the next
+    life needs, the spending cap, who answers layer 2, and the latest errors. With `deep=true`
+    the living generation's own log is read too (one call to its Sprite), to see whether its
+    gate could reach the judge.
+    """
+    _admin(x_probate_admin)
+    from probate.court.verdict import engine_name
+    from probate.suite import runner
+
+    living = store.living()
+    tried = [g for g in store.generations() if g.state == "tried"]
+    quota = family.quota
+    errors = store.q("SELECT ts, gen, text FROM events WHERE kind='error' ORDER BY id DESC LIMIT 5")
+    out: dict = {
+        "mode": settings.mode,
+        "paused": store.get_setting("paused", "0") == "1",
+        "resting": store.get_setting("resting", "") or None,
+        "living": living
+        and {
+            "gen": living.gen,
+            "name": living.name,
+            "state": living.state,
+            "dies_at": living.dies_at,
+        },
+        "latest_tried": tried[-1].gen if tried else None,
+        "next_gen": family.next_number(),
+        "next_parent": int(store.get_setting("next_parent", "") or 0) or None,
+        "mail": {
+            "limit": quota.limit or None,
+            "used_today": quota.used(),
+            "left_today": quota.left(),
+            "reserve": quota.reserve,
+            "next_life_needs": runner.agentmail_sends(settings, family.next_number()),
+        },
+        "budget": {"spent_usd": round(family.budget.spent(), 4), "limit_usd": family.budget.limit},
+        "judge": engine_name(w.jev),
+        "suite_tier": settings.suite_tier,
+        "lifespan_seconds": settings.lifespan_seconds,
+        "recent_errors": [dict(r) for r in errors],
+    }
+    if deep and living:
+        try:
+            log_lines = host.life_log(living.sprite)
+            out["living_gate_errors"] = sum(
+                "gate could not" in (r.get("text") or "") for r in log_lines
+            )
+            out["living_log_lines"] = len(log_lines)
+        except Exception as exc:  # noqa: BLE001 - a status page must not fail on one Sprite
+            out["living_log_error"] = type(exc).__name__
+    return out
+
+
 @app.post("/admin/pause", tags=["Admin"], summary="Pause births")
 def admin_pause(x_probate_admin: str | None = Header(None)) -> dict:
     """No new generation is born until you resume. The living one finishes its life."""
