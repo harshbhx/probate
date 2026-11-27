@@ -177,6 +177,7 @@ class GenerationDetail(GenCard):
     events: list[LifeEvent]
     parent: GenRef | None
     child: GenRef | None
+    children: list[GenRef]  # more than one when the owner started a new line from it
     instincts_at_birth: list[InstinctRecord]
     asks: list[AskRecord]
 
