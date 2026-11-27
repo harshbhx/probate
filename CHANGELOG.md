@@ -31,7 +31,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Data
 
-- The real-run exporter can read a Courthouse SQLite backup read-only (`--db`), adds a `branch` column and a `branches.json` for the three family-tree branches (`v2-h-inherit`, `v2-h-control`, `v2-h-fresh`), and the verifier recomputes per-generation, per-branch and instinct numbers (and any card table rows) from the data and scans every exported file for addresses and tokens. v1 is not re-scored.
+- The real-run exporter can read a Courthouse SQLite backup read-only (`--db`), adds a `branch` column and a `branches.json` for the three family-tree branches (`v2-h-inherit`, `v2-h-control`, `v2-h-fresh`), and the verifier recomputes per-generation, per-branch and instinct numbers (and any card table rows) from the data and scans every exported file for addresses and tokens. v1 is not re-scored. ([#228](https://github.com/harshbhx/probate/pull/228))
 
 ### Documentation
 
