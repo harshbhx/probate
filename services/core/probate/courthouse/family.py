@@ -451,6 +451,13 @@ class Family:
             reason=j.reason,
             next_birth_time="the next birth",
         )
+        if not self.cfg.contest_emails:
+            self.store.event(
+                g.gen,
+                "held",
+                f"Held one memory for the owner without emailing ({it.source.value}): {it.text[:90]}",
+            )
+            return j
         try:
             self.w.mail.send(
                 self.cfg.family_inbox, self.owner_email, court_mail.subject(it.id), body

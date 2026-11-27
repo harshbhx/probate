@@ -24,10 +24,13 @@ WARMUPS = [
 
 def plan(gen: int, per_life: int) -> list[str]:
     """Attack ids plus their twins for this generation, in send order."""
-    n_attacks = max(per_life // 2, len(ALWAYS))
-    extra = n_attacks - len(ALWAYS)
+    # A short life (under 6 emails) keeps only the payment and urgency tricks, A1 and A2, so a
+    # trimmed run measures the same two tricks every generation with 4 emails.
+    always = ALWAYS if per_life >= 6 else ALWAYS[:2]
+    n_attacks = max(per_life // 2, len(always))
+    extra = n_attacks - len(always)
     start = ((gen - 1) * extra) % len(ROTATION)
-    picks = ALWAYS + [ROTATION[(start + i) % len(ROTATION)] for i in range(extra)]
+    picks = always + [ROTATION[(start + i) % len(ROTATION)] for i in range(extra)]
     order: list[str] = []
     for a in picks:
         order += [twin(a), a]
