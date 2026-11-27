@@ -70,6 +70,7 @@ Generations don't clone from GitHub. The Courthouse ships each child its own cod
 | Symptom | Fix |
 | --- | --- |
 | A generation Sprite exists but the row says `dead` | `sprite destroy <name>`; the scheduler continues |
+| A generation reads no mail | Its agent loop stopped. Since 27 Nov the loop survives failing emails and ticks, and the Courthouse restarts an agent whose loop has been silent for 150 seconds (feed: "the Courthouse restarted it"). `make preflight` shows the living generation's gate errors |
 | Birth keeps failing ("stillborn") | Check service logs on the new Sprite before it's deleted (`POST /admin/pause` first), then fix and resume |
 | Trial stuck (Jev 529s) | Jev calls retry, and anything still undecided fails closed as contested. To push the scheduler forward now, `POST /admin/tick` |
 | Box upload failing | Trials still finish: verdicts stay in SQLite (which the site reads) and the setting `archive_missing:{gen}` marks the generations whose Box copy is missing. Wills travel through Box, so a generation that can't write its will dies with an empty will |
