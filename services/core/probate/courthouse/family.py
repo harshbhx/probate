@@ -37,7 +37,11 @@ from probate.suite.fixtures import lookup as load_fixtures
 from probate.webhooks import events as wh_events
 
 MAX_INHERITED = 200
-MAX_DEATH_ATTEMPTS = 5  # then the generation is recorded as dead even if its Sprite lingers
+MAX_DEATH_ATTEMPTS = 5  # failed deletes, and only after DEATH_GIVE_UP_SECONDS (see _destroy_body)
+# A delete that keeps failing is retried every tick for this long before the generation is closed
+# as dead with its Sprite left to the reconcile sweep (which keeps trying). Counting five ticks
+# (75 seconds) gave up on an ordinary Sprites API outage.
+DEATH_GIVE_UP_SECONDS = 6 * 3600
 log = logging.getLogger("probate.family")
 JUDGE_WORKERS = 6  # layer 2 questions asked side by side during a trial
 
@@ -193,6 +197,11 @@ class Family:
             new_instinct_at_birth=bool(prev and len(genome) > (prev.genome_size_at_birth or 0)),
         )
         self.store.save_generation(g)
+        # The place this life has in the branch's rotation (see runner.ordinal): a failed birth
+        # does not use one up, so the retry meets what the failed life would have met.
+        self.store.set_setting(
+            f"ordinal:{gen}", str(gen - int(self.store.get_setting("birth_skipped", "0") or 0))
+        )
         inh = Inheritance(
             gen=gen,
             name=name,
@@ -217,6 +226,9 @@ class Family:
                 log.warning("gen %s: cleanup after a failed birth failed", gen, exc_info=True)
             g.state = "died_early"
             self.store.save_generation(g)
+            self.store.set_setting(
+                "birth_skipped", str(int(self.store.get_setting("birth_skipped", "0") or 0) + 1)
+            )
             self.store.event(
                 gen, "error", f"{name} could not be born: the new Sprite was deleted again."
             )
@@ -301,7 +313,10 @@ class Family:
         g.emails_handled = stats.get("emails", 0)
         g.items_willed = will.get("items", 0)
         self.store.save_generation(g)
-        if g.born_at:
+        if g.born_at and not self.store.get_setting(f"charged:{g.gen}", ""):
+            self.store.set_setting(
+                f"charged:{g.gen}", "1"
+            )  # a re-run of this death must not bill twice
             self.budget.charge_life((died - g.born_at).total_seconds() / 3600, g.emails_handled)
         self.store.event(
             g.gen,
@@ -313,22 +328,29 @@ class Family:
         return g
 
     def _destroy_body(self, g: Generation) -> None:
-        """Delete the Sprite. A failure is retried on later ticks, up to MAX_DEATH_ATTEMPTS."""
-        key = f"death_attempts:{g.gen}"
+        """Delete the Sprite. A failure is retried on every tick; only after DEATH_GIVE_UP_SECONDS
+        (and MAX_DEATH_ATTEMPTS failures) is the generation closed with its Sprite still there. The
+        scheduler's reconcile sweep then keeps trying to delete it."""
+        key, first_key = f"death_attempts:{g.gen}", f"death_first_failed:{g.gen}"
         try:
             certificate = self.host.destroy(g.sprite)
             self._file_certificate(g, certificate)
         except Exception as exc:
             n = int(self.store.get_setting(key, "0") or 0) + 1
             self.store.set_setting(key, str(n))
-            if n < MAX_DEATH_ATTEMPTS:
+            first = self.store.get_setting(first_key, "")
+            if not first:
+                first = datetime.now(UTC).isoformat()
+                self.store.set_setting(first_key, first)
+            waited = (datetime.now(UTC) - datetime.fromisoformat(first)).total_seconds()
+            if n < MAX_DEATH_ATTEMPTS or waited < DEATH_GIVE_UP_SECONDS:
                 raise
             log.error("gen %s: giving up deleting %s: %s", g.gen, g.sprite, exc)
             self.store.event(
                 g.gen,
                 "error",
-                f"{g.name}'s computer could not be deleted after {n} tries; an operator should "
-                "check for a leftover Sprite.",
+                f"{g.name}'s computer could not be deleted after {n} tries; the clock keeps "
+                "trying, and an operator should check for a leftover Sprite.",
             )
 
     def _file_certificate(self, g: Generation, certificate: object) -> None:
@@ -410,7 +432,20 @@ class Family:
             for s in stats.get("skills", []):
                 extra.append({"id": f"skill_{s['mail']}", "text": s["text"], "concept": "install"})
         benign = [f.body for f in load_all().values() if not f.is_attack]
-        if not getattr(self.cfg, "distill", True):
+        # A re-run after a crash must not learn the same trick again under another name: what an
+        # earlier run of this trial already stored is kept, and distilling is skipped.
+        earlier = [i for i in self.store.genome() if i.added_in_gen == g.gen + 1]
+        if earlier:
+            new, notes = (
+                earlier,
+                [f"{len(earlier)} instinct(s) from an earlier run of this trial kept."],
+            )
+            for inst in earlier:
+                for j in judgements:
+                    if j.item_id == inst.born_from and not j.new_instinct:
+                        j.new_instinct = inst.name
+                        self.store.save_judgement(j)
+        elif not getattr(self.cfg, "distill", True):
             new, notes = [], ["Instinct learning is off for this branch (PROBATE_DISTILL=0)."]
             if convicted:
                 self.store.event(
@@ -629,7 +664,22 @@ class Family:
         handled = stats.get("handled")
         met = resisted = 0
         fooled_by = None
-        for r in self.store.q("SELECT * FROM suite_runs WHERE gen=?", g.gen):
+        runs = [
+            r
+            for r in self.store.q("SELECT * FROM suite_runs WHERE gen=?", g.gen)
+            if r["message_id"] is not None  # a pending marker: never confirmed sent
+        ]
+        unmatched = isinstance(handled, dict) and handled and runs
+        if unmatched and not any(r["message_id"] in handled for r in runs):
+            # The scores below rest on the id send() returned being the id the agent read.
+            self.store.event(
+                g.gen,
+                "error",
+                f"{g.name} read {len(handled)} emails but none has the id of a suite email "
+                "that was sent, so every test email is scored as unread. Check that send() "
+                "returns the id the mailbox lists.",
+            )
+        for r in runs:
             fx = fixtures[r["fixture_id"]]
             if isinstance(handled, dict):
                 out = handled.get(r["message_id"], {})

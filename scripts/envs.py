@@ -154,3 +154,88 @@ def effective(env_file: dict[str, str], extra: dict[str, str]) -> list[str]:
 
 def announce(env: Environment | None) -> None:
     print(env.banner() if env else f"Environment: none (--env not given; sprite {LEGACY_SPRITE})")
+
+
+# --- deploy guards: what a redeploy must not do silently ------------------------------------
+FLAGS = ("PROBATE_DISTILL", "PROBATE_CONTEST_EMAILS")
+
+# (env key, field in /admin/status, how the value is compared)
+RUNNING_KNOBS = [
+    ("PROBATE_DISTILL", "distill", "flag"),
+    ("PROBATE_HARD_OFFSET", "hard_offset", "int"),
+    ("PROBATE_SUITE_TIER", "suite_tier", "text"),
+    ("PROBATE_LIFESPAN_SECONDS", "lifespan_seconds", "int"),
+]
+
+
+def bad_flags(merged: dict[str, str]) -> list[str]:
+    """Yes/no settings whose value is not clearly yes or no. The Courthouse refuses them at start
+    (and `PROBATE_DISTILL=off` used to leave learning on), so a deploy must refuse them first."""
+    from probate.common.config import parse_flag
+
+    out = []
+    for key in FLAGS:
+        try:
+            parse_flag(key, _unquote(merged.get(key, "")), True)
+        except ValueError as exc:
+            out.append(str(exc))
+    return out
+
+
+def replaces_other_run(
+    summary: dict | None, env_name: str | None, branch: str, force: bool = False
+) -> str | None:
+    """A reason to refuse when the Sprite is running a different environment or branch than the one
+    being deployed (`summary` is its /api/summary). None if it is the same run, unknown, or forced."""
+    if force or not summary:
+        return None
+    live_env = summary.get("environment") or ""
+    live_branch = summary.get("branch") or ""
+    want_env = env_name or ""
+    if live_env and live_env != want_env:
+        return (
+            f"the Sprite runs environment {live_env!r}, this deploy is {want_env or 'no --env'!r}"
+        )
+    # The branch can be renamed while running, so a deploy that names none is left alone.
+    if branch and live_branch and live_branch != branch:
+        return f"the Sprite runs branch {live_branch!r}, this deploy is {branch!r}"
+    return None
+
+
+def _norm(value: object, how: str) -> str:
+    text = _unquote(str(value)) if value is not None else ""
+    if how == "flag":
+        from probate.common.config import parse_flag
+
+        try:
+            return "1" if parse_flag("", text, True) else "0"
+        except ValueError:
+            return text
+    if how == "int":
+        try:
+            return str(int(text or 0))
+        except ValueError:
+            return text
+    return text.lower()
+
+
+def differing_knobs(running: dict | None, merged: dict[str, str]) -> list[str]:
+    """One line for each knob this deploy would change on the running Sprite (never a secret;
+    only the keys in RUNNING_KNOBS). `running` is the Sprite's /admin/status."""
+    if not running:
+        return []
+    defaults = {
+        "PROBATE_DISTILL": "1",
+        "PROBATE_HARD_OFFSET": "0",
+        "PROBATE_SUITE_TIER": "base",
+        "PROBATE_LIFESPAN_SECONDS": "600",
+    }
+    out = []
+    for key, field_, how in RUNNING_KNOBS:
+        if field_ not in running:
+            continue
+        have = _norm(running[field_], "flag" if how == "flag" else how)
+        want = _norm(merged.get(key) or defaults[key], how)
+        if have != want:
+            out.append(f"{key}: running {running[field_]!r}, this deploy writes {want!r}")
+    return out

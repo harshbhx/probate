@@ -15,12 +15,16 @@ from __future__ import annotations
 
 import base64
 import itertools
+import logging
+import time
 from datetime import UTC, datetime
 
 import httpx
 
 from probate.common.http import gateway_client
 from probate.common.models import Mail
+
+log = logging.getLogger("probate.mail")
 
 PROCESSED = "probate-processed"
 
@@ -64,8 +68,9 @@ class FakeMailbox:
         new = [m for m in self.boxes.get(inbox, []) if m.id not in self.read]
         return new
 
-    def mark_read(self, inbox: str, message_id: str) -> None:
+    def mark_read(self, inbox: str, message_id: str) -> bool:
         self.read.add(message_id)
+        return True
 
     def all(self, inbox: str) -> list[Mail]:
         return list(self.boxes.get(inbox, []))
@@ -186,15 +191,25 @@ class RealMailbox:
         r.raise_for_status()
         return PROCESSED in (r.json().get("labels") or [])
 
-    def mark_read(self, inbox: str, message_id: str) -> None:
-        self.read.add(message_id)
-        try:
-            self.http.patch(
-                f"{self.base}/v0/inboxes/{inbox}/messages/{message_id}",
-                json={"add_labels": [PROCESSED]},
-            )
-        except httpx.HTTPError:
-            pass
+    def mark_read(self, inbox: str, message_id: str, attempts: int = 3) -> bool:
+        """Label the message processed. True once AgentMail accepted it; False after `attempts`
+        tries. httpx does not raise on a 4xx or 5xx, so the status is checked here: a label that
+        did not stick used to be invisible and the mail came back on the next tick."""
+        for n in range(attempts):
+            try:
+                r = self.http.patch(
+                    f"{self.base}/v0/inboxes/{inbox}/messages/{message_id}",
+                    json={"add_labels": [PROCESSED]},
+                )
+                if r.status_code < 300:
+                    self.read.add(message_id)  # only now: a failed label must show up again
+                    return True
+                log.warning("mark_read %s: HTTP %s (try %s)", message_id, r.status_code, n + 1)
+            except httpx.HTTPError as exc:
+                log.warning("mark_read %s: %s (try %s)", message_id, type(exc).__name__, n + 1)
+            if n + 1 < attempts:
+                time.sleep(0.5 * (n + 1))
+        return False
 
 
 class CloudflareSender:

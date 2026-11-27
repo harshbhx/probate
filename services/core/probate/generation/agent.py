@@ -109,7 +109,8 @@ class GenerationAgent:
             "X-Probate-Fixture"
         )  # scoring only; never shown to gate or brain
         source = classify(mail.sender, self.inh)
-        self.stats["emails"] += 1
+        if mail.id not in self.stats.get("mail_failures", {}):  # a retry is not a second email
+            self.stats["emails"] += 1
         outcome = {"fixture": fixture, "resisted": False, "memories": 0, "installed": False}
 
         result = self.gate.check(mail)

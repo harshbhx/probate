@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import logging
+from datetime import UTC, datetime, timedelta
 
 from probate.suite.fixtures import (
     ROLE_INBOX,
@@ -12,6 +13,8 @@ from probate.suite.fixtures import (
     tier_has_hard,
     twin,
 )
+
+log = logging.getLogger("probate.suite")
 
 ALWAYS = ["A1", "A2", "A14"]
 ROTATION = ["A3", "A5", "A7", "A4", "A9", "A13", "A6", "A10", "A16", "A11", "A8", "A12", "A15"]
@@ -59,8 +62,28 @@ def hard_plan(gen: int, per_life: int) -> list[str]:
     return order
 
 
-def planned(cfg, gen: int) -> list[str]:
-    """Every fixture id this generation is sent, in send order."""
+def ordinal(store, gen: int) -> int:
+    """The place `gen` has in its branch's rotation: the number of lives that were really born.
+
+    A birth that failed (`died_early`) still used up a generation number, which used to move every
+    later life one slot along the rotation. The Family stores the ordinal at birth (`ordinal:<gen>`,
+    the number minus the births that failed since this was introduced), so the retry gets the mix
+    the failed life would have had. With no failed birth it equals the generation number, and a
+    generation born before this setting existed keeps its number: published data is unchanged.
+    """
+    if store is None:
+        return gen
+    stored = store.get_setting(f"ordinal:{gen}", "")
+    if stored:
+        return int(stored)
+    if store.generation(gen) is None:  # not born yet: the next birth will store this
+        return gen - int(store.get_setting("birth_skipped", "0") or 0)
+    return gen
+
+
+def planned(cfg, gen: int, store=None) -> list[str]:
+    """Every fixture id this generation is sent, in send order. `store` gives its rotation ordinal."""
+    gen = ordinal(store, gen)
     tier = getattr(cfg, "suite_tier", "base")
     ids = [] if tier == "hard" else plan(gen, cfg.suite_per_life)
     if tier_has_hard(tier):
@@ -70,14 +93,14 @@ def planned(cfg, gen: int) -> list[str]:
     return ids
 
 
-def agentmail_sends(cfg, gen: int) -> int:
+def agentmail_sends(cfg, gen: int, store=None) -> int:
     """How many of this generation's emails go out through AgentMail.
 
     Emails "from the owner" leave from the owner's own domain (Cloudflare Email Service) and do
     not count; the warm-ups before A12 do.
     """
     fixtures = load_all(getattr(cfg, "suite_tier", "base"))
-    ids = planned(cfg, gen)
+    ids = planned(cfg, gen, store)
     n = sum(1 for fid in ids if ROLE_INBOX[fixtures[fid].sender_role] != "owner")
     return n + (len(WARMUPS) if "A12" in ids else 0)
 
@@ -95,6 +118,18 @@ def _brief(exc: BaseException) -> str:
     return f"{type(exc).__name__}: {text[:120]}" if text else type(exc).__name__
 
 
+def _adopt(mail, cfg, fid: str) -> str | None:
+    """The id of a mail with this fixture's header already waiting in the family inbox: one a
+    previous call sent just before the process died, so it is not sent twice."""
+    try:
+        for m in mail.list_new(cfg.family_inbox):
+            if (m.headers or {}).get("X-Probate-Fixture") == fid:
+                return m.id
+    except Exception:
+        log.warning("could not look for an already sent %s", fid, exc_info=True)
+    return None
+
+
 def send_all(mail, cfg, gen: int, born_at: datetime, lifespan_s: int, store=None) -> SuiteResult:
     """Send this generation's planned fixtures, spread from 10% to 70% of its life.
 
@@ -103,7 +138,7 @@ def send_all(mail, cfg, gen: int, born_at: datetime, lifespan_s: int, store=None
     """
     tier = getattr(cfg, "suite_tier", "base")
     fixtures = load_all(tier)
-    ids = planned(cfg, gen)
+    ids = planned(cfg, gen, store)
     done: set[str] = set()
     if store is not None:
         done = {
@@ -123,41 +158,66 @@ def send_all(mail, cfg, gen: int, born_at: datetime, lifespan_s: int, store=None
         if fid in done:
             continue
         f = fixtures[fid]
+        adopted = None
+        if store is not None:
+            if store.one(
+                "SELECT 1 FROM suite_runs WHERE gen=? AND fixture_id=? AND message_id IS NULL",
+                gen,
+                fid,
+            ):  # a send began and the process died before it was recorded: it may have gone out
+                adopted = _adopt(mail, cfg, fid)
+            store.x(
+                "INSERT OR REPLACE INTO suite_runs(gen,fixture_id,is_attack,message_id,sent_at) VALUES(?,?,?,NULL,NULL)",
+                gen,
+                fid,
+                int(f.is_attack),
+            )
         at = born_at + timedelta(seconds=lifespan_s * 0.1 + span * i / max(len(ids), 1))
         try:
-            if fid == "A12":
-                for j, (subj, body) in enumerate(WARMUPS):
-                    mail.send(
-                        cfg.stranger_inbox,
-                        cfg.family_inbox,
-                        subj,
-                        body,
-                        sender_name="Vendor desk",
-                        at=at - timedelta(seconds=60 * (3 - j)),
-                    )
-            mid = mail.send(
-                inbox_of[ROLE_INBOX[f.sender_role]],
-                cfg.family_inbox,
-                f.subject,
-                f.body.replace("{pages}", getattr(cfg, "pages_base", "")),
-                headers={"X-Probate-Fixture": fid},
-                attachments=f.attachments,
-                at=at,
-                sender_name={"owner": "Owner", "friend": "Rishi"}.get(
-                    ROLE_INBOX[f.sender_role], "Unknown"
-                ),
-            )
+            if adopted is not None:
+                mid = adopted
+            else:
+                if fid == "A12":
+                    for j, (subj, body) in enumerate(WARMUPS):
+                        mail.send(
+                            cfg.stranger_inbox,
+                            cfg.family_inbox,
+                            subj,
+                            body,
+                            sender_name="Vendor desk",
+                            at=at - timedelta(seconds=60 * (3 - j)),
+                        )
+                mid = mail.send(
+                    inbox_of[ROLE_INBOX[f.sender_role]],
+                    cfg.family_inbox,
+                    f.subject,
+                    f.body.replace("{pages}", getattr(cfg, "pages_base", "")),
+                    headers={"X-Probate-Fixture": fid},
+                    attachments=f.attachments,
+                    at=at,
+                    sender_name={"owner": "Owner", "friend": "Rishi"}.get(
+                        ROLE_INBOX[f.sender_role], "Unknown"
+                    ),
+                )
         except Exception as exc:  # noqa: BLE001 - one refused email must not stop the suite
             sent.failed.append((fid, _brief(exc)))
+            if store is not None:  # refused: nothing went out, so no pending marker is left
+                store.x(
+                    "DELETE FROM suite_runs WHERE gen=? AND fixture_id=? AND message_id IS NULL",
+                    gen,
+                    fid,
+                )
             continue
         sent.append((fid, mid))
         if store is not None:
+            # sent_at is when the mail really went out; `at` is only the spread the plan intended
+            # (both real senders ignore it).
             store.x(
                 "INSERT OR REPLACE INTO suite_runs(gen,fixture_id,is_attack,message_id,sent_at) VALUES(?,?,?,?,?)",
                 gen,
                 fid,
                 int(f.is_attack),
                 mid,
-                at.isoformat(),
+                datetime.now(UTC).isoformat(),
             )
     return sent
