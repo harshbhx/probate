@@ -5,10 +5,34 @@ from __future__ import annotations
 from probate.common.config import load_names
 from probate.common.names import name_for
 
-FIRST_26 = (
-    "Ada Ben Chandra Dara Emeka Freya Grace Hiro Ines Jonas Kofi Leela Mateo "
-    "Nadia Omar Priya Quinn Rafael Sora Tariq Uma Viktor Wen Xavi Yara Zane"
-).split()
+FIRST_26 = [
+    "Ada",
+    "Ben",
+    "Chandra",
+    "Dara",
+    "Emeka",
+    "Freya",
+    "Grace",
+    "Hiro",
+    "Ines",
+    "Jonas",
+    "Kofi",
+    "Leela",
+    "Mateo",
+    "Nadia",
+    "Omar",
+    "Priya",
+    "Quinn",
+    "Rafael",
+    "Sora",
+    "Tariq",
+    "Uma",
+    "Viktor",
+    "Wen",
+    "Xavi",
+    "Yara",
+    "Zane",
+]
 
 
 def test_first_26_never_change():
