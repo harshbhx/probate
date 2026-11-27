@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import json
 import operator
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -21,6 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "datasets" / "probate-real-run" / "data"
 DEFAULT_CLAIMS = ROOT / "datasets" / "probate-real-run" / "claims.json"
+DEFAULT_CARD = ROOT / "datasets" / "probate-real-run" / "README.md"
 # v1 counted generations 1 to 18; v2 begins at generation 19 (see export_real_run.py). Claims are
 # scoped to ONE scoring version (default v1) so the two series are never mixed.
 LAST_V1_GENERATION = 18
@@ -183,6 +185,160 @@ def check_manifest(data: Path) -> list[str]:
     return errors
 
 
+# --- branches, the card and leaks --------------------------------------------------------------
+# A scan that does not share code with the exporter: what a reviewer would grep for.
+LEAK_SCAN = {
+    "api key": re.compile(
+        r"\b(sk-[A-Za-z0-9_-]{16,}|hf_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|gh[pousr]_\w{16,}|github_pat_\w{16,})"
+    ),
+    "bearer token": re.compile(r"Bearer\s+(?!\[)[A-Za-z0-9._~+/=-]{12,}"),
+    "jwt": re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"),
+    "token in url": re.compile(
+        r"(?i)[?&](token|api[_-]?key|access[_-]?token|key|auth)=(?!\[)\w{6,}"
+    ),
+    "connection id": re.compile(r"(?i)\bconn(ection)?[_-][A-Za-z0-9]{8,}\b"),
+    "message id": re.compile(r"<[^<>\s@]{6,}@[^<>\s]+>"),
+}
+ANY_EMAIL = re.compile(r"[\w.%+=-]+@[\w-]+(?:\.[\w-]+)+")
+ALLOWED_EMAIL = re.compile(
+    r"^probate-[a-z0-9-]+@agentmail\.to$|@(example\.test|example\.(com|org|net)|[\w.-]+\.example)$",
+    re.IGNORECASE,
+)
+CARD_ROW = re.compile(
+    r"^\|\s*`?(v\d-[\w-]+)`?\s*\|\s*(\d+|pooled)\s*\|\s*(\d+)\s*/\s*(\d+)\s*(?:\||$)", re.MULTILINE
+)
+CARD_INSTINCTS = re.compile(
+    r"^\|\s*`?(v\d-[\w-]+)`?\s*\|\s*(instincts|genome)\s*\|\s*(\d+)\s*(?:\||$)", re.MULTILINE
+)
+
+
+def find_leaks(folder: Path, extra: list[Path] | None = None) -> list[str]:
+    """Any owner-style address or token pattern in any file of the dataset folder (and extras)."""
+    problems = []
+    files = [f for f in sorted(folder.glob("*")) if f.is_file()] + list(extra or [])
+    for f in files:
+        if not f.exists():
+            continue
+        text = f.read_text(encoding="utf-8")
+        for label, rx in LEAK_SCAN.items():
+            if rx.search(text):
+                problems.append(f"{f.name}: {label} pattern present")
+        for m in ANY_EMAIL.finditer(text):
+            if not ALLOWED_EMAIL.search(m.group(0)):
+                problems.append(f"{f.name}: an email address that is not a public inbox or example")
+                break
+    return problems
+
+
+def branch_names(tables: dict[str, list[dict]]) -> list[str]:
+    return [b for b in series_of(tables["generations"]) if b and not b.startswith("v1-")]
+
+
+def genome_at_end(tables: dict[str, list[dict]], branch: str) -> int:
+    """Rows of the instincts table (all lines) learned from a generation up to the branch's last."""
+    last = max(g["generation"] for g in tables["generations"] if g["series"] == branch)
+    return sum(1 for i in tables["instincts"] if (i["learned_from_generation"] or 0) <= last)
+
+
+def branch_numbers(tables: dict[str, list[dict]], branch: str) -> dict:
+    part = scope(tables, None, series=branch)
+    m = metrics(part)
+    return {
+        "per_generation": m["per_generation_resistance"],
+        "resisted": m["attacks_resisted_total"],
+        "met": m["attacks_met_total"],
+        "instincts_learned_in_branch": m["instincts_learned"],
+        "instincts_at_end": genome_at_end(tables, branch),
+    }
+
+
+def check_branches(tables: dict[str, list[dict]], data: Path) -> list[str]:
+    """The branch column and branches.json must follow from the generation rows."""
+    errors = []
+    branch_of = {g["generation"]: g.get("branch") for g in tables["generations"]}
+    for g in tables["generations"]:
+        if "branch" not in g:
+            continue  # an export from before the branch column existed
+        want = "v1" if g["scoring_rules"] == "v1" else g["series"]
+        if g["branch"] != want:
+            errors.append(f"gen {g['generation']}: branch {g['branch']!r}, expected {want!r}")
+    for name in ("emails", "judgements", "memories"):
+        for r in tables[name]:
+            if "branch" in r and r["branch"] != branch_of.get(r["generation"]):
+                errors.append(f"{name}: item of gen {r['generation']} has branch {r['branch']!r}")
+                break
+    path = data / "branches.json"
+    if not path.exists():
+        return errors  # an export from before branches.json existed
+    info = json.loads(path.read_text(encoding="utf-8"))
+    manifest = json.loads((data / "manifest.json").read_text(encoding="utf-8"))
+    meta = manifest.get("other_files", {}).get("branches.json")
+    if meta is None or hashlib.sha256(path.read_bytes()).hexdigest() != meta["sha256"]:
+        errors.append("branches.json: sha256 differs from manifest.json")
+    for b in info:
+        gens = sorted(g["generation"] for g in tables["generations"] if g["series"] == b["branch"])
+        if b["generations_in_data"] != len(gens):
+            errors.append(f"branches.json {b['branch']}: generations_in_data != {len(gens)}")
+        if gens and (b["first_generation"] != gens[0] or b["last_generation"] != gens[-1]):
+            errors.append(
+                f"branches.json {b['branch']}: first/last differ from the rows {gens[0]}-{gens[-1]}"
+            )
+    return errors
+
+
+def check_card(card: Path, tables: dict[str, list[dict]]) -> list[str]:
+    """Every resisted/met number the card states for a v2 branch must equal the data."""
+    if not card.exists():
+        return []
+    text = card.read_text(encoding="utf-8")
+    errors = []
+    have = set(branch_names(tables))
+    cache: dict[str, dict] = {}
+    for m in CARD_ROW.finditer(text):
+        branch, which, res, met = m.group(1), m.group(2), int(m.group(3)), int(m.group(4))
+        if branch not in have:
+            errors.append(f"{branch} has a row in the card but the data has no such branch")
+            continue
+        nums = cache.setdefault(branch, branch_numbers(tables, branch))
+        got = (
+            (nums["resisted"], nums["met"])
+            if which == "pooled"
+            else nums["per_generation"].get(int(which))
+        )
+        if got != (res, met):
+            errors.append(f"{branch} {which} says {res}/{met} in the card, data gives {got}")
+    for m in CARD_INSTINCTS.finditer(text):
+        branch, kind, n = m.group(1), m.group(2), int(m.group(3))
+        if branch not in have:
+            errors.append(f"{branch} has an instincts row in the card but the data has no such branch")
+            continue
+        nums = cache.setdefault(branch, branch_numbers(tables, branch))
+        got = nums["instincts_learned_in_branch"] if kind == "instincts" else nums["instincts_at_end"]
+        if got != n:
+            errors.append(f"{branch} {kind} says {n} in the card, data gives {got}")
+    return errors
+
+
+def claim_value(tables: dict[str, list[dict]], c: dict):
+    """The value a claim names, or None when it names a branch the data does not hold yet."""
+    if "branch" not in c:
+        return metrics(scope(tables, c.get("through_generation"), c.get("scoring_rules", "v1")))[
+            c["metric"]
+        ]
+    if c["branch"] not in set(branch_names(tables)):
+        return None
+    nums = branch_numbers(tables, c["branch"])
+    if "generation" in c:
+        per = nums["per_generation"].get(c["generation"])
+        return list(per) if per else None
+    return {
+        "attacks_resisted_total": nums["resisted"],
+        "attacks_met_total": nums["met"],
+        "instincts_at_end": nums["instincts_at_end"],
+        "instincts_learned_in_branch": nums["instincts_learned_in_branch"],
+    }[c["metric"]]
+
+
 def table(rows: list[tuple[str, object]]) -> str:
     width = max(len(k) for k, _ in rows)
     return "\n".join(f"  {k.ljust(width)}  {v}" for k, v in rows)
@@ -192,6 +348,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--data", type=Path, default=DEFAULT_DATA)
     ap.add_argument("--claims", type=Path, default=DEFAULT_CLAIMS)
+    ap.add_argument("--card", type=Path, default=DEFAULT_CARD, help="the dataset card (README.md)")
     args = ap.parse_args(argv)
 
     tables = load(args.data)
@@ -216,16 +373,30 @@ def main(argv: list[str] | None = None) -> int:
         print(table([(k, v) for k, v in metrics(part).items() if k != "per_generation_resistance"]))
     if not any(g["scoring_rules"] == "v2" for g in tables["generations"]):
         print("\nNo v2 rows yet (v2 begins at generation 19): no v2 claims.")
+    for b in branch_names(tables):
+        n = branch_numbers(tables, b)
+        per = ", ".join(f"gen {k}: {r}/{m}" for k, (r, m) in n["per_generation"].items())
+        print(
+            f"\nBranch {b}: {per}; pooled {n['resisted']}/{n['met']};"
+            f" instincts at end {n['instincts_at_end']} ({n['instincts_learned_in_branch']} learned in the branch)"
+        )
 
     failures = [f"manifest: {e}" for e in check_manifest(args.data)]
     failures += [f"consistency: {e}" for e in consistency(tables)]
+    failures += [f"branches: {e}" for e in check_branches(tables, args.data)]
+    failures += [f"card: {e}" for e in check_card(args.card, tables)]
+    failures += [f"leak: {e}" for e in find_leaks(args.data, [args.card])]
 
     claims = json.loads(args.claims.read_text(encoding="utf-8"))["claims"]
     print(f"\nClaims ({len(claims)}) from {args.claims.name}")
     for c in claims:
-        value = metrics(scope(tables, c.get("through_generation"), c.get("scoring_rules", "v1")))[
-            c["metric"]
-        ]
+        value = claim_value(tables, c)
+        if value is None:
+            if c.get("requires_branch"):
+                print(f"  [skip] {c['id']}: {c['statement']}  (branch not in this export yet)")
+                continue
+            failures.append(f"claim {c['id']} names data that is not in the export")
+            continue
         ok = OPS[c["op"]](value, c["expected"])
         print(
             f"  [{'ok  ' if ok else 'FAIL'}] {c['id']}: {c['statement']}  ({c['metric']} {c['op']} {c['expected']}; got {value})"

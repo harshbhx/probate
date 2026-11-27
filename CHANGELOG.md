@@ -29,6 +29,10 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
 
+### Data
+
+- The real-run exporter can read a Courthouse SQLite backup read-only (`--db`), adds a `branch` column and a `branches.json` for the three family-tree branches (`v2-h-inherit`, `v2-h-control`, `v2-h-fresh`), and the verifier recomputes per-generation, per-branch and instinct numbers (and any card table rows) from the data and scans every exported file for addresses and tokens. v1 is not re-scored.
+
 ### Documentation
 
 - A beta naming policy in `docs/PUBLISHING.md`: `beta-N` for tags, dataset revisions and releases until the final submission, then `v1.0.0`. ([#220](https://github.com/harshbhx/probate/pull/220))

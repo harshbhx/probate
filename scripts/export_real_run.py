@@ -20,6 +20,7 @@ import argparse
 import hashlib
 import json
 import re
+import sqlite3
 import subprocess
 import sys
 import urllib.error
@@ -107,6 +108,8 @@ def redact_text(text: str) -> str:
     text = EMAIL_RE.sub(email, text)
     for pattern, repl in SECRET_SUBS:
         text = pattern.sub(repl, text)
+    # lowercase owner name as a URL path segment in a fixture link (https://x.example/harsh)
+    text = re.sub(r"(?i)(?<=/)(harshu?|bhanushali)\b", "owner", text)
     for name in OWNER_NAMES:
         text = re.sub(rf"\b{name}(?=\b|['’])", "the owner", text)
     return text
@@ -150,6 +153,34 @@ def find_leaks(text: str) -> list[str]:
 
 
 # --- sources ---------------------------------------------------------------------------------
+# Tables that make up a snapshot. The Courthouse database also holds visitor and webhook tables
+# (IP hashes, endpoint secrets, judge mail); those are never read.
+SNAPSHOT_TABLES = ("generations", "will_items", "judgements", "instincts", "suite_runs", "events")
+
+
+def snapshot_from_sqlite(path: Path) -> dict:
+    """Read a Courthouse SQLite backup READ-ONLY into the same dict a `*-tables.json` holds.
+
+    Only SNAPSHOT_TABLES and the non-secret settings are read. The backup stays private: it holds
+    owner addresses, so it is never copied anywhere; only redacted rows leave this function's
+    caller.
+    """
+    uri = f"file:{path.resolve().as_posix()}?mode=ro"
+    con = sqlite3.connect(uri, uri=True)
+    con.row_factory = sqlite3.Row
+    try:
+        snap = {t: [dict(r) for r in con.execute(f"select * from {t}")] for t in SNAPSHOT_TABLES}
+        snap["settings"] = [
+            dict(r)
+            for r in con.execute("select key, value from settings")
+            if not re.search(r"token|secret|key_|_key|password", r["key"], re.IGNORECASE)
+            or r["key"] == "code_commit"
+        ]
+    finally:
+        con.close()
+    return snap
+
+
 def newest(dir_: Path, pattern: str) -> Path | None:
     files = sorted(dir_.glob(pattern))
     return files[-1] if files else None
@@ -237,24 +268,108 @@ def scoring_labels(settings: dict) -> tuple[str, str]:
     return later, f"{later}-{label}"
 
 
-def load_branches(path: Path | None) -> list[tuple[str, int, int]]:
-    """Read run-logs/branches.txt: lines `branch,first_gen,last_gen,date,settings` (if it exists).
+def _branch_name(raw: str) -> str:
+    """`v2-first-generation (base tier, trimmed)` -> `v2-first-generation`; bare names get `v2-`."""
+    name = re.sub(r"\s*\(.*\)\s*$", "", raw.strip()).strip()
+    return name if re.match(r"v\d", name) else f"v2-{name}"
 
-    Returns (series name, first generation, last generation). A branch name that does not already
-    start with `v<digit>` is prefixed `v2-` (so `hard-fork` becomes `v2-hard-fork`). Blank lines,
-    `#` comments and a header line are skipped.
+
+def _branch_lines(path: Path | None) -> list[tuple[str, int, int | None, str, str]]:
+    """Every data line of branches.txt as (series, first_gen, last_gen or None, date, rest).
+
+    A parenthesised note in the name may hold commas. Comments (`#`), the header line and lines
+    without a numeric first generation are skipped. An open branch has no last generation yet.
     """
     if path is None or not path.exists():
         return []
     out = []
     for line in path.read_text(encoding="utf-8").splitlines():
-        parts = [x.strip() for x in line.split(",")]
-        if len(parts) < 3 or line.lstrip().startswith("#"):
+        if line.lstrip().startswith("#"):
             continue
-        if not (parts[1].isdigit() and parts[2].isdigit()):
+        flat = re.sub(r"\([^)]*\)", lambda m: m.group(0).replace(",", ";"), line)
+        parts = [x.strip() for x in flat.split(",", 4)]
+        if len(parts) < 3 or not parts[1].isdigit() or not (parts[2] == "" or parts[2].isdigit()):
             continue
-        name = parts[0] if re.match(r"v\d", parts[0]) else f"v2-{parts[0]}"
-        out.append((name, int(parts[1]), int(parts[2])))
+        out.append(
+            (
+                _branch_name(parts[0]),
+                int(parts[1]),
+                int(parts[2]) if parts[2] else None,
+                parts[3] if len(parts) > 3 else "",
+                parts[4] if len(parts) > 4 else "",
+            )
+        )
+    return out
+
+
+def load_branches(path: Path | None) -> list[tuple[str, int, int]]:
+    """Read run-logs/branches.txt: lines `branch,first_gen,last_gen,date,settings` (if it exists).
+
+    Returns (series name, first generation, last generation) for lines that have a last
+    generation. A branch name that does not already start with `v<digit>` is prefixed `v2-` (so
+    `hard-fork` becomes `v2-hard-fork`). Blank lines, `#` comments and a header line are skipped.
+    """
+    return [(n, a, b) for n, a, b, _d, _r in _branch_lines(path) if b is not None]
+
+
+# What each family-tree branch is meant to test. Used only when branches.txt and the database do
+# not say: the parent line comes from the db setting `parent:<first gen>`, learning from a
+# `distill=` token in the branches.txt settings.
+BRANCH_DESIGN = {
+    "v2-h-inherit": {"parent_line": 14, "learning": True},
+    "v2-h-control": {"parent_line": 0, "learning": False},
+    "v2-h-fresh": {"parent_line": 0, "learning": True},
+}
+SETTING_KEYS = (
+    "tier",
+    "hard_per_life",
+    "suite_per_life",
+    "lifespan_seconds",
+    "lifespan",
+    "links_per_mail",
+    "judge",
+    "brain",
+    "rules",
+    "v1_last_gen",
+)
+
+
+def load_branch_info(path: Path | None, tables: dict, settings: dict) -> list[dict]:
+    """branches.json: one object per branch, from branches.txt, the db settings and the rows."""
+    merged: dict[str, dict] = {}
+    for name, first, last, date, rest in _branch_lines(path):
+        cur = merged.setdefault(name, {"first": first, "date": date, "commit": None})
+        cur["first"] = min(cur["first"], first)
+        if last is not None:
+            cur["last"] = last
+        parts = [x.strip() for x in rest.split(",", 1)]
+        if re.fullmatch(r"[0-9a-f]{7,40}(\+dirty)?", parts[0] or ""):
+            cur["commit"] = parts[0]
+        cur["settings_text"] = rest
+    out = []
+    for name, m in merged.items():
+        gens = [g for g in tables["generations"] if g["series"] == name]
+        toks = dict(re.findall(r"([A-Za-z_]+)=([^\s\]]+)", m["settings_text"]))
+        design = BRANCH_DESIGN.get(name, {})
+        parent = parse_json(settings.get(f"parent:{m['first']}"), None)
+        learning = design.get("learning")
+        if "distill" in toks:
+            learning = toks["distill"] not in ("0", "false", "off")
+        out.append(
+            {
+                "branch": name,
+                "scoring_rules": name.split("-")[0],
+                "parent_line": parent if parent is not None else design.get("parent_line"),
+                "first_generation": m["first"],
+                "last_generation": max((g["generation"] for g in gens), default=m.get("last")),
+                "declared_last_generation": m.get("last"),
+                "generations_in_data": len(gens),
+                "learning": learning,
+                "code_commit": m["commit"],
+                "date": m["date"] or None,
+                "settings": {k: v for k, v in toks.items() if k in SETTING_KEYS},
+            }
+        )
     return out
 
 
@@ -410,7 +525,7 @@ def build(
 
     def rules(n: int) -> dict:
         r, s = rules_for(n, later_rules, later_series, branches)
-        return {"scoring_rules": r, "series": s}
+        return {"scoring_rules": r, "series": s, "branch": "v1" if s == V1_SERIES else s}
 
     stats = {n: parse_json(settings.get(f"stats:{n}"), {}) or {} for n in gens}
     runs = snapshot.get("suite_runs", [])
@@ -552,6 +667,7 @@ def build(
             {
                 "item_id": item_id,
                 "generation": w["gen"],
+                **rules(w["gen"]),
                 "created_at": iso(w.get("created_at")),
                 "text": w.get("text"),
                 "source_type": w.get("source"),
@@ -651,6 +767,7 @@ def write_dataset(
     source: dict,
     exported_at: str,
     series_info: dict[str, dict] | None = None,
+    branches_info: list[dict] | None = None,
 ) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     files = {}
@@ -684,6 +801,17 @@ def write_dataset(
         "era_deploy_times_utc": {k: {"pr": v[0], "time": v[1]} for k, v in ERA.items()},
         "files": files,
     }
+    if branches_info is not None:
+        btext = json.dumps(redact_obj(branches_info), indent=2, ensure_ascii=False) + "\n"
+        if find_leaks(btext):
+            raise SystemExit("refusing to write branches.json: leak patterns present")
+        (out / "branches.json").write_text(btext, encoding="utf-8", newline="\n")
+        manifest["other_files"] = {
+            "branches.json": {
+                "sha256": hashlib.sha256(btext.encode("utf-8")).hexdigest(),
+                "bytes": len(btext.encode("utf-8")),
+            }
+        }
     if series_info:
         manifest["series_info"] = series_info  # per series, e.g. {"code_commit": "<sha>"}
     text = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
@@ -701,6 +829,11 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="a specific db snapshot (default: newest in run-logs/db)",
     )
+    ap.add_argument(
+        "--db",
+        type=Path,
+        help="a Courthouse SQLite backup, opened read-only (instead of a *-tables.json snapshot)",
+    )
     ap.add_argument("--api", default=DEFAULT_API, help="public API base URL")
     ap.add_argument(
         "--api-dir", type=Path, help="read saved API responses from this folder instead"
@@ -714,12 +847,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args(argv)
 
-    snap = args.snapshot
+    snap = args.db or args.snapshot
     if snap is None and args.run_logs:
         snap = newest(args.run_logs / "db", "*-tables.json")
     if snap is None or not snap.exists():
         ap.error("no database snapshot: pass --snapshot or --run-logs with a db/ folder")
-    snapshot = load_json(snap)
+    snapshot = snapshot_from_sqlite(snap) if args.db else load_json(snap)
     if args.no_api:
         api = Api()
     elif args.api_dir:
@@ -736,7 +869,14 @@ def main(argv: list[str] | None = None) -> int:
         else (str(args.api_dir.name) if args.api_dir else "public API"),
     }
     manifest = write_dataset(
-        tables, args.out, source, exported_at, load_branch_commits(branches_file)
+        tables,
+        args.out,
+        source,
+        exported_at,
+        load_branch_commits(branches_file),
+        load_branch_info(
+            branches_file, tables, {s["key"]: s["value"] for s in snapshot.get("settings", [])}
+        ),
     )
     for name, f in manifest["files"].items():
         print(f"{name:18} {f['rows']:5} rows  sha256 {f['sha256'][:12]}")
