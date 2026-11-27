@@ -53,6 +53,8 @@ The genome is capped at 24 instincts.
 
 The door uses **inherited instincts only**. The brain gets no hints, the base questions aren't asked at the door, and the test emails carry no marker the agent can see (the `X-Probate-Fixture` header is never shown to the gate or the brain). So when a later generation resists a trick its ancestor fell for, the only thing that changed is what was passed down.
 
+An email can hide its instruction in an encoding (base64, hex, rot13) or in invisible characters. The door decodes those parts and shows the judge what they say next to the email, so an instinct can fire on a hidden trick too. An ordinary email reaches the judge unchanged.
+
 ## Where they fail
 
 An instinct learned from one example can miss a very different version of the same trick. The harmless-twin test limits the opposite risk, instincts that block normal mail, but can't rule it out. See [Security](/docs/security).
