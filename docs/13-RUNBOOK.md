@@ -101,7 +101,9 @@ python scripts/deploy.py --restore-db path/to/probate.db
 |---|---|---|---|
 | `v1-archive` | `probate-courthouse` (deleted) | v1 | Read-only record of the 26 Nov 2026 run, generations 1 to 18 (dataset `harshbhx/probate-real-run`). Deploy and every write command are refused. |
 | `staging` | `probate-staging` | v2 | Throwaway Courthouse for a 2-generation smoke test: 120 s lives, 4 test emails per life, 1 USD budget. It does not need the simulated judge. |
-| `production-v2` | `probate-courthouse` | v2 | The real run from generation 19: base suite, 4 per life, no links, no contest emails, 300 s lives, `PROBATE_JEV=llm`. |
+| `production-v2` | `probate-courthouse` | v2 | The real run from generation 19: hard tier (2 hard attacks per life), 4 per life, no links, no contest emails, 300 s lives, brain `anthropic:claude-haiku-5-5` with fallback `cloudflare:@cf/openai/gpt-oss-120b`, judge `llm`. |
+
+Brain, fallbacks and judge are guarded: if `services/core/.env` sets one differently, deploy keeps the `.env` value and says so, unless you pass `--allow-brain-change`. `python scripts/deploy.py --check --env production-v2` prints the effective brain, fallbacks, judge, tier, per-life count and links setting (no secrets) before you deploy.
 
 The rules differ in what counts, not in how old results are read. **v1**: the 26 Nov run, scored as it was. **v2**: a generation is only "fooled" with evidence, each suite email is scored by its own message, and old test mail is set aside before each birth. Results are never re-scored; they are called v1 or v2. The Courthouse records its rules in the database on first start (`scoring_rules`) and `/api/summary` returns `scoring_rules` and `environment` (from `PROBATE_ENV_NAME`).
 
@@ -123,7 +125,7 @@ Each environment keeps its own URL file, `.data/courthouse-url-<env>.txt`, so st
 3. Check both generations were born and died, the mail counts are right, spending stays under 1 USD, and `/api/summary` shows `environment: staging` and `scoring_rules: v2`.
 4. Delete the staging Sprite when done (section 3a); it is meant to be thrown away.
 
-**Promote to `production-v2`.** Nothing is copied from staging: production is a fresh deploy of the same code with the production settings. Once staging passes, `make deploy ENV=production-v2`, `make preflight ENV=production-v2`, then resume. A deploy of production-v2 also refreshes `.data/courthouse-url.txt`, which the docs site links to. To switch the hard tier on for one deploy, export the variable first (only `PROBATE_SUITE_TIER`, `PROBATE_BUDGET_USD` and `PROBATE_LIFESPAN_SECONDS` may be overridden this way): `PROBATE_SUITE_TIER=both make deploy ENV=production-v2`.
+**Promote to `production-v2`.** Nothing is copied from staging: production is a fresh deploy of the same code with the production settings. Once staging passes, `make deploy ENV=production-v2`, `make preflight ENV=production-v2`, then resume. A deploy of production-v2 also refreshes `.data/courthouse-url.txt`, which the docs site links to. To change the tier for one deploy, export the variable first (only `PROBATE_SUITE_TIER`, `PROBATE_BUDGET_USD` and `PROBATE_LIFESPAN_SECONDS` may be overridden this way): `PROBATE_SUITE_TIER=base make deploy ENV=production-v2`.
 
 **Restore a saved database into any environment.** Save it as in section 3a, then give `--restore-db` to the deploy of a new Sprite: `python scripts/deploy.py --env production-v2 --restore-db path/to/probate.db`. It never overwrites a database that already exists. A restored database keeps the `scoring_rules` it was saved with; a database saved before the label existed (the v1 run) has none, so it takes the label of the environment it is restored into. Do not restore the v1 database into `production-v2`; the archive is a record, not a place to continue.
 

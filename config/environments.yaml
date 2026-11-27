@@ -5,10 +5,16 @@
 # scoring_rules: v1 = the 26 Nov 2026 run (generations 1-18), scored as it was and never re-scored.
 #                v2 = from generation 19: "fooled" needs evidence, each suite email is scored by
 #                its own message, old test mail is set aside before each birth.
-# settings_pin: what a branch ran with, written into the dataset record. For a live environment it
-#              must agree with `settings` (a test checks); brain and judge are applied to the Sprite.
+# settings_pin: what a branch ran with, written into the dataset record. It must agree with
+#              `settings` (a test checks).
+# Brain, brain fallbacks and judge (PROBATE_BRAIN, PROBATE_BRAIN_FALLBACKS, PROBATE_JEV) are
+#              guarded: if services/core/.env sets a different value, deploy keeps the .env value
+#              and says so, unless the operator passes --allow-brain-change. The real run uses
+#              anthropic:claude-haiku-5-5 (Ollama is not used).
 # overridable: variables a caller may change for one deploy by exporting them in the shell
-#              (for example PROBATE_SUITE_TIER=both to switch the hard tier on).
+#              (for example PROBATE_SUITE_TIER=base to go back to the base suite).
+# TODO: when PROBATE_DISTILL (default on) and PROBATE_HARD_OFFSET (default 0) land on main, add
+#       them to the settings and pins below.
 environments:
   v1-archive:
     description: Read-only record of the 26 Nov 2026 real run. The Sprite was deleted.
@@ -18,9 +24,13 @@ environments:
     run_label_prefix: v1
     generations: [1, 18]
     dataset: harshbhx/probate-real-run
-    settings: {}
-    settings_pin:  # only what the run's own record shows; the rest was not pinned then
-      brain: not recorded
+    settings:
+      PROBATE_BRAIN: "anthropic:claude-haiku-5-5"
+      PROBATE_BRAIN_FALLBACKS: "cloudflare:@cf/openai/gpt-oss-120b"
+      PROBATE_JEV: llm
+    settings_pin:  # brain, fallbacks and judge from the Courthouse logs; the rest was not pinned
+      brain: "anthropic:claude-haiku-5-5"
+      brain_fallbacks: "cloudflare:@cf/openai/gpt-oss-120b"
       judge: llm
       tier: not recorded
       suite_per_life: not recorded
@@ -39,14 +49,18 @@ environments:
       PROBATE_LIFESPAN_SECONDS: "120"
       PROBATE_SUITE_PER_LIFE: "4"
       PROBATE_BUDGET_USD: "1"
-      PROBATE_BRAIN: "ollama:gpt-oss:120b"
+      PROBATE_BRAIN: "anthropic:claude-haiku-5-5"
+      PROBATE_BRAIN_FALLBACKS: "cloudflare:@cf/openai/gpt-oss-120b"
       PROBATE_JEV: llm
-      PROBATE_SUITE_TIER: base
+      PROBATE_SUITE_TIER: hard
+      PROBATE_HARD_PER_LIFE: "2"
       PROBATE_LINKS_PER_MAIL: "0"
     settings_pin:
-      brain: "ollama:gpt-oss:120b"
+      brain: "anthropic:claude-haiku-5-5"
+      brain_fallbacks: "cloudflare:@cf/openai/gpt-oss-120b"
       judge: llm
-      tier: base
+      tier: hard
+      hard_per_life: 2
       suite_per_life: 4
       lifespan_seconds: 120
       links_per_mail: 0
@@ -58,18 +72,22 @@ environments:
     scoring_rules: v2
     run_label_prefix: v2
     settings:
-      PROBATE_SUITE_TIER: base
+      PROBATE_SUITE_TIER: hard
+      PROBATE_HARD_PER_LIFE: "2"
       PROBATE_SUITE_PER_LIFE: "4"
       PROBATE_LINKS_PER_MAIL: "0"
       PROBATE_CONTEST_EMAILS: "0"
       PROBATE_LIFESPAN_SECONDS: "300"
       PROBATE_BUDGET_USD: "20"
       PROBATE_JEV: llm
-      PROBATE_BRAIN: "ollama:gpt-oss:120b"
+      PROBATE_BRAIN: "anthropic:claude-haiku-5-5"
+      PROBATE_BRAIN_FALLBACKS: "cloudflare:@cf/openai/gpt-oss-120b"
     settings_pin:
-      brain: "ollama:gpt-oss:120b"
+      brain: "anthropic:claude-haiku-5-5"
+      brain_fallbacks: "cloudflare:@cf/openai/gpt-oss-120b"
       judge: llm
-      tier: base
+      tier: hard
+      hard_per_life: 2
       suite_per_life: 4
       lifespan_seconds: 300
       links_per_mail: 0

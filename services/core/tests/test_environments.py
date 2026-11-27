@@ -105,8 +105,60 @@ def test_settings_pin_agrees_with_the_settings_applied():
         assert int(s["PROBATE_SUITE_PER_LIFE"]) == p["suite_per_life"]
         assert int(s["PROBATE_LIFESPAN_SECONDS"]) == p["lifespan_seconds"]
         assert int(s["PROBATE_LINKS_PER_MAIL"]) == p["links_per_mail"]
+        assert s["PROBATE_BRAIN_FALLBACKS"] == p["brain_fallbacks"]
+        assert s["PROBATE_HARD_PER_LIFE"] == str(p["hard_per_life"])
     archive = envs.load_registry()["v1-archive"]
     assert "judge=llm" in archive.pin_summary()
+
+
+REAL_BRAIN = {
+    "PROBATE_BRAIN": "anthropic:claude-haiku-5-5",
+    "PROBATE_BRAIN_FALLBACKS": "cloudflare:@cf/openai/gpt-oss-120b",
+    "PROBATE_JEV": "llm",
+}
+
+
+def test_every_environment_pins_the_real_brain():
+    for e in envs.load_registry().values():
+        for k, v in REAL_BRAIN.items():
+            assert e.settings[k] == v, (e.name, k)
+        assert "ollama" not in e.pin_summary()
+
+
+def test_applied_brain_equals_the_owners_env_file():
+    env_file = envs.ROOT / "services" / "core" / ".env"
+    if not env_file.exists():
+        pytest.skip("no services/core/.env on this machine")
+    have = {}
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        k, _, v = line.partition("=")
+        if k.strip() in REAL_BRAIN:  # only these three lines are ever read
+            have[k.strip()] = v
+    for e in ("staging", "production-v2"):
+        applied = envs.load_registry()[e].sprite_settings({})
+        for k in REAL_BRAIN:
+            if have.get(k):
+                assert applied[k] == envs._unquote(have[k]), (e, k)
+
+
+def test_an_environment_cannot_silently_switch_the_brain():
+    env_file = {"PROBATE_BRAIN": "anthropic:claude-haiku-5-5", "PROBATE_JEV": '"llm"'}
+    wants = {"PROBATE_BRAIN": "ollama:x", "PROBATE_JEV": "llm", "PROBATE_BRAIN_FALLBACKS": "a:b"}
+    kept, notes = envs.guard(wants, env_file)
+    assert "PROBATE_BRAIN" not in kept  # the .env value stays
+    assert kept["PROBATE_BRAIN_FALLBACKS"] == "a:b"  # not set in .env: applied
+    assert len(notes) == 1 and "kept anthropic:claude-haiku-5-5" in notes[0]
+    switched, notes = envs.guard(wants, env_file, allow_change=True)
+    assert switched["PROBATE_BRAIN"] == "ollama:x" and "--allow-brain-change" in notes[0]
+
+
+def test_effective_report_shows_settings_and_no_secrets():
+    prod = envs.load_registry()["production-v2"]
+    env_file = {"PROBATE_SPRITES_TOKEN": "s3cret", "PROBATE_ADMIN_TOKEN": "s3cret2"}
+    text = "\n".join(envs.effective(env_file, prod.sprite_settings({})))
+    assert "brain: anthropic:claude-haiku-5-5" in text and "tier: hard" in text
+    assert "links per mail: 0" in text and "per life: 4" in text
+    assert "s3cret" not in text
 
 
 def test_branch_log_line_and_first_gen_lookup(tmp_path):
