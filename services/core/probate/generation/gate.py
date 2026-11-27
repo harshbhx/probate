@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from probate.adapters.jev import CourtUnavailable, Question
 from probate.common.models import Instinct, Mail
+from probate.common.reveal import reveal
 
 log = logging.getLogger("probate.gate")
 
@@ -25,9 +26,16 @@ class GateResult:
 
 
 def mail_state(mail: Mail) -> str:
-    """What the gate sees: subject, body and attachment names. Never headers."""
+    """What the gate sees: subject, body, attachment names and, when the email hides text in an
+    encoding or in invisible characters, what that text says. Never headers."""
     names = ", ".join(a.get("name", "file") for a in mail.attachments) or "none"
-    return f"Subject: {mail.subject}\n\n{mail.text}\n\nAttachments: {names}"
+    state = f"Subject: {mail.subject}\n\n{mail.text}\n\nAttachments: {names}"
+    hidden = reveal(f"{mail.subject}\n{mail.text}")
+    if hidden:
+        state += "\n\nHidden or encoded text in this email, decoded:\n" + "\n".join(
+            f"- {h}" for h in hidden
+        )
+    return state
 
 
 class Gate:
