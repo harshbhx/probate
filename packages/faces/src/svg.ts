@@ -35,6 +35,9 @@ export interface FaceOptions extends Omit<GlyphOptions, "traits" | "family" | "a
   desc?: string;
   /** Class attribute on the <svg>. */
   className?: string;
+  /** A CSS colour for a rounded tile behind the face, e.g. "#0A0E17". The pale skin tones are
+   * tuned for dark backgrounds; a dark tile makes them read on a white page. */
+  background?: string;
   /** Add the pf-* animation classes and an embedded <style> with FACE_CSS. Default false. */
   animate?: boolean;
 }
@@ -61,7 +64,7 @@ export function faceAlt(input: FaceInput, opts: { gen?: number } = {}): string {
 
 /** The face as a standalone `<svg>` string. Same input, same string, every time. */
 export function faceSvg(input: FaceInput, opts: FaceOptions = {}): string {
-  const { size = 64, title, desc, className, animate = false, gen, ...rest } = opts;
+  const { size = 64, title, desc, className, animate = false, gen, background, ...rest } = opts;
   const r = resolveFace(input, gen);
   const body = glyph({ ...rest, traits: r.traits, gen: r.gen, family: r.family, animate });
   const attrs: Record<string, unknown> = {
@@ -79,8 +82,15 @@ export function faceSvg(input: FaceInput, opts: FaceOptions = {}): string {
     (title ? `<title>${esc(title)}</title>` : "") +
     (desc ? `<desc>${esc(desc)}</desc>` : "") +
     (animate ? `<style>${FACE_CSS.replace(/\n/g, "")}</style>` : "") +
+    (background ? `<rect width="64" height="64" rx="14" fill="${esc(background)}"/>` : "") +
     serialize(body);
   return `<svg${attrsToString(attrs)}>${inner}</svg>`;
+}
+
+/** The face as a `data:image/svg+xml` URI: for `<img src>`, a CSS `background-image` or an
+ * email. Same options as `faceSvg`. */
+export function faceDataUri(input: FaceInput, opts: FaceOptions = {}): string {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(faceSvg(input, opts))}`;
 }
 
 /** Serialise a glyph element tree to markup (no outer <svg>): what you embed in your own SVG. */

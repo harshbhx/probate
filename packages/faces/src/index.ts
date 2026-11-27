@@ -3,6 +3,7 @@ export * from "./model.js";
 export {
   FACE_CSS,
   faceAlt,
+  faceDataUri,
   faceGlyphSvg,
   faceSvg,
   resolveFace,
@@ -10,3 +11,11 @@ export {
   type FaceOptions,
   type ResolvedFace,
 } from "./svg.js";
+export {
+  MAX_TREE_NODES,
+  familyTree,
+  familyTreeSvg,
+  flattenTree,
+  type TreeNode,
+  type TreeSvgOptions,
+} from "./tree.js";
