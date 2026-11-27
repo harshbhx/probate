@@ -118,7 +118,9 @@ class OnDemand:
         if quota is not None:
             from probate.suite import runner
 
-            if not quota.room_for(runner.agentmail_sends(self.cfg, self.family.next_number()), now):
+            if not quota.room_for(
+                runner.agentmail_sends(self.cfg, self.family.next_number(), self.store), now
+            ):
                 return "mail"
         if judge is not None:
             return "judge_daily" if judge.daily_block(now, est) else None

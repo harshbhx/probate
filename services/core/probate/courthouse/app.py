@@ -706,7 +706,7 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
             "used_today": quota.used(),
             "left_today": quota.left(),
             "reserve": quota.reserve,
-            "next_life_needs": runner.agentmail_sends(settings, family.next_number()),
+            "next_life_needs": runner.agentmail_sends(settings, family.next_number(), store),
         },
         "budget": {"spent_usd": round(family.budget.spent(), 4), "limit_usd": family.budget.limit},
         "judge": engine_name(w.jev),

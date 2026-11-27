@@ -116,7 +116,7 @@ def restore_database(api, name: str, path: Path) -> str:
     data = path.read_bytes()
     if not data.startswith(b"SQLite format 3"):
         sys.exit(f"--restore-db: {path} is not a SQLite database")
-    if api.read_file(name, "data/probate.db"):
+    if api.file_exists(name, "data/probate.db"):
         return "a database is already on the Courthouse; left it alone"
     api.write_file(name, "data/probate.db", data)
     return f"restored {len(data) // 1024} KiB from {path.name}"
@@ -140,6 +140,42 @@ def start_courthouse(api, name: str, fresh: bool, wait=time.sleep, tries: int = 
         wait(2)
     api.service_action(name, "courthouse", "start")
     return "started once"
+
+
+def running_state(api, name: str, admin_token: str, http=httpx) -> tuple[dict | None, dict | None]:
+    """The running Courthouse's /api/summary and /admin/status, or None for each that can't be read."""
+    info = api.get(name) or {}
+    url = (info.get("url") or "").rstrip("/")
+    if not url:
+        return None, None
+    out: list[dict | None] = []
+    for path, headers in (
+        ("/api/summary", {}),
+        ("/admin/status", {"x-probate-admin": admin_token}),
+    ):
+        try:
+            r = http.get(url + path, headers=headers, timeout=10)
+            out.append(r.json() if r.status_code == 200 else None)
+        except (httpx.HTTPError, ValueError):
+            out.append(None)
+    return out[0], out[1]
+
+
+def guard_running(api, name: str, env, extra, target, force: bool, http=httpx) -> None:
+    """Refuse to deploy over a Sprite that runs another environment or branch (unless forced), and
+    list the knobs this deploy would change on a running one."""
+    merged = {**env, **extra}
+    summary, status = running_state(api, name, env["PROBATE_ADMIN_TOKEN"], http)
+    if summary is None:
+        print(
+            "  note: the running Courthouse did not answer; its environment and branch were not checked."
+        )
+    elif why := envs.replaces_other_run(
+        summary, target.name if target else None, merged.get("PROBATE_BRANCH_NAME", ""), force
+    ):
+        sys.exit(f"Refusing to deploy: {why}. Pass --force-replace to replace it anyway.")
+    for line in envs.differing_knobs(status, merged):
+        print(f"  differs: {line}")
 
 
 def git_commit() -> str:
@@ -184,6 +220,11 @@ def main() -> None:
         help="let the environment replace PROBATE_BRAIN, PROBATE_BRAIN_FALLBACKS or PROBATE_JEV "
         "set differently in services/core/.env",
     )
+    ap.add_argument(
+        "--force-replace",
+        action="store_true",
+        help="deploy even if the Sprite is running a different environment or branch",
+    )
     ap.add_argument("--check", action="store_true", help="validate config and bundle, then stop")
     ap.add_argument(
         "--restore-db",
@@ -206,6 +247,8 @@ def main() -> None:
     extra, notes = envs.guard(extra, env, args.allow_brain_change)
     if problem := edge_problem(env, extra):
         sys.exit(problem)
+    if bad := envs.bad_flags({**env, **extra}):
+        sys.exit("Refusing to deploy: " + "; ".join(bad))
     commit = git_commit()
     if commit:
         extra["PROBATE_CODE_COMMIT"] = commit
@@ -226,11 +269,19 @@ def main() -> None:
     step(f"sprite {args.name}")
     api.create(args.name)
 
-    # A database on the Sprite means the service has run before; none means a first deploy.
-    fresh = api.read_file(args.name, "data/probate.db") is None
+    # A database on the Sprite means the service has run before; none means a first deploy. Only a
+    # clean 404 counts as "none": a 5xx from a busy Courthouse raises here instead of being read as
+    # a first deploy (which would let --restore-db write over the live database).
+    fresh = not api.file_exists(args.name, "data/probate.db")
+    if not fresh:
+        guard_running(api, args.name, env, extra, target, args.force_replace)
 
     step("uploading code")
     api.write_file(args.name, "bundle.tgz", bundle)
+    if not fresh:
+        # The old process reads prompts and suites lazily from app/: stop it before `rm -rf app`,
+        # or a birth or trial that starts in that window fails on a missing file.
+        api.service_action(args.name, "courthouse", "stop")
     res = api.exec(
         args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite"
     )

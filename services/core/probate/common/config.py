@@ -19,6 +19,28 @@ def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default)
 
 
+_TRUE = {"1", "true", "yes", "on"}
+_FALSE = {"0", "false", "no", "off"}
+
+
+def parse_flag(name: str, raw: str, default: bool) -> bool:
+    """A yes/no setting, read strictly. An unset or empty value is `default`; anything that is not
+    clearly yes or no raises, so a typo such as PROBATE_DISTILL=of can't silently leave a branch's
+    treatment on (the old test was `!= "0"`, which read `false` and `off` as on)."""
+    v = raw.strip().lower()
+    if not v:
+        return default
+    if v in _TRUE:
+        return True
+    if v in _FALSE:
+        return False
+    raise ValueError(f"{name}={raw!r} is not a yes/no value; use 1/0, true/false, yes/no or on/off")
+
+
+def _flag(name: str, default: bool) -> bool:
+    return parse_flag(name, _env(name), default)
+
+
 ADMIN_TOKEN_MIN = 24
 EDGE_TOKEN_MIN = 16
 
@@ -41,7 +63,7 @@ class Settings:
     suite_per_life: int = field(default_factory=lambda: int(_env("PROBATE_SUITE_PER_LIFE", "8")))
     # Email the owner about each held (contested) item. Off keeps the item held and says so in
     # the timeline, which saves AgentMail sends and keeps the owner's inbox quiet.
-    contest_emails: bool = field(default_factory=lambda: _env("PROBATE_CONTEST_EMAILS", "1") != "0")
+    contest_emails: bool = field(default_factory=lambda: _flag("PROBATE_CONTEST_EMAILS", True))
     # base (the 16 + 16 suite only), hard (only the hard tier) or both. See docs/03-ATTACK-SUITE.md.
     suite_tier: str = field(
         default_factory=lambda: _env("PROBATE_SUITE_TIER", "base").strip().lower() or "base"
@@ -54,7 +76,7 @@ class Settings:
     hard_offset: int = field(default_factory=lambda: int(_env("PROBATE_HARD_OFFSET", "0")))
     # 0 turns instinct learning off: trials still convict, but no instinct is distilled. For a
     # control branch.
-    distill: bool = field(default_factory=lambda: _env("PROBATE_DISTILL", "1") != "0")
+    distill: bool = field(default_factory=lambda: _flag("PROBATE_DISTILL", True))
     # The last generation of the v1 run (0 = none). Lore learned in generations 1 to this one is
     # shown to later children as v1 lore, without changing what is stored.
     v1_last_gen: int = field(default_factory=lambda: int(_env("PROBATE_V1_LAST_GEN", "0")))

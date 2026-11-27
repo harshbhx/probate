@@ -30,6 +30,10 @@ LEASE_RENEW_SECONDS = 10
 # longer than this; the trial carries on and its instincts reach the lives after.
 TRIAL_WAIT_MAX_SECONDS = 600
 FIRST_MAIL_SECONDS = 60  # a life this old that has read no mail, though mail was sent, is restarted
+RECONCILE_EVERY_TICKS = 20  # the Sprite sweep runs this often (20 ticks of 15 s = every 5 minutes)
+STRAY = re.compile(
+    r"gen-(\d{3,})-[a-z0-9-]+"
+)  # only a Sprite named like a generation is ever swept
 ADMIN_TICK_WAIT_SECONDS = 8  # POST /admin/tick answers after this long, whatever the step is doing
 
 
@@ -64,6 +68,7 @@ class Scheduler:
         self.state_since = datetime.now(UTC)
         self._announced: set[str] = set()
         self._tick_thread: threading.Thread | None = None
+        self._ticks = 0
 
     # ------------------------------------------------------------------ what the clock says
     def note(self, state: str, detail: str = "") -> str:
@@ -199,6 +204,9 @@ class Scheduler:
             self.family.read_court_replies()
         except Exception:
             log.warning("reading court replies failed; will retry next tick", exc_info=True)
+        self._ticks += 1
+        if allow_birth and self._ticks % RECONCILE_EVERY_TICKS == 1:
+            self.reconcile_sprites()
         living = self.store.living()
         if living:
             # A death that failed partway (a dropped connection, a Sprite that would not answer)
@@ -266,7 +274,7 @@ class Scheduler:
                 )
             return self.note("resting:budget", "the budget is used up")
         quota = self.family.quota
-        need = runner.agentmail_sends(self.family.cfg, self.family.next_number())
+        need = runner.agentmail_sends(self.family.cfg, self.family.next_number(), self.store)
         if not quota.room_for(need, now):
             mark = f"mail:{now.astimezone(UTC):%Y-%m-%d}"
             if self.store.get_setting("resting", "") != mark:
@@ -337,6 +345,45 @@ class Scheduler:
             "emails were sent; the Courthouse restarted the agent.",
         )
 
+    def reconcile_sprites(self) -> int:
+        """Delete generation Sprites that no open life owns, so none is left billing.
+
+        A delete that failed (a Sprites outage during a death or a failed birth) used to leave its
+        Sprite running for good. This lists the generation Sprites and deletes each one whose
+        generation is not born, living or dying. Only names shaped like `gen-NNN-name` are ever
+        touched. Returns how many it deleted.
+        """
+        try:
+            names = self.family.host.list_sprites()
+        except Exception:
+            log.warning("could not list Sprites to look for strays", exc_info=True)
+            return 0
+        with self.family.lifecycle_lock:  # no birth can start while we decide what is a stray
+            keep = {
+                g.sprite for g in self.store.generations() if g.state in ("born", "living", "dying")
+            }
+            removed = 0
+            for name in names:
+                m = STRAY.fullmatch(name)
+                if not m or name in keep:
+                    continue
+                try:
+                    self.family.host.force_destroy(name)
+                except Exception:
+                    log.warning("could not delete the stray Sprite %s", name, exc_info=True)
+                    continue
+                removed += 1
+                log.warning("deleted the stray Sprite %s: no open life owns it", name)
+                self.store.event(
+                    int(m.group(1)) if self.store.generation(int(m.group(1))) else None,
+                    "error",
+                    f"Deleted a leftover Sprite ({name}) that no living generation owned.",
+                )
+                self.family.emit(
+                    "sprite.stray_deleted", {"sprite": name}, f"stray:{name}:{self._ticks}"
+                )
+        return removed
+
     def recover_orphans(self) -> int:
         """A generation still 'born' when this process takes the clock was being born by a
         process that stopped (a deploy restarted the service mid-birth). Its Sprite may be
@@ -349,8 +396,14 @@ class Scheduler:
                 try:
                     self.family.host.force_destroy(g.sprite)
                 except Exception:
+                    # Keep the row open: it is retried at the next start, and the sweep deletes the
+                    # Sprite meanwhile. Closing it would hide the leak.
                     log.warning("could not delete the half-born Sprite %s", g.sprite, exc_info=True)
+                    continue
                 g.state = "died_early"
+                self.store.set_setting(
+                    "birth_skipped", str(int(self.store.get_setting("birth_skipped", "0") or 0) + 1)
+                )
                 self.store.save_generation(g)
                 self.store.event(
                     g.gen,
@@ -368,14 +421,21 @@ class Scheduler:
         while only 2 were sent to it. They count for no one, so they are marked read. Judge mail
         and the owner's court replies have no fixture header and are left alone.
         """
-        try:
-            stale = [
+        mail = self.family.w.mail
+        inbox = self.family.cfg.family_inbox
+
+        def stale_mail() -> list:
+            return [
                 m
-                for m in self.family.w.mail.list_new(self.family.cfg.family_inbox)
+                for m in mail.list_new(inbox)
                 if any(k.lower() == "x-probate-fixture" for k in (m.headers or {}))
             ]
+
+        try:
+            stale = stale_mail()
             for m in stale:
-                self.family.w.mail.mark_read(m.inbox, m.id)
+                mail.mark_read(m.inbox, m.id)
+            left = stale_mail() if stale else []  # a label that did not stick shows up again
         except Exception:
             log.warning("could not set aside old test mail", exc_info=True)
             return 0
@@ -383,9 +443,17 @@ class Scheduler:
             self.store.event(
                 None,
                 "life",
-                f"Set aside {len(stale)} test emails no one read, so they count for no one.",
+                f"Set aside {len(stale) - len(left)} test emails no one read, so they count for no one.",
             )
-        return len(stale)
+        if left:
+            log.warning("%s old test emails are still unlabeled after marking them read", len(left))
+            self.store.event(
+                None,
+                "error",
+                f"{len(left)} old test emails could not be marked read and may reach the next "
+                "life; they will be tried again before the next birth.",
+            )
+        return len(stale) - len(left)
 
     def ensure_suite(self, g, now: datetime) -> None:
         """Send the living generation's test emails, once; retry what failed on later ticks.

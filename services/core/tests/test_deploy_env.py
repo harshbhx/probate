@@ -47,6 +47,9 @@ class _FakeApi:
     def read_file(self, name, path):
         return self.files.get(path)
 
+    def file_exists(self, name, path):
+        return path in self.files
+
     def write_file(self, name, path, data, mode="0644"):
         self.files[path] = data
         self.writes.append(path)

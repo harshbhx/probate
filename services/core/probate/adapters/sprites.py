@@ -139,6 +139,18 @@ class SpritesAPI:
         )
         return r.content if r.status_code == 200 else None
 
+    def file_exists(self, name: str, path: str) -> bool:
+        """True if the file is there, False only on a clean 404. Any other answer (a 5xx on a busy
+        Sprite, a 401) raises: "I could not tell" must never be read as "there is no file"."""
+        r = self.http.get(
+            f"{self.base}/sprites/{name}/fs/read",
+            params={"path": path, "workingDir": "/home/sprite"},
+        )
+        if r.status_code == 404:
+            return False
+        r.raise_for_status()
+        return True
+
     # Services
     def put_service(
         self, name: str, service: str, cmd: str, args: list[str], http_port: int | None = None
