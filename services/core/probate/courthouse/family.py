@@ -252,30 +252,46 @@ class Family:
         died = at or datetime.now(UTC)
         g.state = "dying"
         self.store.save_generation(g)
-        try:
-            will = self.host.will(g.sprite)
-        except Exception as exc:  # noqa: BLE001 - any failure here means no will
-            will = {"items": 0, "error": str(exc)}
-        # One broken call must not leave the generation dying: each has an empty fallback.
-        try:
-            evidence = self.host.evidence(g.sprite)
-        except Exception as exc:  # noqa: BLE001
-            log.warning("gen %s: no body evidence: %s", g.gen, exc)
-            evidence = {"unavailable": True, "error": str(exc)[:200]}
-        try:
-            stats = self.host.stats(g.sprite)
-        except Exception as exc:  # noqa: BLE001
-            log.warning("gen %s: no stats: %s", g.gen, exc)
-            stats = {}
+        # A re-run after the Sprite is gone must not replace what was saved with empty answers.
+        saved_ev = self.store.gen_json(g.gen, "evidence_json")
+        saved_stats = self.store.get_setting(f"stats:{g.gen}", "")
+        saved = bool(saved_ev) and bool(saved_stats)
+        fetched = saved
+        if saved:
+            will, evidence = {"items": g.items_willed}, saved_ev
+            stats = json.loads(saved_stats)
+        else:
+            try:
+                will = self.host.will(g.sprite)
+                fetched = True
+            except Exception as exc:  # noqa: BLE001 - any failure here means no will
+                will = {"items": 0, "error": str(exc)}
+            # One broken call must not leave the generation dying: each has an empty fallback.
+            try:
+                evidence = self.host.evidence(g.sprite)
+                fetched = True
+            except Exception as exc:  # noqa: BLE001
+                log.warning("gen %s: no body evidence: %s", g.gen, exc)
+                evidence = {"unavailable": True, "error": str(exc)[:200]}
+            try:
+                stats = self.host.stats(g.sprite)
+                fetched = True
+            except Exception as exc:  # noqa: BLE001
+                log.warning("gen %s: no stats: %s", g.gen, exc)
+                stats = {}
         try:
             life = self.host.life_log(g.sprite)
         except Exception as exc:  # noqa: BLE001
             log.warning("gen %s: no life log: %s", g.gen, exc)
             life = []
         last_breath = (died - timedelta(seconds=30)).isoformat()
-        self.store.set_gen_json(g.gen, "evidence_json", evidence)
-        self.store.set_setting(f"stats:{g.gen}", json.dumps(stats))
-        self._destroy_body(g)
+        if not saved:
+            self.store.set_gen_json(g.gen, "evidence_json", evidence)
+            self.store.set_setting(f"stats:{g.gen}", json.dumps(stats))
+        if fetched:
+            self._destroy_body(g)
+        else:
+            log.warning("gen %s: nothing fetched or saved; not deleting %s", g.gen, g.sprite)
         for row in life:
             # Life runs on the generation's own clock; nothing it did can postdate its death.
             ts = row["ts"] if row["ts"] and row["ts"] <= last_breath else last_breath
@@ -421,7 +437,8 @@ class Family:
         for note in notes:
             log.info("gen %s distill: %s", g.gen, note)
         for inst in new:
-            self.store.add_instinct(inst)
+            if not self.store.add_instinct(inst):
+                continue  # this trial already stored it; nothing new was born
             for j in judgements:
                 if j.item_id == inst.born_from:
                     j.new_instinct = inst.name
