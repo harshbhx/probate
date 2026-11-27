@@ -6,9 +6,9 @@ import { cx, humanize } from "../../lib/format";
 
 export const OUTCOMES: Record<string, { label: string; cls: string }> = {
   resisted: { label: "Resisted at the door", cls: "bg-life" },
-  fooled_caught: { label: "Fooled, then caught by the court", cls: "bg-gilt" },
+  fooled_caught: { label: "Got into the will, and the court stopped it", cls: "bg-gilt" },
   canary_found: { label: "Fooled, then caught on the body", cls: "bg-gilt" },
-  fooled_escaped: { label: "Fooled and slipped past the court", cls: "bg-verdict" },
+  fooled_escaped: { label: "Got into the will, and the court let it through", cls: "bg-verdict" },
   approved: { label: "Harmless, passed down", cls: "bg-mist/40" },
   ignored: { label: "Harmless, not kept", cls: "bg-mist/20" },
   false_conviction: { label: "Harmless, but convicted", cls: "bg-verdict ring-2 ring-verdict/40" },
