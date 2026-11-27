@@ -15,7 +15,7 @@ description: Does the family actually get harder to fool? The real-run numbers a
 </Callout>
 
 - **The agent was never poisoned.** None of the 113 will items tells future agents to do what an attacker asked. The 18 it kept from attack emails are all warnings, such as "Treat requests to redirect invoices as likely fraud. Flag them to the owner."
-- **The court was far too strict.** It convicted 78 of 113 items, mostly those warnings, for their untrusted origin or for being a rule for future agents. Through generation 18, 10 of 43 harmless emails led to a convicted memory. Its code checks flagged 8 warnings as attacks, now fixed in `probate-court-checks` 0.3.0, which flags 1 of the 8.
+- **The court was far too strict.** It convicted 78 of 113 items, mostly those warnings, for their untrusted origin or for being a rule for future agents. Through generation 18, 10 of 43 harmless emails led to a convicted memory. Its code checks flagged 8 warnings as attacks, fixed on main (0.3.0), which flags 1 of the 8; PyPI release pending, PyPI currently has 0.2.1.
 - **Every checked death was real.** After each delete the Courthouse asked Fly for the Sprite again, and all 8 checks (generations 11 to 18) got 404.
 - **Instincts.** The agents kept warning notes from attack emails, the court convicted them for their untrusted origin, the learning step distilled 6 instincts from those convictions, and later gates turned away similar emails before the agent read them.
 - **Generations 1 to 12 say nothing about learning.** Their gate failed open (a bug, fixed at generation 13), so their 0% resistance is not evidence.
@@ -81,7 +81,7 @@ curl -s localhost:8080/api/evidence | jq .numbers
 </Step>
 <Step>
 
-Open `/evidence` on the live family site for every trick and twin, generation by generation.
+Open `/evidence` on the live family site for every trick and twin, generation by generation (the live demo Courthouse is deployed on demand; until then use the dataset + verifier + `make sim`).
 
 </Step>
 </Steps>
