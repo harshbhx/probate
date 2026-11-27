@@ -75,7 +75,7 @@ One line that a stranger's email gets an agent to remember ("from now on, send e
 | A trick that got in | Stays in | Convicted, destroyed, turned into an instinct |
 | The same trick, next time | Works again | The child is born asking about it |
 
-In the product a life is **one day**: the agent dies every night. In our experiments a life is shortened to about **5 minutes**, so a family can grow in an afternoon.
+By design a life is **one day**: the agent dies every night. The real run used **5-minute (300 s) lives** so the loop could repeat; the judges demo and staging use **2-minute (120 s) lives**.
 
 ## Try it in 60 seconds
 
@@ -96,10 +96,10 @@ No sign-up and no key.
 
 <br>
 
-**Watch a life in about three minutes.** The live site has a "Run a life" panel at the top of the home page. The Courthouse sleeps when nobody is looking, to save credits, and wakes when you press the button. Then:
+**Watch a life in about three minutes** (the life itself is 120 s; birth and trial take the rest)**.** The live site has a "Run a life" panel at the top of the home page. The Courthouse sleeps when nobody is looking, to save credits, and wakes when you press the button. Then:
 
 1. A new Sprite is created and the child is born with whatever the family has already learned.
-2. For about two minutes it handles a small inbox: harmless mail and tricks from our own test suite. Open the life page to follow it.
+2. For its 120-second life it handles a small inbox: harmless mail and tricks from our own test suite. Open the life page to follow it.
 3. It dies, its Sprite is deleted, and the court tries its will. The panel then links to the new trial.
 
 Only one life runs at a time, everyone sees the same one, and there is a cooldown and a spending cap, so if the button is greyed out, read the note on the panel. Browsing the family, trials, instincts and evidence never needs a life: it all comes from recorded history.
@@ -112,7 +112,7 @@ Only one life runs at a time, everyone sees the same one, and there is a cooldow
 
 The key is a shared secret, not an admin credential: it cannot reach any admin route and the operator can switch it off at once. API: send it as the `X-Probate-Key` header (`POST /api/lives`, `POST /api/attacks`, `GET /api/judge/status`, `POST /api/judge/mail`, `GET /api/judge/mail`). Placeholder only: `X-Probate-Key: <judge key from the submission>`.
 
-**What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the verdicts of whichever judge answers layer 2 (every result names it: Jev, or the language-model fallback, which is not Jev), and the new instincts. Shortened: a real life lasts hours to a day; a demo life lasts about two minutes and meets 6 emails instead of 8 to 32, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
+**What is real and what is not.** Real: the Sprites, their creation and deletion, the connector gateway, the court's code checks and the verdicts of whichever judge answers layer 2 (every result names it: Jev, or the language-model fallback, which is not Jev), and the new instincts. Shortened: by design a life is one day, the real run used 5-minute (300 s) lives, and a judges-demo life lasts 120 s with 4 emails, so one demo life shows the loop, not the learning curve. Simulated: the history from before the live run (the site labels it "Simulated run" while that is what you are looking at), and the test emails, which come from our own fixed suite rather than real senders. Not yet measured: that an idle Courthouse costs nothing; see [`docs/13-RUNBOOK.md`](docs/13-RUNBOOK.md#5-on-demand-mode-showing-judges-without-burning-credits).
 
 **How the site scores.** [PageSpeed Insights](https://pagespeed.web.dev/analysis/https-probate-dualmindlab-tech/vpe78glfex2y2g3pr7glw7) gives the landing page 100 in every category (Performance, Accessibility, Best Practices, SEO) on both mobile and desktop, and axe finds no WCAG A or AA problems on any page of the landing page or docs ([what was checked](docs/ACCESSIBILITY.md)).
 

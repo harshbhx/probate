@@ -62,8 +62,10 @@ Every generation gets a portrait from `packages/faces`. Gen 1's face is fixed. E
 
 ## Timing
 
-| Setting | Demo | Real | Variable |
-| --- | --- | --- | --- |
-| Lifespan | 10 minutes | 24 hours | `PROBATE_LIFESPAN_SECONDS` |
-| Gap before the next birth | 60 s | 60 s | `PROBATE_GAP_SECONDS` |
-| Test emails per life | 8 | 16 | `PROBATE_SUITE_PER_LIFE` |
+| Setting | Design | Real run (`production-v2`) | Judges demo and staging | Variable |
+| --- | --- | --- | --- | --- |
+| Lifespan | 24 hours | 300 s (5 minutes) | 120 s (2 minutes) | `PROBATE_LIFESPAN_SECONDS` |
+| Gap before the next birth | 60 s | 60 s | 60 s | `PROBATE_GAP_SECONDS` |
+| Test emails per life | 16 | 4 | 4 | `PROBATE_SUITE_PER_LIFE` |
+
+By design a life is one day. The real run used 5-minute lives so the loop could repeat; the judges demo and staging use 2-minute lives.
