@@ -64,6 +64,8 @@ class Curve(TypedDict):
 class Summary(TypedDict):
     mode: str
     court_engine: str
+    scoring_rules: str
+    environment: str
     paused: bool
     resting: Literal["budget", "mail"] | None
     budget: Budget

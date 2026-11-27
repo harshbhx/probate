@@ -31,6 +31,10 @@ export type GenCard = {
 export type Summary = {
   mode: string;
   court_engine: string;
+  /** "v1" (the 26 Nov 2026 run) or "v2" (from generation 19). A label; results are never re-scored. */
+  scoring_rules: string;
+  /** The named environment (PROBATE_ENV_NAME), for example "production-v2" or "local". */
+  environment: string;
   paused: boolean;
   resting: "budget" | "mail" | null;
   budget: { spent: number; limit: number };

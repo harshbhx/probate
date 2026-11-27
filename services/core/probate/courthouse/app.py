@@ -40,6 +40,9 @@ store = Store(settings.db_path)
 if settings.fake:
     # Stand-in models and a fake mailbox: never let the site present this as a live run.
     store.set_setting("mode", "simulation")
+if not store.get_setting("scoring_rules"):
+    # First start of this database: label it. A restored database keeps the label it was saved with.
+    store.set_setting("scoring_rules", settings.scoring_rules)
 w = world(settings)
 host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
 hooks = Webhooks(store, settings)

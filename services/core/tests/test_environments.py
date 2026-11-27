@@ -9,7 +9,7 @@ import pytest
 
 SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
-import envs  # noqa: E402
+import envs
 
 
 def _load(name: str):
@@ -88,7 +88,7 @@ def test_deploy_refuses_the_read_only_archive(monkeypatch, capsys):
 
 def test_courthouse_names_the_environment_and_refuses_writes_on_the_archive(monkeypatch, capsys):
     mod = _load("courthouse")
-    monkeypatch.setattr(mod, "read_env", lambda: {})
+    monkeypatch.setattr(mod, "read_env", dict)
     code, out = _run(mod, ["courthouse.py", "--env", "v1-archive", "pause"], monkeypatch, capsys)
     assert out.startswith("Environment: v1-archive")
     assert "read-only" in str(code)

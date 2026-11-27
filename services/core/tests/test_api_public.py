@@ -38,6 +38,18 @@ def test_fake_mode_reports_simulation(client):
     assert client.get("/healthz").json()["mode"] == "simulation"
 
 
+def test_summary_carries_the_scoring_rules_and_environment(client):
+    from probate.courthouse import app as app_module
+
+    s = client.get("/api/summary").json()
+    assert s["scoring_rules"] == "v2"  # the default, recorded in the database on first start
+    assert s["environment"] == "local"
+    assert app_module.store.get_setting("scoring_rules") == "v2"
+    # A database labelled v1 keeps its label whatever the process is now set to.
+    app_module.store.set_setting("scoring_rules", "v1")
+    assert client.get("/api/summary").json()["scoring_rules"] == "v1"
+
+
 def test_huge_integers_are_a_4xx_not_a_500(client):
     """RT-09: SQLite cannot hold these; the API must answer 422, never 500."""
     big = "99999999999999999999"

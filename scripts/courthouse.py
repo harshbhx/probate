@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "services" / "core"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import envs  # noqa: E402
+import envs
 
 ENV_FILE = ROOT / "services" / "core" / ".env"
 URL_FILE = ROOT / ".data" / "courthouse-url.txt"
@@ -77,9 +77,7 @@ def is_private(r: httpx.Response) -> bool:
     return r.status_code in (301, 302, 303, 307, 308) and "sprites.dev/auth" in loc
 
 
-def preflight(
-    env: dict[str, str], url: str, fix: bool, deep: bool, sprite: str = SPRITE
-) -> int:
+def preflight(env: dict[str, str], url: str, fix: bool, deep: bool, sprite: str = SPRITE) -> int:
     rep = Report()
     print("Configuration")
     if not ENV_FILE.exists():

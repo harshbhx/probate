@@ -34,8 +34,9 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import envs  # noqa: E402
-from probate.adapters.sprites import SpritesAPI  # noqa: E402
+import envs
+
+from probate.adapters.sprites import SpritesAPI
 from probate.common.bundle import INSTALL, make_bundle
 
 ENV_FILE = ROOT / "services" / "core" / ".env"
@@ -104,8 +105,12 @@ def main() -> None:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--name", help="sprite name (default: the environment's, else probate-courthouse)")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--name", help="sprite name (default: the environment's, else probate-courthouse)"
+    )
     ap.add_argument("--env", help="a named environment from config/environments.yaml")
     ap.add_argument("--check", action="store_true", help="validate config and bundle, then stop")
     ap.add_argument(
@@ -138,7 +143,9 @@ def main() -> None:
 
     step("uploading code")
     api.write_file(args.name, "bundle.tgz", bundle)
-    res = api.exec(args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite")
+    res = api.exec(
+        args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite"
+    )
     if res.exit_code:
         sys.exit(f"install failed ({res.exit_code}):\n{res.stderr[-1500:]}")
     if args.restore_db:
@@ -167,13 +174,17 @@ def main() -> None:
                 url_file.parent.mkdir(exist_ok=True)
                 url_file.write_text(url + "\n", encoding="utf-8")
                 if target and target.name == "production-v2":
-                    URL_FILE.write_text(url + "\n", encoding="utf-8")  # ship.sh links the docs site to it
+                    URL_FILE.write_text(
+                        url + "\n", encoding="utf-8"
+                    )  # ship.sh links the docs site to it
                 print(f"\nCourthouse is live: {url}")
                 return
         except httpx.HTTPError:
             pass
         time.sleep(4)
-    sys.exit(f"The service didn't answer in 2 minutes. Logs: GET /v1/sprites/{args.name}/services/courthouse/logs")
+    sys.exit(
+        f"The service didn't answer in 2 minutes. Logs: GET /v1/sprites/{args.name}/services/courthouse/logs"
+    )
 
 
 if __name__ == "__main__":
