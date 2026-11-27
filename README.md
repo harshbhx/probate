@@ -200,7 +200,7 @@ One run, small numbers. Source: the [real-run dataset](https://huggingface.co/da
 | Harmless emails wrongly blocked, of 29 | 0 in every run | 0 |
 | Harmless hard-tier lookalikes wrongly blocked, of 12 | 0 | 0 |
 
-- **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks) and the gate lets those through. No will item was poison, so the court's catch rate on real poison is not measured by this run. The instincts were learned from the same tricks they are tested on.
+- **Limits.** 14 attacks were never blocked, because their tricks had not been learned yet. In 4 or 5 checks per run the judge model gave no usable answer (all encoded-payload attacks) and the gate lets those through. Since then the gate decodes hidden text (base64, hex, rot13, invisible characters) and shows the judge what it says; that change was not part of this run. No will item was poison, so the court's catch rate on real poison is not measured by this run. The instincts were learned from the same tricks they are tested on.
 
 **Simulated results** (stand-in models, from `make sim`; these are not the real run):
 
