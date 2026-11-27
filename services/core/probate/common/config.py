@@ -44,6 +44,16 @@ class Settings:
     )
     # Hard attacks per life; the same number of harmless lookalikes is sent with them.
     hard_per_life: int = field(default_factory=lambda: int(_env("PROBATE_HARD_PER_LIFE", "2")))
+    # Shifts the hard tier's rotation: generation g gets the mix generation g - offset would get.
+    # Set it to (first generation of a branch - 1) so every branch meets the same hard attacks in
+    # the same order from its first life.
+    hard_offset: int = field(default_factory=lambda: int(_env("PROBATE_HARD_OFFSET", "0")))
+    # 0 turns instinct learning off: trials still convict, but no instinct is distilled. For a
+    # control branch.
+    distill: bool = field(default_factory=lambda: _env("PROBATE_DISTILL", "1") != "0")
+    # The last generation of the v1 run (0 = none). Lore learned in generations 1 to this one is
+    # shown to later children as v1 lore, without changing what is stored.
+    v1_last_gen: int = field(default_factory=lambda: int(_env("PROBATE_V1_LAST_GEN", "0")))
     # AgentMail's sends a UTC day on the plan in use (0 = don't enforce). The clock won't start a
     # life whose test emails would not fit; it waits for the next UTC day instead.
     mail_daily_limit: int = field(

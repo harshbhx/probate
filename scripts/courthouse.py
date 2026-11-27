@@ -155,8 +155,14 @@ def preflight(env: dict[str, str], url: str, fix: bool, deep: bool, sprite: str 
             if living
             else f"no one alive; next is Gen {d['next_gen']}"
         )
-        if d.get("next_parent"):
+        if d.get("next_parent") == 0:
+            rep.ok("next child starts a fresh root: no instincts, no will items")
+        elif d.get("next_parent"):
             rep.ok(f"next child starts a new line from Gen {d['next_parent']}")
+        if d.get("distill") is False:
+            rep.ok("instinct learning is off (control branch)")
+        if d.get("hard_offset"):
+            rep.ok(f"hard tier rotation shifted by {d['hard_offset']} generations")
         if d.get("next_genome_size") is not None:
             rep.ok(f"next child inherits {d['next_genome_size']} instincts")
         if d.get("branch"):
@@ -315,7 +321,7 @@ def main() -> None:
     if args.cmd == "line":
         if args.cancel:
             sys.exit(admin(env, url, "DELETE", "/admin/lineage"))
-        if not args.gen:
+        if args.gen is None:
             sys.exit("Say which generation: `courthouse.py line 16`.")
         sys.exit(admin(env, url, "POST", "/admin/lineage", from_gen=args.gen))
     if args.cmd == "branch":
