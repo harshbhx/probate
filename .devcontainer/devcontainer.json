@@ -1,24 +1,34 @@
 {
   // Open Probate in a browser with nothing to install: GitHub Codespaces (or any dev container tool) builds this,
-  // simulates a 12-generation family with stand-in models, and opens the live family site on port 8080.
+  // simulates a 12-generation family with stand-in models, and serves the live family site on port 8080.
   // Every vendor is a stand-in here (PROBATE_FAKE=1), so no keys are needed and nothing leaves the container.
+  // Versions match CI: Node 22 (dependencies need >= 22.22, checked in post-create.sh) and Python 3.13.
   "name": "Probate: a simulated family",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "22" }
   },
-  "hostRequirements": { "cpus": 2, "memory": "4gb" },
-  "postCreateCommand": "make setup && make sim",
+  // The site build (Next.js) is the heavy step: the default 2-core, 8 GB Codespace is enough, 4 GB is not.
+  "hostRequirements": { "cpus": 2, "memory": "8gb", "storage": "32gb" },
+  "containerEnv": { "NODE_OPTIONS": "--max-old-space-size=4096", "NEXT_TELEMETRY_DISABLED": "1" },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "postAttachCommand": { "live family": "make serve" },
-  "forwardPorts": [8080],
+  "forwardPorts": [8080, 5173, 3001],
   "portsAttributes": {
-    "8080": { "label": "Live family (simulated)", "onAutoForward": "openBrowser" }
+    "8080": { "label": "Live family (simulated)", "onAutoForward": "openBrowser" },
+    "5173": { "label": "Website dev server (make web)", "onAutoForward": "silent" },
+    "3001": { "label": "Landing and docs (make site)", "onAutoForward": "silent" }
   },
   "customizations": {
     "codespaces": { "openFiles": ["README.md"] },
     "vscode": {
-      "extensions": ["ms-python.python", "charliermarsh.ruff", "bradlc.vscode-tailwindcss"],
-      "settings": { "python.defaultInterpreterPath": "services/core/.venv/bin/python" }
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "bradlc.vscode-tailwindcss",
+        "unifiedjs.vscode-mdx"
+      ],
+      "settings": { "python.defaultInterpreterPath": "${containerWorkspaceFolder}/services/core/.venv/bin/python" }
     }
   }
 }

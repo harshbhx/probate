@@ -20,7 +20,7 @@ help: ## Show this list
 
 setup: ## Install Python and web dependencies
 	cd services/core && $(PYTHON) -m venv .venv && "$$([ -d .venv/Scripts ] && echo .venv/Scripts || echo .venv/bin)/python" -m pip install -q -e '.[dev]'
-	npm install
+	npm ci
 
 sim: ## Simulate 12 generations locally with stand-in models
 	rm -rf $(SIMDATA)

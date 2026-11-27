@@ -24,10 +24,12 @@ heading. The site and the docs link here instead of keeping a second copy.
 ### Fixed
 
 - First life and clock (staging test): deploy starts the Courthouse once, only the process holding a clock lease runs the clock, a birth cut short by a restart is cleaned up, an agent that never read mail is restarted after a minute, every tick logs its state, trials run in the background (a birth waits for one for at most 10 minutes, and says so) and `POST /admin/tick` answers within seconds. ([#224](https://github.com/harshbhx/probate/issues/224))
+- GitHub Codespaces: setup failed because a symlink `services/core/.venv` to a path on another machine had been committed (so `python -m venv` could not create the venv; it is removed), and because the lockfile now pulls packages that need Node 22.22 or newer (`undici` 8, `chokidar` 6). The container now matches CI (Python 3.13, Node 22), checks the Node version up front, installs with `npm ci`, logs every step in `.devcontainer/post-create.sh`, asks for 8 GB, and labels ports 5173 and 3001. New guide: [Run it in a Codespace](docs/CODESPACES.md).
 
 ### Added
 
 - kinfaces 0.2.0 (not yet published): `familyTree` and `familyTreeSvg` for whole family trees, `faceDataUri`, a `background` option for light pages, runnable examples and a rewritten README. ([#230](https://github.com/harshbhx/probate/pull/230))
+- 100 more generation names (126 in all, no "Ada II" until generation 127); the first 26 are unchanged. Faces never repeat within 10 consecutive generations (a repeat is re-rolled; generations 1 to 39 look as before). Applies to later runs only. ([#226](https://github.com/harshbhx/probate/pull/226))
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ### Data
@@ -36,6 +38,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Documentation
 
+- The README is rebuilt as a front door: contents index, then the problem, the fix, a 60-second try, Mermaid diagrams of the life cycle, the two-layer court and the architecture, a results chart drawn by `scripts/make_results_chart.py`, how to verify the numbers, and an honest limitations section. Numbers for the two family-tree runs still in progress are placeholders. ([#229](https://github.com/harshbhx/probate/pull/229))
 - A beta naming policy in `docs/PUBLISHING.md`: `beta-N` for tags, dataset revisions and releases until the final submission, then `v1.0.0`. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ## beta-2 (27 Nov 2026 onward, the v2 scoring rules)

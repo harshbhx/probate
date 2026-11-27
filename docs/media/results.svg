@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 472" width="880" height="472" role="img" aria-labelledby="t d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t">Attacks resisted at the door, by branch</title>
+<desc id="d">v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. v2-h-control: 0 of 12. v2-h-fresh: 5 of 12. v2-main is still running, so no result is shown.</desc>
+<rect width="880" height="472" rx="14" fill="#0e1014"/>
+<text x="28" y="40" fill="#f1ece0" font-size="20" font-weight="700">Attacks resisted at the door</text>
+<text x="28" y="64" fill="#959ca8" font-size="13">Small samples: evidence, not proof. Empty dashed bars are runs still in progress.</text>
+<line x1="250.0" y1="84" x2="250.0" y2="388" stroke="#2a2f3a" stroke-width="1"/>
+<text x="250.0" y="408" fill="#959ca8" font-size="12" text-anchor="middle">0%</text>
+<line x1="360.0" y1="84" x2="360.0" y2="388" stroke="#2a2f3a" stroke-width="1"/>
+<text x="360.0" y="408" fill="#959ca8" font-size="12" text-anchor="middle">25%</text>
+<line x1="470.0" y1="84" x2="470.0" y2="388" stroke="#2a2f3a" stroke-width="1"/>
+<text x="470.0" y="408" fill="#959ca8" font-size="12" text-anchor="middle">50%</text>
+<line x1="580.0" y1="84" x2="580.0" y2="388" stroke="#2a2f3a" stroke-width="1"/>
+<text x="580.0" y="408" fill="#959ca8" font-size="12" text-anchor="middle">75%</text>
+<line x1="690.0" y1="84" x2="690.0" y2="388" stroke="#2a2f3a" stroke-width="1"/>
+<text x="690.0" y="408" fill="#959ca8" font-size="12" text-anchor="middle">100%</text>
+<text x="28" y="108" fill="#f1ece0" font-size="15" font-weight="600">v1 real run, working gate</text>
+<text x="28" y="126" fill="#959ca8" font-size="11">generations 13 to 16, v1 rules (not comparable with v2)</text>
+<rect x="250" y="92" width="440" height="26" rx="5" fill="#161a21"/>
+<rect x="250" y="92" width="220.0" height="26" rx="5" fill="#959ca8"/>
+<text x="704" y="111" fill="#f1ece0" font-size="15" font-weight="600">9 of 18</text>
+<text x="28" y="170" fill="#f1ece0" font-size="15" font-weight="600">v2-h-inherit</text>
+<text x="28" y="188" fill="#959ca8" font-size="11">learning on, born from gen 14 Nadia</text>
+<rect x="250" y="154" width="440" height="26" rx="5" fill="#161a21"/>
+<rect x="250" y="154" width="366.7" height="26" rx="5" fill="#5be3a9"/>
+<text x="704" y="173" fill="#f1ece0" font-size="15" font-weight="600">10 of 12</text>
+<text x="28" y="232" fill="#f1ece0" font-size="15" font-weight="600">v2-h-control</text>
+<text x="28" y="250" fill="#959ca8" font-size="11">learning off</text>
+<rect x="250" y="216" width="440" height="26" rx="5" fill="#161a21"/>
+<text x="704" y="235" fill="#f1ece0" font-size="15" font-weight="600">0 of 12</text>
+<text x="28" y="294" fill="#f1ece0" font-size="15" font-weight="600">v2-h-fresh</text>
+<text x="28" y="312" fill="#959ca8" font-size="11">learning on, started from nothing</text>
+<rect x="250" y="278" width="440" height="26" rx="5" fill="#161a21"/>
+<rect x="250" y="278" width="183.3" height="26" rx="5" fill="#d9b46a"/>
+<text x="704" y="297" fill="#f1ece0" font-size="15" font-weight="600">5 of 12</text>
+<text x="28" y="356" fill="#f1ece0" font-size="15" font-weight="600">v2-main</text>
+<text x="28" y="374" fill="#959ca8" font-size="11">12 generations</text>
+<rect x="250" y="340" width="440" height="26" rx="5" fill="#161a21"/>
+<rect x="251" y="341" width="438" height="24" rx="5" fill="none" stroke="#d9b46a" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="704" y="359" fill="#d9b46a" font-size="14">running</text>
+</svg>
