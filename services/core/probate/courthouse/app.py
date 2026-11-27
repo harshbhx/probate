@@ -14,6 +14,7 @@ import ipaddress
 import json
 import logging
 import os
+import threading
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
@@ -69,6 +70,16 @@ if not logging.getLogger().handlers:
     )
 
 
+def check_edge_configured() -> None:
+    """An on-demand real Courthouse refuses to start without a valid edge token: without it every
+    visitor looks like one address to every per-address limit."""
+    if settings.on_demand and not settings.fake and len(settings.edge_token) < _EDGE_TOKEN_MIN:
+        raise RuntimeError(
+            f"An on-demand Courthouse needs PROBATE_EDGE_TOKEN of at least {_EDGE_TOKEN_MIN} "
+            "characters: without it every visitor looks like one address to the limits"
+        )
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     task = None
@@ -82,6 +93,11 @@ async def lifespan(_: FastAPI):
             "PROBATE_EDGE_TOKEN is shorter than %d characters and is ignored: visitor addresses "
             "are NOT taken from the edge",
             _EDGE_TOKEN_MIN,
+        )
+    check_edge_configured()
+    if settings.admin_token_weak:
+        log.error(
+            "PROBATE_ADMIN_TOKEN is missing, a dev default or too short: /admin/* answers 503"
         )
     hooks.sync_env()
     hooks.kick()  # deliver anything a restart left in the queue
@@ -146,6 +162,44 @@ async def security_headers(request: Request, call_next):
     return response
 
 
+_admin_bad: dict[str, list[float]] = {}
+_ADMIN_WINDOW = 600
+
+
+def _bounded(d: dict, cap: int = 5000) -> None:
+    """Keep an in-memory per-address table from growing without bound under a flood."""
+    if len(d) > cap:
+        now = time.time()
+        for k in [k for k, v in d.items() if not v or now - v[-1] > 600]:
+            d.pop(k, None)
+        while len(d) > cap:
+            d.pop(next(iter(d)))
+
+
+@app.middleware("http")
+async def edge_and_admin_guard(request: Request, call_next):
+    """Edge-only access (demo environment) and the admin door: no /admin/* on a guessable token,
+    and a per-address lockout after wrong tokens, like the judge key's."""
+    path = request.url.path
+    if settings.require_edge and path != "/healthz" and not _edge_valid(request):
+        return JSONResponse({"error": "edge_required"}, status_code=403, headers=_NO_STORE)
+    if not (path == "/admin" or path.startswith("/admin/")):
+        return await call_next(request)
+    if settings.admin_token_weak:
+        return JSONResponse({"error": "admin_unavailable"}, status_code=503, headers=_NO_STORE)
+    ip, now = client_ip(request), time.time()
+    hits = [t for t in _admin_bad.get(ip, []) if now - t < _ADMIN_WINDOW]
+    _admin_bad[ip] = hits
+    limit = settings.admin_bad_tokens_per_ip
+    if 0 < limit <= len(hits):
+        return JSONResponse({"error": "too_many_attempts"}, status_code=429, headers=_NO_STORE)
+    response = await call_next(request)
+    if response.status_code == 403:
+        _admin_bad[ip].append(now)
+        _bounded(_admin_bad)
+    return response
+
+
 def _need(obj):
     if obj is None:
         raise HTTPException(404, "Not in the register")
@@ -196,17 +250,22 @@ EDGE_IP_HEADER = "x-probate-client-ip"
 _EDGE_TOKEN_MIN = 16
 
 
+def _edge_valid(request: Request) -> bool:
+    """The request carries our edge token (and one is configured, long enough)."""
+    token = settings.edge_token
+    if len(token) < _EDGE_TOKEN_MIN:
+        return False
+    sent = request.headers.get(EDGE_TOKEN_HEADER)
+    return bool(sent) and hmac.compare_digest(sent.encode("utf-8"), token.encode("utf-8"))
+
+
 def _edge_client_ip(request: Request) -> str | None:
     """The visitor's address as reported by our own edge Worker, or None.
 
     Only when PROBATE_EDGE_TOKEN is configured and the request proves it came through the edge by
     sending the same token. Anything else (no token configured, missing or wrong token, a value
     that is not an IP literal) returns None and the caller uses the ordinary rule."""
-    token = settings.edge_token
-    if len(token) < _EDGE_TOKEN_MIN:
-        return None
-    sent = request.headers.get(EDGE_TOKEN_HEADER)
-    if not sent or not hmac.compare_digest(sent.encode("utf-8"), token.encode("utf-8")):
+    if not _edge_valid(request):
         return None
     try:
         return str(ipaddress.ip_address(request.headers.get(EDGE_IP_HEADER, "").strip()))
@@ -220,7 +279,8 @@ def client_ip(request: Request) -> str:
     if edge:
         return edge
     # The proxy in front appends the real address last; anything a visitor prepends is ignored.
-    fwd = request.headers.get("x-forwarded-for", "")
+    # Only when the setting says the proxy does append (PROBATE_TRUST_FORWARDED_FOR, default on).
+    fwd = request.headers.get("x-forwarded-for", "") if settings.trust_forwarded_for else ""
     if fwd:
         return fwd.split(",")[-1].strip()
     return request.client.host if request.client else ""
@@ -229,6 +289,7 @@ def client_ip(request: Request) -> str:
 _posts: dict[str, list[float]] = defaultdict(list)
 
 
+_ask_lock = threading.Lock()
 _NO_STORE = {"Cache-Control": "no-store"}
 _MESSAGES = {
     "key_required": "A judge key is required to play. Judges will find it in the submission text and on the For Judges page.",
@@ -282,6 +343,7 @@ def api_start_life(request: Request) -> JSONResponse:
             {"error": "rate_limited"}, status_code=429, headers={"Retry-After": "60"}
         )
     _posts[ip].append(now)
+    _bounded(_posts)
     code, body = demo.start(ip, judge=judge if is_judge else None)
     headers = {"Retry-After": str(body["retry_after"])} if body.get("retry_after") else {}
     headers["Cache-Control"] = "no-store"
@@ -503,11 +565,28 @@ def api_events(since: int = Query(0, ge=0, le=MAX_ID)) -> list[dict]:
 
 class Ask(BaseModel):
     question: str = Field(
-        description="Your question, in any language.", examples=["What did your mother teach you?"]
+        max_length=400,
+        description="Your question, in any language (at most 400 characters).",
+        examples=["What did your mother teach you?"],
     )
 
 
 _asks: dict[str, list[float]] = defaultdict(list)
+
+
+def _take_ask_slot() -> bool:
+    """Count one question against today's cap (all visitors together). False when it is used up."""
+    cap = settings.ask_daily_cap
+    today = datetime.now(UTC).date().isoformat()
+    with _ask_lock:
+        d = json.loads(store.get_setting("ask:day", "{}") or "{}")
+        if d.get("date") != today:
+            d = {"date": today, "n": 0}
+        if 0 < cap <= d["n"]:
+            return False
+        d["n"] += 1
+        store.set_setting("ask:day", json.dumps(d))
+        return True
 
 
 @app.post("/api/generations/{gen}/ask", tags=["Ancestors"], summary="Ask an ancestor")
@@ -521,6 +600,12 @@ def api_ask(body: Ask, request: Request, gen: int = Path(ge=1, le=MAX_GEN)) -> J
     if len(_asks[ip]) >= 10:
         return JSONResponse({"error": "rate_limited"}, status_code=429)
     _asks[ip].append(now)
+    _bounded(_asks)
+    # Every answer is a model call: stop when the money is gone or today's allowance is used.
+    if family.budget.exhausted():
+        return JSONResponse({"error": "budget_exhausted"}, status_code=402)
+    if not _take_ask_slot():
+        return JSONResponse({"error": "daily_limit"}, status_code=429)
     out = ancestor.ask(store, w, settings, gen, body.question, ip)
     return JSONResponse(out, status_code=400 if "error" in out else 200)
 

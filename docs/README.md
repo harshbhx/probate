@@ -20,6 +20,7 @@ For a one-page picture of how the parts fit together, see [ARCHITECTURE.md](ARCH
 | [10-PROMPTS.md](10-PROMPTS.md) | Prompts (exact text) |
 | [11-UI-SCREENS.md](11-UI-SCREENS.md) | UI screens |
 | [12-THREAT-MODEL.md](12-THREAT-MODEL.md) | What Probate protects, from whom, and its limits |
+| [SECURITY.md](SECURITY.md) | Honest threat model and known limitations of the demo, with the hardening still to do |
 | [13-RUNBOOK.md](13-RUNBOOK.md) | Deploy, run, recover, demo day |
 | [PERFORMANCE.md](PERFORMANCE.md) | Landing page speed and security headers: PageSpeed 100 in every category, on mobile and desktop |
 | [ACCESSIBILITY.md](ACCESSIBILITY.md) | Accessibility statement: the PageSpeed scores, what axe found, what is untested |

@@ -19,6 +19,10 @@ def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default)
 
 
+ADMIN_TOKEN_MIN = 24
+EDGE_TOKEN_MIN = 16
+
+
 @dataclass
 class Settings:
     fake: bool = field(default_factory=lambda: _env("PROBATE_FAKE", "1") == "1")
@@ -164,6 +168,28 @@ class Settings:
     # request carrying a matching X-Probate-Edge header has its real client address taken from
     # X-Probate-Client-IP. A value under 16 characters is ignored.
     edge_token: str = field(default_factory=lambda: _env("PROBATE_EDGE_TOKEN").strip())
+    # 1: every request except /healthz must carry the edge token (the Courthouse is only reachable
+    # through our own edge Worker). On for the judges' demo only. See docs/SECURITY.md.
+    require_edge: bool = field(default_factory=lambda: _env("PROBATE_REQUIRE_EDGE", "0") == "1")
+    # 1 (default): the Sprite proxy in front appends the real address to X-Forwarded-For, so the last
+    # entry is the visitor. 0: X-Forwarded-For is never trusted without a valid edge token.
+    trust_forwarded_for: bool = field(
+        default_factory=lambda: _env("PROBATE_TRUST_FORWARDED_FOR", "1") != "0"
+    )
+    # Wrong admin tokens one address may send in ten minutes before it is refused.
+    admin_bad_tokens_per_ip: int = field(
+        default_factory=lambda: int(_env("PROBATE_ADMIN_BAD_TOKENS_PER_IP", "8"))
+    )
+    # Wrong judge keys from all addresses together in ten minutes before more wrong keys are refused
+    # without being looked at (the right key is still accepted).
+    judge_bad_keys_global: int = field(
+        default_factory=lambda: int(_env("PROBATE_JUDGE_BAD_KEYS_GLOBAL", "120"))
+    )
+    # Questions to dead ancestors per UTC day, all visitors together (each is a model call).
+    ask_daily_cap: int = field(default_factory=lambda: int(_env("PROBATE_ASK_DAILY_CAP", "200")))
+    # Stored answers and answer audio files kept (oldest answers are dropped, audio stops at the cap).
+    ask_max_rows: int = field(default_factory=lambda: int(_env("PROBATE_ASK_MAX_ROWS", "2000")))
+    ask_max_audio: int = field(default_factory=lambda: int(_env("PROBATE_ASK_MAX_AUDIO", "300")))
     require_key_for_play_env: str = field(
         default_factory=lambda: _env("PROBATE_REQUIRE_KEY_FOR_PLAY").strip()
     )
@@ -236,6 +262,12 @@ class Settings:
             self.lifespan_seconds = self.demo_lifespan_seconds
             self.suite_per_life = self.demo_suite_per_life
             self.gap_seconds = 0
+
+    @property
+    def admin_token_weak(self) -> bool:
+        """A real (non-simulated) Courthouse must not serve /admin/* on a guessable token."""
+        t = self.admin_token
+        return not self.fake and (t in ("", "dev-admin") or len(t) < ADMIN_TOKEN_MIN)
 
     @property
     def require_key_for_play(self) -> bool:
