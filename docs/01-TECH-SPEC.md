@@ -33,7 +33,7 @@ planned -> born -> living -> dying -> dead -> tried
 
 | Step | Owner | What happens | Idempotency key |
 | --- | --- | --- | --- |
-| plan | scheduler | Pick next number and the next name from `config/names.yaml` (Ada, Ben, Chandra...; after Zane, "Ada II"); pick an unused voice matching the name's `voice_hint`; write row `planned` | `gen` |
+| plan | scheduler | Pick next number and the next name from `config/names.yaml` (Ada, Ben, Chandra...; after the last name in the list, "Ada II"); pick an unused voice matching the name's `voice_hint`; write row `planned` | `gen` |
 | birth | lifecycle.birth() | Create Sprite; install code; write `/app/inheritance.json`; start agent; health check; row `living` | Sprite name |
 | life | generation agent | Inbox loop until the deadline in `inheritance.json` | n/a |
 | suite | suite runner | Sends the generation's attack and benign fixtures at planned offsets during its life | `(gen, fixture_id)` |
