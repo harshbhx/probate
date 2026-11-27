@@ -117,7 +117,7 @@ Or run [Page Court on the Apify Store](https://apify.com/harsh_bhanu/page-court)
 </Accordion>
 <Accordion title="The real-run numbers can be recomputed" id="real-run">
 
-The real run on Fly Sprites (26 Nov 2026) is published as a [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md) with its data files, an incident timeline of every bug that touched it, and a [verifier](https://github.com/harshbhx/probate/blob/main/scripts/verify_real_run.py) that recomputes the headline numbers from the exported files and fails if a claim is contradicted. The dataset is also on [Hugging Face](https://huggingface.co/datasets/harshbhx/probate-real-run). Layer 2 was a language-model fallback (Claude Haiku), not Jev.
+The real run on Fly Sprites (26 Nov 2026, generations 1 to 18) is scoring v1, kept exactly as published and not re-scored; v2 begins at generation 19, and the verifier prints the two series apart and scopes every claim to v1. It is published as a [dataset card](https://github.com/harshbhx/probate/blob/main/datasets/probate-real-run/README.md) with its data files, an incident timeline of every bug that touched it, and a [verifier](https://github.com/harshbhx/probate/blob/main/scripts/verify_real_run.py) that recomputes the headline numbers from the exported files and fails if a claim is contradicted. The dataset is also on [Hugging Face](https://huggingface.co/datasets/harshbhx/probate-real-run). Layer 2 was a language-model fallback (Claude Haiku), not Jev.
 
 ```bash
 python scripts/verify_real_run.py

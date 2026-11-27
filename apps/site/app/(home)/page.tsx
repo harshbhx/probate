@@ -359,7 +359,7 @@ function Evidence() {
         />
         <p className="mt-3 text-[14px] text-dim">
           From <code className="font-mono">make sim</code>, a 12-generation run with stand-in models. It shows how the system
-          behaves, not real results. The real run on Fly Sprites (18 generations, one run, small numbers) is on{' '}
+          behaves, not real results. The real run on Fly Sprites (18 generations, scoring v1, one run, small numbers; v2 begins at generation 19) is on{' '}
           <Link href="/docs/results" className="text-moon underline decoration-gilt/50 underline-offset-[4px]">
             the results page
           </Link>
