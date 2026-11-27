@@ -112,18 +112,50 @@ function options(t: TraitName): readonly (string | number | boolean)[] {
   }
 }
 
-/** Which trait changed between a parent and generation `gen`, and to what. */
+/** No face repeats within this many consecutive generations. */
+export const FACE_WINDOW = 10;
+
+const faceKey = (t: Traits): string => TRAIT_NAMES.map((n) => String(t[n])).join("/");
+
+/**
+ * Which trait changed between a parent and generation `gen`, and to what. `recent` is the faces
+ * of the generations just before `gen`; a change that would repeat one of them is re-rolled
+ * (deterministically), so no face repeats inside a FACE_WINDOW. The first roll is unchanged,
+ * so every face that never collided keeps its look.
+ */
 export function mutation(
   gen: number,
   parent: Traits,
   family?: Family,
+  recent: readonly Traits[] = [],
 ): { trait: TraitName; value: Traits[TraitName] } {
   const salt = family ? [family] : [];
   const hh = family ? famHash : hash;
-  const trait = WEIGHTED[hh(...salt, "trait", gen) % WEIGHTED.length];
-  const opts = options(trait).filter((v) => v !== parent[trait]);
-  const value = opts[hh(...salt, "value", gen) % opts.length] as Traits[TraitName];
-  return { trait, value };
+  const taken = new Set(recent.map(faceKey));
+  const roll = (n: number) => {
+    const extra = n === 0 ? [] : [n];
+    const trait = WEIGHTED[hh(...salt, "trait", gen, ...extra) % WEIGHTED.length];
+    const opts = options(trait).filter((v) => v !== parent[trait]);
+    const value = opts[hh(...salt, "value", gen, ...extra) % opts.length] as Traits[TraitName];
+    return { trait, value };
+  };
+  const first = roll(0);
+  const fresh = (m: { trait: TraitName; value: Traits[TraitName] }) =>
+    !taken.has(faceKey({ ...parent, [m.trait]: m.value } as Traits));
+  if (fresh(first)) return first;
+  for (let n = 1; n <= 64; n++) {
+    const m = roll(n);
+    if (fresh(m)) return m;
+  }
+  // Exhaustive fallback: the first unused single-trait change.
+  for (const trait of TRAIT_NAMES) {
+    for (const value of options(trait)) {
+      if (value === parent[trait]) continue;
+      const m = { trait, value: value as Traits[TraitName] };
+      if (fresh(m)) return m;
+    }
+  }
+  return first;
 }
 
 const caches = new Map<string, Map<number, Traits>>();
@@ -153,7 +185,9 @@ export function traitsFor(gen: number, family?: Family): Traits {
     }
   }
   for (let g = start; g <= gen; g++) {
-    const { trait, value } = mutation(g, t, family);
+    const recent: Traits[] = [];
+    for (let r = Math.max(1, g - FACE_WINDOW + 1); r < g; r++) recent.push(r === 1 ? founder : cache.get(r)!);
+    const { trait, value } = mutation(g, t, family, recent);
     t = Object.freeze({ ...t, [trait]: value }) as Traits;
     cache.set(g, t);
   }
@@ -170,7 +204,9 @@ export function resemblance(a: number, b: number, family?: Family): number {
 /** Plain words for what a child got that its parent didn't have. */
 export function inheritedChange(gen: number, family?: Family): string | null {
   if (gen <= 1) return null;
-  const { trait } = mutation(gen, traitsFor(gen - 1, family), family);
+  const recent: Traits[] = [];
+  for (let r = Math.max(1, gen - FACE_WINDOW + 1); r < gen; r++) recent.push(traitsFor(r, family));
+  const { trait } = mutation(gen, traitsFor(gen - 1, family), family, recent);
   const words: Record<TraitName, string> = {
     head: "a new head shape",
     eyes: "new eyes",

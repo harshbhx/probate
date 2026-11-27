@@ -26,4 +26,104 @@
 - {name: Xavi,    pronoun: he,   voice_hint: upbeat}
 - {name: Yara,    pronoun: she,  voice_hint: bright}
 - {name: Zane,    pronoun: he,   voice_hint: relaxed}
-# After Z, names repeat with a numeral: "Ada II", "Ben II", ...
+- {name: Amara,   pronoun: she,  voice_hint: musical}
+- {name: Bruno,   pronoun: he,   voice_hint: gruff, kind}
+- {name: Callum,  pronoun: he,   voice_hint: easy}
+- {name: Daria,   pronoun: she,  voice_hint: sharp}
+- {name: Eli,     pronoun: they, voice_hint: plain, quick}
+- {name: Farah,   pronoun: she,  voice_hint: velvety}
+- {name: Gael,    pronoun: they, voice_hint: breezy}
+- {name: Hana,    pronoun: she,  voice_hint: gentle, clear}
+- {name: Idris,   pronoun: he,   voice_hint: grounded}
+- {name: Jun,     pronoun: they, voice_hint: level}
+- {name: Kaia,    pronoun: she,  voice_hint: sunny}
+- {name: Lars,    pronoun: he,   voice_hint: dry, even}
+- {name: Maya,    pronoun: she,  voice_hint: thoughtful}
+- {name: Nico,    pronoun: he,   voice_hint: playful}
+- {name: Oren,    pronoun: they, voice_hint: calm, spare}
+- {name: Petra,   pronoun: she,  voice_hint: brisk}
+- {name: Quentin, pronoun: he,   voice_hint: courtly}
+- {name: Rumi,    pronoun: they, voice_hint: dreamy}
+- {name: Salma,   pronoun: she,  voice_hint: warm, low}
+- {name: Tomas,   pronoun: he,   voice_hint: earnest}
+- {name: Ulrik,   pronoun: they, voice_hint: gravelly}
+- {name: Vera,    pronoun: she,  voice_hint: clipped}
+- {name: Wale,    pronoun: he,   voice_hint: resonant}
+- {name: Ximena,  pronoun: she,  voice_hint: vivid}
+- {name: Yusuf,   pronoun: he,   voice_hint: patient}
+- {name: Zola,    pronoun: they, voice_hint: bold}
+- {name: Anton,   pronoun: he,   voice_hint: crisp, formal}
+- {name: Bela,    pronoun: she,  voice_hint: lilting}
+- {name: Cyrus,   pronoun: he,   voice_hint: stately}
+- {name: Dilan,   pronoun: they, voice_hint: mellow}
+- {name: Aiko,     pronoun: she,  voice_hint: light, kind}
+- {name: Bashir,   pronoun: he,   voice_hint: warm, steady}
+- {name: Camila,   pronoun: she,  voice_hint: bright, quick}
+- {name: Dmitri,   pronoun: he,   voice_hint: deep, calm}
+- {name: Elif,     pronoun: she,  voice_hint: soft, clear}
+- {name: Felix,    pronoun: he,   voice_hint: cheerful}
+- {name: Gita,     pronoun: she,  voice_hint: melodic}
+- {name: Hugo,     pronoun: he,   voice_hint: friendly, young}
+- {name: Imani,    pronoun: she,  voice_hint: poised}
+- {name: Joon,     pronoun: they, voice_hint: hushed, even}
+- {name: Keiko,    pronoun: she,  voice_hint: delicate}
+- {name: Luca,     pronoun: he,   voice_hint: easygoing}
+- {name: Mina,     pronoun: she,  voice_hint: sweet, small}
+- {name: Noor,     pronoun: they, voice_hint: luminous}
+- {name: Olga,     pronoun: she,  voice_hint: firm, warm}
+- {name: Pablo,    pronoun: he,   voice_hint: lively}
+- {name: Ravi,     pronoun: he,   voice_hint: open, bright}
+- {name: Sana,     pronoun: she,  voice_hint: serene}
+- {name: Theo,     pronoun: he,   voice_hint: thoughtful}
+- {name: Una,      pronoun: she,  voice_hint: airy, calm}
+- {name: Vikram,   pronoun: he,   voice_hint: assured}
+- {name: Willa,    pronoun: she,  voice_hint: folksy}
+- {name: Xiu,      pronoun: she,  voice_hint: crisp, quiet}
+- {name: Yoel,     pronoun: he,   voice_hint: gentle, low}
+- {name: Zara,     pronoun: she,  voice_hint: confident, clear}
+- {name: Arlo,     pronoun: he,   voice_hint: laid-back}
+- {name: Beatriz,  pronoun: she,  voice_hint: rounded}
+- {name: Chidi,    pronoun: he,   voice_hint: reflective}
+- {name: Dalia,    pronoun: she,  voice_hint: tender}
+- {name: Enzo,     pronoun: he,   voice_hint: spirited}
+- {name: Fatima,   pronoun: she,  voice_hint: graceful}
+- {name: Gustav,   pronoun: he,   voice_hint: formal, slow}
+- {name: Hedda,    pronoun: she,  voice_hint: cool, sharp}
+- {name: Ivan,     pronoun: he,   voice_hint: blunt, kind}
+- {name: Jamila,   pronoun: she,  voice_hint: radiant}
+- {name: Kenji,    pronoun: he,   voice_hint: composed}
+- {name: Lucia,    pronoun: she,  voice_hint: sunlit}
+- {name: Mirela,   pronoun: she,  voice_hint: husky}
+- {name: Nikau,    pronoun: he,   voice_hint: easy, deep}
+- {name: Ola,      pronoun: she,  voice_hint: chirpy}
+- {name: Paulo,    pronoun: he,   voice_hint: mellow}
+- {name: Rina,     pronoun: she,  voice_hint: neat, quick}
+- {name: Soren,    pronoun: he,   voice_hint: spare, quiet}
+- {name: Tala,     pronoun: she,  voice_hint: dreamy}
+- {name: Umar,     pronoun: he,   voice_hint: sincere}
+- {name: Vesna,    pronoun: she,  voice_hint: spring-like}
+- {name: Wanjiru,  pronoun: she,  voice_hint: lilting}
+- {name: Yelena,   pronoun: she,  voice_hint: measured}
+- {name: Zeynep,   pronoun: she,  voice_hint: silky}
+- {name: Aarav,    pronoun: he,   voice_hint: eager}
+- {name: Bahar,    pronoun: she,  voice_hint: fresh}
+- {name: Cosmo,    pronoun: they, voice_hint: whimsical}
+- {name: Diego,    pronoun: he,   voice_hint: sunny}
+- {name: Esi,      pronoun: she,  voice_hint: cordial}
+- {name: Finn,     pronoun: he,   voice_hint: casual}
+- {name: Greta,    pronoun: she,  voice_hint: stern, fair}
+- {name: Haru,     pronoun: they, voice_hint: soft, plain}
+- {name: Ilsa,     pronoun: she,  voice_hint: cultured}
+- {name: Jabari,   pronoun: he,   voice_hint: strong, calm}
+- {name: Kiran,    pronoun: they, voice_hint: balanced}
+- {name: Lior,     pronoun: they, voice_hint: bright, neutral}
+- {name: Mei,      pronoun: she,  voice_hint: tinkling}
+- {name: Naledi,   pronoun: she,  voice_hint: starry}
+- {name: Otto,     pronoun: he,   voice_hint: jovial}
+- {name: Paloma,   pronoun: she,  voice_hint: cooing}
+- {name: Rohan,    pronoun: he,   voice_hint: steady, young}
+- {name: Samir,    pronoun: he,   voice_hint: smooth, low}
+- {name: Talia,    pronoun: she,  voice_hint: warm, quick}
+- {name: Yasmin,   pronoun: she,  voice_hint: floral}
+- {name: Zahir,    pronoun: he,   voice_hint: radiant, deep}
+# After the full list (126 names), names repeat with a numeral: "Ada II", "Ben II", ...

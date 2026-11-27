@@ -4,6 +4,10 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+- No face repeats within `FACE_WINDOW` (10) consecutive generations: a change that would repeat a recent face is re-rolled deterministically. Faces that never collided are unchanged.
+
 ## [0.1.1] - 2026-11-26
 
 - Documentation only: a fuller README with install, usage and links, now that the package is on the public registry.

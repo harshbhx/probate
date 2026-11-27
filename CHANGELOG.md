@@ -28,6 +28,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Added
 
+- 100 more generation names (126 in all, no "Ada II" until generation 127); the first 26 are unchanged. Faces never repeat within 10 consecutive generations (a repeat is re-rolled; generations 1 to 39 look as before). Applies to later runs only. ([#226](https://github.com/harshbhx/probate/pull/226))
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ### Data
