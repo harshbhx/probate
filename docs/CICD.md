@@ -159,6 +159,8 @@ Settings > Branches (or a ruleset) for `main`:
 
 Other workflows: `preview.yml` and `deploy-site.yml` have their own `paths:` (see the table in section 2). `codeql.yml` skips docs-only changes. `dependency-review.yml` runs when a manifest or lockfile changes. `actionlint.yml` runs when `.github/` changes. `secret-scan.yml` always runs. Pull request runs of every workflow are cancelled by a newer push; runs on main, previews, deploys and releases are never cancelled. Tag releases (`*-v*`) and the manual workflows are unaffected. The axe accessibility pass is still manual (`docs/ACCESSIBILITY.md`).
 
+**Changelog check.** On pull requests to `main`, the `changelog` job fails when the change goes beyond docs and tests (anything other than `docs/`, `*.md`, `apps/site/content/`, `tests/` or `test/` directories, `*.test.*`, `*.spec.*` and `test_*.py`) and `CHANGELOG.md` was not changed. The `no-changelog` label skips it; labelling or unlabelling re-runs the workflow. It reuses the file list from the `changes` job, so it costs a few seconds and no checkout. `ci-ok` waits for it like any other job.
+
 **The one check to require is `ci-ok`.**
 
 ## 9. Rolling back

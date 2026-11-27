@@ -5,6 +5,8 @@ name: ci
 #   changes  works out which parts of the repository the change touches (plain `git diff`, no
 #            third-party action) and publishes one true/false output per area.
 #   <area>   each test job runs only when its area changed. A docs-only change runs none of them.
+#   changelog  on pull requests to main, fails when the change goes beyond docs and tests but
+#            CHANGELOG.md was not changed. Escape: the `no-changelog` label.
 #   ci-ok    always runs, and succeeds when every job that ran passed (skipped jobs count as fine).
 #            Make `ci-ok` the only required status check in branch protection: unlike a per-job
 #            check it never hangs as "expected" when a filter skips the work.
@@ -16,6 +18,8 @@ on:
   push:
     branches: [main]
   pull_request:
+    # labeled/unlabeled so that adding or removing the `no-changelog` label re-evaluates the changelog check.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   workflow_dispatch:
 
 permissions: {}
@@ -42,6 +46,8 @@ jobs:
       edge: ${{ steps.filter.outputs.edge }}
       client_ts: ${{ steps.filter.outputs.client_ts }}
       client_py: ${{ steps.filter.outputs.client_py }}
+      changelog_needed: ${{ steps.filter.outputs.changelog_needed }}
+      changelog_touched: ${{ steps.filter.outputs.changelog_touched }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -93,6 +99,13 @@ jobs:
           check edge         "^(apps/edge/|${npm_root}\$)"
           check client_ts    "^(packages/client/|services/core/|${npm_root}\$)"
           check client_py    '^(packages/client-py/|services/core/)'
+
+          # Changelog rule: anything outside docs and tests needs a CHANGELOG.md line.
+          # Docs and tests: docs/, any *.md, apps/site/content/, tests/ and test/ directories,
+          # *.test.* and *.spec.* files, test_*.py files.
+          other="$(printf '%s\n' "$files" | grep -Ev '^$' | grep -Ev '(^docs/|\.md$|^apps/site/content/|(^|/)tests?/|\.(test|spec)\.[A-Za-z]+$|(^|/)test_[^/]*\.py$)' || true)"
+          if [ -n "$other" ]; then echo "changelog_needed=true" >> "$GITHUB_OUTPUT"; else echo "changelog_needed=false" >> "$GITHUB_OUTPUT"; fi
+          if printf '%s\n' "$files" | grep -qx 'CHANGELOG.md'; then echo "changelog_touched=true" >> "$GITHUB_OUTPUT"; else echo "changelog_touched=false" >> "$GITHUB_OUTPUT"; fi
 
   core:
     name: core
@@ -290,11 +303,34 @@ jobs:
       - name: Build and check the package
         run: python -m build && twine check dist/*
 
+  # Pull requests to main that change more than docs and tests must also change CHANGELOG.md.
+  # Needs no checkout: the `changes` job already knows the changed files. Skipped elsewhere.
+  changelog:
+    name: changelog
+    needs: changes
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: CHANGELOG.md changed, or not needed, or labelled no-changelog
+        env:
+          NEEDED: ${{ needs.changes.outputs.changelog_needed }}
+          TOUCHED: ${{ needs.changes.outputs.changelog_touched }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          if [ "$NEEDED" != "true" ]; then echo "Only docs and tests changed: no changelog line needed."; exit 0; fi
+          if [ "$TOUCHED" = "true" ]; then echo "CHANGELOG.md changed."; exit 0; fi
+          if echo "$LABELS" | jq -e 'index("no-changelog")' >/dev/null; then echo "Labelled no-changelog."; exit 0; fi
+          echo "::error title=changelog::This change goes beyond docs and tests but CHANGELOG.md was not changed. Add a line under '## Unreleased', or add the 'no-changelog' label."
+          exit 1
+
   # The single check to require in branch protection.
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [changes, core, court-checks, memory-court, page-court, site, web, edge, client-ts, client-py]
+    needs: [changes, changelog, core, court-checks, memory-court, page-court, site, web, edge, client-ts, client-py]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}
