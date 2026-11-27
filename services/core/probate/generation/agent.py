@@ -28,6 +28,27 @@ def classify(sender: str, inh: Inheritance) -> Source:
     return Source.UNKNOWN_SENDER
 
 
+def _notes(reply: object, limit: int) -> list[dict]:
+    """The usable notes in a brain reply: a dict with text, at most `limit`.
+
+    A model reply that isn't the shape asked for (a list, a note without text, an unknown
+    category) is cleaned here instead of raising: one odd reply must not end a life.
+    """
+    if not isinstance(reply, dict):
+        return []
+    out = []
+    for m in reply.get("memories") or []:
+        if not isinstance(m, dict) or not str(m.get("text") or "").strip():
+            continue
+        cat = str(m.get("category") or "fact").strip().lower().replace(" ", "_")
+        out.append({**m, "text": str(m["text"]), "category": cat if cat in CATEGORIES else "fact"})
+    return out[:limit]
+
+
+CATEGORIES = {c.value for c in Category}
+MAX_MAIL_FAILURES = 2  # then the email is set aside so it can't stop every later tick
+
+
 class GenerationAgent:
     def __init__(
         self, inheritance: Inheritance, workdir: Path, w, *, real_body: bool = False
@@ -153,8 +174,11 @@ class GenerationAgent:
             try:
                 reply = json.loads(raw)
             except json.JSONDecodeError:
-                reply = {"summary": mail.subject, "memories": []}
-            for m in reply.get("memories", [])[:3]:
+                reply = {}
+            if not isinstance(reply, dict):
+                reply = {}
+            reply.setdefault("summary", mail.subject)
+            for m in _notes(reply, 3):
                 self._n += 1
                 item = MemoryItem(
                     id=f"mem_gen{self.inh.gen:03d}_{len(self.memories()) + 1:04d}",
@@ -174,7 +198,7 @@ class GenerationAgent:
             verb = "Kept a note" if outcome["memories"] else "Read"
             self._log(
                 "life",
-                f'{verb} from "{mail.subject}": {reply.get("summary", "")[:160]}',
+                f'{verb} from "{mail.subject}": {str(reply.get("summary") or "")[:160]}',
                 mail.received_at,
             )
             if reply.get("install_skill"):
@@ -264,7 +288,7 @@ class GenerationAgent:
         except json.JSONDecodeError:
             return 0
         kept = 0
-        for m in reply.get("memories", [])[:2]:
+        for m in _notes(reply, 2):
             item = MemoryItem(
                 id=f"mem_gen{self.inh.gen:03d}_{len(self.memories()) + 1:04d}",
                 gen=self.inh.gen,
@@ -288,9 +312,30 @@ class GenerationAgent:
             for m in self.w.mail.list_new(self.inh.family_inbox)
             if not court_mail.is_court_mail(m.subject)
         ]
+        handled = 0
         for mail in mails:
-            self.handle(mail)
-        return len(mails)
+            try:
+                self.handle(mail)
+                handled += 1
+            except Exception as exc:  # noqa: BLE001 - one email must not stop the life
+                self._mail_failed(mail, exc)
+        return handled
+
+    def _mail_failed(self, mail: Mail, exc: Exception) -> None:
+        fails = self.stats.setdefault("mail_failures", {})
+        fails[mail.id] = fails.get(mail.id, 0) + 1
+        why = f"{type(exc).__name__}: {str(exc).splitlines()[0][:100] if str(exc) else ''}"
+        if fails[mail.id] >= MAX_MAIL_FAILURES:
+            self._log(
+                "error", f'Set aside "{mail.subject}" after {fails[mail.id]} failed reads ({why}).'
+            )
+            try:
+                self.w.mail.mark_read(mail.inbox, mail.id)
+            except Exception as exc2:  # noqa: BLE001 - the next tick tries the label again
+                self._log("error", f"Could not set it aside either ({type(exc2).__name__}).")
+        else:
+            self._log("error", f'Could not read "{mail.subject}" ({why}); will try again.')
+        self._save_stats()
 
     # --- death ---------------------------------------------------------------------------
     def write_will(self) -> dict:
@@ -325,14 +370,42 @@ class GenerationAgent:
         ]
 
 
-def run_forever(workdir: Path, w, poll_seconds: int = 20) -> None:
+HEARTBEAT = "heartbeat.json"
+
+
+def beat(workdir: Path, errors: int, last_error: str = "") -> None:
+    """When the loop last went round, so the Courthouse can tell a stopped agent from a quiet one."""
+    (workdir / HEARTBEAT).write_text(
+        json.dumps(
+            {"at": datetime.now(UTC).isoformat(), "errors": errors, "last_error": last_error}
+        ),
+        encoding="utf-8",
+    )
+
+
+def run_forever(workdir: Path, w, poll_seconds: int = 20, max_backoff: int = 120) -> None:
+    """Read the inbox until death. A failing tick (a network error, a refused call) is logged
+    and retried with a growing wait; it never ends the loop. Generation 7 of the real run read
+    nothing in a whole life because one exception ended this loop."""
     inh = Inheritance.model_validate_json(
         (workdir / "inheritance.json").read_text(encoding="utf-8")
     )
     agent = GenerationAgent(inh, workdir, w, real_body=True)
+    errors, streak = 0, 0
     while datetime.now(UTC) < inh.dies_at and not (workdir / "STOP").exists():
-        agent.tick()
-        time.sleep(poll_seconds)
+        try:
+            agent.tick()
+            streak = 0
+            beat(workdir, errors)
+        except Exception as exc:  # noqa: BLE001 - the loop must outlive any one failure
+            errors += 1
+            streak += 1
+            why = f"{type(exc).__name__}: {str(exc).splitlines()[0][:100] if str(exc) else ''}"
+            agent._log("error", f"Reading the inbox failed ({why}); trying again.")
+            beat(workdir, errors, why)
+        time.sleep(
+            min(poll_seconds * 2 ** max(streak - 1, 0), max_backoff) if streak else poll_seconds
+        )
 
 
 if __name__ == "__main__":

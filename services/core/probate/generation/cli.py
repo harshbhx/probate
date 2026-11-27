@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 from probate.adapters import world
@@ -25,6 +26,17 @@ def main(argv: list[str]) -> int:
     agent = GenerationAgent(inh, WORKDIR, world(), real_body=True)
     if cmd == "status":
         out = {"state": "living", "gen": inh.gen, "name": inh.name, "emails": agent.stats["emails"]}
+        hb = WORKDIR / "heartbeat.json"
+        if hb.exists():
+            try:
+                beat = json.loads(hb.read_text(encoding="utf-8"))
+                age = (datetime.now(UTC) - datetime.fromisoformat(beat["at"])).total_seconds()
+                out.update(loop_age=round(age), loop_errors=beat.get("errors", 0))
+            except (ValueError, KeyError):
+                pass
+        else:  # the loop never went round once: count from the birth
+            born = (WORKDIR / "inheritance.json").stat().st_mtime
+            out.update(loop_age=round(datetime.now(UTC).timestamp() - born), loop_errors=0)
     elif cmd == "baseline":
         out = agent.body.baseline()
         (WORKDIR / "baseline.json").write_text(json.dumps(out), encoding="utf-8")
