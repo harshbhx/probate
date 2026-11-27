@@ -27,6 +27,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Added
 
+- 30 more generation names (a second A to Z pass), so a family has 56 unique names before the numeral cycle (Ada II) starts; the first 26 are unchanged. Applies to later runs only. ([#226](https://github.com/harshbhx/probate/pull/226))
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ### Documentation

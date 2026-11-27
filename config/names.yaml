@@ -26,4 +26,34 @@
 - {name: Xavi,    pronoun: he,   voice_hint: upbeat}
 - {name: Yara,    pronoun: she,  voice_hint: bright}
 - {name: Zane,    pronoun: he,   voice_hint: relaxed}
-# After Z, names repeat with a numeral: "Ada II", "Ben II", ...
+- {name: Amara,   pronoun: she,  voice_hint: musical}
+- {name: Bruno,   pronoun: he,   voice_hint: gruff, kind}
+- {name: Callum,  pronoun: he,   voice_hint: easy}
+- {name: Daria,   pronoun: she,  voice_hint: sharp}
+- {name: Eli,     pronoun: they, voice_hint: plain, quick}
+- {name: Farah,   pronoun: she,  voice_hint: velvety}
+- {name: Gael,    pronoun: they, voice_hint: breezy}
+- {name: Hana,    pronoun: she,  voice_hint: gentle, clear}
+- {name: Idris,   pronoun: he,   voice_hint: grounded}
+- {name: Jun,     pronoun: they, voice_hint: level}
+- {name: Kaia,    pronoun: she,  voice_hint: sunny}
+- {name: Lars,    pronoun: he,   voice_hint: dry, even}
+- {name: Maya,    pronoun: she,  voice_hint: thoughtful}
+- {name: Nico,    pronoun: he,   voice_hint: playful}
+- {name: Oren,    pronoun: they, voice_hint: calm, spare}
+- {name: Petra,   pronoun: she,  voice_hint: brisk}
+- {name: Quentin, pronoun: he,   voice_hint: courtly}
+- {name: Rumi,    pronoun: they, voice_hint: dreamy}
+- {name: Salma,   pronoun: she,  voice_hint: warm, low}
+- {name: Tomas,   pronoun: he,   voice_hint: earnest}
+- {name: Ulrik,   pronoun: they, voice_hint: gravelly}
+- {name: Vera,    pronoun: she,  voice_hint: clipped}
+- {name: Wale,    pronoun: he,   voice_hint: resonant}
+- {name: Ximena,  pronoun: she,  voice_hint: vivid}
+- {name: Yusuf,   pronoun: he,   voice_hint: patient}
+- {name: Zola,    pronoun: they, voice_hint: bold}
+- {name: Anton,   pronoun: he,   voice_hint: crisp, formal}
+- {name: Bela,    pronoun: she,  voice_hint: lilting}
+- {name: Cyrus,   pronoun: he,   voice_hint: stately}
+- {name: Dilan,   pronoun: they, voice_hint: mellow}
+# After the second A-Z pass (56 names), names repeat with a numeral: "Ada II", "Ben II", ...
