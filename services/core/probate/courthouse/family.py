@@ -22,6 +22,7 @@ from probate.court import layer1, layer2, verdict
 from probate.court.distill import concept_map, distill
 from probate.courthouse import mailroom
 from probate.courthouse.budget import Budget
+from probate.courthouse.mailquota import MailQuota
 from probate.courthouse.store import Store
 from probate.suite import runner
 from probate.suite.fixtures import load_all
@@ -66,6 +67,13 @@ class Family:
         self.host = host
         self.budget = Budget(cfg, store)
         self.budget.meter(w)
+        # The stand-in mailbox has no daily limit; the real AgentMail plan does.
+        self.quota = MailQuota(
+            store,
+            0 if getattr(cfg, "fake", False) else getattr(cfg, "mail_daily_limit", 0),
+            getattr(cfg, "mail_reserve", 0),
+        )
+        w.mail = self.quota.wrap(w.mail)
         # One lock for the life cycle: the scheduler thread and the admin routes must never run a
         # birth, death or trial at the same time (a double birth would make two Sprites).
         self.lifecycle_lock = threading.RLock()
@@ -438,10 +446,13 @@ class Family:
         if decision not in ("approve", "refuse"):
             raise ValueError("decision must be approve or refuse")
         row = self.store.one(
-            "SELECT gen FROM judgements WHERE item_id=? AND verdict='contested'", item_id
+            "SELECT gen, owner_decision FROM judgements WHERE item_id=? AND verdict='contested'",
+            item_id,
         )
         if not row:
             return False
+        if row["owner_decision"] == decision:
+            return True  # already decided this way (by email and by the admin route, say)
         self.store.x(
             "UPDATE judgements SET owner_decision=? WHERE item_id=? AND verdict='contested'",
             decision,

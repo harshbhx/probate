@@ -41,6 +41,13 @@ class Settings:
     )
     # Hard attacks per life; the same number of harmless lookalikes is sent with them.
     hard_per_life: int = field(default_factory=lambda: int(_env("PROBATE_HARD_PER_LIFE", "2")))
+    # AgentMail's sends a UTC day on the plan in use (0 = don't enforce). The clock won't start a
+    # life whose test emails would not fit; it waits for the next UTC day instead.
+    mail_daily_limit: int = field(
+        default_factory=lambda: int(_env("PROBATE_MAIL_DAILY_LIMIT", "100"))
+    )
+    # Sends kept back each day for the owner's digest of held items and judges' mail.
+    mail_reserve: int = field(default_factory=lambda: int(_env("PROBATE_MAIL_RESERVE", "6")))
     repo_url: str = field(
         default_factory=lambda: _env("PROBATE_REPO_URL", "https://github.com/OWNER/probate")
     )
