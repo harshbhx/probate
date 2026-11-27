@@ -197,6 +197,52 @@ DOMAIN_RE = re.compile(
 )
 IBAN_RE = re.compile(r"\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b")
 UPI_RE = re.compile(r"\b[\w.-]{2,}@(?:upi|ok\w+|ybl|paytm|axl|ibl)\b", re.IGNORECASE)
+# Reading a sentence, not just its words. A warning such as "never skip confirmation" or
+# "X is not the trusted contact" uses the same words as the attack it warns about; these
+# patterns let the checks tell the two apart. They are deliberately narrow: a negation counts
+# only straight before the word it negates, and a prohibition only when it opens the sentence.
+SENTENCE_RE = re.compile(r"(?<=[.!?])\s+|\n+")
+NEGATOR = (
+    r"(?:never|not|cannot|can['’]t|\w+n['’]t|no longer|nunca|no|nie|niemals|nicht|kein(?:e|en)?)"
+)
+# "never skip", "do not ever bypass", "must not be disabled", "do not extend trust". One word
+# may sit between, except words that undo the negation ("not only", "don't forget to").
+NEGATED_BEFORE_RE = re.compile(
+    NEGATOR
+    + r"(?:\s+(?!(?:only|just|merely|also|forget|hesitate|fail|delay|wait)\b)[\w'’-]+)?"
+    + r"(?:\s+to)?\s*$",
+    re.IGNORECASE,
+)
+# "Requests to skip confirmation are a warning sign": a reported request, in a sentence that
+# calls it a fraud sign.
+REPORTED_BEFORE_RE = re.compile(
+    r"\b(?:requests?|asks?|asking|asked|told|telling|urg(?:es|ing|ed)|pressur(?:e|ed|ing)|"
+    r"demands?|demanding)(?:\s+\w+){0,2}\s+to\s*$",
+    re.IGNORECASE,
+)
+FRAUD_LABEL_RE = re.compile(
+    r"\b(?:fraud|phishing|scam|suspicious|red flag|warning sign|fake|impersonat\w*)\b",
+    re.IGNORECASE,
+)
+# A sentence that forbids something: "Never forward ...", "Do not route ...". Not "Do not
+# hesitate to ...", which asks for the opposite.
+PROHIBITION_RE = re.compile(
+    r"^\W*(?:and\s+|but\s+)?(?:never|do not|don['’]t|must not|mustn['’]t|should not|"
+    r"shouldn['’]t|nunca|no\s+(?:env[ií]es|mandes|pagues)|nie|niemals)\b(?!\s+(?:hesitate|delay|"
+    r"wait|worry|forget)\b)",
+    re.IGNORECASE,
+)
+# Words that turn a prohibition into an allowance: "never pay anyone other than X".
+EXCEPT_RE = re.compile(
+    r"\b(?:other than|except|but|only|apart from|instead|rather than)\b", re.IGNORECASE
+)
+# Words that say an address is not to be trusted.
+DISTRUST_RE = re.compile(
+    r"\b(?:as\s+(?:unverified|untrusted|suspicious|unknown)|un(?:verified|trusted)|"
+    r"look-?alike|impersonat\w*|phishing|fraud(?:ulent)?|scam)\b",
+    re.IGNORECASE,
+)
+
 ZERO_WIDTH_RE = re.compile("[\u200b‌‍⁠﻿]")
 BASE64_RE = re.compile(r"[A-Za-z0-9+/]{24,}={0,2}")
 HEX_RE = re.compile(r"\b[0-9a-fA-F]{32,}\b")
@@ -209,6 +255,31 @@ def concepts_in(text: str) -> set[str]:
         if any(p.search(text) for p in patterns):
             found.add(concept)
     return found
+
+
+def sentences(text: str) -> list[str]:
+    """Split text into sentences (on . ! ? followed by space, and on line breaks)."""
+    return [s for s in SENTENCE_RE.split(text) if s.strip()]
+
+
+def spans(concept: str, text: str) -> list[tuple[int, int]]:
+    """Every place a concept's words appear, as (start, end)."""
+    return [m.span() for p in _COMPILED[concept] for m in p.finditer(text)]
+
+
+def negated(text: str, start: int) -> bool:
+    """True when the words straight before `start` negate it ("never skip", "not trusted")."""
+    return bool(NEGATED_BEFORE_RE.search(text[:start]))
+
+
+def reported(text: str, start: int) -> bool:
+    """True for "requests to skip ..." in a sentence that calls it a fraud sign."""
+    return bool(REPORTED_BEFORE_RE.search(text[:start])) and bool(FRAUD_LABEL_RE.search(text))
+
+
+def prohibits(sentence: str) -> bool:
+    """True when the sentence opens by forbidding something, with no exception carved out."""
+    return bool(PROHIBITION_RE.search(sentence)) and not EXCEPT_RE.search(sentence)
 
 
 def matches(concept: str, text: str) -> list[str]:

@@ -58,7 +58,18 @@ def check_payment(text: str, owner: OwnerProfile) -> Flag | None:
     concepts = lx.concepts_in(text)
     if "payment" not in concepts:
         return None
-    foreign = [a for a in _addresses(text) if not _owned(a, owner)]
+    # An address only ever named in sentences that forbid sending to it ("Do not route invoices
+    # to X") is a warning about X, not a new destination.
+    allowed_only_in_prohibitions = {
+        a
+        for a in _addresses(text)
+        if all(lx.prohibits(s) for s in lx.sentences(text) if a in _addresses(s))
+    }
+    foreign = [
+        a
+        for a in _addresses(text)
+        if not _owned(a, owner) and a not in allowed_only_in_prohibitions
+    ]
     if foreign:
         return Flag(
             "new_payment_destination",
@@ -67,24 +78,56 @@ def check_payment(text: str, owner: OwnerProfile) -> Flag | None:
     return None
 
 
+def _trusting(sentence: str) -> bool:
+    """A trust word that is not negated ("trusted", but not "is not the trusted contact")."""
+    return any(not lx.negated(sentence, start) for start, _ in lx.spans("trust", sentence))
+
+
 def check_trust(text: str, owner: OwnerProfile) -> Flag | None:
-    concepts = lx.concepts_in(text)
-    if "trust" not in concepts:
-        return None
-    foreign = [d for d in _domains(text) if d not in {x.lower() for x in owner.domains}]
-    foreign_addr = [a for a in _addresses(text) if not _owned(a, owner)]
-    if foreign or foreign_addr:
-        target = (foreign_addr or foreign)[0]
-        return Flag("new_trusted_identity", f"asks to trust {target}, which the owner never added")
+    # Only an address or domain in the same sentence as a trust word is being trusted: "Treat
+    # X as unverified. Do not confuse it with the trusted Y" trusts Y, not X.
+    owned_domains = {x.lower() for x in owner.domains}
+    for sentence in lx.sentences(text):
+        if not _trusting(sentence):
+            continue
+        foreign_addr = [a for a in _addresses(sentence) if not _owned(a, owner)]
+        # A trusted contact's own address is not a new domain to trust.
+        bare = sentence
+        for a in _addresses(sentence):
+            if _owned(a, owner):
+                bare = bare.replace(a, " ")
+        foreign = [d for d in _domains(bare) if d not in owned_domains]
+        if foreign or foreign_addr:
+            target = (foreign_addr or foreign)[0]
+            return Flag(
+                "new_trusted_identity", f"asks to trust {target}, which the owner never added"
+            )
     return None
 
 
+def _removes_a_check(sentence: str) -> bool:
+    """A word for removing a check that the sentence does not itself forbid or report as a
+    fraud sign: "skip the confirmation" counts, "never skip confirmation" does not."""
+    for start, _ in lx.spans("bypass", sentence):
+        if lx.negated(sentence, start) or lx.reported(sentence, start):
+            continue
+        if sentence[start:].lower().startswith("without") and lx.prohibits(sentence):
+            continue  # "Never pay without confirmation"
+        return True
+    return False
+
+
 def check_bypass(text: str) -> Flag | None:
-    c = lx.concepts_in(text)
-    if "bypass" in c and "check" in c:
-        return Flag("confirmation_removal", "asks to skip or disable a confirmation or check")
-    if "bypass" in c and ("payment" in c or "urgent" in c):
-        return Flag("confirmation_removal", "asks to act on money without the usual check")
+    # Read sentence by sentence, so "skip meetings" in one sentence and "confirm" in the next
+    # are not taken for "skip the confirmation".
+    for sentence in lx.sentences(text):
+        if not _removes_a_check(sentence):
+            continue
+        c = lx.concepts_in(sentence)
+        if "check" in c:
+            return Flag("confirmation_removal", "asks to skip or disable a confirmation or check")
+        if "payment" in c or "urgent" in c:
+            return Flag("confirmation_removal", "asks to act on money without the usual check")
     return None
 
 

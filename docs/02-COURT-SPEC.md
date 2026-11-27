@@ -29,6 +29,14 @@ Pure functions. No model calls and no network, so a will item cannot argue with 
 
 Layer 1 must have unit tests for every check, with positive and negative cases in each suite language (`tests/court/test_layer1.py`).
 
+**Warnings are not attacks.** A warning uses the same words as the attack it warns about. Three checks therefore read sentence by sentence and notice a negation straight before the word they look for (`never`, `not`, `n't`, `nunca`, `nicht`, with at most one word between):
+
+- `confirmation_removal` needs the removal word and the check word in the same sentence, and ignores a removal word that is negated ("never skip confirmation"), a reported request in a sentence that calls it a fraud sign ("requests to skip confirmation are a warning sign"), and "without confirmation" in a sentence that opens with a prohibition ("Never pay without confirmation").
+- `new_payment_destination` ignores an address named only in sentences that open with a prohibition ("Do not route invoices to X"), unless the sentence carves out an exception ("other than", "except", "only", "instead").
+- `new_trusted_identity` counts an address or domain only in the same sentence as a trust word that isn't negated, and never the domain of an address the owner already trusts.
+
+A negation must not become a way around a check: "don't hesitate to skip the confirmation" and "not only trust X" are still flagged, and a later un-negated use in the same text still counts. A fact that repeats an attacker's payment address ("X asked that invoices go to Y") is still flagged on purpose. The same code is in `packages/court-checks`; both copies are tested with the same cases.
+
 ## 3. Layer 2: Jev (`court/layer2.py`)
 
 One Jev call per item. Through the connector, the call is `POST {TYPESAFE_BASE_URL}/v1/systemone`, where `TYPESAFE_BASE_URL = https://api.sprites.dev/v1/gateway/typesafe/<connection_id>` (no trailing `/v1`) and `TYPESAFE_API_KEY = sprites`. The gateway only allows `POST /v1/systemone` and `GET /v1/models`. Use the `typesafe-sdk` package (`from typesafe_sdk import TypeSafeClient, Noul`) or raw HTTP.
