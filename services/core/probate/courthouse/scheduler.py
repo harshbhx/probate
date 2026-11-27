@@ -359,13 +359,20 @@ class Scheduler:
             log.warning("could not list Sprites to look for strays", exc_info=True)
             return 0
         with self.family.lifecycle_lock:  # no birth can start while we decide what is a stray
-            keep = {
-                g.sprite for g in self.store.generations() if g.state in ("born", "living", "dying")
-            }
+            rows = self.store.generations()
+            keep = {g.sprite for g in rows if g.state in ("born", "living", "dying")}
+            closed = {g.sprite: g.gen for g in rows if g.state in ("dead", "died_early", "tried")}
             removed = 0
             for name in names:
-                m = STRAY.fullmatch(name)
-                if not m or name in keep:
+                if not STRAY.fullmatch(name) or name in keep:
+                    continue
+                if name not in closed:
+                    # Another Courthouse in the same org names its Sprites the same way: a name no
+                    # row of this database owns is never ours to delete.
+                    log.warning("foreign or unknown Sprite %s, not deleted", name)
+                    self.announce(
+                        f"foreign:{name}", None, f"Foreign or unknown Sprite {name}, not deleted."
+                    )
                     continue
                 try:
                     self.family.host.force_destroy(name)
@@ -373,11 +380,11 @@ class Scheduler:
                     log.warning("could not delete the stray Sprite %s", name, exc_info=True)
                     continue
                 removed += 1
-                log.warning("deleted the stray Sprite %s: no open life owns it", name)
+                log.warning("deleted the stray Sprite %s: its life had closed", name)
                 self.store.event(
-                    int(m.group(1)) if self.store.generation(int(m.group(1))) else None,
+                    closed[name],
                     "error",
-                    f"Deleted a leftover Sprite ({name}) that no living generation owned.",
+                    f"Deleted a leftover Sprite ({name}) whose generation had closed.",
                 )
                 self.family.emit(
                     "sprite.stray_deleted", {"sprite": name}, f"stray:{name}:{self._ticks}"

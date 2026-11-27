@@ -48,34 +48,59 @@ def _raise(exc):
 
 
 # --- M1: sprites left billing ---------------------------------------------------------------
-def test_sweep_deletes_a_stray_and_never_the_living_or_foreign_names(fam):
+def test_sweep_deletes_only_a_closed_rows_leftover_sprite(fam):
     store, family, _ = fam
     sched = Scheduler(family)
-    g = family.birth(T0)
+    g1 = family.birth(T0)
+    row = store.generation(g1.gen)
+    row.state = "tried"
+    store.save_generation(row)
+    g2 = family.birth(T0 + timedelta(minutes=5))  # living, in this database
+    foreign_unknown = "gen-099-elsewhere"  # another environment's life: no row here
     host = family.host
-    stray, foreign = "gen-009-oldie", "my-other-sprite"
-    host.list_sprites = lambda: [g.sprite, stray, foreign, "gen-xx-bad"]
+    host.list_sprites = lambda: [g1.sprite, g2.sprite, foreign_unknown, "my-other-sprite"]
     destroyed = []
     host.force_destroy = lambda n: destroyed.append(n) or {}
     assert sched.reconcile_sprites() == 1
-    assert destroyed == [stray]  # not the living one, not a name that is not gen-NNN-*
-    assert any(e["kind"] == "error" and stray in e["text"] for e in store.q("SELECT * FROM events"))
+    assert destroyed == [g1.sprite]  # closed row only; never a living or unowned name
+    events = store.q("SELECT * FROM events")
+    assert any(foreign_unknown in e["text"] and "not deleted" in e["text"] for e in events)
+
+
+def test_sweep_covers_a_failed_births_died_early_row(fam):
+    store, family, _ = fam
+    family.host.birth = _raise(RuntimeError("no"))
+    family.host.force_destroy = _raise(RuntimeError("api down"))
+    with pytest.raises(RuntimeError):
+        family.birth(T0)
+    orphan = store.generation(1).sprite
+    assert store.generation(1).state == "died_early"
+    family.host.list_sprites = lambda: [orphan]
+    destroyed = []
+    family.host.force_destroy = lambda n: destroyed.append(n) or {}
+    assert Scheduler(family).reconcile_sprites() == 1 and destroyed == [orphan]
 
 
 def test_sweep_keeps_going_when_one_delete_fails(fam):
     _, family, _ = fam
     sched = Scheduler(family)
-    family.host.list_sprites = lambda: ["gen-001-a", "gen-002-b"]
+    for n in (1, 2):
+        g = family.birth(T0 + timedelta(minutes=n))
+        row = family.store.generation(g.gen)
+        row.state = "tried"
+        family.store.save_generation(row)
+    names = [family.store.generation(n).sprite for n in (1, 2)]
+    family.host.list_sprites = lambda: names
     seen = []
 
     def destroy(n):
         seen.append(n)
-        if n == "gen-001-a":
+        if n == names[0]:
             raise RuntimeError("api down")
         return {}
 
     family.host.force_destroy = destroy
-    assert sched.reconcile_sprites() == 1 and seen == ["gen-001-a", "gen-002-b"]
+    assert sched.reconcile_sprites() == 1 and seen == names
 
 
 def test_step_runs_the_sweep_on_the_first_tick_then_only_now_and_then(fam):
