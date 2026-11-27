@@ -23,11 +23,11 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Added
 
-- One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#PRNUM](https://github.com/harshbhx/probate/pull/PRNUM))
+- One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ### Documentation
 
-- A beta naming policy in `docs/PUBLISHING.md`: `beta-N` for tags, dataset revisions and releases until the final submission, then `v1.0.0`. ([#PRNUM](https://github.com/harshbhx/probate/pull/PRNUM))
+- A beta naming policy in `docs/PUBLISHING.md`: `beta-N` for tags, dataset revisions and releases until the final submission, then `v1.0.0`. ([#220](https://github.com/harshbhx/probate/pull/220))
 
 ## beta-2 (27 Nov 2026 onward, the v2 scoring rules)
 
