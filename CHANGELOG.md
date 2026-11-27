@@ -15,7 +15,9 @@ something from its first life.
 - **Lives born after the mail ran out** (generations 17 and 18). The Courthouse counts every
   AgentMail send per UTC day and waits for 00:00 UTC instead of starting a life whose test
   emails would not fit (`PROBATE_MAIL_DAILY_LIMIT`, default 100; `PROBATE_MAIL_RESERVE`, 6).
-  ([#187](https://github.com/harshbhx/probate/pull/187))
+  ([#187](https://github.com/harshbhx/probate/pull/187)) **Run a life** in on-demand mode is held
+  to the same check, and the site says the family waits for tomorrow's mail.
+  ([#203](https://github.com/harshbhx/probate/pull/203))
 - **Lives with no test emails** (generations 4 and 8). A life's suite is sent idempotently: one
   refused email no longer stops the rest, and a life born without its suite gets it on the next
   tick, up to three tries. ([#187](https://github.com/harshbhx/probate/pull/187))
