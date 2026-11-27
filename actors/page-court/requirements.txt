@@ -2,4 +2,4 @@ apify==4.3.0
 beautifulsoup4==4.15.0
 httpx>=0.28,<1
 # Probate's court checks, from PyPI
-probate-court-checks==0.2.1
+probate-court-checks>=0.2.1,<0.4
