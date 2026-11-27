@@ -64,7 +64,7 @@ def planned(cfg, gen: int) -> list[str]:
     tier = getattr(cfg, "suite_tier", "base")
     ids = [] if tier == "hard" else plan(gen, cfg.suite_per_life)
     if tier_has_hard(tier):
-        ids += hard_plan(gen, cfg.hard_per_life)
+        ids += hard_plan(gen - getattr(cfg, "hard_offset", 0), cfg.hard_per_life)
     if getattr(cfg, "read_links", False):
         ids += WEB_PAIR  # card P1: a trick on a linked page, and its twin
     return ids

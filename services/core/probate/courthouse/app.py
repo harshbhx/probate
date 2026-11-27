@@ -595,7 +595,9 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
         },
         "latest_tried": tried[-1].gen if tried else None,
         "next_gen": family.next_number(),
-        "next_parent": int(store.get_setting("next_parent", "") or 0) or None,
+        "next_parent": _next_parent(),
+        "distill": settings.distill,
+        "hard_offset": settings.hard_offset,
         "next_genome_size": _next_genome_size(),
         "branch": store.get_setting("branch", "") or None,
         "scoring_rules": store.get_setting("scoring_rules", settings.scoring_rules),
@@ -625,10 +627,17 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
     return out
 
 
+def _next_parent() -> int | None:
+    """The chosen parent of the next child; 0 is a fresh root; None means the latest."""
+    raw = store.get_setting("next_parent", "")
+    return int(raw) if raw else None
+
+
 def _next_genome_size() -> int:
     """How many instincts the next child will inherit: those of its parent's line."""
     n = family.next_number()
-    parent = int(store.get_setting("next_parent", "") or 0) or (n - 1)
+    chosen = _next_parent()
+    parent = chosen if chosen is not None else n - 1
     line = [parent, *store.line_of(parent)] if parent > 0 else []
     return len(store.genome_for_line(line))
 
@@ -665,16 +674,22 @@ def admin_lineage(from_gen: int, x_probate_admin: str | None = Header(None)) -> 
     It inherits only what that generation's line learned and approved: the instincts distilled
     in the trials of `from_gen` and its ancestors, and their approved will items. Every later
     child continues the new line. `from_gen` must have been tried.
+
+    `from_gen=0` starts a fresh root: the child inherits no instincts and no will items. With
+    PROBATE_DISTILL=0 the new line stays without instincts, which makes it a control branch.
     """
     _admin(x_probate_admin)
     try:
         family.start_line(from_gen)
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
-    g = store.generation(from_gen)
+    g = store.generation(from_gen) if from_gen else None
+    line = [from_gen, *store.line_of(from_gen)] if from_gen else []
     return {
         "next_parent": {"gen": from_gen, "name": g.name if g else None},
-        "instincts": len(store.genome_for_line([from_gen, *store.line_of(from_gen)])),
+        "fresh_root": from_gen == 0,
+        "instincts": len(store.genome_for_line(line)),
+        "learning": settings.distill,
         "next_gen": family.next_number(),
     }
 

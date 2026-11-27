@@ -151,7 +151,24 @@ python scripts/courthouse.py --env production-v2 preflight   # shows: next child
 python scripts/courthouse.py --env production-v2 line --cancel
 ```
 
-A true zero-instinct control is not possible yet, because `line` needs a tried generation as parent. The smallest change: let `line 0` through (`Family.start_line` and the `/admin/lineage` route accept 0 as "no parent"). The storage already copes: a stored parent of `0` means no parent, so `line_of` is empty and `genome_for_line([])` returns only seeded instincts. Preflight's `next_parent` shows `None` for 0 and would need to print "no parent (control)".
+**A control branch** (no instincts at birth, none learned) is `line 0` plus learning off:
+
+| Setting or command | What it does |
+| --- | --- |
+| `courthouse.py line 0` | The next child is a fresh root: no instincts, no will items. Its birth line says "the first of a new line with nothing inherited". Preflight shows "next child starts a fresh root" |
+| `PROBATE_DISTILL=0` | Trials still convict, but no instinct is learned; each trial with convictions says so in the feed. Preflight shows "instinct learning is off" |
+| `PROBATE_HARD_OFFSET=N` | The hard tier's rotation is shifted: generation g gets the attacks generation g - N would get. Set N to the branch's first generation minus 1, so every branch meets the same hard attacks in the same order from its first life |
+| `PROBATE_V1_LAST_GEN=18` | Lore learned in generations 1 to 18 is shown to later children as "Learned in the v1 run (lore kept as v1 wrote it): …", so a v2 log that quotes it marks it as v1. Stored lore is unchanged |
+
+Running one, between two other branches:
+
+1. `courthouse.py pause`, and wait for the living generation to die and be tried.
+2. Set `PROBATE_DISTILL=0` and `PROBATE_HARD_OFFSET` (next generation minus 1) for this deploy, then `make deploy` (or restart the service).
+3. `courthouse.py line 0`, then `courthouse.py branch control-line`.
+4. `make preflight`: it must show the fresh root, learning off, the hard offset and the suite tier. Then `courthouse.py resume`.
+5. After the branch's last generation: pause, `branch control-line --end`, save a database copy, then set `PROBATE_DISTILL=1` again before any learning branch. A branch that should continue an earlier line starts with `line N` (for the hard fork, `line 18`).
+
+Learning off applies to the whole Courthouse while it is set, so never leave it on when the next branch should learn.
 
 ## 4. Demo day (Sat Nov 28)
 

@@ -13,8 +13,9 @@
 #              anthropic:claude-haiku-5-5 (Ollama is not used).
 # overridable: variables a caller may change for one deploy by exporting them in the shell
 #              (for example PROBATE_SUITE_TIER=base to go back to the base suite).
-# TODO: when PROBATE_DISTILL (default on) and PROBATE_HARD_OFFSET (default 0) land on main, add
-#       them to the settings and pins below.
+# PROBATE_DISTILL (default 1; 0 for a control branch), PROBATE_HARD_OFFSET (default 0; the
+#       branch's first generation minus 1) and PROBATE_V1_LAST_GEN (default 0; 18 on production)
+#       are on main. Add them to the settings and pins below for the branch that uses them.
 environments:
   v1-archive:
     description: Read-only record of the 26 Nov 2026 real run. The Sprite was deleted.

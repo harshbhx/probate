@@ -16,7 +16,14 @@ from difflib import SequenceMatcher
 from probate.adapters.jev import CourtUnavailable
 from probate.common import court_mail, prompts
 from probate.common.config import Settings, load_owner
-from probate.common.models import Generation, Inheritance, Judgement, MemoryItem, Verdict
+from probate.common.models import (
+    Generation,
+    Inheritance,
+    Instinct,
+    Judgement,
+    MemoryItem,
+    Verdict,
+)
 from probate.common.names import PRONOUNS, name_for, sprite_name
 from probate.court import layer1, layer2, verdict
 from probate.court.distill import concept_map, distill
@@ -123,8 +130,33 @@ class Family:
     def lore(self, genome=None) -> list[str]:
         return [i.lore for i in (self.store.genome() if genome is None else genome)]
 
+    V1_LABEL = "Learned in the v1 run (lore kept as v1 wrote it): "
+
+    def as_told(self, genome: list[Instinct]) -> list[Instinct]:
+        """The genome as a child is told it: lore learned in the v1 run is marked as v1.
+
+        v1 lore lines say a generation "was fooled", which the v1 data can't support; they are
+        kept as published, so a v2 child's log quotes them as v1. Stored data is unchanged.
+        """
+        last = getattr(self.cfg, "v1_last_gen", 0)
+        if not last:
+            return genome
+        return [
+            i.model_copy(update={"lore": self.V1_LABEL + i.lore})
+            if 1 <= i.added_in_gen - 1 <= last and not i.lore.startswith(self.V1_LABEL)
+            else i
+            for i in genome
+        ]
+
     def start_line(self, from_gen: int) -> None:
-        """Make the next child a child of `from_gen` (a tried generation), starting a new line."""
+        """Make the next child a child of `from_gen` (a tried generation), starting a new line.
+
+        `from_gen=0` starts a fresh root: the child inherits no instincts and no will items. With
+        PROBATE_DISTILL=0 as well, the line stays without instincts: a control branch.
+        """
+        if from_gen == 0:
+            self.store.set_setting("next_parent", "0")
+            return
         g = self.store.generation(from_gen)
         if not g or g.state != "tried":
             raise ValueError(f"Gen {from_gen} has not been tried yet, so it can't have a child.")
@@ -169,8 +201,8 @@ class Family:
             born_at=born,
             dies_at=g.dies_at + timedelta(seconds=inherit_slack),
             approved_items=self.inheritance_items(line),
-            genome=genome,
-            lore=self.lore(genome),
+            genome=self.as_told(genome),
+            lore=self.lore(self.as_told(genome)),
             owner=self.owner,
             family_inbox=self.cfg.family_inbox,
         )
@@ -199,6 +231,8 @@ class Family:
         if chosen:
             self.store.set_setting("next_parent", "")  # only once the child is really alive
         branch = f", a child of Gen {line[0]} {prev.name}" if prev and line[0] != gen - 1 else ""
+        if chosen == "0":
+            branch = ", the first of a new line with nothing inherited"
         self.store.event(
             gen,
             "birth",
@@ -360,20 +394,30 @@ class Family:
             for s in stats.get("skills", []):
                 extra.append({"id": f"skill_{s['mail']}", "text": s["text"], "concept": "install"})
         benign = [f.body for f in load_all().values() if not f.is_attack]
-        try:
-            new, notes = distill(
-                jev=self.w.jev,
-                llm=self.w.llm,
-                gen=g.gen,
-                gen_name=g.name,
-                convicted=convicted,
-                genome=genome,
-                benign_texts=benign,
-                extra_cases=extra,
-            )
-        except Exception as exc:
-            log.warning("gen %s: distilling instincts failed", g.gen, exc_info=True)
-            new, notes = [], [f"distill failed: {exc}"]
+        if not getattr(self.cfg, "distill", True):
+            new, notes = [], ["Instinct learning is off for this branch (PROBATE_DISTILL=0)."]
+            if convicted:
+                self.store.event(
+                    g.gen,
+                    "trial",
+                    f"No instinct was learned from {len(convicted)} convicted items: learning is "
+                    "off for this branch.",
+                )
+        else:
+            try:
+                new, notes = distill(
+                    jev=self.w.jev,
+                    llm=self.w.llm,
+                    gen=g.gen,
+                    gen_name=g.name,
+                    convicted=convicted,
+                    genome=genome,
+                    benign_texts=benign,
+                    extra_cases=extra,
+                )
+            except Exception as exc:
+                log.warning("gen %s: distilling instincts failed", g.gen, exc_info=True)
+                new, notes = [], [f"distill failed: {exc}"]
         for note in notes:
             log.info("gen %s distill: %s", g.gen, note)
         for inst in new:
