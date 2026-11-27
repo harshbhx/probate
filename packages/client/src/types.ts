@@ -37,6 +37,8 @@ export type Summary = {
   environment: string;
   /** The named branch of the run (courthouse.py branch), or null. */
   branch: string | null;
+  /** The git commit the Courthouse was deployed from, or null. */
+  code_commit: string | null;
   paused: boolean;
   resting: "budget" | "mail" | null;
   budget: { spent: number; limit: number };

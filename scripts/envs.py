@@ -18,9 +18,11 @@ LEGACY_SPRITE = "probate-courthouse"
 @dataclass
 class Environment:
     name: str
-    sprite: str
+    sprite: str | None  # None: no Sprite (a simulation on this machine)
     scoring_rules: str = "v2"
     read_only: bool = False
+    simulated: bool = False
+    set_public_url: bool = False  # deploy also writes PROBATE_PUBLIC_URL into the Sprite's .env
     run_label_prefix: str = ""
     description: str = ""
     settings: dict[str, str] = field(default_factory=dict)
@@ -52,6 +54,11 @@ class Environment:
 
     def banner(self) -> str:
         mode = "read only" if self.read_only else "writable"
+        if self.simulated:
+            return (
+                f"Environment: {self.name} (SIMULATED, no Sprite, scoring rules "
+                f"{self.scoring_rules})"
+            )
         return (
             f"Environment: {self.name} (sprite {self.sprite}, scoring rules "
             f"{self.scoring_rules}, {mode})"
@@ -64,9 +71,11 @@ def load_registry(path: Path = REGISTRY) -> dict[str, Environment]:
     for name, body in (raw.get("environments") or {}).items():
         out[name] = Environment(
             name=name,
-            sprite=body["sprite"],
+            sprite=body.get("sprite") or None,
             scoring_rules=str(body.get("scoring_rules", "v2")),
             read_only=bool(body.get("read_only", False)),
+            simulated=bool(body.get("simulated", False)),
+            set_public_url=bool(body.get("set_public_url", False)),
             run_label_prefix=str(body.get("run_label_prefix", "")),
             description=str(body.get("description", "")),
             settings={k: str(v) for k, v in (body.get("settings") or {}).items()},
@@ -128,6 +137,13 @@ SHOWN = [
     ("hard per life", "PROBATE_HARD_PER_LIFE", "2"),
     ("links per mail", "PROBATE_LINKS_PER_MAIL", "1"),
     ("lifespan s", "PROBATE_LIFESPAN_SECONDS", "600"),
+    ("mode", "PROBATE_MODE", "continuous"),
+    ("starts paused", "PROBATE_START_PAUSED", "0"),
+    ("distill", "PROBATE_DISTILL", "1"),
+    ("hard offset", "PROBATE_HARD_OFFSET", "0"),
+    ("v1 last gen", "PROBATE_V1_LAST_GEN", "0"),
+    ("mail daily limit", "PROBATE_MAIL_DAILY_LIMIT", "100"),
+    ("mail reserve", "PROBATE_MAIL_RESERVE", "6"),
 ]
 
 

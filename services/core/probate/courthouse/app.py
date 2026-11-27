@@ -40,6 +40,11 @@ store = Store(settings.db_path)
 if settings.fake:
     # Stand-in models and a fake mailbox: never let the site present this as a live run.
     store.set_setting("mode", "simulation")
+if settings.code_commit:
+    store.set_setting("code_commit", settings.code_commit)
+if settings.start_paused and not store.get_setting("start_paused_applied"):
+    store.set_setting("paused", "1")
+    store.set_setting("start_paused_applied", "1")
 if not store.get_setting("scoring_rules"):
     # First start of this database: label it. A restored database keeps the label it was saved with.
     store.set_setting("scoring_rules", settings.scoring_rules)
@@ -602,6 +607,7 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
         "branch": store.get_setting("branch", "") or None,
         "scoring_rules": store.get_setting("scoring_rules", settings.scoring_rules),
         "environment": settings.env_name,
+        "code_commit": store.get_setting("code_commit", "") or None,
         "mail": {
             "limit": quota.limit or None,
             "used_today": quota.used(),

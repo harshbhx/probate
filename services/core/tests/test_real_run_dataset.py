@@ -230,6 +230,30 @@ def test_scoring_rules_boundary_and_settings():
     )
 
 
+def test_branch_commit_is_carried_into_series_info(tmp_path: Path):
+    f = tmp_path / "branches.txt"
+    sha = "0123456789abcdef0123456789abcdef01234567"
+    f.write_text(
+        "\n".join(
+            [
+                "base,19,,2026-11-28,,env=old-format",  # no commit: ignored
+                f"base,19,,2026-11-28,{sha},env=production-v2",
+                "control,27,30,2026-11-29,abc1234+dirty,env=x",
+                "old,1,2,2026-11-29,env=five-columns",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    info = export.load_branch_commits(f)
+    assert info == {
+        "v2-base": {"code_commit": sha},
+        "v2-control": {"code_commit": "abc1234+dirty"},
+    }
+    assert export.load_branch_commits(tmp_path / "missing.txt") == {}
+    m = export.write_dataset({}, tmp_path / "out", {}, "now", info)
+    assert m["series_info"]["v2-base"]["code_commit"] == sha
+
+
 def test_branches_file_names_the_series(tmp_path: Path):
     f = tmp_path / "branches.txt"
     lines = [

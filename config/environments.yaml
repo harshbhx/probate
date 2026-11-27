@@ -13,9 +13,13 @@
 #              anthropic:claude-haiku-5-5 (Ollama is not used).
 # overridable: variables a caller may change for one deploy by exporting them in the shell
 #              (for example PROBATE_SUITE_TIER=base to go back to the base suite).
-# PROBATE_DISTILL (default 1; 0 for a control branch), PROBATE_HARD_OFFSET (default 0; the
-#       branch's first generation minus 1) and PROBATE_V1_LAST_GEN (default 0; 18 on production)
-#       are on main. Add them to the settings and pins below for the branch that uses them.
+# PROBATE_DISTILL (default 1; 0 turns instinct learning off, for a control branch),
+#       PROBATE_HARD_OFFSET (default 0; set per branch to its first generation minus 1) and
+#       PROBATE_V1_LAST_GEN (default 0; 18 on production-v2 and judges-demo) are shown by
+#       `deploy.py --check`. production-v2 lets a deploy set the first two from the shell:
+#       PROBATE_DISTILL=0 PROBATE_HARD_OFFSET=26 make deploy ENV=production-v2
+# simulated: true = no Sprite; the environment runs on this machine with stand-in models.
+# set_public_url: deploy also writes PROBATE_PUBLIC_URL (the Sprite's URL) into the Sprite's .env.
 environments:
   v1-archive:
     description: Read-only record of the 26 Nov 2026 real run. The Sprite was deleted.
@@ -83,6 +87,7 @@ environments:
       PROBATE_JEV: llm
       PROBATE_BRAIN: "anthropic:claude-haiku-5-5"
       PROBATE_BRAIN_FALLBACKS: "cloudflare:@cf/openai/gpt-oss-120b"
+      PROBATE_V1_LAST_GEN: "18"
     settings_pin:
       brain: "anthropic:claude-haiku-5-5"
       brain_fallbacks: "cloudflare:@cf/openai/gpt-oss-120b"
@@ -92,4 +97,83 @@ environments:
       suite_per_life: 4
       lifespan_seconds: 300
       links_per_mail: 0
-    overridable: [PROBATE_SUITE_TIER, PROBATE_BUDGET_USD, PROBATE_LIFESPAN_SECONDS]
+      v1_last_gen: 18
+    overridable:
+      - PROBATE_SUITE_TIER
+      - PROBATE_BUDGET_USD
+      - PROBATE_LIFESPAN_SECONDS
+      - PROBATE_DISTILL
+      - PROBATE_HARD_OFFSET
+
+  judges-demo:
+    description: >-
+      The final Courthouse for judges. Same Sprite as production-v2 and replaces it at the end:
+      deploy it from the FINAL saved database (--restore-db). On demand: it sleeps between
+      visitors and a judge starts a life with the judge key. Starts paused; resume when ready.
+    sprite: probate-courthouse
+    read_only: false
+    scoring_rules: v2
+    run_label_prefix: demo
+    set_public_url: true
+    # Mail guard: AgentMail allows 100 sends a UTC day. Lives stop when fewer than a life's sends
+    # plus the reserve (30) are left, so lives use at most 70. Judge mail is capped at 20 a day
+    # and 10 an hour. That is at most 90 of 100, leaving 10 for owner digests (at most 3 a day).
+    settings:
+      PROBATE_MODE: on_demand
+      PROBATE_START_PAUSED: "1"
+      PROBATE_SUITE_TIER: hard
+      PROBATE_HARD_PER_LIFE: "2"
+      PROBATE_DEMO_SUITE_PER_LIFE: "4"
+      PROBATE_DEMO_LIFESPAN_SECONDS: "120"
+      PROBATE_DEMO_MAX_PER_DAY: "10"
+      PROBATE_DEMO_DAILY_BUDGET_USD: "1"
+      PROBATE_JUDGE_DAILY_BUDGET_USD: "2"
+      PROBATE_JUDGE_LIVES_PER_HOUR: "3"
+      PROBATE_JUDGE_MAIL_PER_DAY: "20"
+      PROBATE_JUDGE_MAIL_PER_HOUR: "10"
+      PROBATE_BUDGET_USD: "10"
+      PROBATE_MAIL_DAILY_LIMIT: "100"
+      PROBATE_MAIL_RESERVE: "30"
+      PROBATE_LINKS_PER_MAIL: "0"
+      PROBATE_CONTEST_EMAILS: "0"
+      PROBATE_JEV: llm
+      PROBATE_BRAIN: "anthropic:claude-haiku-5-5"
+      PROBATE_BRAIN_FALLBACKS: "cloudflare:@cf/openai/gpt-oss-120b"
+      PROBATE_V1_LAST_GEN: "18"
+    settings_pin:
+      brain: "anthropic:claude-haiku-5-5"
+      brain_fallbacks: "cloudflare:@cf/openai/gpt-oss-120b"
+      judge: llm
+      tier: hard
+      hard_per_life: 2
+      suite_per_life: 4
+      lifespan_seconds: 120
+      links_per_mail: 0
+      v1_last_gen: 18
+      mode: on_demand
+
+  local-sim:
+    description: Fully simulated on this machine (make sim). No Sprite, no real mail or models.
+    sprite: null
+    read_only: false
+    simulated: true
+    scoring_rules: v2
+    run_label_prefix: sim
+    settings:
+      PROBATE_FAKE: "1"
+      PROBATE_BRAIN: simulated
+      PROBATE_BRAIN_FALLBACKS: simulated
+      PROBATE_JEV: simulated
+      PROBATE_SUITE_TIER: base
+      PROBATE_SUITE_PER_LIFE: "8"
+      PROBATE_LIFESPAN_SECONDS: "600"
+      PROBATE_LINKS_PER_MAIL: "0"
+    settings_pin:
+      brain: simulated
+      brain_fallbacks: simulated
+      judge: simulated
+      tier: base
+      suite_per_life: 8
+      lifespan_seconds: 600
+      links_per_mail: 0
+      simulated: true

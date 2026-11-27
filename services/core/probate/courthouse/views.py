@@ -68,6 +68,7 @@ def summary(store: Store) -> dict:
         "scoring_rules": store.get_setting("scoring_rules", settings.scoring_rules),
         "environment": settings.env_name,
         "branch": store.get_setting("branch", "") or None,
+        "code_commit": store.get_setting("code_commit", "") or None,
         "paused": store.get_setting("paused", "0") == "1",
         # "budget", or "mail" while waiting for AgentMail's daily limit to reset (stored with the day)
         "resting": (store.get_setting("resting", "") or "").split(":")[0] or None,
