@@ -35,11 +35,13 @@ def test_falls_back_in_order():
         if "/ollama/" in req.url.path:
             return httpx.Response(429, json={"error": "quota"})
         if "/groq/" in req.url.path:
-            return httpx.Response(200, json={"choices": [{"message": {"content": "from groq"}}]})
+            return httpx.Response(
+                200, json={"choices": [{"message": {"content": '{"from": "groq"}'}}]}
+            )
         raise AssertionError("anthropic should not be called")
 
     llm = _llm(handler)
-    assert llm.complete("mail", "sys", "hi", json_mode=True) == "from groq"
+    assert llm.complete("mail", "sys", "hi", json_mode=True) == '{"from": "groq"}'
     assert llm.last_provider == "groq"
     assert seen[0].endswith("/api/chat") and seen[1].endswith("/openai/v1/chat/completions")
 
@@ -69,10 +71,12 @@ def test_cloudflare_brain_calls_workers_ai_chat_completions():
     def handler(req):
         seen["url"] = str(req.url)
         seen["body"] = req.read().decode()
-        return httpx.Response(200, json={"choices": [{"message": {"content": "from workers ai"}}]})
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": '{"from": "workers ai"}'}}]}
+        )
 
     llm = _cf_llm(handler)
-    assert llm.complete("mail", "sys", "hi", json_mode=True) == "from workers ai"
+    assert llm.complete("mail", "sys", "hi", json_mode=True) == '{"from": "workers ai"}'
     assert llm.last_provider == "cloudflare"
     assert seen["url"] == (
         "https://gw.example/cloudflare/c4/client/v4/accounts/acct123/ai/v1/chat/completions"

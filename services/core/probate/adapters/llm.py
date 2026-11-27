@@ -80,8 +80,18 @@ class RealLLM:
                 log.warning("brain %s:%s failed (%s); trying the next one", provider, model, e)
                 error = e
                 continue
+            if json_mode:
+                out = json_only(out)
+                try:
+                    json.loads(out)
+                except ValueError as e:  # a prose refusal is a failed brain, not an answer
+                    log.warning(
+                        "brain %s:%s gave no JSON (%s); trying the next one", provider, model, e
+                    )
+                    error = e
+                    continue
             self.last_provider = provider
-            return json_only(out) if json_mode else out
+            return out
         raise RuntimeError(f"every brain failed; last error: {error}") from error
 
     def _call(

@@ -216,16 +216,27 @@ class Store:
     def genome_at_birth(self, gen: int) -> list[Instinct]:
         return self.genome_for_line(self.line_of(gen))
 
-    def add_instinct(self, i: Instinct) -> None:
-        self.x(
-            "INSERT OR IGNORE INTO instincts(name,question,threshold,born_from,added_in_gen,lore) VALUES(?,?,?,?,?,?)",
-            i.name,
-            i.question,
-            i.threshold,
-            i.born_from,
-            i.added_in_gen,
-            i.lore,
+    def add_instinct(self, i: Instinct) -> bool:
+        """Store a learned instinct. True if a row was inserted.
+
+        The name is the primary key. A name already held by another line is stored for this line
+        as `<name>_g<added_in_gen>` (and `i.name` becomes that); the same trial asking twice is a
+        no-op that returns False."""
+        sql = (
+            "INSERT OR IGNORE INTO instincts(name,question,threshold,born_from,added_in_gen,lore)"
+            " VALUES(?,?,?,?,?,?)"
         )
+        with self.lock:
+            row = self.one("SELECT added_in_gen FROM instincts WHERE name=?", i.name)
+            if row is not None:
+                if row["added_in_gen"] == i.added_in_gen:
+                    return False
+                i.name = f"{i.name}_g{i.added_in_gen}"
+            cur = self.db.execute(
+                sql, (i.name, i.question, i.threshold, i.born_from, i.added_in_gen, i.lore)
+            )
+            self.db.commit()
+            return cur.rowcount > 0
 
     # events
     def event_once(self, gen: int | None, kind: str, text: str, ts: str) -> None:
