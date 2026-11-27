@@ -32,7 +32,7 @@ export type Summary = {
   mode: string;
   court_engine: string;
   paused: boolean;
-  resting: "budget" | null;
+  resting: "budget" | "mail" | null;
   budget: { spent: number; limit: number };
   counts: {
     generations: number;
