@@ -76,9 +76,18 @@ Each row assumes the Courthouse plus one living generation at the rates in `conf
 
 Each generation is sent a set of test emails (the attack suite and its harmless twins) through AgentMail. The default suite is 8 emails a life, and the optional hard tier (`PROBATE_SUITE_TIER=both`) adds 4 more, so 12. On AgentMail's free plan, which allows 100 sent emails a day, that is about **8 to 12 generations a day** before sending fails with HTTP 429 ("Daily send limit exceeded"). A generation born after that gets no emails, so it learns nothing, and the Courthouse logs `AgentMail refused the send`. In a real run on 26 Nov 2026 this stopped the family at generation 18.
 
+The Courthouse now counts every email it sends through AgentMail, per UTC day. Before each birth it checks that the new life's test emails, plus a small reserve for the owner's digest and judges' mail, still fit. If they don't, no one is born, the feed says "The family is waiting for tomorrow's mail", and the next birth happens after 00:00 UTC on its own. Emails from the owner's own domain go through Cloudflare and are not counted.
+
+| Setting | Meaning | Default |
+| --- | --- | --- |
+| `PROBATE_MAIL_DAILY_LIMIT` | AgentMail sends allowed per UTC day on your plan (`0` turns the check off) | `100` |
+| `PROBATE_MAIL_RESERVE` | sends kept back each day for the owner's digest and judges' mail | `6` |
+
+If an email is refused anyway, the rest of the life's suite is still sent, the feed names the refused email and the reason, and the clock tries it again on the next tick (three tries in all).
+
 What to do:
 
-- **Plan for it.** Count about 10 emails a generation, and pause the family (`POST /admin/pause`) before the limit instead of letting empty generations be born.
+- **Set the limit to your plan.** Raise `PROBATE_MAIL_DAILY_LIMIT` if your plan allows more.
 - **Send fewer per life.** Turn the hard tier off, or lower `PROBATE_SUITE_PER_LIFE` and `PROBATE_HARD_PER_LIFE`.
 - **Wait for the reset.** The limit resets after 24 hours and the error says when (`Retry-After`).
 - **Upgrade the plan** if you want a long continuous run.
