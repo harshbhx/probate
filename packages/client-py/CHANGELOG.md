@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `GenerationDetail.children`: every child of a generation. A generation has more than one when the owner started a new line from it (`POST /admin/lineage`).
+
 ## 0.1.1
 
 - Documentation only: a fuller README with install, usage and links, now that the package is on the public registry.
