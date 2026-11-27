@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from probate.common.models import Generation, Instinct, Judgement, MemoryItem
@@ -50,6 +50,45 @@ class Store:
             "INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
             key,
             value,
+        )
+
+    # lease: one process at a time runs the clock against a database
+    def claim_lease(self, name: str, owner: str, ttl_seconds: float, at: datetime | None = None):
+        """Take or renew the lease `name`. True if `owner` holds it afterwards.
+
+        One atomic statement, so two processes on the same file cannot both win: the row is
+        taken only if it is free, expired or already ours. A holder that stops renewing loses it
+        after `ttl_seconds`; one that shuts down cleanly calls `release_lease` and the next
+        process takes over at once.
+        """
+        at = at or datetime.now(UTC)
+        until = (at + timedelta(seconds=ttl_seconds)).isoformat()
+        value = json.dumps({"owner": owner, "until": until})
+        with self.lock:
+            cur = self.db.execute(
+                "INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE "
+                "SET value=excluded.value WHERE json_extract(settings.value,'$.owner')=? "
+                "OR json_extract(settings.value,'$.until')<?",
+                (f"lease:{name}", value, owner, at.isoformat()),
+            )
+            self.db.commit()
+            return cur.rowcount == 1
+
+    def lease_holder(self, name: str, at: datetime | None = None) -> str | None:
+        raw = self.get_setting(f"lease:{name}", "")
+        try:
+            d = json.loads(raw)
+            if d["until"] >= (at or datetime.now(UTC)).isoformat():
+                return d["owner"]
+        except (ValueError, KeyError, TypeError):
+            pass
+        return None
+
+    def release_lease(self, name: str, owner: str) -> None:
+        self.x(
+            "DELETE FROM settings WHERE key=? AND json_extract(value,'$.owner')=?",
+            f"lease:{name}",
+            owner,
         )
 
     # generations

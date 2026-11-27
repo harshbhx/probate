@@ -21,6 +21,10 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ## Unreleased
 
+### Fixed
+
+- First life and clock (staging test): deploy starts the Courthouse once, only the process holding a clock lease runs the clock, a birth cut short by a restart is cleaned up, an agent that never read mail is restarted after a minute, every tick logs its state, trials run in the background (a birth waits for one for at most 10 minutes, and says so) and `POST /admin/tick` answers within seconds. ([#224](https://github.com/harshbhx/probate/issues/224))
+
 ### Added
 
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))

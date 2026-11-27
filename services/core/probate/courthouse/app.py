@@ -54,11 +54,19 @@ w = world(settings)
 host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
 hooks = Webhooks(store, settings)
 family = Family(settings, store, w, host, hooks)
-scheduler = Scheduler(family)
+# With the clock on, a trial runs on its own thread: it must not hold births, ticks or
+# /admin/tick for minutes (the staging test lost three minutes to it).
+scheduler = Scheduler(family, background_trials=os.environ.get("PROBATE_RUN_CLOCK") == "1")
 demo = OnDemand(family, scheduler)
 judge = Judge(settings, store)
 mailroom = mailroom_mod.Mailroom(settings, store, w)
 log = logging.getLogger("probate.courthouse")
+if not logging.getLogger().handlers:
+    # uvicorn only configures its own loggers; without this the clock's per-tick state, restarts
+    # and warnings never reach /.sprite/logs/services/courthouse.log.
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
 
 
 @asynccontextmanager
@@ -620,6 +628,7 @@ def admin_status(deep: bool = False, x_probate_admin: str | None = Header(None))
         "suite_tier": settings.suite_tier,
         "lifespan_seconds": settings.lifespan_seconds,
         "recent_errors": [dict(r) for r in errors],
+        "clock": scheduler.describe(),
     }
     if deep and living:
         try:
@@ -738,12 +747,18 @@ def admin_contested(
 
 
 @app.post("/admin/tick", tags=["Admin"], summary="Run one scheduler step")
-def admin_tick(x_probate_admin: str | None = Header(None)) -> dict:
-    """Advance the clock once: birth, death or trial, whichever is due."""
+def admin_tick(x_probate_admin: str | None = Header(None)):
+    """Advance the clock once: birth, death or trial, whichever is due.
+
+    Answers within about 8 seconds. A step that takes longer (a birth installs a Sprite) carries
+    on in the background and this returns 202 with state `running`; read `/admin/status` for
+    the clock's state. Trials run in the background and never hold this request.
+    """
     _admin(x_probate_admin)
     if settings.on_demand:
         raise HTTPException(409, "On-demand mode has no free-running clock")
-    return {"state": scheduler.step()}
+    out = scheduler.tick_now()
+    return JSONResponse(out, status_code=202 if out["state"] == "running" else 200)
 
 
 class WebhookIn(BaseModel):

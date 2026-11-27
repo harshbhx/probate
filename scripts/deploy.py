@@ -13,8 +13,10 @@ first (`make deploy` does both). Steps:
 1. Create the Courthouse Sprite if it isn't there (409 means it already exists).
 2. Upload the code bundle (Python service, config, built website) and install it.
 3. Upload .env with live settings (PROBATE_FAKE=0, clock on, data outside the code dir).
-4. Register the `courthouse` service on port 8080 and (re)start it.
-5. Make the URL public and wait for /healthz.
+4. Make the URL public (its address goes into .env before the first start).
+5. Register the `courthouse` service on port 8080: started once on a first deploy, restarted
+   once on a later one. Never started twice: two processes on one database tick the same clock.
+6. Wait for /healthz.
 
 Re-running it is safe: the database lives in /home/sprite/data, which deploys never touch.
 """
@@ -94,6 +96,26 @@ def restore_database(api, name: str, path: Path) -> str:
         return "a database is already on the Courthouse; left it alone"
     api.write_file(name, "data/probate.db", data)
     return f"restored {len(data) // 1024} KiB from {path.name}"
+
+
+def start_courthouse(api, name: str, fresh: bool, wait=time.sleep, tries: int = 6) -> str:
+    """Register the courthouse service and bring it up exactly once.
+
+    A first deploy (`fresh`: the service has never run, so there is no database yet) registers the
+    service and starts it only if registering did not already start it. The staging test saw
+    `start` then `restart` five seconds apart: the first process was killed in the middle of birth
+    and generation 1 had no agent. A later deploy restarts once to load the new code.
+    """
+    api.put_service(name, "courthouse", "bash", ["-lc", SERVE], http_port=8080)
+    if not fresh:
+        api.service_action(name, "courthouse", "restart")
+        return "restarted once"
+    for _ in range(tries):  # registering may start it; give that a moment before starting it again
+        if api.service_status(name, "courthouse") in ("running", "starting"):
+            return "started by registering it; not started again"
+        wait(2)
+    api.service_action(name, "courthouse", "start")
+    return "started once"
 
 
 def git_commit() -> str:
@@ -178,6 +200,9 @@ def main() -> None:
     step(f"sprite {args.name}")
     api.create(args.name)
 
+    # A database on the Sprite means the service has run before; none means a first deploy.
+    fresh = api.read_file(args.name, "data/probate.db") is None
+
     step("uploading code")
     api.write_file(args.name, "bundle.tgz", bundle)
     res = api.exec(
@@ -188,27 +213,19 @@ def main() -> None:
     if args.restore_db:
         step("database: " + restore_database(api, args.name, args.restore_db))
 
-    step("writing .env")
-    api.write_file(args.name, "app/services/core/.env", render_env(env, extra), mode="0600")
-
-    step("starting the courthouse service")
-    api.put_service(args.name, "courthouse", "bash", ["-lc", SERVE], http_port=8080)
-    try:
-        api.service_action(args.name, "courthouse", "restart")
-    except httpx.HTTPStatusError:
-        # First deploy: nothing to restart yet.
-        api.service_action(args.name, "courthouse", "start")
-
+    # The URL is known before the service starts, so .env is complete and one start is enough.
     info = api.make_public(args.name)
     url = (info.get("url") or (api.get(args.name) or {}).get("url") or "").rstrip("/")
     if not url:
         sys.exit("Deployed, but the API returned no URL. Check `sprite info` for it.")
-
     if target and target.set_public_url and env.get("PROBATE_PUBLIC_URL") != url:
-        step("setting PROBATE_PUBLIC_URL and restarting")
         extra["PROBATE_PUBLIC_URL"] = url
-        api.write_file(args.name, "app/services/core/.env", render_env(env, extra), mode="0600")
-        api.service_action(args.name, "courthouse", "restart")
+
+    step("writing .env")
+    api.write_file(args.name, "app/services/core/.env", render_env(env, extra), mode="0600")
+
+    step("starting the courthouse service")
+    step(start_courthouse(api, args.name, fresh))
 
     step(f"waiting for {url}/healthz")
     for _ in range(30):

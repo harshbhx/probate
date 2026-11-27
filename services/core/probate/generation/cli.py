@@ -31,12 +31,14 @@ def main(argv: list[str]) -> int:
             try:
                 beat = json.loads(hb.read_text(encoding="utf-8"))
                 age = (datetime.now(UTC) - datetime.fromisoformat(beat["at"])).total_seconds()
-                out.update(loop_age=round(age), loop_errors=beat.get("errors", 0))
+                out.update(loop_age=round(age), loop_errors=beat.get("errors", 0), loop_beat=True)
             except (ValueError, KeyError):
                 pass
         else:  # the loop never went round once: count from the birth
             born = (WORKDIR / "inheritance.json").stat().st_mtime
-            out.update(loop_age=round(datetime.now(UTC).timestamp() - born), loop_errors=0)
+            out.update(
+                loop_age=round(datetime.now(UTC).timestamp() - born), loop_errors=0, loop_beat=False
+            )
     elif cmd == "baseline":
         out = agent.body.baseline()
         (WORKDIR / "baseline.json").write_text(json.dumps(out), encoding="utf-8")
