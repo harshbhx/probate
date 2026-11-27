@@ -24,6 +24,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 ### Fixed
 
 - First life and clock (staging test): deploy starts the Courthouse once, only the process holding a clock lease runs the clock, a birth cut short by a restart is cleaned up, an agent that never read mail is restarted after a minute, every tick logs its state, trials run in the background (a birth waits for one for at most 10 minutes, and says so) and `POST /admin/tick` answers within seconds. ([#224](https://github.com/harshbhx/probate/issues/224))
+- GitHub Codespaces: setup failed because a symlink `services/core/.venv` to a path on another machine had been committed (so `python -m venv` could not create the venv; it is removed), and because the lockfile now pulls packages that need Node 22.22 or newer (`undici` 8, `chokidar` 6). The container now matches CI (Python 3.13, Node 22), checks the Node version up front, installs with `npm ci`, logs every step in `.devcontainer/post-create.sh`, asks for 8 GB, and labels ports 5173 and 3001. New guide: [Run it in a Codespace](docs/CODESPACES.md).
 
 ### Added
 
