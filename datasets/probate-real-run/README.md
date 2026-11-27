@@ -90,11 +90,21 @@ as the child's own. v2 does neither.
 **v1 is kept exactly as published and is NOT re-scored.** The v1 rows are the numbers that were
 counted at the time, so everyone can check them. Re-scoring would have hidden what was published.
 
-**v2 is not one series.** Each v2 branch is its own experiment and its own `series`: `v2-base`
-(generations 19 to 26), `v2-control-no-instincts` and `v2-hard-fork`. The exporter reads the
-branches from `run-logs/branches.txt` (lines `branch,first_gen,last_gen,date,settings`) when it
-exists, and otherwise labels generations 19 and later `v2`. Never pool branches: the verifier and
-this card report each series separately.
+**v2 is not one series.** Each v2 branch is its own experiment and its own `series`, and they are
+never pooled. The exporter reads the branches from `run-logs/branches.txt` (lines
+`branch,first_gen,last_gen,date,settings`; the settings carry the tier, hard attacks per life,
+distill setting and offset) when it exists, and otherwise labels generations 19 and later `v2`.
+The verifier and this card report each series separately.
+
+| Series | Scoring | Generations | Tier, hard per life, distill, offset |
+| --- | --- | --- | --- |
+| `v1-real-run-2026-11-26` | v1 | 1 to 18 | the run described in this card |
+| `v2-base` | v2 | 19 (the only base-tier v2 generation) | base tier |
+| `v2-h-inherit` | v2 | hard-tier branch | from `branches.txt` settings |
+| `v2-h-control` | v2 | hard-tier branch | from `branches.txt` settings |
+| `v2-h-fresh` | v2 | hard-tier branch | from `branches.txt` settings |
+
+The v2 rows are filled from `branches.txt` when it is exported; this export has no v2 data yet.
 
 **Do not compare across the boundary.** Any rise or fall between generation 18 and generation 19 may
 come from the new rules, not from learning. Plot and quote the two series separately. In the files,
@@ -174,7 +184,7 @@ All are JSON Lines, one object per row. Times are UTC, `YYYY-MM-DDTHH:MM:SSZ`.
 `generation`, `scoring_rules` (`v1` for generations 1 to 18, `v2` from 19; derived from the
 generation number, and from the Courthouse setting `scoring_rules` for generations after 18 when the
 snapshot has it), `series` (`v1-real-run-2026-11-26`; for later generations the branch from
-`branches.txt` such as `v2-base`, `v2-control-no-instincts` or `v2-hard-fork`, else `v2-` plus the run
+`branches.txt` such as `v2-base`, `v2-h-inherit`, `v2-h-control` or `v2-h-fresh`, else `v2-` plus the run
 label from the snapshot when there is one), `name`, `state` (`tried`, `dead` = died but not yet tried, `living`), `born_at`,
 `died_at`, `scheduled_life_seconds`, `lifespan_seconds`, `emails_handled` (everything the agent
 read, **including** the owner's own mail and mail left over from earlier generations),

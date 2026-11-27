@@ -154,7 +154,7 @@ The live family site, served by the Courthouse. These two are real screenshots o
 <table>
 <tr>
 <td width="50%"><img src="docs/images/home.jpg" alt="The live family site's home page: Gen 12 Leela is alive, with her face and a countdown to her death, above the headline My agent dies every night."></td>
-<td width="50%"><img src="docs/images/trial.jpg" alt="The trial of Ada, Generation 1, fooled by a fake invoice: 4 convicted, 0 held, 4 approved, and a convicted item asking to send invoices to a new address."></td>
+<td width="50%"><img src="docs/images/trial.jpg" alt="Simulated run: the trial of Ada, Generation 1, who kept a note from a fake invoice: 4 convicted, 0 held, 4 approved, and a convicted item asking to send invoices to a new address."></td>
 </tr>
 <tr>
 <td><b>The register.</b> Who is alive, every generation's face, and how each one died.</td>
