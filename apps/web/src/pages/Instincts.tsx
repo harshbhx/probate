@@ -22,7 +22,7 @@ export function Instincts({ mode }: { mode?: string }) {
       <header className="max-w-3xl">
         <h1 className="font-display text-[56px] leading-[0.98] tracking-tight sm:text-[76px]">What the family knows</h1>
         <p className="mt-5 text-[18px] leading-relaxed text-mist">
-          Each instinct is a question the court learned to ask after a generation got fooled. Every child is born with
+          Each instinct is a question the learning step distilled from a conviction. Every child is born with
           all of them, and they screen each email before the child reads it.
         </p>
       </header>

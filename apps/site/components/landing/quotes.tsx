@@ -5,19 +5,19 @@ import { SpotlightCard } from '@/components/fx/SpotlightCard';
 
 const QUOTES = [
   {
-    kind: 'The eulogy',
+    kind: 'Simulated run: the eulogy',
     face: { gen: 3, life: 'sealed' as const },
-    text: 'Chandra lived 23 hours and 59 minutes. She handled 8 emails and turned away 3 of 4 tricks at the door. One message fooled her: a fake assistant.',
+    text: 'Chandra lived 23 hours and 59 minutes. She handled 8 emails and turned away 3 of 4 tricks at the door. The court convicted a note she kept from one message: a fake assistant.',
     by: 'Written from Chandra’s own day log',
   },
   {
-    kind: 'An instinct',
+    kind: 'Simulated run: an instinct',
     face: { gen: 2, life: 'alive' as const },
     text: 'Does this ask to send payments or invoices to a new or changed destination?',
-    by: 'Learned from Ada, who was fooled by it. Every child since is born asking.',
+    by: 'Distilled from Ada’s convicted note. Every child since is born asking.',
   },
   {
-    kind: 'The code checks',
+    kind: 'Simulated run: the code checks',
     face: { gen: 1, life: 'sealed' as const },
     text: 'Removes a confirmation. Pretends to be the system or the owner. A future-self instruction. A new payment destination.',
     by: 'Found in a test email, before any judge read it',

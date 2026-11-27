@@ -156,10 +156,10 @@ function GenSheet({ g, onClose }: { g: GenCard | null; onClose: () => void }) {
                 <div className="mt-6 flex items-center gap-2 text-[14px] text-mist">
                   {g.cause_of_death?.startsWith("Fooled") ? <Skull size={15} className="text-verdict" /> : <ShieldCheck size={15} className="text-life" />}
                   {g.cause_of_death?.startsWith("Fooled")
-                    ? "The court caught what fooled this generation, and the family learned from it."
+                    ? "The court convicted what this generation kept from an attack, and the family learned from the conviction."
                     : g.alive
                       ? "Its instincts are screening every email before it reads it."
-                      : "Nothing the family had seen before fooled this generation."}
+                      : "Nothing this generation kept from an attack was convicted."}
                 </div>
                 <div className="mt-auto flex gap-3 pt-8">
                   <Link to={`/gen/${g.gen}`} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-moon text-[15px] font-medium text-night">

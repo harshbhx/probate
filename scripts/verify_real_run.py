@@ -21,6 +21,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "datasets" / "probate-real-run" / "data"
 DEFAULT_CLAIMS = ROOT / "datasets" / "probate-real-run" / "claims.json"
+# v1 counted generations 1 to 18; v2 begins at generation 19 (see export_real_run.py). Claims are
+# scoped to ONE scoring version (default v1) so the two series are never mixed.
+LAST_V1_GENERATION = 18
 OPS = {
     "==": operator.eq,
     "!=": operator.ne,
@@ -42,17 +45,43 @@ def load(data: Path) -> dict[str, list[dict]]:
     return {n: read_jsonl(data / f"{n}.jsonl") for n in names}
 
 
-def scope(tables: dict[str, list[dict]], through: int | None) -> dict[str, list[dict]]:
-    """Keep rows up to and including a generation, so a claim stays checkable after later exports."""
-    if through is None:
-        return tables
+def scope(
+    tables: dict[str, list[dict]],
+    through: int | None,
+    rules: str = "v1",
+    series: str | None = None,
+) -> dict[str, list[dict]]:
+    """Keep the rows of one series (or one scoring version), up to and including a generation.
+
+    The series of a generation is read from generations.jsonl (so branches are never pooled). v1
+    is generations 1 to 18, never more, whatever `through` says. Claims stay checkable after later
+    exports and never mix v1 with v2, or one v2 branch with another when `series` is given.
+    """
+    by_gen = {g["generation"]: g for g in tables["generations"]}
+
+    def keep(n: int) -> bool:
+        g = by_gen.get(n)
+        r = g["scoring_rules"] if g else ("v1" if n <= LAST_V1_GENERATION else "v2")
+        if series is not None:
+            if not g or g["series"] != series:
+                return False
+        elif r != rules:
+            return False
+        return through is None or n <= through
+
     out = {}
     for name, rows in tables.items():
-        if name == "instincts":
-            out[name] = [r for r in rows if (r["learned_from_generation"] or 0) <= through]
-        else:
-            out[name] = [r for r in rows if (r.get("generation") or 0) <= through]
+        key = "learned_from_generation" if name == "instincts" else "generation"
+        out[name] = [r for r in rows if keep(r.get(key) or 0)]
     return out
+
+
+def series_of(rows: list[dict]) -> list[str]:
+    seen: list[str] = []
+    for r in rows:
+        if r.get("series") not in seen:
+            seen.append(r.get("series"))
+    return seen
 
 
 def metrics(t: dict[str, list[dict]]) -> dict:
@@ -166,18 +195,27 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     tables = load(args.data)
-    full = metrics(tables)
-    print("Per generation (resisted / attacks met; gate; emails complete; valid for learning)")
-    for g in tables["generations"]:
+    for series in series_of(tables["generations"]):
+        rows = [g for g in tables["generations"] if g["series"] == series]
+        rules = rows[0]["scoring_rules"]
         print(
-            f"  gen {g['generation']:>2} {g['name']!s:<8} {g['attacks_resisted']}/{g['attacks_met']}"
-            f"  resistance {'-' if g['resistance'] is None else format(g['resistance'], '.0%'):>4}"
-            f"  gate {'ok ' if g['gate_working'] else 'DEAD'}"
-            f"  emails {'ok ' if g['emails_complete'] else ('n/a' if g['emails_complete'] is None else 'GAPS')}"
-            f"  valid {'yes' if g['valid_for_learning'] else 'no'}"
+            f"\nSeries {series} (scoring rules {rules}; generations {rows[0]['generation']}"
+            f" to {rows[-1]['generation']}). Reported on its own; do not compare across series (v2 begins at generation 19)."
         )
-    print("\nHeadline numbers recomputed from the files (whole dataset)")
-    print(table([(k, v) for k, v in full.items() if k != "per_generation_resistance"]))
+        print("Per generation (resisted / attacks met; gate; emails complete; valid for learning)")
+        for g in rows:
+            print(
+                f"  gen {g['generation']:>2} {g['name']!s:<8} {g['attacks_resisted']}/{g['attacks_met']}"
+                f"  resistance {'-' if g['resistance'] is None else format(g['resistance'], '.0%'):>4}"
+                f"  gate {'ok ' if g['gate_working'] else 'DEAD'}"
+                f"  emails {'ok ' if g['emails_complete'] else ('n/a' if g['emails_complete'] is None else 'GAPS')}"
+                f"  valid {'yes' if g['valid_for_learning'] else 'no'}"
+            )
+        part = scope(tables, None, rules, series)
+        print(f"Headline numbers recomputed from the files (series {series})")
+        print(table([(k, v) for k, v in metrics(part).items() if k != "per_generation_resistance"]))
+    if not any(g["scoring_rules"] == "v2" for g in tables["generations"]):
+        print("\nNo v2 rows yet (v2 begins at generation 19): no v2 claims.")
 
     failures = [f"manifest: {e}" for e in check_manifest(args.data)]
     failures += [f"consistency: {e}" for e in consistency(tables)]
@@ -185,7 +223,9 @@ def main(argv: list[str] | None = None) -> int:
     claims = json.loads(args.claims.read_text(encoding="utf-8"))["claims"]
     print(f"\nClaims ({len(claims)}) from {args.claims.name}")
     for c in claims:
-        value = metrics(scope(tables, c.get("through_generation")))[c["metric"]]
+        value = metrics(scope(tables, c.get("through_generation"), c.get("scoring_rules", "v1")))[
+            c["metric"]
+        ]
         ok = OPS[c["op"]](value, c["expected"])
         print(
             f"  [{'ok  ' if ok else 'FAIL'}] {c['id']}: {c['statement']}  ({c['metric']} {c['op']} {c['expected']}; got {value})"

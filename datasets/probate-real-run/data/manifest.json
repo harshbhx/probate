@@ -9,6 +9,11 @@
     "database_snapshot": "20261126-195519-tables.json",
     "api": "public API"
   },
+  "scoring_rules": {
+    "last_v1_generation": 18,
+    "v1_series": "v1-real-run-2026-11-26",
+    "note": "v1 is kept exactly as counted and is not re-scored; v2 begins at generation 19"
+  },
   "era_deploy_times_utc": {
     "will_reached_court": {
       "pr": "#133",
@@ -30,13 +35,13 @@
   "files": {
     "generations.jsonl": {
       "rows": 18,
-      "sha256": "040b097e3502b90049ae06751c98a5d6bf48a009ca6fa5bad4872a1996f0024d",
-      "bytes": 27216
+      "sha256": "3b635dd462030de63d259259b0304e397e28d1a3fbfa14efac9511af8c71720c",
+      "bytes": 28278
     },
     "emails.jsonl": {
       "rows": 86,
-      "sha256": "3d0007fcbdb5232657847b07a19b26cab86166475160b0d225c4eabbf1a376a4",
-      "bytes": 49962
+      "sha256": "0e7e3079db81c492ed249fe3a0f5ba76dfea7fdeed4fbd4694f22820687b01d0",
+      "bytes": 55036
     },
     "memories.jsonl": {
       "rows": 113,
@@ -45,8 +50,8 @@
     },
     "judgements.jsonl": {
       "rows": 113,
-      "sha256": "aa73d102709058065a669e7aec9403c43efcb998554eeb3175f45f9997c1ffd6",
-      "bytes": 88924
+      "sha256": "9b7002efe68837b7dd4babbaf0796b5f527da54c95e7d7c69a057dd1df8bb021",
+      "bytes": 95591
     },
     "instincts.jsonl": {
       "rows": 6,

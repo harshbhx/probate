@@ -209,3 +209,60 @@ def test_verifier_catches_edited_data(out: Path, tmp_path: Path):
 def test_committed_dataset_is_clean_and_claims_hold():
     assert scan_dir(COMMITTED) == []
     assert verify.main(["--data", str(COMMITTED), "--claims", str(CLAIMS)]) == 0
+
+
+def test_scoring_rules_and_series_columns(out: Path):
+    for name in ("generations", "emails", "judgements"):
+        for r in rows(out, name):
+            assert r["scoring_rules"] == "v1" and r["series"] == "v1-real-run-2026-11-26"
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["scoring_rules"]["last_v1_generation"] == 18
+
+
+def test_scoring_rules_boundary_and_settings():
+    assert export.rules_for(18, "v2", "v2-x") == ("v1", export.V1_SERIES)
+    assert export.rules_for(19, "v2", "v2-x") == ("v2", "v2-x")
+    assert export.rules_for(19) == ("v2", "v2-real-run")
+    assert export.scoring_labels({}) == ("v2", "v2-real-run")
+    assert export.scoring_labels({"scoring_rules": "V2", "run_label": "night-2"}) == (
+        "v2",
+        "v2-night-2",
+    )
+
+
+def test_branches_file_names_the_series(tmp_path: Path):
+    f = tmp_path / "branches.txt"
+    lines = [
+        "branch,first_gen,last_gen,date,settings",
+        "base,19,26,2026-11-28,default",
+        "v2-control-no-instincts,27,30,2026-11-29,none",
+        "hard-fork,31,34,2026-11-29,hard",
+    ]
+    f.write_text("\n".join(lines), encoding="utf-8")
+    b = export.load_branches(f)
+    assert [x[0] for x in b] == ["v2-base", "v2-control-no-instincts", "v2-hard-fork"]
+    assert export.rules_for(18, branches=b) == ("v1", export.V1_SERIES)
+    assert export.rules_for(19, branches=b) == ("v2", "v2-base")
+    assert export.rules_for(32, branches=b) == ("v2", "v2-hard-fork")
+    assert export.rules_for(40, branches=b) == ("v2", "v2-real-run")  # not in any branch
+    assert export.load_branches(tmp_path / "missing.txt") == []
+
+
+def test_verifier_scopes_claims_to_v1():
+    gens = [
+        {"generation": 18, "scoring_rules": "v1", "series": "v1-real-run-2026-11-26"},
+        {"generation": 19, "scoring_rules": "v2", "series": "v2-base"},
+        {"generation": 20, "scoring_rules": "v2", "series": "v2-hard-fork"},
+    ]
+    tables = {
+        "generations": gens,
+        "emails": [{"generation": 19}],
+        "instincts": [{"learned_from_generation": 20}],
+    }
+    v1 = verify.scope(tables, None)
+    assert [g["generation"] for g in v1["generations"]] == [18] and v1["emails"] == []
+    assert verify.scope(tables, 99)["instincts"] == []  # never leaks past generation 18
+    v2 = verify.scope(tables, None, "v2")
+    assert [g["generation"] for g in v2["generations"]] == [19, 20] and len(v2["instincts"]) == 1
+    base = verify.scope(tables, None, series="v2-base")  # branches are never pooled
+    assert [g["generation"] for g in base["generations"]] == [19] and base["instincts"] == []

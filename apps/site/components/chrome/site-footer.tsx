@@ -53,7 +53,7 @@ export function SiteFooter() {
           </p>
           <p className="flex items-center gap-2">
             <FamilyFace gen={1} life="sealed" size={20} />
-            In memory of every generation that was fooled, so its children would not be.
+            In memory of every generation, so its children would be born knowing more.
           </p>
         </div>
       </div>
