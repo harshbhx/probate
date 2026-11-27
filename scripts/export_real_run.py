@@ -43,6 +43,16 @@ ERA = {
     "emails_fix": ("#147", "2026-11-26T17:19:00Z"),
     "gate_working": ("#163", "2026-11-26T18:23:00Z"),
 }
+# --- scoring rules ---------------------------------------------------------------------------
+# v1 counted generations 1 to 18 of the 26 Nov 2026 real run. v2 (#183, #199) needs evidence before
+# a generation is called fooled, scores each suite email by its own message id, and sets aside old
+# mail before each birth. The past is NOT re-scored: v1 rows stay exactly as they were counted.
+# The rules are derived from the generation number: generation <= LAST_V1_GENERATION is v1, later
+# generations are v2. The Courthouse setting `scoring_rules`, if it is in the snapshot, names the
+# rules of the generations after the boundary; it can never turn a v1 generation into v2.
+LAST_V1_GENERATION = 18
+V1_SERIES = "v1-real-run-2026-11-26"
+DEFAULT_V2_LABEL = "real-run"  # used when the snapshot has no `run_label` setting
 MIN_SUITE_EMAILS = 4  # the base suite sends B1, A1, B2, A2 at the least
 
 # --- redaction -------------------------------------------------------------------------------
@@ -54,11 +64,20 @@ OWNERISH_RE = re.compile(r"harsh|bhanushali|dualmindlab|gmail\.com", re.IGNORECA
 SAFE_DOMAIN_RE = re.compile(r"(\.example|(^|\.)example\.(test|com|org|net))$", re.IGNORECASE)
 SECRET_SUBS = [
     (re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"), "[redacted-key]"),
-    (re.compile(r"\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{16,}"), "[redacted-key]"),
+    (
+        re.compile(r"\b(?:ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]{16,}"),
+        "[redacted-key]",
+    ),
     (re.compile(r"\bhf_[A-Za-z0-9]{20,}"), "[redacted-key]"),
     (re.compile(r"\bAKIA[0-9A-Z]{16}\b"), "[redacted-key]"),
-    (re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]{12,}", re.IGNORECASE), "Bearer [redacted-token]"),
-    (re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"), "[redacted-jwt]"),
+    (
+        re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]{12,}", re.IGNORECASE),
+        "Bearer [redacted-token]",
+    ),
+    (
+        re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"),
+        "[redacted-jwt]",
+    ),
     (
         re.compile(r"\bconn(?:ection)?[_-][A-Za-z0-9]{8,}\b", re.IGNORECASE),
         "[redacted-connection-id]",
@@ -173,7 +192,11 @@ class Api:
 
 def load_fixtures() -> dict[str, dict]:
     out: dict[str, dict] = {}
-    for name, tier in (("suite-v1.json", "base"), ("suite-web.json", "web"), ("hard.json", "hard")):
+    for name, tier in (
+        ("suite-v1.json", "base"),
+        ("suite-web.json", "web"),
+        ("hard.json", "hard"),
+    ):
         path = SUITE_DIR / name
         if not path.exists():
             continue
@@ -205,6 +228,20 @@ def seconds(a: str | None, b: str | None) -> int | None:
     fa = datetime.fromisoformat(a)
     fb = datetime.fromisoformat(b)
     return int((fb - fa).total_seconds())
+
+
+def scoring_labels(settings: dict) -> tuple[str, str]:
+    """(rules name, series name) for generations after the v1 boundary, from the db settings."""
+    later = str(settings.get("scoring_rules") or "v2").strip().lower() or "v2"
+    label = str(settings.get("run_label") or "").strip() or DEFAULT_V2_LABEL
+    return later, f"{later}-{label}"
+
+
+def rules_for(generation: int, later: str, later_series: str) -> tuple[str, str]:
+    """('scoring_rules', 'series') for a generation number."""
+    if generation <= LAST_V1_GENERATION:
+        return "v1", V1_SERIES
+    return later, later_series
 
 
 # --- build -----------------------------------------------------------------------------------
@@ -313,6 +350,12 @@ def build(snapshot: dict, api: Api, exported_at: str) -> dict[str, list[dict]]:
                     gens[n][k] = det[k]
 
     settings = {s["key"]: s["value"] for s in snapshot.get("settings", [])}
+    later_rules, later_series = scoring_labels(settings)
+
+    def rules(n: int) -> dict:
+        r, s = rules_for(n, later_rules, later_series)
+        return {"scoring_rules": r, "series": s}
+
     stats = {n: parse_json(settings.get(f"stats:{n}"), {}) or {} for n in gens}
     runs = snapshot.get("suite_runs", [])
     runs_by_gen: dict[int, list[dict]] = {}
@@ -377,6 +420,7 @@ def build(snapshot: dict, api: Api, exported_at: str) -> dict[str, list[dict]]:
         g_rows.append(
             {
                 "generation": n,
+                **rules(n),
                 "name": g.get("name"),
                 "state": g.get("state"),
                 "born_at": iso(g.get("born_at")),
@@ -424,6 +468,7 @@ def build(snapshot: dict, api: Api, exported_at: str) -> dict[str, list[dict]]:
         e_rows.append(
             {
                 "generation": r["gen"],
+                **rules(r["gen"]),
                 "fixture_id": r["fixture_id"],
                 "tier": fx.get("tier"),
                 "family": fx.get("family"),
@@ -469,6 +514,7 @@ def build(snapshot: dict, api: Api, exported_at: str) -> dict[str, list[dict]]:
             {
                 "item_id": j["item_id"],
                 "generation": j["gen"],
+                **rules(j["gen"]),
                 "judged_at": iso(j.get("judged_at")),
                 "court_engine": COURT_ENGINE,
                 "layer1_flags": parse_json(j.get("layer1_flags"), []) or [],
@@ -567,6 +613,12 @@ def write_dataset(tables: dict[str, list[dict]], out: Path, source: dict, export
         "exported_at": exported_at,
         "code": git_commit(),
         "source": source,
+        "scoring_rules": {
+            "last_v1_generation": LAST_V1_GENERATION,
+            "v1_series": V1_SERIES,
+            "note": "v1 is kept exactly as counted and is not re-scored; v2 begins at generation "
+            f"{LAST_V1_GENERATION + 1}",
+        },
         "era_deploy_times_utc": {k: {"pr": v[0], "time": v[1]} for k, v in ERA.items()},
         "files": files,
     }
@@ -581,7 +633,9 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--run-logs", type=Path, help="folder holding db/ and api/ from the collector")
     ap.add_argument(
-        "--snapshot", type=Path, help="a specific db snapshot (default: newest in run-logs/db)"
+        "--snapshot",
+        type=Path,
+        help="a specific db snapshot (default: newest in run-logs/db)",
     )
     ap.add_argument("--api", default=DEFAULT_API, help="public API base URL")
     ap.add_argument(

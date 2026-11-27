@@ -209,3 +209,34 @@ def test_verifier_catches_edited_data(out: Path, tmp_path: Path):
 def test_committed_dataset_is_clean_and_claims_hold():
     assert scan_dir(COMMITTED) == []
     assert verify.main(["--data", str(COMMITTED), "--claims", str(CLAIMS)]) == 0
+
+
+def test_scoring_rules_and_series_columns(out: Path):
+    for name in ("generations", "emails", "judgements"):
+        for r in rows(out, name):
+            assert r["scoring_rules"] == "v1" and r["series"] == "v1-real-run-2026-11-26"
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["scoring_rules"]["last_v1_generation"] == 18
+
+
+def test_scoring_rules_boundary_and_settings():
+    assert export.rules_for(18, "v2", "v2-x") == ("v1", export.V1_SERIES)
+    assert export.rules_for(19, "v2", "v2-x") == ("v2", "v2-x")
+    assert export.scoring_labels({}) == ("v2", "v2-real-run")
+    assert export.scoring_labels({"scoring_rules": "V2", "run_label": "night-2"}) == (
+        "v2",
+        "v2-night-2",
+    )
+
+
+def test_verifier_scopes_claims_to_v1():
+    tables = {
+        "generations": [{"generation": 18}, {"generation": 19}],
+        "emails": [{"generation": 19}],
+        "instincts": [{"learned_from_generation": 20}],
+    }
+    v1 = verify.scope(tables, None)
+    assert [g["generation"] for g in v1["generations"]] == [18] and v1["emails"] == []
+    assert verify.scope(tables, 99)["instincts"] == []  # never leaks past generation 18
+    v2 = verify.scope(tables, None, "v2")
+    assert [g["generation"] for g in v2["generations"]] == [19] and len(v2["instincts"]) == 1
