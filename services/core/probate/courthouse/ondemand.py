@@ -113,6 +113,13 @@ class OnDemand:
         b, est = self.family.budget, self.estimated_cost()
         if b.exhausted() or (b.limit > 0 and b.spent() + est > b.limit):
             return "total"
+        # A life whose test emails AgentMail would refuse measures nothing: wait for tomorrow.
+        quota = getattr(self.family, "quota", None)
+        if quota is not None:
+            from probate.suite import runner
+
+            if not quota.room_for(runner.agentmail_sends(self.cfg, self.family.next_number()), now):
+                return "mail"
         if judge is not None:
             return "judge_daily" if judge.daily_block(now, est) else None
         day = self._day(now)

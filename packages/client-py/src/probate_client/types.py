@@ -65,7 +65,7 @@ class Summary(TypedDict):
     mode: str
     court_engine: str
     paused: bool
-    resting: Literal["budget"] | None
+    resting: Literal["budget", "mail"] | None
     budget: Budget
     counts: Counts
     curve: Curve

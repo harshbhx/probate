@@ -83,6 +83,8 @@ The Courthouse now counts every email it sends through AgentMail, per UTC day. B
 | `PROBATE_MAIL_DAILY_LIMIT` | AgentMail sends allowed per UTC day on your plan (`0` turns the check off) | `100` |
 | `PROBATE_MAIL_RESERVE` | sends kept back each day for the owner's digest and judges' mail | `6` |
 
+In on-demand mode the same check applies to **Run a life**: when today's sends can't cover one more life, the button is closed with "Today's test emails are used up" until midnight UTC.
+
 If an email is refused anyway, the rest of the life's suite is still sent, the feed names the refused email and the reason, and the clock tries it again on the next tick (three tries in all).
 
 What to do:

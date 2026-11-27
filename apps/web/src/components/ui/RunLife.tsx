@@ -207,10 +207,11 @@ function Body({
     case "budget_exhausted":
       return (
         <>
-          <Title>The demo budget is used up</Title>
+          <Title>{live.budget?.reason === "mail" ? "Today's test emails are used up" : "The demo budget is used up"}</Title>
           <Honest>
-            To keep this free to show, a hard spending cap limits how many lives can run. It has been reached for now, so
-            the Courthouse stays asleep. Everything recorded so far is still here to read.
+            {live.budget?.reason === "mail"
+              ? "Each life is sent its test emails, and the mail service allows only so many a day. A life now would get none, so the next one can start after midnight UTC. Everything recorded so far is still here to read."
+              : "To keep this free to show, a hard spending cap limits how many lives can run. It has been reached for now, so the Courthouse stays asleep. Everything recorded so far is still here to read."}
           </Honest>
           <Done live={live} compact />
           <Link to="/trial" className={cx(btn, "mt-6 w-full ring-1 ring-line-strong hover:bg-white/5 sm:w-auto")}>

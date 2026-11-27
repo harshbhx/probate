@@ -66,7 +66,8 @@ def summary(store: Store) -> dict:
         "mode": store.get_setting("mode", "live"),
         "court_engine": settings.court_engine,
         "paused": store.get_setting("paused", "0") == "1",
-        "resting": store.get_setting("resting", "") or None,
+        # "budget", or "mail" while waiting for AgentMail's daily limit to reset (stored with the day)
+        "resting": (store.get_setting("resting", "") or "").split(":")[0] or None,
         "budget": {
             "spent": round(float(store.get_setting("budget_spent_usd", "0") or 0), 2),
             "limit": settings.budget_usd,

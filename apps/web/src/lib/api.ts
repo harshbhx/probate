@@ -29,7 +29,7 @@ export type GenCard = {
 export type Summary = {
   mode: string;
   paused: boolean;
-  resting: "budget" | null;
+  resting: "budget" | "mail" | null;
   budget: { spent: number; limit: number };
   counts: { generations: number; dead: number; instincts: number; attacks_met: number; attacks_resisted: number };
   curve: { first: number | null; last: number | null; first_name: string | null; last_name: string | null; last_gen: number | null };
@@ -148,6 +148,8 @@ export type Live = {
   retry_after?: number | null;
   last_life?: { gen: number; name: string; state: string; ended_at: string | null; trial_gen: number | null } | null;
   message?: string | null;
+  /** Why no life may start: "total", "daily", "daily_count", "judge_daily" or "mail". */
+  budget?: { spent: number; limit: number; reason: string | null };
   error?: string;
   started?: boolean;
   /** The site asks for the judge key before anyone may play (the real run). */

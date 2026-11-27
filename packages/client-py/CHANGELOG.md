@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `GenerationDetail.children`: every child of a generation. A generation has more than one when the owner started a new line from it (`POST /admin/lineage`).
+- `Summary.resting` can also be `"mail"`: the family waits for AgentMail's daily limit to reset.
 
 ## 0.1.1
 
