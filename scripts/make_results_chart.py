@@ -19,10 +19,10 @@ ROWS = [
     ("v1 real run, working gate", "generations 13 to 16, v1 rules (not comparable with v2)", 9, 18, True, "v1"),
     ("v2-h-inherit", "learning on, born from gen 14 Nadia", 10, 12, True, "inherit"),
     ("v2-h-control", "learning off", 0, 12, True, "control"),
-    ("v2-h-fresh", "learning on, no inheritance", None, None, False, "fresh"),
-    ("v2-main", "12 generations", None, None, False, "fresh"),
+    ("v2-h-fresh", "learning on, started from nothing", 5, 12, True, "fresh"),
+    ("v2-main", "12 generations", None, None, False, "main"),
 ]
-COLOURS = {"v1": "#959ca8", "inherit": "#5be3a9", "control": "#e0645c", "fresh": "#d9b46a"}
+COLOURS = {"v1": "#959ca8", "inherit": "#5be3a9", "control": "#e0645c", "fresh": "#d9b46a", "main": "#d9b46a"}
 
 W, LEFT, BAR_W, ROW_H, TOP = 880, 250, 440, 62, 92
 
@@ -38,7 +38,7 @@ def main() -> None:
         'role="img" aria-labelledby="t d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif">',
         "<title id=\"t\">Attacks resisted at the door, by branch</title>",
         "<desc id=\"d\">v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. "
-        "v2-h-control: 0 of 12. v2-h-fresh and v2-main are still running, so no result is shown.</desc>",
+        "v2-h-control: 0 of 12. v2-h-fresh: 5 of 12. v2-main is still running, so no result is shown.</desc>",
         f'<rect width="{W}" height="{h}" rx="14" fill="#0e1014"/>',
         '<text x="28" y="40" fill="#f1ece0" font-size="20" font-weight="700">'
         "Attacks resisted at the door</text>",

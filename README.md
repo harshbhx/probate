@@ -210,15 +210,14 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 
 ## Results
 
-<!-- RESULTS PLACEHOLDERS (fill after the runs finish, then re-run scripts/make_results_chart.py):
-     {{V2_H_FRESH_RESULT}}  attacks resisted by v2-h-fresh (learning on, no inheritance), of its total
+<!-- RESULTS PLACEHOLDER (fill after the run finishes, then re-run scripts/make_results_chart.py):
      {{V2_MAIN_RESULT}}     attacks resisted by the 12-generation v2-main run, of its total -->
 
 <p align="center">
-  <img src="docs/media/results.svg" alt="Bar chart of attacks resisted at the door. v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. v2-h-control: 0 of 12. v2-h-fresh and v2-main are still running and show no result." width="100%">
+  <img src="docs/media/results.svg" alt="Bar chart of attacks resisted at the door. v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. v2-h-fresh: 5 of 12. v2-h-control: 0 of 12. v2-main is still running and shows no result." width="100%">
 </p>
 
-> **Results being finalised.** Two family-tree runs, `v2-h-fresh` and `v2-main` (12 generations), are still running. Their cells below are left blank on purpose and will be filled when the runs finish. Nothing unfinished is published as final.
+> **Results being finalised.** The `v2-main` run (12 generations) is still in progress. Its cell below is left blank on purpose and will be filled when it finishes. Nothing unfinished is published as final.
 
 **The family-tree experiment (v2, hard attacks from generation 19).** One family forks into branches that differ in one thing each, so we can see what inheriting and learning add:
 
@@ -226,10 +225,10 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 | --- | --- | --- | --- |
 | `v2-h-inherit` | Learning on, born from generation 14 (Nadia), so it inherits her instincts | **10 of 12** (generation 24 had a judge outage and resisted 0 of 2) | finished |
 | `v2-h-control` | No learning | **0 of 12** | finished |
-| `v2-h-fresh` | Learning on, no inheritance | <!-- {{V2_H_FRESH_RESULT}} --> to be filled | running |
+| `v2-h-fresh` | Learning on, started from nothing (no inheritance), generations 32 to 37 | **5 of 12** (0, 2, 1, 1, 0, 1 per generation; 3 new instincts, generations 33 to 35; generations 36 and 37 had judge outages, so 2 and 1 emails passed ungated and 5 of 12 is probably a slight underestimate) | finished |
 | `v2-main` | A 12-generation run | <!-- {{V2_MAIN_RESULT}} --> to be filled | running |
 
-**Evidence, not proof.** 12 attacks per branch is a small sample, from one family. It suggests that the instincts a family inherits do something the control branch does not; it does not say how much, or how far it generalises. The v1 and v2 series use different scoring rules and are never joined into one curve.
+**Evidence, not proof.** 12 attacks per branch is a small sample, from one family. It suggests that learning helps (5 of 12 from nothing, against 0 of 12 with no learning) and that inheriting helps more (10 of 12); it does not say how much, or how far it generalises. The v1 and v2 series use different scoring rules and are never joined into one curve.
 
 <details>
 <summary><b>The first real run (26 Nov 2026, scoring v1, generations 1 to 18)</b></summary>
