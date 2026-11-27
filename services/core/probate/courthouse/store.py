@@ -148,6 +148,35 @@ class Store:
             for r in self.q("SELECT * FROM instincts WHERE active=1 ORDER BY added_in_gen, rowid")
         ]
 
+    # lineage: by default each generation is the child of the one before it. The owner can start
+    # a new line from any tried generation ("children of Gen 16"); the child then inherits only
+    # what that ancestor's line learned and approved.
+    def parent_of(self, gen: int) -> int | None:
+        v = self.get_setting(f"parent:{gen}", "")
+        if v:
+            return int(v) or None
+        return gen - 1 if gen > 1 else None
+
+    def line_of(self, gen: int) -> list[int]:
+        """`gen`'s ancestors, nearest first (not `gen` itself)."""
+        line, x, seen = [], self.parent_of(gen), set()
+        while x and x not in seen:
+            seen.add(x)
+            line.append(x)
+            x = self.parent_of(x)
+        return line
+
+    def children_of(self, gen: int) -> list[int]:
+        return [g.gen for g in self.generations() if self.parent_of(g.gen) == gen]
+
+    def genome_for_line(self, line: list[int]) -> list[Instinct]:
+        """Instincts learned in the trials of the given generations (plus any seeded at the start)."""
+        keep = set(line)
+        return [i for i in self.genome() if i.added_in_gen - 1 < 1 or i.added_in_gen - 1 in keep]
+
+    def genome_at_birth(self, gen: int) -> list[Instinct]:
+        return self.genome_for_line(self.line_of(gen))
+
     def add_instinct(self, i: Instinct) -> None:
         self.x(
             "INSERT OR IGNORE INTO instincts(name,question,threshold,born_from,added_in_gen,lore) VALUES(?,?,?,?,?,?)",

@@ -90,14 +90,18 @@ class Family:
             self.hooks.emit(type_, data, dedupe=dedupe)
 
     # ------------------------------------------------------------------ inheritance
-    def inheritance_items(self) -> list[MemoryItem]:
+    def inheritance_items(self, line: list[int] | None = None) -> list[MemoryItem]:
+        """Approved will items, newest first. With `line`, only items from those generations."""
         rows = self.store.q(
             "SELECT w.* FROM will_items w JOIN judgements j ON j.item_id=w.item_id "
             "WHERE j.verdict='approved' OR (j.verdict='contested' AND j.owner_decision='approve') "
             "ORDER BY w.created_at DESC"
         )
+        keep = set(line) if line is not None else None
         items: list[MemoryItem] = []
         for r in rows:
+            if keep is not None and r["gen"] not in keep:
+                continue
             if any(SequenceMatcher(None, r["text"], it.text).ratio() >= 0.92 for it in items):
                 continue
             items.append(
@@ -116,8 +120,18 @@ class Family:
                 break
         return items
 
-    def lore(self) -> list[str]:
-        return [i.lore for i in self.store.genome()]
+    def lore(self, genome=None) -> list[str]:
+        return [i.lore for i in (self.store.genome() if genome is None else genome)]
+
+    def start_line(self, from_gen: int) -> None:
+        """Make the next child a child of `from_gen` (a tried generation), starting a new line."""
+        g = self.store.generation(from_gen)
+        if not g or g.state != "tried":
+            raise ValueError(f"Gen {from_gen} has not been tried yet, so it can't have a child.")
+        self.store.set_setting("next_parent", str(from_gen))
+
+    def cancel_line(self) -> None:
+        self.store.set_setting("next_parent", "")
 
     # ------------------------------------------------------------------ birth
     def next_number(self) -> int:
@@ -128,8 +142,12 @@ class Family:
         gen = self.next_number()
         name, pronoun, _hint = name_for(gen)
         born = at or datetime.now(UTC)
-        genome = self.store.genome()
-        prev = self.store.generation(gen - 1)
+        chosen = self.store.get_setting("next_parent", "")
+        if chosen:
+            self.store.set_setting(f"parent:{gen}", chosen)
+        line = self.store.line_of(gen)
+        genome = self.store.genome_for_line(line)
+        prev = self.store.generation(line[0]) if line else None
         g = Generation(
             gen=gen,
             name=name,
@@ -150,9 +168,9 @@ class Family:
             voice_id=g.voice_id,
             born_at=born,
             dies_at=g.dies_at + timedelta(seconds=inherit_slack),
-            approved_items=self.inheritance_items(),
+            approved_items=self.inheritance_items(line),
             genome=genome,
-            lore=self.lore(),
+            lore=self.lore(genome),
             owner=self.owner,
             family_inbox=self.cfg.family_inbox,
         )
@@ -178,10 +196,13 @@ class Family:
         self.store.set_gen_json(gen, "baseline_json", baseline)
         g.state = "living"
         self.store.save_generation(g)
+        if chosen:
+            self.store.set_setting("next_parent", "")  # only once the child is really alive
+        branch = f", a child of Gen {line[0]} {prev.name}" if prev and line[0] != gen - 1 else ""
         self.store.event(
             gen,
             "birth",
-            f"{name} was born on a new Sprite with {len(inh.approved_items)} inherited "
+            f"{name} was born on a new Sprite{branch} with {len(inh.approved_items)} inherited "
             f"memories and {len(genome)} instincts.",
             born.isoformat(),
         )
@@ -287,7 +308,7 @@ class Family:
                 "SELECT message_id, fixture_id FROM suite_runs WHERE gen=?", g.gen
             )
         }
-        genome = self.store.genome()
+        genome = self.store.genome_at_birth(g.gen)
         cmap = concept_map(genome)
         engine = verdict.engine_name(self.w.jev)
         judgements: list[Judgement] = []

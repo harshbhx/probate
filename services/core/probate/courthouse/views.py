@@ -178,8 +178,10 @@ def generation(store: Store, gen: int) -> dict | None:
         for r in store.q("SELECT ts, kind, text FROM events WHERE gen=? ORDER BY ts, id", gen)
     ]
     row = store.one("SELECT eulogy_path, obituary FROM generations WHERE gen=?", gen)
-    parent = store.generation(gen - 1)
-    child = store.generation(gen + 1)
+    pg = store.parent_of(gen)
+    parent = store.generation(pg) if pg else None
+    kids = store.children_of(gen)
+    child = store.generation(kids[0]) if kids else None
     asks = [
         dict(r)
         for r in store.q(
@@ -194,7 +196,8 @@ def generation(store: Store, gen: int) -> dict | None:
         "events": events,
         "parent": parent and {"gen": parent.gen, "name": parent.name},
         "child": child and {"gen": child.gen, "name": child.name},
-        "instincts_at_birth": [i.model_dump() for i in store.genome() if i.added_in_gen <= gen],
+        "children": [{"gen": k, "name": store.generation(k).name} for k in kids],
+        "instincts_at_birth": [i.model_dump() for i in store.genome_at_birth(gen)],
         "asks": asks,
     }
 

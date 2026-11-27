@@ -97,6 +97,8 @@ export type GenerationDetail = GenCard & {
   events: LifeEvent[];
   parent: { gen: number; name: string } | null;
   child: { gen: number; name: string } | null;
+  /** Every child, when the owner started a new line from this generation. */
+  children?: { gen: number; name: string }[];
   instincts_at_birth: Instinct[];
   asks: { question: string; answer: string; audio_path: string | null; asked_at: string }[];
 };

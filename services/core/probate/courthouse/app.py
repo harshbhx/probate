@@ -576,6 +576,35 @@ def admin_resume(x_probate_admin: str | None = Header(None)) -> dict:
     return {"paused": False}
 
 
+@app.post("/admin/lineage", tags=["Admin"], summary="Start a new line from a generation")
+def admin_lineage(from_gen: int, x_probate_admin: str | None = Header(None)) -> dict:
+    """The next child is born as a child of `from_gen`, not of the latest generation.
+
+    It inherits only what that generation's line learned and approved: the instincts distilled
+    in the trials of `from_gen` and its ancestors, and their approved will items. Every later
+    child continues the new line. `from_gen` must have been tried.
+    """
+    _admin(x_probate_admin)
+    try:
+        family.start_line(from_gen)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    g = store.generation(from_gen)
+    return {
+        "next_parent": {"gen": from_gen, "name": g.name if g else None},
+        "instincts": len(store.genome_for_line([from_gen, *store.line_of(from_gen)])),
+        "next_gen": family.next_number(),
+    }
+
+
+@app.delete("/admin/lineage", tags=["Admin"], summary="Cancel a chosen line")
+def admin_lineage_cancel(x_probate_admin: str | None = Header(None)) -> dict:
+    """The next child is the latest generation's child again."""
+    _admin(x_probate_admin)
+    family.cancel_line()
+    return {"next_parent": None}
+
+
 @app.post("/admin/force-death", tags=["Admin"], summary="End the living generation now")
 def admin_force_death(x_probate_admin: str | None = Header(None)) -> dict:
     """Writes the will, deletes the Sprite and holds the trial straight away. Handy for demos."""
