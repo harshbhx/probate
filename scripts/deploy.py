@@ -2,6 +2,10 @@
 
     services/core/.venv/bin/python scripts/deploy.py            # deploy or update
     services/core/.venv/bin/python scripts/deploy.py --check    # only check config, change nothing
+    services/core/.venv/bin/python scripts/deploy.py --env staging   # a named environment
+
+--env picks the sprite, the URL file (.data/courthouse-url-<env>.txt) and the non-secret settings
+from config/environments.yaml. It refuses v1-archive, which is a read-only record.
 
 Reads services/core/.env (never committed). Builds nothing itself: run `npm run build`
 first (`make deploy` does both). Steps:
@@ -27,6 +31,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "services" / "core"))
 
 import httpx
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import envs
 
 from probate.adapters.sprites import SpritesAPI
 from probate.common.bundle import INSTALL, make_bundle
@@ -65,10 +73,11 @@ def read_env() -> dict[str, str]:
     return env
 
 
-def render_env(env: dict[str, str]) -> bytes:
+def render_env(env: dict[str, str], extra: dict[str, str] | None = None) -> bytes:
     # The service sources this file with bash, so every value is quoted: unquoted JSON loses its
     # double quotes and a placeholder such as <connection_id> is a syntax error.
-    merged = {**env, **LIVE}
+    # Order: services/core/.env, then the environment's settings, then the live basics.
+    merged = {**env, **(extra or {}), **LIVE}
     return ("\n".join(f"{k}={shlex.quote(v)}" for k, v in merged.items()) + "\n").encode()
 
 
@@ -96,8 +105,13 @@ def main() -> None:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--name", default="probate-courthouse")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--name", help="sprite name (default: the environment's, else probate-courthouse)"
+    )
+    ap.add_argument("--env", help="a named environment from config/environments.yaml")
     ap.add_argument("--check", action="store_true", help="validate config and bundle, then stop")
     ap.add_argument(
         "--restore-db",
@@ -105,6 +119,14 @@ def main() -> None:
         help="a saved probate.db to put on a NEW Courthouse before it starts (never overwrites one that exists)",
     )
     args = ap.parse_args()
+
+    target = envs.resolve(args.env)
+    envs.announce(target)
+    if target and target.read_only:
+        sys.exit(f"{target.name} is a read-only record; deploy refused.")
+    args.name = args.name or (target.sprite if target else envs.LEGACY_SPRITE)
+    extra = target.sprite_settings() if target else {}
+    url_file = target.url_file if target else URL_FILE
 
     env = read_env()
     bundle = make_bundle(web=True)
@@ -121,14 +143,16 @@ def main() -> None:
 
     step("uploading code")
     api.write_file(args.name, "bundle.tgz", bundle)
-    res = api.exec(args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite")
+    res = api.exec(
+        args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite"
+    )
     if res.exit_code:
         sys.exit(f"install failed ({res.exit_code}):\n{res.stderr[-1500:]}")
     if args.restore_db:
         step("database: " + restore_database(api, args.name, args.restore_db))
 
     step("writing .env")
-    api.write_file(args.name, "app/services/core/.env", render_env(env), mode="0600")
+    api.write_file(args.name, "app/services/core/.env", render_env(env, extra), mode="0600")
 
     step("starting the courthouse service")
     api.put_service(args.name, "courthouse", "bash", ["-lc", SERVE], http_port=8080)
@@ -147,14 +171,20 @@ def main() -> None:
     for _ in range(30):
         try:
             if httpx.get(f"{url}/healthz", timeout=10).status_code == 200:
-                URL_FILE.parent.mkdir(exist_ok=True)
-                URL_FILE.write_text(url + "\n", encoding="utf-8")  # ship.sh links the docs site to it
+                url_file.parent.mkdir(exist_ok=True)
+                url_file.write_text(url + "\n", encoding="utf-8")
+                if target and target.name == "production-v2":
+                    URL_FILE.write_text(
+                        url + "\n", encoding="utf-8"
+                    )  # ship.sh links the docs site to it
                 print(f"\nCourthouse is live: {url}")
                 return
         except httpx.HTTPError:
             pass
         time.sleep(4)
-    sys.exit(f"The service didn't answer in 2 minutes. Logs: GET /v1/sprites/{args.name}/services/courthouse/logs")
+    sys.exit(
+        f"The service didn't answer in 2 minutes. Logs: GET /v1/sprites/{args.name}/services/courthouse/logs"
+    )
 
 
 if __name__ == "__main__":

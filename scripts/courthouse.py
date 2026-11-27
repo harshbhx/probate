@@ -1,5 +1,6 @@
 """Run the family from your laptop: check it is ready, then pause, resume or start a new line.
 
+    services/core/.venv/bin/python scripts/courthouse.py --env staging status   # a named environment
     services/core/.venv/bin/python scripts/courthouse.py preflight          # read-only checks
     services/core/.venv/bin/python scripts/courthouse.py preflight --fix    # also make the URL public
     services/core/.venv/bin/python scripts/courthouse.py status [--deep]
@@ -9,7 +10,7 @@
     services/core/.venv/bin/python scripts/courthouse.py decide <item_id> approve|refuse
 
 Reads services/core/.env (PROBATE_ADMIN_TOKEN, PROBATE_SPRITES_TOKEN) and the Courthouse URL
-from .data/courthouse-url.txt (written by deploy.py) or PROBATE_PUBLIC_URL. Prints no secrets.
+from .data/courthouse-url.txt (courthouse-url-<env>.txt with --env; written by deploy.py) or PROBATE_PUBLIC_URL. Prints no secrets.
 
 `preflight` exists because of the real run: the Courthouse URL went private (judges were sent
 to a Sprites sign-in page), generations 1 to 12 had a gate that could not reach its judge, and
@@ -27,6 +28,9 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "services" / "core"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import envs
 
 ENV_FILE = ROOT / "services" / "core" / ".env"
 URL_FILE = ROOT / ".data" / "courthouse-url.txt"
@@ -45,9 +49,9 @@ def read_env() -> dict[str, str]:
     return env
 
 
-def courthouse_url(env: dict[str, str]) -> str:
-    if URL_FILE.exists() and URL_FILE.read_text(encoding="utf-8").strip():
-        return URL_FILE.read_text(encoding="utf-8").strip().rstrip("/")
+def courthouse_url(env: dict[str, str], url_file: Path = URL_FILE) -> str:
+    if url_file.exists() and url_file.read_text(encoding="utf-8").strip():
+        return url_file.read_text(encoding="utf-8").strip().rstrip("/")
     return env.get("PROBATE_PUBLIC_URL", "").rstrip("/")
 
 
@@ -73,7 +77,7 @@ def is_private(r: httpx.Response) -> bool:
     return r.status_code in (301, 302, 303, 307, 308) and "sprites.dev/auth" in loc
 
 
-def preflight(env: dict[str, str], url: str, fix: bool, deep: bool) -> int:
+def preflight(env: dict[str, str], url: str, fix: bool, deep: bool, sprite: str = SPRITE) -> int:
     rep = Report()
     print("Configuration")
     if not ENV_FILE.exists():
@@ -83,7 +87,7 @@ def preflight(env: dict[str, str], url: str, fix: bool, deep: bool) -> int:
     if env.get("PROBATE_ADMIN_TOKEN") in ("dev-admin", ""):
         rep.fail("PROBATE_ADMIN_TOKEN is the dev default")
     if not url:
-        rep.fail("no Courthouse URL: run deploy.py, or set PROBATE_PUBLIC_URL")
+        rep.fail("no Courthouse URL: run deploy.py (same --env), or set PROBATE_PUBLIC_URL")
         return finish(rep)
 
     print(f"Courthouse {url}")
@@ -97,7 +101,7 @@ def preflight(env: dict[str, str], url: str, fix: bool, deep: bool) -> int:
         if fix and env.get("PROBATE_SPRITES_TOKEN"):
             from probate.adapters.sprites import SpritesAPI
 
-            SpritesAPI(env["PROBATE_SPRITES_TOKEN"]).make_public(env.get("COURTHOUSE", SPRITE))
+            SpritesAPI(env["PROBATE_SPRITES_TOKEN"]).make_public(env.get("COURTHOUSE", sprite))
             r = http.get(f"{url}/healthz")
             if is_private(r):
                 rep.fail("URL is still private after asking Sprites to make it public")
@@ -211,6 +215,7 @@ def admin(env: dict[str, str], url: str, method: str, path: str, **params) -> in
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--env", help="a named environment from config/environments.yaml")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("preflight")
     p.add_argument("--fix", action="store_true", help="make a private Courthouse URL public")
@@ -227,10 +232,14 @@ def main() -> None:
     dc.add_argument("decision", choices=["approve", "refuse"])
     args = ap.parse_args()
 
+    target = envs.resolve(args.env)
+    envs.announce(target)
     env = read_env()
-    url = courthouse_url(env)
+    url = courthouse_url(env, target.url_file if target else URL_FILE)
     if args.cmd == "preflight":
-        sys.exit(preflight(env, url, args.fix, args.deep))
+        sys.exit(preflight(env, url, args.fix, args.deep, target.sprite if target else SPRITE))
+    if target and target.read_only and args.cmd != "status":
+        sys.exit(f"{target.name} is a read-only record; {args.cmd} refused.")
     if not url:
         sys.exit("No Courthouse URL: run deploy.py, or set PROBATE_PUBLIC_URL.")
     if args.cmd == "status":

@@ -93,6 +93,40 @@ python scripts/deploy.py --restore-db path/to/probate.db
 
 `--restore-db` only writes the database to a **new** Courthouse; it never replaces one that is already there. A restored Courthouse comes up **paused** (the pause is stored in the database), so nothing is born and no mail is sent until you `POST /admin/resume`. Generation numbers continue (the next is the last plus one) and the learned instincts are kept. Box keeps the wills, and the connectors are in your Sprites dashboard, so only the database needs saving. Never copy the Sprite's `.env` into a backup.
 
+## 3b. Run environments: staging, then production
+
+`config/environments.yaml` names the places a run can live. It holds only non-secret settings; tokens and keys stay in `services/core/.env`.
+
+| Environment | Sprite | Scoring rules | What it is |
+|---|---|---|---|
+| `v1-archive` | `probate-courthouse` (deleted) | v1 | Read-only record of the 26 Nov 2026 run, generations 1 to 18 (dataset `harshbhx/probate-real-run`). Deploy and every write command are refused. |
+| `staging` | `probate-staging` | v2 | Throwaway Courthouse for a 2-generation smoke test: 120 s lives, 4 test emails per life, 1 USD budget. It does not need the simulated judge. |
+| `production-v2` | `probate-courthouse` | v2 | The real run from generation 19: base suite, 4 per life, no links, no contest emails, 300 s lives, `PROBATE_JEV=llm`. |
+
+The rules differ in what counts, not in how old results are read. **v1**: the 26 Nov run, scored as it was. **v2**: a generation is only "fooled" with evidence, each suite email is scored by its own message, and old test mail is set aside before each birth. Results are never re-scored; they are called v1 or v2. The Courthouse records its rules in the database on first start (`scoring_rules`) and `/api/summary` returns `scoring_rules` and `environment` (from `PROBATE_ENV_NAME`).
+
+Every command takes the environment and prints it on its first line:
+
+```sh
+make deploy ENV=staging          # same as: python scripts/deploy.py --env staging
+make preflight ENV=staging
+make status ENV=staging
+python scripts/courthouse.py --env staging resume
+```
+
+Each environment keeps its own URL file, `.data/courthouse-url-<env>.txt`, so staging never overwrites production's address. Without `--env` the scripts behave as before (sprite `probate-courthouse`, `.data/courthouse-url.txt`) and say so.
+
+**Smoke test on staging first.**
+
+1. `make deploy ENV=staging`, then `make preflight ENV=staging` until it says Ready.
+2. `python scripts/courthouse.py --env staging resume`, and watch `make status ENV=staging` through 2 generations.
+3. Check both generations were born and died, the mail counts are right, spending stays under 1 USD, and `/api/summary` shows `environment: staging` and `scoring_rules: v2`.
+4. Delete the staging Sprite when done (section 3a); it is meant to be thrown away.
+
+**Promote to `production-v2`.** Nothing is copied from staging: production is a fresh deploy of the same code with the production settings. Once staging passes, `make deploy ENV=production-v2`, `make preflight ENV=production-v2`, then resume. A deploy of production-v2 also refreshes `.data/courthouse-url.txt`, which the docs site links to. To switch the hard tier on for one deploy, export the variable first (only `PROBATE_SUITE_TIER`, `PROBATE_BUDGET_USD` and `PROBATE_LIFESPAN_SECONDS` may be overridden this way): `PROBATE_SUITE_TIER=both make deploy ENV=production-v2`.
+
+**Restore a saved database into any environment.** Save it as in section 3a, then give `--restore-db` to the deploy of a new Sprite: `python scripts/deploy.py --env production-v2 --restore-db path/to/probate.db`. It never overwrites a database that already exists. A restored database keeps the `scoring_rules` it was saved with; a database saved before the label existed (the v1 run) has none, so it takes the label of the environment it is restored into. Do not restore the v1 database into `production-v2`; the archive is a record, not a place to continue.
+
 ## 4. Demo day (Sat Nov 28)
 
 - **Fri night:** lifespan 10 minutes, suite 8 per life, run the family overnight. Target 10+ generations by morning.

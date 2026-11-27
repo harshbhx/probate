@@ -72,6 +72,12 @@
                     "court_engine": {
                       "type": "string"
                     },
+                    "scoring_rules": {
+                      "type": "string"
+                    },
+                    "environment": {
+                      "type": "string"
+                    },
                     "paused": {
                       "type": "boolean"
                     },
@@ -391,6 +397,8 @@
                   "required": [
                     "mode",
                     "court_engine",
+                    "scoring_rules",
+                    "environment",
                     "paused",
                     "resting",
                     "budget",
@@ -404,6 +412,8 @@
                 "example": {
                   "mode": "simulation",
                   "court_engine": "Simulated judge",
+                  "scoring_rules": "v2",
+                  "environment": "local",
                   "paused": false,
                   "resting": null,
                   "budget": {

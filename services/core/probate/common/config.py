@@ -99,6 +99,15 @@ class Settings:
             "PROBATE_PAGES_BASE", "https://probate.dualmindlab.tech/suite"
         ).rstrip("/")
     )
+    # Which scoring rules this run is judged by (v1 = the 26 Nov 2026 run, v2 from generation 19) and
+    # which named environment it is (config/environments.yaml). Labels only: recorded in the
+    # database on first start and shown in /api/summary. Past results are never re-scored.
+    scoring_rules: str = field(
+        default_factory=lambda: _env("PROBATE_SCORING_RULES", "v2").strip() or "v2"
+    )
+    env_name: str = field(
+        default_factory=lambda: _env("PROBATE_ENV_NAME", "local").strip() or "local"
+    )
     budget_usd: float = field(default_factory=lambda: float(_env("PROBATE_BUDGET_USD", "20")))
     # "continuous" (default): the clock free-runs and a new life starts as soon as one ends.
     # "on_demand": nothing runs until a visitor asks for one short demo life (docs/13-RUNBOOK.md).
