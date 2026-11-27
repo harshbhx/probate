@@ -11,7 +11,7 @@ LIVE_URL  ?= $(shell cat .data/courthouse-url.txt 2>/dev/null)
 WEB_ENV   := VITE_DOCS_URL="$(SITE_URL)" VITE_REPO_URL="https://github.com/$(REPO)"
 SITE_ENV  := NEXT_PUBLIC_SITE_URL="$(or $(SITE_URL),https://example.invalid)" NEXT_PUBLIC_LIVE_URL="$(LIVE_URL)" NEXT_PUBLIC_GITHUB_REPO="$(REPO)"
 
-.PHONY: help setup dev api web site api-spec site-data agent-examples site-shots test lint sim build serve deploy deploy-check site-deploy ship clean
+.PHONY: preflight status help setup dev api web site api-spec site-data agent-examples site-shots test lint sim build serve deploy deploy-check site-deploy ship clean
 
 help: ## Show this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
@@ -60,6 +60,12 @@ deploy-check: ## Validate .env and the bundle without touching Sprites
 deploy: ## Deploy or update the Courthouse Sprite
 	$(WEB_ENV) npm run build -w @probate/web
 	$(PY) scripts/deploy.py
+
+preflight: ## Check the Courthouse is public, reachable and ready to run (FIX=1 makes the URL public)
+	$(PY) scripts/courthouse.py preflight --deep $(if $(FIX),--fix,)
+
+status: ## The family's run status: alive, paused, today's mail, budget, recent errors
+	$(PY) scripts/courthouse.py status
 
 api-spec: ## Re-export the API schema the docs reference is built from (apps/site/openapi.json)
 	$(PY) scripts/export_openapi.py

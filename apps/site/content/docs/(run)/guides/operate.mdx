@@ -12,6 +12,8 @@ curl -X POST -H "X-Probate-Admin: $PROBATE_ADMIN_TOKEN" https://<courthouse>/adm
 
 ## Everyday tasks
 
+Before a run, `make preflight` on your laptop checks that the Courthouse URL is public, the admin token matches, the family isn't paused or out of budget, today's AgentMail sends cover the next life, and the living generation's gate can reach its judge. `make preflight FIX=1` makes a private URL public again. `make status` prints the same status as JSON (`GET /admin/status`).
+
 | Task | How |
 | --- | --- |
 | Pause the family | `POST /admin/pause`. The living generation finishes; no one new is born |
