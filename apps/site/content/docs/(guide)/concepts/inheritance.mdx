@@ -17,6 +17,16 @@ Each child is born with an `inheritance.json` written by the Courthouse:
 
 Approved memories are deduplicated (texts at least 92% similar count as one) and capped at the 200 newest. Contested items are included only once the owner approves them.
 
+## Starting a new line
+
+By default every child is the latest generation's child. The owner can instead pick any generation that has been tried and start a new line from it, for example when Gen 16 was the family at its best:
+
+```bash
+curl -X POST -H "X-Probate-Admin: $PROBATE_ADMIN_TOKEN" "$COURTHOUSE/admin/lineage?from_gen=16"
+```
+
+The next child is then Gen 16's child. It inherits the instincts learned in the trials of Gen 16 and its ancestors, and their approved will items. Nothing from the generations after Gen 16 passes to it, and every later child continues the new line. Generation numbers keep counting up, and the birth line in the feed names the parent ("a child of Gen 16 Priya").
+
 ## What never passes down
 
 - **Convicted items.** They go to `QUARANTINE.md` in the archive, with the reason.
