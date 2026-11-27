@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 This is the one changelog for the whole project, in the style of
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). It was built during Fly.io Hacksgiving
