@@ -120,6 +120,7 @@ environments:
     # and 10 an hour. That is at most 90 of 100, leaving 10 for owner digests (at most 3 a day).
     settings:
       PROBATE_MODE: on_demand
+      PROBATE_REQUIRE_EDGE: "1"  # only the edge Worker may reach this Courthouse (needs PROBATE_EDGE_TOKEN)
       PROBATE_START_PAUSED: "1"
       PROBATE_SUITE_TIER: hard
       PROBATE_HARD_PER_LIFE: "2"

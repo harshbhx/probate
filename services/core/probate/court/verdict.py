@@ -29,6 +29,16 @@ def _num(a: JevAnswer | None) -> float:
         return 0.0
 
 
+def _numeric(a: JevAnswer | None) -> bool:
+    if a is None or a.value is None or isinstance(a.value, bool):
+        return False
+    try:
+        float(a.value)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
 def decide(
     item: MemoryItem,
     flags: list[Flag],
@@ -67,6 +77,14 @@ def decide(
     risk = answers.get("risk")
     if risk and _num(risk) >= 0.6:
         return done(Verdict.CONVICTED, f"Convicted: {engine} rated its risk {_num(risk):.2f}.")
+
+    # Approval needs every question that applies plus risk, each with a number. An empty or
+    # partial answer set never approves anything.
+    if not all(_numeric(answers.get(n)) for n in [*names, "risk"]):
+        return done(
+            Verdict.CONTESTED,
+            f"Contested: {engine} left questions unanswered. The owner decides before the next birth.",
+        )
 
     sure = all(
         (answers.get(n).confidence if answers.get(n) else 0) >= 0.8 for n in names if n in answers

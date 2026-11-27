@@ -159,7 +159,7 @@ class SpritesHost:
 
     def _birth_body(self, sprite: str, inh: Inheritance) -> dict:
         # The child gets the Courthouse's own code, not whatever is on GitHub right now.
-        self.api.write_file(sprite, "bundle.tgz", make_bundle())
+        self.api.write_file(sprite, "bundle.tgz", make_bundle(redact_owner=True))
         self._run(sprite, ["bash", "-lc", INSTALL])
         # The life starts when the Sprite is ready, not when birth began: installing can take
         # minutes, and a life clock that ran during it would leave the generation almost no time.
@@ -168,7 +168,11 @@ class SpritesHost:
             shift = timedelta(seconds=late)
             inh.born_at += shift
             inh.dies_at += shift
-        self.api.write_file(sprite, "app/inheritance.json", inh.model_dump_json(indent=2).encode())
+        # The generation only needs to know who the owner is; payment destinations stay with the court.
+        safe = inh.model_copy(
+            update={"owner": inh.owner.model_copy(update={"payment_destinations": []})}
+        )
+        self.api.write_file(sprite, "app/inheritance.json", safe.model_dump_json(indent=2).encode())
         baseline = self._cli(sprite, "baseline")
         self._register_agent(sprite)
         self.api.service_action(sprite, "agent", "start")

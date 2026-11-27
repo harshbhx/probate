@@ -42,6 +42,17 @@ class Question:
         return body
 
 
+def require_complete(out: dict[str, JevAnswer], questions: dict, who: str) -> dict[str, JevAnswer]:
+    """Fail closed: an empty or partial reply (a glitch, a rate-limit shape) is an outage, not
+    an approval. Every requested question must come back with a value."""
+    missing = [k for k in questions if k not in out or out[k].value is None]
+    if missing:
+        raise CourtUnavailable(
+            f"{who} left questions unanswered: {', '.join(sorted(missing))[:200]}"
+        )
+    return out
+
+
 class RealJev:
     def __init__(self, base_url: str | None = None, model: str = "jev-latest", timeout: float = 20):
         self.base_url = (base_url or os.environ.get("TYPESAFE_BASE_URL", "")).rstrip("/")
@@ -75,8 +86,10 @@ class RealJev:
             out: dict[str, JevAnswer] = {}
             for name, a in answers.items():
                 value = a.get("noul", a.get("choice", a.get("score")))
+                if value is None:
+                    raise CourtUnavailable(f"Jev gave no answer for {name!r}")
                 out[name] = JevAnswer(value=value, confidence=float(a.get("confidence", 0.0)))
-            return out
+            return require_complete(out, questions, "Jev")
         raise CourtUnavailable("Jev retries exhausted")
 
 
@@ -151,7 +164,7 @@ class CloudflareJev:
                 else:
                     confidence = 0.0
                 out[name] = JevAnswer(value=value, confidence=confidence)
-            return out
+            return require_complete(out, questions, "Jev via Cloudflare")
         raise CourtUnavailable("Jev via Cloudflare retries exhausted")
 
 

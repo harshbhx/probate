@@ -60,6 +60,25 @@ SERVE = (
 )
 
 
+ADMIN_TOKEN_MIN = 24  # keep in step with probate.common.config.ADMIN_TOKEN_MIN
+EDGE_TOKEN_MIN = 16
+
+
+def weak_admin_token(token: str) -> bool:
+    return token in ("", "dev-admin") or len(token) < ADMIN_TOKEN_MIN
+
+
+def edge_problem(env: dict[str, str], extra: dict[str, str]) -> str | None:
+    """A Courthouse that requires the edge needs a real edge token, or nobody can reach it."""
+    merged = {**env, **extra}
+    if (
+        merged.get("PROBATE_REQUIRE_EDGE") == "1"
+        and len(merged.get("PROBATE_EDGE_TOKEN", "")) < EDGE_TOKEN_MIN
+    ):
+        return f"PROBATE_REQUIRE_EDGE=1 needs PROBATE_EDGE_TOKEN of at least {EDGE_TOKEN_MIN} characters"
+    return None
+
+
 def read_env() -> dict[str, str]:
     if not ENV_FILE.exists():
         sys.exit(f"Missing {ENV_FILE.relative_to(ROOT)}. Copy .env.example and fill it in.")
@@ -72,6 +91,11 @@ def read_env() -> dict[str, str]:
     missing = [k for k in REQUIRED if not env.get(k)]
     if missing:
         sys.exit(f"Fill these in {ENV_FILE.relative_to(ROOT)}: {', '.join(missing)}")
+    if weak_admin_token(env["PROBATE_ADMIN_TOKEN"]):  # never print the value
+        sys.exit(
+            f"PROBATE_ADMIN_TOKEN in {ENV_FILE.relative_to(ROOT)} is a dev default or shorter than "
+            f"{ADMIN_TOKEN_MIN} characters. Set a long random one."
+        )
     return env
 
 
@@ -180,6 +204,8 @@ def main() -> None:
 
     env = read_env()
     extra, notes = envs.guard(extra, env, args.allow_brain_change)
+    if problem := edge_problem(env, extra):
+        sys.exit(problem)
     commit = git_commit()
     if commit:
         extra["PROBATE_CODE_COMMIT"] = commit

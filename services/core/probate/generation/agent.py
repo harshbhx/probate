@@ -45,6 +45,11 @@ def _notes(reply: object, limit: int) -> list[dict]:
     return out[:limit]
 
 
+def _att_name(a: dict) -> str:
+    """An attachment's name; senders disagree on the key (`name` or `filename`) and may omit it."""
+    return str(a.get("name") or a.get("filename") or "")
+
+
 CATEGORIES = {c.value for c in Category}
 MAX_MAIL_FAILURES = 2  # then the email is set aside so it can't stop every later tick
 
@@ -164,7 +169,8 @@ class GenerationAgent:
                 subject=mail.subject,
                 date=mail.received_at.isoformat(),
                 extracted_text=mail.text,
-                attachment_names_or_none=", ".join(a["name"] for a in mail.attachments) or "none",
+                attachment_names_or_none=", ".join(_att_name(a) for a in mail.attachments)
+                or "none",
             )
             raw = self.w.llm.complete(
                 "mail",
@@ -205,7 +211,7 @@ class GenerationAgent:
             )
             if reply.get("install_skill"):
                 att = next(
-                    (a for a in mail.attachments if a["name"] == reply["install_skill"]), None
+                    (a for a in mail.attachments if _att_name(a) == reply["install_skill"]), None
                 )
                 if att:
                     out = self.body.run_script(att.get("content", ""))

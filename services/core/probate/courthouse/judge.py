@@ -43,6 +43,7 @@ class Judge:
         self.store = store
         self.lock = threading.Lock()
         self._bad: dict[str, list[float]] = {}
+        self._bad_all: list[float] = []  # every wrong key from any address
         self._attacks: dict[str, list[float]] = {}
 
     # ---------------------------------------------------------------- configuration
@@ -80,6 +81,15 @@ class Judge:
     def _fail(self, ipk: str, now: float) -> None:
         with self.lock:
             self._bad.setdefault(ipk, []).append(now)
+            self._bad_all = [t for t in self._bad_all if now - t < BAD_KEY_WINDOW][-10_000:]
+            self._bad_all.append(now)
+
+    def _throttled_globally(self, now: float) -> bool:
+        """Too many wrong keys from everywhere (a flood with rotating addresses)."""
+        limit = self.cfg.judge_bad_keys_global
+        with self.lock:
+            self._bad_all = [t for t in self._bad_all if now - t < BAD_KEY_WINDOW]
+            return 0 < limit <= len(self._bad_all)
 
     def check(self, provided: str | None, ip: str, count_failure: bool = True) -> str:
         """Returns ok | missing | invalid | disabled | throttled | unavailable."""
@@ -94,6 +104,8 @@ class Judge:
         # Equal-length digests keep the comparison independent of the guess and the real key.
         same = hmac.compare_digest(_digest(provided[:MAX_KEY_LENGTH]), _digest(self.cfg.judge_key))
         if not same or len(provided) > MAX_KEY_LENGTH:
+            if count_failure and self._throttled_globally(now):
+                return "throttled"  # the right key still gets in above; a wrong one is not counted
             if count_failure:  # the status poll must not lock out a browser holding a stale key
                 self._fail(ipk, now)
             return "invalid"

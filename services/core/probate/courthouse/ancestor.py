@@ -48,7 +48,12 @@ def ask(store: Store, w, cfg: Settings, gen: int, question: str, ip: str = "") -
         context={"question": question, "lore": lore, "convicted": convicted},
     ).strip()
     answer = EMAIL_RE.sub("[an address]", answer)
-    audio = w.voice.speak(answer, g.voice_id)
+    audio_dir = cfg.data_dir / "audio"
+    # Answer audio stops at a cap (files live on the Courthouse's disk); the answer still comes.
+    room = (
+        not audio_dir.is_dir() or len(list(audio_dir.glob("gen-*-ask-*.mp3"))) < cfg.ask_max_audio
+    )
+    audio = w.voice.speak(answer, g.voice_id) if room else None
     path = None
     if audio:
         key = hashlib.sha1(question.encode(), usedforsecurity=False).hexdigest()[:8]
@@ -63,4 +68,10 @@ def ask(store: Store, w, cfg: Settings, gen: int, question: str, ip: str = "") -
         path,
         hashlib.sha256(ip.encode()).hexdigest()[:16],
     )
+    if cfg.ask_max_rows > 0:  # keep the newest rows only
+        store.x(
+            "DELETE FROM ancestor_questions WHERE id <= "
+            "(SELECT COALESCE(MAX(id), 0) FROM ancestor_questions) - ?",
+            cfg.ask_max_rows,
+        )
     return {"answer": answer, "audio_url": f"/audio/{path}" if path else None, "name": g.name}
