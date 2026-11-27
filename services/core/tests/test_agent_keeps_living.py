@@ -145,3 +145,17 @@ def test_the_clock_says_when_it_restarted_an_agent(fam, monkeypatch):
     Scheduler(family).step(T0 + timedelta(seconds=30))
     texts = [r["text"] for r in store.q("SELECT text FROM events WHERE kind='error'")]
     assert any("restarted it" in t and g.name in t for t in texts)
+
+
+def test_a_gate_outage_is_logged_as_its_own_countable_event(fam):
+    from probate.generation.gate import GateResult
+
+    _cfg, _store, _w, family = fam
+    g = family.birth(T0)
+    agent = family.host._agent(g.sprite)
+    agent.gate.check = lambda mail: GateResult(False, error="The fallback judge could not answer")
+    agent.w.mail.send("x@example.com", agent.inh.family_inbox, "Meeting notes", "hello")
+    agent.tick()
+    rows = [r for r in agent.life_log() if r["kind"] == "gate_outage"]
+    assert len(rows) == 1 and "gate could not" in rows[0]["text"]
+    assert agent.stats["gate_outages"] == 1

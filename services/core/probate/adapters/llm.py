@@ -165,7 +165,15 @@ class RealLLM:
             },
         )
         r.raise_for_status()
-        return "".join(b.get("text", "") for b in r.json()["content"])
+        data = r.json()
+        text = "".join(b.get("text", "") for b in data["content"])
+        if not text.strip():
+            # An empty reply (stop_reason "refusal" or "max_tokens", say) is a failure, not an
+            # answer: say why, so the caller can retry or fall through to the next brain.
+            raise ValueError(
+                f"the anthropic brain returned no text (stop_reason={data.get('stop_reason')})"
+            )
+        return text
 
 
 INSTINCT_TEMPLATES = {

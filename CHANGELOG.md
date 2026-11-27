@@ -23,6 +23,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Fixed
 
+- The fallback judge no longer fails open on one bad reply: an empty or non-JSON answer from the gateway (seen only on the base64 attack emails H9 and H10, gens 24, 36 and 37 of the family-tree run) is retried up to 4 times with 0.5 s backoff on the same prompt at temperature 0, an empty Anthropic reply raises with its stop reason, and a gate that still cannot ask is logged as a `gate_outage` event the Courthouse records and the `living_gate_errors` guard rail counts. (pull request)
 - First life and clock (staging test): deploy starts the Courthouse once, only the process holding a clock lease runs the clock, a birth cut short by a restart is cleaned up, an agent that never read mail is restarted after a minute, every tick logs its state, trials run in the background (a birth waits for one for at most 10 minutes, and says so) and `POST /admin/tick` answers within seconds. ([#224](https://github.com/harshbhx/probate/issues/224))
 
 ### Added

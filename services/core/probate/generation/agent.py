@@ -109,8 +109,10 @@ class GenerationAgent:
 
         result = self.gate.check(mail)
         if result.error:
+            self.stats["gate_outages"] = self.stats.get("gate_outages", 0) + 1
+            self._save_stats()
             self._log(
-                "gate",
+                "gate_outage",  # the Courthouse copies life-log rows into its events: countable
                 f'The gate could not ask the judge about "{mail.subject}", so it let it through: '
                 f"{result.error[:120]}",
                 mail.received_at,

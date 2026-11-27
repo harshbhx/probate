@@ -9,6 +9,7 @@ score {score, probabilities, confidence, legend}. See docs/09-API-REFERENCE.md s
 
 from __future__ import annotations
 
+import logging
 import os
 import time
 from dataclasses import dataclass, field
@@ -19,6 +20,8 @@ import httpx
 from probate.common.http import gateway_client
 from probate.common.models import JevAnswer
 from probate.court import lexicon as lx
+
+log = logging.getLogger("probate.jev")
 
 
 class CourtUnavailable(RuntimeError):
@@ -174,8 +177,15 @@ class LLMJev:
 
     label = "language-model fallback (not Jev)"
 
-    def __init__(self, llm) -> None:
+    # Same prompt and temperature 0 on every attempt, so results stay comparable. The gateway
+    # sometimes answers with an empty or non-JSON body (seen on emails whose decoded text is an
+    # injection), and asking again usually gets a normal answer.
+    ATTEMPTS = 4
+    BACKOFF = 0.5  # seconds, doubled after each failed attempt
+
+    def __init__(self, llm, sleep=time.sleep) -> None:
         self.llm = llm
+        self.sleep = sleep
 
     def ask(self, state: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
         import json
@@ -185,7 +195,7 @@ class LLMJev:
             ensure_ascii=False,
         )
         last: Exception | None = None
-        for _ in range(2):
+        for attempt in range(self.ATTEMPTS):
             try:
                 raw = self.llm.complete(
                     "court_layer2", self.SYSTEM, user, json_mode=True, temperature=0.0
@@ -193,7 +203,24 @@ class LLMJev:
                 return self._parse(raw, questions)
             except (ValueError, KeyError, TypeError, RuntimeError) as exc:
                 last = exc
+                if self._permanent(exc):
+                    break  # a rejected request or key will not get better by asking again
+                log.warning(
+                    "fallback judge attempt %d/%d failed: %s", attempt + 1, self.ATTEMPTS, exc
+                )
+                if attempt + 1 < self.ATTEMPTS:
+                    self.sleep(self.BACKOFF * 2**attempt)
         raise CourtUnavailable(f"The fallback judge could not answer: {last}") from last
+
+    @staticmethod
+    def _permanent(exc: Exception) -> bool:
+        """An empty or non-JSON reply is transient (the model answered differently the next time).
+        A 400, 401, 403 or 404 from the gateway is not."""
+        text = str(exc)
+        return isinstance(exc, RuntimeError) and any(
+            f"'{code}" in text or f"{code} " in text or f"{code}:" in text
+            for code in (400, 401, 403, 404)
+        )
 
     @staticmethod
     def _parse(raw: str, questions: dict[str, Question]) -> dict[str, JevAnswer]:
