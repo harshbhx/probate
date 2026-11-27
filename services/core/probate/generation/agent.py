@@ -308,7 +308,11 @@ class GenerationAgent:
         self.w.archive.put_text(
             path + ".json", json.dumps([m.model_dump(mode="json") for m in items], indent=2)
         )
-        self._log("death", f"Wrote {len(items)} items into the will.")
+        # The Courthouse retries a death that failed partway, which asks for the will again; the
+        # life log says it once.
+        line = f"Wrote {len(items)} items into the will."
+        if not any(r["text"] == line for r in self.life_log() if r.get("kind") == "death"):
+            self._log("death", line)
         return {"items": len(items), "path": path + ".json"}
 
     def life_log(self) -> list[dict]:

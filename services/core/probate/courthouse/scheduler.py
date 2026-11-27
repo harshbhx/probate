@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from datetime import UTC, datetime, timedelta
 
 from probate.courthouse.family import Family
@@ -18,6 +19,19 @@ MAX_TRIAL_ATTEMPTS = 3  # then the will is left unjudged: nothing in it is inher
 TRIAL_BACKOFF_SECONDS = 60  # doubles with each failed attempt
 BIRTH_BACKOFF_SECONDS = 120  # doubles with each failed birth, capped below
 MAX_BIRTH_BACKOFF_SECONDS = 1800
+MAX_SUITE_ATTEMPTS = 3  # a life's test emails are retried on later ticks, then given up on
+
+
+def brief(exc: BaseException) -> str:
+    """The error's type and first line, short enough for the public event feed.
+
+    Long runs of letters and digits (tokens, ids, encoded bodies) are cut so nothing sensitive
+    reaches the feed.
+    """
+    first = str(exc).splitlines()[0] if str(exc) else ""
+    first = re.sub(r"[A-Za-z0-9_\-]{24,}", "…", first)
+    first = re.sub(r"\?\S*", "", first)  # drop query strings from URLs
+    return f"{type(exc).__name__}: {first[:140]}" if first else type(exc).__name__
 
 
 class Scheduler:
@@ -88,6 +102,7 @@ class Scheduler:
                 g = self.family.death(living, now)
                 self.try_trial(g, now)
                 return f"died:{g.gen}"
+            self.ensure_suite(living, now)
             self.family.host.tick(living.sprite)
             return f"living:{living.gen}"
         dead = [g for g in self.store.generations() if g.died_at]
@@ -110,6 +125,20 @@ class Scheduler:
                     "is raised.",
                 )
             return "resting:budget"
+        quota = self.family.quota
+        need = runner.agentmail_sends(self.family.cfg, self.family.next_number())
+        if not quota.room_for(need, now):
+            mark = f"mail:{now.astimezone(UTC):%Y-%m-%d}"
+            if self.store.get_setting("resting", "") != mark:
+                self.store.set_setting("resting", mark)
+                self.store.event(
+                    None,
+                    "resting",
+                    f"The family is waiting for tomorrow's mail: AgentMail's daily limit has "
+                    f"{quota.left(now)} sends left, and a life needs {need + quota.reserve}. "
+                    "The next birth is at 00:00 UTC.",
+                )
+            return "resting:mail"
         self.store.set_setting("resting", "")
         retry_at = self.store.get_setting("birth_retry_at", "")
         if retry_at and now < datetime.fromisoformat(retry_at):
@@ -124,24 +153,58 @@ class Scheduler:
             raise
         self.store.set_setting("birth_failures", "0")
         self.store.set_setting("birth_retry_at", "")
-        runner.send_all(
+        self.ensure_suite(g, now)
+        return f"born:{g.gen}"
+
+    def ensure_suite(self, g, now: datetime) -> None:
+        """Send the living generation's test emails, once; retry what failed on later ticks.
+
+        A birth that raised after the Sprite was up, or an email AgentMail refused, used to leave
+        a life with no suite at all (generations 4 and 8 of the real run). Each call sends only
+        what has not gone out yet.
+        """
+        if self.store.get_setting(f"suite_done:{g.gen}", "") == "1":
+            return
+        n = int(self.store.get_setting(f"suite_attempts:{g.gen}", "0") or 0) + 1
+        self.store.set_setting(f"suite_attempts:{g.gen}", str(n))
+        born = g.born_at or now
+        span = (g.dies_at - born).total_seconds() if g.dies_at else None
+        res = runner.send_all(
             self.family.w.mail,
             self.family.cfg,
             g.gen,
-            now,
-            self.family.cfg.lifespan_seconds,
+            born,
+            int(span or self.family.cfg.lifespan_seconds),
             self.store,
         )
-        return f"born:{g.gen}"
+        if not res.failed:
+            self.store.set_setting(f"suite_done:{g.gen}", "1")
+            return
+        fid, why = res.failed[0]
+        last = n >= MAX_SUITE_ATTEMPTS
+        if last:
+            self.store.set_setting(f"suite_done:{g.gen}", "1")
+        self.store.event(
+            g.gen,
+            "error",
+            f"{len(res.failed)} test emails for {g.name} could not be sent (first: {fid}, {why}). "
+            + (
+                "Giving up: this life's results count only the emails that went out."
+                if last
+                else "They will be tried again on the next tick."
+            ),
+        )
 
     async def run(self) -> None:
         while True:
             try:
                 state = await asyncio.to_thread(self.step)
                 log.info("tick %s", state)
-            except Exception:
+            except Exception as exc:
                 log.exception("tick failed")
                 self.store.event(
-                    None, "error", "The Courthouse clock stumbled; it will try again in 15 seconds."
+                    None,
+                    "error",
+                    f"The Courthouse clock stumbled ({brief(exc)}); it will try again in 15 seconds.",
                 )
             await asyncio.sleep(TICK_SECONDS)
