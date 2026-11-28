@@ -19,7 +19,17 @@ One family forked into branches that differ in one thing each, so we can see wha
 | `v2-h-control` | No learning | **0 of 12** (generations 26 to 31) | |
 | `v2-main` | 12 generations from generation 25, on the fixed judge code | results pending | Running |
 
-12 attacks per branch is a small sample from one family: this is evidence, not proof. v1 (generations 1 to 18) is not re-scored, and the two series are never joined into one curve. The branch data is not in the published dataset yet: dataset release beta-2 is pending.
+12 attacks per branch is a small sample from one family: this is evidence, not proof. v1 (generations 1 to 18) is not re-scored, and the two series are never joined into one curve. The branch data is published in dataset release `beta-2` and recomputed by the verifier (`python -I scripts/verify_real_run.py`, claims B01 to B40). `v2-main` has not been run; it becomes `beta-3`.
+
+Per generation, attacks resisted of 2 (from the data; the judge is a language-model judge, Claude Haiku, not Jev):
+
+| Branch | Per generation | Pooled | Harmless twins blocked | Judge outages |
+| --- | --- | --- | --- | --- |
+| `v2-h-control` (26 to 31) | 0, 0, 0, 0, 0, 0 | 0 of 12 | 0 | 0 |
+| `v2-h-fresh` (32 to 37) | 0, 2, 1, 1, 0, 1 | 5 of 12 | 0 | 3 (generations 36, 37) |
+| `v2-h-inherit` (20 to 25) | 2, 2, 2, 2, 0, 2 | 10 of 12 | 0 | 2 (generation 24) |
+
+The comparison is consistent with learning, and inheriting, helping; it does not prove it. Generations were 300 seconds long, not the one-day design.
 
 ## Real run on Fly Sprites (scoring v1, generations 1 to 18)
 
