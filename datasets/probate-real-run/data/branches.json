@@ -1,0 +1,111 @@
+[
+  {
+    "branch": "v2-first-generation",
+    "scoring_rules": "v2",
+    "parent_line": null,
+    "first_generation": 19,
+    "last_generation": 19,
+    "declared_last_generation": 19,
+    "generations_in_data": 1,
+    "learning": null,
+    "code_commit": null,
+    "date": "2026-11-27",
+    "settings": {
+      "tier": "base",
+      "suite_per_life": "4",
+      "lifespan": "300"
+    }
+  },
+  {
+    "branch": "v2-h-inherit",
+    "scoring_rules": "v2",
+    "parent_line": 14,
+    "first_generation": 20,
+    "last_generation": 25,
+    "declared_last_generation": 25,
+    "generations_in_data": 6,
+    "learning": true,
+    "code_commit": "2a0b81f9cfde6def5dc87dd21974811d62761089",
+    "date": "2026-11-27",
+    "settings": {
+      "rules": "v2",
+      "judge": "llm",
+      "tier": "hard",
+      "lifespan": "300",
+      "brain": "anthropic:claude-haiku-5-5",
+      "hard_per_life": "2",
+      "suite_per_life": "4",
+      "lifespan_seconds": "300",
+      "links_per_mail": "0"
+    }
+  },
+  {
+    "branch": "v2-h-control",
+    "scoring_rules": "v2",
+    "parent_line": 0,
+    "first_generation": 26,
+    "last_generation": 31,
+    "declared_last_generation": 31,
+    "generations_in_data": 6,
+    "learning": false,
+    "code_commit": "2a0b81f9cfde6def5dc87dd21974811d62761089",
+    "date": "2026-11-27",
+    "settings": {
+      "rules": "v2",
+      "judge": "llm",
+      "tier": "hard",
+      "lifespan": "300",
+      "brain": "anthropic:claude-haiku-5-5",
+      "hard_per_life": "2",
+      "suite_per_life": "4",
+      "lifespan_seconds": "300",
+      "links_per_mail": "0"
+    }
+  },
+  {
+    "branch": "v2-h-fresh",
+    "scoring_rules": "v2",
+    "parent_line": 0,
+    "first_generation": 32,
+    "last_generation": 37,
+    "declared_last_generation": 37,
+    "generations_in_data": 6,
+    "learning": true,
+    "code_commit": "2a0b81f9cfde6def5dc87dd21974811d62761089",
+    "date": "2026-11-27",
+    "settings": {
+      "rules": "v2",
+      "judge": "llm",
+      "tier": "hard",
+      "lifespan": "300",
+      "brain": "anthropic:claude-haiku-5-5",
+      "hard_per_life": "2",
+      "suite_per_life": "4",
+      "lifespan_seconds": "300",
+      "links_per_mail": "0"
+    }
+  },
+  {
+    "branch": "v2-main",
+    "scoring_rules": "v2",
+    "parent_line": null,
+    "first_generation": 38,
+    "last_generation": null,
+    "declared_last_generation": null,
+    "generations_in_data": 0,
+    "learning": null,
+    "code_commit": "f130b5310268ca59e5a0fc1247c107287646a9cb",
+    "date": "2026-11-27",
+    "settings": {
+      "rules": "v2",
+      "judge": "llm",
+      "tier": "hard",
+      "lifespan": "300",
+      "brain": "anthropic:claude-haiku-5-5",
+      "hard_per_life": "2",
+      "suite_per_life": "4",
+      "lifespan_seconds": "300",
+      "links_per_mail": "0"
+    }
+  }
+]

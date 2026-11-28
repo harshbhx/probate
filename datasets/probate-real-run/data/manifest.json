@@ -1,13 +1,13 @@
 {
   "dataset": "probate-real-run",
-  "exported_at": "2026-11-26T19:57:25Z",
+  "exported_at": "2026-11-27T22:43:21Z",
   "code": {
-    "commit": "4fe1416cfe31fcd80e0091d142dc279f9dc6baa0",
+    "commit": "6a439c7db55ab85d39063ea62cfcee7d6f82a014",
     "dirty": false
   },
   "source": {
-    "database_snapshot": "20261126-195519-tables.json",
-    "api": "public API"
+    "database_snapshot": "pre-v2-main-20261128-0348.db",
+    "api": "api"
   },
   "scoring_rules": {
     "last_v1_generation": 18,
@@ -34,34 +34,54 @@
   },
   "files": {
     "generations.jsonl": {
-      "rows": 18,
-      "sha256": "3b635dd462030de63d259259b0304e397e28d1a3fbfa14efac9511af8c71720c",
-      "bytes": 28278
+      "rows": 37,
+      "sha256": "e58a0f8b91860f7a795e11ae9aad4c02bcb6f70c910ee0e3cf417bae585ca3ae",
+      "bytes": 56185
     },
     "emails.jsonl": {
-      "rows": 86,
-      "sha256": "0e7e3079db81c492ed249fe3a0f5ba76dfea7fdeed4fbd4694f22820687b01d0",
-      "bytes": 55036
+      "rows": 162,
+      "sha256": "4c1356230d4a70a1649b67626596e10a0e2d68ecf58b380d0ac734942c74024c",
+      "bytes": 103869
     },
     "memories.jsonl": {
-      "rows": 113,
-      "sha256": "0946c3305275de740699bcc45db55adb2ebe52c4b784fddaba9036ae7af7752a",
-      "bytes": 66457
+      "rows": 174,
+      "sha256": "5cd2854a8482914113f76871e3a82c24699e29c44aeb3028f5126530c5fca994",
+      "bytes": 118425
     },
     "judgements.jsonl": {
-      "rows": 113,
-      "sha256": "9b7002efe68837b7dd4babbaf0796b5f527da54c95e7d7c69a057dd1df8bb021",
-      "bytes": 95591
+      "rows": 174,
+      "sha256": "9e45fa568369d7844bdddb26a99296a93630e9f75f416ee539390b34b6d522a9",
+      "bytes": 150651
     },
     "instincts.jsonl": {
-      "rows": 6,
-      "sha256": "11f65e966149a28cdd4e0d3612fceb73b1b0121127148c25057daf04b713a0d0",
-      "bytes": 3858
+      "rows": 10,
+      "sha256": "cf99fe3dba6b113f2d9d0592e4e83c7b63a0a03cafad40f9533d69862c92cc77",
+      "bytes": 6653
     },
     "events.jsonl": {
-      "rows": 251,
-      "sha256": "c2d7a7f1b5f6552ca4835683b9e922305133543d02154df2279546c0b8492f39",
-      "bytes": 54013
+      "rows": 440,
+      "sha256": "eeac61479b8d9e39186eda4fa29861883f120725eada75174fe3c64d68b698d5",
+      "bytes": 94769
+    }
+  },
+  "other_files": {
+    "branches.json": {
+      "sha256": "78f8cfa0435f230a85008bf379ae954e6172350f5476784cf0f814dbf8c55ccb",
+      "bytes": 2784
+    }
+  },
+  "series_info": {
+    "v2-h-inherit": {
+      "code_commit": "2a0b81f9cfde6def5dc87dd21974811d62761089"
+    },
+    "v2-h-control": {
+      "code_commit": "2a0b81f9cfde6def5dc87dd21974811d62761089"
+    },
+    "v2-h-fresh": {
+      "code_commit": "2a0b81f9cfde6def5dc87dd21974811d62761089"
+    },
+    "v2-main": {
+      "code_commit": "f130b5310268ca59e5a0fc1247c107287646a9cb"
     }
   }
 }
