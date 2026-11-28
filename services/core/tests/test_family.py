@@ -170,7 +170,7 @@ def test_a_failed_birth_deletes_the_sprite():
     deleted = []
 
     class Api:
-        def create(self, sprite):
+        def create(self, sprite, adopt=True):
             pass
 
         def write_file(self, *a, **k):

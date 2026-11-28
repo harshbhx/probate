@@ -207,8 +207,23 @@ class Settings:
     judge_bad_keys_global: int = field(
         default_factory=lambda: int(_env("PROBATE_JUDGE_BAD_KEYS_GLOBAL", "120"))
     )
-    # Questions to dead ancestors per UTC day, all visitors together (each is a model call).
+    # Seconds every wrong judge key or admin token waits before it is answered (the right one never
+    # waits), so guessing is slow and the answer time says nothing.
+    wrong_secret_delay: float = field(
+        default_factory=lambda: float(_env("PROBATE_WRONG_SECRET_DELAY", "0.25"))
+    )
+    # Wrong admin tokens from all addresses together in ten minutes before more wrong tokens are
+    # refused without being looked at (the right token is always accepted).
+    admin_bad_tokens_global: int = field(
+        default_factory=lambda: int(_env("PROBATE_ADMIN_BAD_TOKENS_GLOBAL", "120"))
+    )
+    # Questions to dead ancestors per UTC day, all visitors together (each is a model call), and
+    # per address. The per-address cap keeps one visitor from using the shared one up; an address
+    # that rotates its X-Forwarded-For can still spread out, which is why the cap is global too.
     ask_daily_cap: int = field(default_factory=lambda: int(_env("PROBATE_ASK_DAILY_CAP", "200")))
+    ask_daily_per_ip: int = field(
+        default_factory=lambda: int(_env("PROBATE_ASK_DAILY_PER_IP", "30"))
+    )
     # Stored answers and answer audio files kept (oldest answers are dropped, audio stops at the cap).
     ask_max_rows: int = field(default_factory=lambda: int(_env("PROBATE_ASK_MAX_ROWS", "2000")))
     ask_max_audio: int = field(default_factory=lambda: int(_env("PROBATE_ASK_MAX_AUDIO", "300")))

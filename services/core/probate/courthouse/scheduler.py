@@ -361,7 +361,13 @@ class Scheduler:
         with self.family.lifecycle_lock:  # no birth can start while we decide what is a stray
             rows = self.store.generations()
             keep = {g.sprite for g in rows if g.state in ("born", "living", "dying")}
-            closed = {g.sprite: g.gen for g in rows if g.state in ("dead", "died_early", "tried")}
+            closed = {
+                g.sprite: g.gen
+                for g in rows
+                if g.state in ("dead", "died_early", "tried")
+                # A birth refused because the name was another environment's Sprite does not own it.
+                and not self.store.get_setting(f"foreign_sprite:{g.gen}", "")
+            }
             removed = 0
             for name in names:
                 if not STRAY.fullmatch(name) or name in keep:

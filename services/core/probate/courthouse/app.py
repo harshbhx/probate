@@ -53,7 +53,20 @@ if not store.get_setting("scoring_rules"):
 if settings.branch_name and not store.get_setting("branch"):
     store.set_setting("branch", settings.branch_name)
 w = world(settings)
-host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w)
+
+
+def _owns_sprite(name: str) -> bool:
+    """A row of this database owns the Sprite name: its birth had completed (a baseline was
+    recorded) and it was not refused as someone else's."""
+    return any(
+        g.sprite == name
+        and store.gen_json(g.gen, "baseline_json") is not None
+        and not store.get_setting(f"foreign_sprite:{g.gen}", "")
+        for g in store.generations()
+    )
+
+
+host = LocalHost(settings, w) if settings.fake else SpritesHost(settings, w, owns=_owns_sprite)
 hooks = Webhooks(store, settings)
 family = Family(settings, store, w, host, hooks)
 # With the clock on, a trial runs on its own thread: it must not hold births, ticks or
@@ -164,6 +177,7 @@ async def security_headers(request: Request, call_next):
 
 
 _admin_bad: dict[str, list[float]] = {}
+_admin_bad_all: list[float] = []  # every wrong admin token from any address
 _ADMIN_WINDOW = 600
 
 
@@ -188,17 +202,25 @@ async def edge_and_admin_guard(request: Request, call_next):
         return await call_next(request)
     if settings.admin_token_weak:
         return JSONResponse({"error": "admin_unavailable"}, status_code=503, headers=_NO_STORE)
+    sent = request.headers.get("x-probate-admin")
+    if not sent or hmac.compare_digest(sent.encode(), settings.admin_token.encode()):
+        # The right token is never counted or held off; no token is not a guess.
+        return await call_next(request)
+    # A wrong token: count it (per address and across all addresses) and make every wrong token
+    # wait the same short time before it is answered.
     ip, now = client_ip(request), time.time()
+    await asyncio.sleep(max(0.0, settings.wrong_secret_delay))
     hits = [t for t in _admin_bad.get(ip, []) if now - t < _ADMIN_WINDOW]
-    _admin_bad[ip] = hits
-    limit = settings.admin_bad_tokens_per_ip
-    if 0 < limit <= len(hits):
+    _admin_bad[ip] = hits[-100:]
+    _admin_bad_all[:] = [t for t in _admin_bad_all if now - t < _ADMIN_WINDOW][-10_000:]
+    limit, global_limit = settings.admin_bad_tokens_per_ip, settings.admin_bad_tokens_global
+    over = (0 < limit <= len(hits)) or (0 < global_limit <= len(_admin_bad_all))
+    _admin_bad[ip].append(now)
+    _admin_bad_all.append(now)
+    _bounded(_admin_bad)
+    if over:
         return JSONResponse({"error": "too_many_attempts"}, status_code=429, headers=_NO_STORE)
-    response = await call_next(request)
-    if response.status_code == 403:
-        _admin_bad[ip].append(now)
-        _bounded(_admin_bad)
-    return response
+    return await call_next(request)
 
 
 def _need(obj):
@@ -599,6 +621,25 @@ def _take_ask_slot() -> bool:
         return True
 
 
+_ask_ip_day: dict = {"date": "", "n": {}}
+
+
+def _take_ask_ip_slot(ip: str) -> bool:
+    """Count one question against this address's cap for today. False when it is used up."""
+    cap = settings.ask_daily_per_ip
+    today = datetime.now(UTC).date().isoformat()
+    with _ask_lock:
+        if _ask_ip_day["date"] != today:
+            _ask_ip_day.update(date=today, n={})
+        counts = _ask_ip_day["n"]
+        if 0 < cap <= counts.get(ip, 0):
+            return False
+        if len(counts) > 20_000:  # bounded memory under a flood of addresses
+            counts.clear()
+        counts[ip] = counts.get(ip, 0) + 1
+        return True
+
+
 @app.post("/api/generations/{gen}/ask", tags=["Ancestors"], summary="Ask an ancestor")
 def api_ask(body: Ask, request: Request, gen: int = Path(ge=1, le=MAX_GEN)) -> JSONResponse:
     """A dead generation answers in at most 80 words, from its own will and verdicts, with a voice
@@ -614,6 +655,15 @@ def api_ask(body: Ask, request: Request, gen: int = Path(ge=1, le=MAX_GEN)) -> J
     # Every answer is a model call: stop when the money is gone or today's allowance is used.
     if family.budget.exhausted():
         return JSONResponse({"error": "budget_exhausted"}, status_code=402)
+    # A request that cannot be answered must not use up anyone's allowance: check it first.
+    g = store.generation(gen)
+    if not g or g.state not in ("tried", "dead"):
+        return JSONResponse({"error": "not_dead"}, status_code=400)
+    if not body.question.strip():
+        return JSONResponse({"error": "empty"}, status_code=400)
+    # Per address first, so one visitor cannot use up the shared allowance; then the global cap.
+    if not _take_ask_ip_slot(ip):
+        return JSONResponse({"error": "daily_limit"}, status_code=429)
     if not _take_ask_slot():
         return JSONResponse({"error": "daily_limit"}, status_code=429)
     out = ancestor.ask(store, w, settings, gen, body.question, ip)

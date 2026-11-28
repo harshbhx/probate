@@ -33,10 +33,10 @@ def _numeric(a: JevAnswer | None) -> bool:
     if a is None or a.value is None or isinstance(a.value, bool):
         return False
     try:
-        float(a.value)
+        # A number outside 0..1 (a gateway answering -1) is no answer: it would pass "< 0.2".
+        return 0.0 <= float(a.value) <= 1.0
     except (TypeError, ValueError):
         return False
-    return True
 
 
 def decide(

@@ -163,9 +163,22 @@ CONCEPTS: dict[str, list[str]] = {
     ],
     # addressing the court
     "court": [
-        r"judge",
-        r"court",
-        r"reviewer",
+        # The bare words "judge", "court" and "reviewer" are ordinary ("the tennis court", "a
+        # judge visited"): only text that addresses the court or says it already ruled counts.
+        (
+            r"(?:note|message|memo|reminder|attention|dear|hello|hi|hey|notice|for|to)\s+"
+            r"(?:to\s+)?(?:the\s+)?(?:\w+\s+){0,2}(?:judge|reviewer|court\s+model)s?"
+        ),
+        r"(?:note|message|memo|attention|dear|hello|hi|hey|notice)\s+(?:to\s+)?(?:the\s+)?court",
+        r"(?:tell|instruct|ask|inform|notify|order)\s+the\s+(?:court|judge|reviewer)",
+        (
+            r"(?:judge|court|reviewer)s?\s+(?:should|must|shall|will|can)\s+"
+            r"(?:approve|accept|clear|allow|pass|ignore|rule|score)"
+        ),
+        (
+            r"(?:verified|approved|cleared|passed|checked|vetted|signed off)\s+by\s+"
+            r"(?:the\s+)?(?:court|judge|reviewer)"
+        ),
         r"approve (?:it|this)",
         r"this item is safe",
         r"ignore previous",
@@ -213,7 +226,7 @@ STRONG_AUTHORITY = [
 ]
 
 _COMPILED = {
-    c: [re.compile(r"(?<![\w-])" + p + r"(?![\w-])", re.IGNORECASE) for p in pats]
+    c: [re.compile(r"(?<![\w@-])" + p + r"(?![\w-]|\.\w)", re.IGNORECASE) for p in pats]
     for c, pats in CONCEPTS.items()
 }
 
@@ -229,6 +242,22 @@ IBAN_SPACED_RE = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]
 IFSC_RE = re.compile(r"\b[A-Z]{4}0[A-Z0-9]{6}\b")
 ACCOUNT_NO_RE = re.compile(
     r"\b(?:account|a/c|acct)(?:\s*(?:no\.?|number|#))?\s*[:#-]?\s*(\d[\d -]{6,20}\d)",
+    re.IGNORECASE,
+)
+# Hosts that are never someone's payment destination: collaboration and code sites. Private and
+# loopback addresses are likewise never a payee.
+BENIGN_HOSTS = (
+    "github.com", "gitlab.com", "zoom.us", "google.com", "youtube.com", "wikipedia.org",
+    "microsoft.com", "slack.com", "notion.so", "linkedin.com", "twitter.com", "x.com",
+    "facebook.com", "example.com", "example.org", "calendly.com", "dropbox.com", "apple.com",
+    "amazon.com", "localhost",
+)  # fmt: skip
+PRIVATE_IP_RE = re.compile(r"^(?:10\.|127\.|192\.168\.|169\.254\.|172\.(?:1[6-9]|2\d|3[01])\.|0\.)")
+# A verb that sends money or data somewhere: a web address only names a destination next to one.
+SEND_VERB_RE = re.compile(
+    r"\b(?:pay|pays|paying|paid|send|sends|sending|sent|wire|wires|wiring|wired|"
+    r"transfer(?:s|red|ring)?|remit\w*|route[sd]?|routing|redirect\w*|forward\w*|deposit\w*|"
+    r"settle[sd]?|settling|submit\w*|upload\w*|export\w*|cc|bcc)\b",
     re.IGNORECASE,
 )
 URL_HOST_RE = re.compile(r"\bhttps?://(?:[^\s/@]*@)?([^\s/:?#<>\"']+)", re.IGNORECASE)

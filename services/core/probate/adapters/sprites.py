@@ -14,6 +14,22 @@ from probate.common.http import gateway_client
 API = "https://api.sprites.dev/v1"
 
 
+class SpriteExists(Exception):
+    """A Sprite with this name already exists."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.name = name
+
+
+class ForeignSprite(RuntimeError):
+    """A birth found its Sprite name already taken by a Sprite this Courthouse did not create
+    (another environment sharing the Sprites organization). Nothing was touched; the Sprite must
+    not be adopted, installed over or deleted."""
+
+    foreign_sprite = True
+
+
 @dataclass
 class ExecResult:
     exit_code: int
@@ -58,12 +74,17 @@ class SpritesAPI:
         )
 
     # Sprites
-    def create(self, name: str, public: bool = False) -> dict:
+    def create(self, name: str, public: bool = False, adopt: bool = True) -> dict:
+        """Create a Sprite. When the name is taken (409) the existing Sprite is returned, unless
+        `adopt` is False: then SpriteExists is raised. Sprite names carry no environment, so a
+        birth must never take over a Sprite it did not create."""
         r = self.http.post(
             f"{self.base}/sprites",
             json={"name": name, "url_settings": {"auth": "public" if public else "sprite"}},
         )
         if r.status_code == 409:
+            if not adopt:
+                raise SpriteExists(name)
             return self.get(name)
         r.raise_for_status()
         return r.json()

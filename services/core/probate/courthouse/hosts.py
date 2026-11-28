@@ -10,7 +10,7 @@ import shutil
 import time
 from datetime import UTC, datetime, timedelta
 
-from probate.adapters.sprites import ExecResult, SpritesAPI
+from probate.adapters.sprites import ExecResult, ForeignSprite, SpriteExists, SpritesAPI
 from probate.common.bundle import INSTALL, make_bundle
 from probate.common.config import Settings
 from probate.common.models import Inheritance
@@ -96,7 +96,11 @@ class LocalHost:
 class SpritesHost:
     """Controls generations through the Sprites REST API only (exec, fs, services)."""
 
-    def __init__(self, cfg: Settings, w) -> None:
+    owns = None
+
+    def __init__(self, cfg: Settings, w, owns=None) -> None:
+        # owns(name): does a row of this Courthouse's database own that Sprite name?
+        self.owns = owns
         self.api = SpritesAPI(cfg.sprites_token)
         self.cfg = cfg
         self.w = w
@@ -146,7 +150,18 @@ class SpritesHost:
         }
 
     def birth(self, sprite: str, inh: Inheritance) -> dict:
-        self.api.create(sprite)
+        try:
+            self.api.create(sprite, adopt=False)
+        except SpriteExists:
+            # Sprite names carry no environment. A name this database does not own belongs to
+            # another environment's live Sprite: fail, never adopt, install over or delete it.
+            if not (self.owns and self.owns(sprite)):
+                raise ForeignSprite(
+                    f"The Sprite name {sprite} is already taken by a Sprite this Courthouse did "
+                    "not create (another environment in the same Sprites organization?). The "
+                    "birth was refused and that Sprite was left alone. Production and the judges "
+                    "demo must never run at the same time (docs/13-RUNBOOK.md)."
+                ) from None
         try:
             return self._birth_body(sprite, inh)
         except Exception:

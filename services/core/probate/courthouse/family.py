@@ -217,20 +217,31 @@ class Family:
         )
         try:
             baseline = self.host.birth(g.sprite, inh)
-        except Exception:
+        except Exception as exc:
             # The host cleans up its own half-born Sprite; here we make sure the row cannot
             # leave the family waiting on a body that never existed.
-            try:
-                self.host.force_destroy(g.sprite)
-            except Exception:
-                log.warning("gen %s: cleanup after a failed birth failed", gen, exc_info=True)
+            foreign = bool(getattr(exc, "foreign_sprite", False))
+            if foreign:
+                # The name belongs to someone else's Sprite: never delete it, and never let the
+                # stray sweep treat this closed row as its owner.
+                self.store.set_setting(f"foreign_sprite:{gen}", "1")
+            else:
+                try:
+                    self.host.force_destroy(g.sprite)
+                except Exception:
+                    log.warning("gen %s: cleanup after a failed birth failed", gen, exc_info=True)
             g.state = "died_early"
             self.store.save_generation(g)
             self.store.set_setting(
                 "birth_skipped", str(int(self.store.get_setting("birth_skipped", "0") or 0) + 1)
             )
             self.store.event(
-                gen, "error", f"{name} could not be born: the new Sprite was deleted again."
+                gen,
+                "error",
+                f"{name} could not be born: the Sprite name was already taken by another "
+                "environment's Sprite, which was left alone."
+                if foreign
+                else f"{name} could not be born: the new Sprite was deleted again.",
             )
             raise
         # A real Sprite can take minutes to install; the host moves the life's start to when it was
@@ -600,7 +611,9 @@ class Family:
                 log.warning(
                     "court reply for %s from %s ignored: not the owner", item_id, mail.sender
                 )
-            elif self.cfg.require_verified_sender and not court_mail.verified(mail.headers):
+            elif self.cfg.require_verified_sender and not court_mail.verified(
+                mail.headers, mail.sender
+            ):
                 log.warning("court reply for %s ignored: sender not verified", item_id)
             elif choice is None:
                 log.info("court reply for %s didn't say approve or refuse", item_id)

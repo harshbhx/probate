@@ -24,7 +24,7 @@ def test_edge_ip_gives_each_visitor_their_own_budget(tmp_path, monkeypatch):
     c = TestClient(m.app)
     # one noisy visitor locks out only themselves, even though the proxy address is the same
     assert [_status(c, "203.0.113.1").status_code for _ in range(5)] == [401, 401, 401, 429, 429]
-    assert _status(c, "203.0.113.1", key=KEY).status_code == 429
+    assert _status(c, "203.0.113.1", key=KEY).status_code == 200  # the right key still gets in
     assert _status(c, "203.0.113.2", key=KEY).status_code == 200
     assert _status(c, "2001:db8::5", key=KEY).status_code == 200
 
