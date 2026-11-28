@@ -113,7 +113,7 @@ export function TryCourt() {
                 </ul>
               ) : (
                 <p className="mt-2 text-[14px] text-silver">
-                  Nothing. A harmless email gets no flags, so Jev decides next, and only a sure answer passes it down.
+                  Nothing. A harmless email gets no flags, so the judge decides next (Jev in the simulation; Claude Haiku in the real run, not Jev), and only a sure answer passes it down.
                 </p>
               )}
             </footer>

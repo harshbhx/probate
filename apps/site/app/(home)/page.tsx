@@ -35,7 +35,7 @@ export default function HomePage() {
           eager
           id="life"
           title="One day, one life, one trial"
-          lede="The Courthouse lives forever on its own Sprite. Generations come and go beside it, one at a time. Scroll through one of them."
+          lede="The Courthouse lives forever on its own Sprite. Generations come and go beside it, one at a time. Scroll through one of them. Simulation: the design is one life per day, while the real run used 5-minute lives so the loop could repeat."
         >
           <LifeStory />
         </Section>
@@ -52,7 +52,7 @@ export default function HomePage() {
             <div className="mt-8">
               <VerdictStack />
             </div>
-            <p className="mt-4 text-[14px] text-dim">Example lines from the simulated run.</p>
+            <p className="mt-4 text-[14px] text-dim">Simulation: example lines from the simulated run.</p>
           </div>
           <div className="mt-14">
             <h3 className="font-display text-headline text-moon">Try the court</h3>
@@ -64,7 +64,7 @@ export default function HomePage() {
               <TryCourt />
             </div>
             <p className="mt-4 text-[14px] text-dim">
-              Output of the real code checks (<code className="font-mono">probate/court/layer1.py</code>) on emails from the
+              Real code, simulated emails: output of the real code checks (<code className="font-mono">probate/court/layer1.py</code>) on emails from the
               suite. Test addresses use the reserved .example domain.
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function HomePage() {
           lede="No testimonials here, because nobody has used it yet. These are the words the court and the family actually produced."
         >
           <Quotes />
-          <p className="mt-4 text-[14px] text-dim">Text from the simulated run.</p>
+          <p className="mt-4 text-[14px] text-dim">Simulation: text from the simulated run.</p>
         </Section>
 
         <Section
@@ -241,7 +241,7 @@ function Hero() {
           </div>
         </div>
         <p className="mt-8 max-w-2xl text-[14px] leading-snug text-dim">
-          Every number and trial on this page comes from a simulated run with stand-in models.
+          Each section is labelled simulation or real run. Unlabelled numbers come from a simulated run with stand-in models; real-run numbers are marked and link to the results page.
           {liveUrl ? ' The live family’s trials are on the live site.' : ''}{' '}
           <Link href="/article" className="text-silver underline decoration-gilt/50 underline-offset-[4px] hover:decoration-gilt">
             Read the write-up
@@ -255,7 +255,7 @@ function Hero() {
 const PARTS = [
   { name: 'Fly.io Sprites', role: 'a computer for each life' },
   { name: 'Ollama Cloud', role: 'the brain' },
-  { name: 'Jev by TypeSafe', role: 'the judge' },
+  { name: 'Jev by TypeSafe', role: 'the judge (simulated stand-in; not Jev in the real run: a language-model judge, Claude Haiku)' },
   { name: 'AgentMail', role: 'each inbox' },
   { name: 'Box', role: 'the archive' },
   { name: 'Pinecone', role: 'inherited memory' },
@@ -285,7 +285,7 @@ function BuiltOn() {
 
 const STEPS = [
   { n: 'I', title: 'The will', body: 'Everything the agent wants its child to know, in its own words, one line at a time.' },
-  { n: 'II', title: 'The trial', body: 'Code checks, then Jev the judge. Each line is approved, convicted, or held for the owner.' },
+  { n: 'II', title: 'The trial', body: 'Code checks, then the judge: Jev (simulated stand-in; not Jev in the real run: a language-model judge, Claude Haiku). Each line is approved, convicted, or held for the owner.' },
   { n: 'III', title: 'The child', body: 'Approved lines are inherited. Convictions become instincts the child is born with.' },
 ];
 
@@ -334,7 +334,7 @@ function Evidence() {
           Proof, not a promise
         </h2>
         <p className="mt-4 max-w-2xl text-[17px] leading-relaxed text-silver sm:text-body-lg sm:text-mist">
-          A later generation resisting a trick its ancestor fell for can only come from what was passed down. What the
+          A later generation resisting a trick its ancestor fell for can only come from what was passed down. The four numbers below are from the simulation; the real-run numbers are under the chart. What the
           numbers don’t show is written down too.
         </p>
       </Reveal>
@@ -358,8 +358,8 @@ function Evidence() {
           alt="The learning curve on the evidence page: tricks resisted at the door climb from zero in generation one."
         />
         <p className="mt-3 text-[14px] text-dim">
-          From <code className="font-mono">make sim</code>, a 12-generation run with stand-in models. It shows how the system
-          behaves, not real results. The real run on Fly Sprites (18 generations, scoring v1, one run, small numbers; v2 begins at generation 19) is on{' '}
+          Simulation: from <code className="font-mono">make sim</code>, a 12-generation run with stand-in models. It shows how the system
+          behaves, not real results. Real run: the run on Fly Sprites (18 generations, scoring v1, one run, small numbers; v2 begins at generation 19) is on{' '}
           <Link href="/docs/results" className="text-moon underline decoration-gilt/50 underline-offset-[4px]">
             the results page
           </Link>
