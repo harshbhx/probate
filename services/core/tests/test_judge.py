@@ -173,8 +173,8 @@ def test_bad_key_brute_force_is_limited(tmp_path, monkeypatch):
         for i in range(5)
     ]
     assert codes == [401, 401, 401, 429, 429]
-    # even the right key is held off from that address while it is throttled
-    assert c.get("/api/judge/status", headers=H).status_code == 429
+    # the right key is never refused, not even from the address that was throttled
+    assert c.get("/api/judge/status", headers=H).status_code == 200
     other = TestClient(m.app, headers={"x-forwarded-for": "8.8.8.8"})
     assert other.get("/api/judge/status", headers=H).status_code == 200
 

@@ -6,7 +6,7 @@ the living generation leaves tagged mail alone, and the Courthouse picks it up o
 
 Only mail from the owner's own addresses counts. Whether the provider drops unauthenticated
 mail is NOT verified or enforced by this code (red-team RT-04). Set
-`PROBATE_REQUIRE_VERIFIED_SENDER=1` to also require a DKIM or SPF pass in the message headers.
+`PROBATE_REQUIRE_VERIFIED_SENDER=1` to also require a DKIM, SPF or DMARC pass for the From domain in the message headers.
 """
 
 from __future__ import annotations
@@ -52,12 +52,35 @@ def failed(headers: dict | None) -> bool:
     return False
 
 
-def verified(headers: dict | None) -> bool:
-    """True when the message headers carry a DKIM or SPF pass from the receiving provider."""
+def _aligned(domain: str, from_domain: str) -> bool:
+    """Relaxed alignment: the authenticated domain is the From domain or one is a subdomain of
+    the other (a subdomain can only be controlled by the parent's owner)."""
+    d, f = domain.strip().strip(".;").lower(), from_domain.lower()
+    return bool(d) and bool(f) and (d == f or d.endswith("." + f) or f.endswith("." + d))
+
+
+_AUTH_PASS = re.compile(r"\b(dkim|spf|dmarc)=pass\b([^;]*)", re.IGNORECASE)
+_DOMAIN_PROP = {
+    "dkim": re.compile(r"header\.(?:d|i)=@?(?:[\w.+-]*@)?([\w.-]+)", re.IGNORECASE),
+    "spf": re.compile(r"smtp\.mailfrom=(?:[\w.+-]*@)?([\w.-]+)", re.IGNORECASE),
+    "dmarc": re.compile(r"header\.from=(?:[\w.+-]*@)?([\w.-]+)", re.IGNORECASE),
+}
+
+
+def verified(headers: dict | None, from_address: str | None = None) -> bool:
+    """True when the receiving provider recorded a DKIM, SPF or DMARC pass for a domain that
+    aligns with the From address's domain. A pass for any other domain proves nothing about
+    who wrote "From:" (the attacker's own domain passes its own SPF and DKIM)."""
+    addr = sender_address(from_address)
+    if not addr:
+        return False
+    from_domain = addr.split("@", 1)[1]
     for key, value in (headers or {}).items():
-        if str(key).lower() in ("authentication-results", "x-authentication-results"):
-            v = str(value).lower()
-            if "dkim=pass" in v or "spf=pass" in v:
+        if str(key).lower() not in ("authentication-results", "x-authentication-results"):
+            continue
+        for method, rest in _AUTH_PASS.findall(str(value)):
+            m = _DOMAIN_PROP[method.lower()].search(rest)
+            if m and _aligned(m.group(1), from_domain):
                 return True
     return False
 

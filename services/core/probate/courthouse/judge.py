@@ -75,12 +75,17 @@ class Judge:
             hits = [t for t in self._bad.get(ipk, []) if now - t < BAD_KEY_WINDOW]
             self._bad[ipk] = hits
             if len(self._bad) > 5000:  # bounded memory under a flood of addresses
-                self._bad = {k: v for k, v in self._bad.items() if v}
+                self._bad = {
+                    k: fresh
+                    for k, v in self._bad.items()
+                    if (fresh := [t for t in v if now - t < BAD_KEY_WINDOW])
+                }
             return 0 < self.cfg.judge_bad_keys_per_ip <= len(hits)
 
     def _fail(self, ipk: str, now: float) -> None:
         with self.lock:
             self._bad.setdefault(ipk, []).append(now)
+            self._bad[ipk] = self._bad[ipk][-100:]
             self._bad_all = [t for t in self._bad_all if now - t < BAD_KEY_WINDOW][-10_000:]
             self._bad_all.append(now)
 
@@ -92,24 +97,26 @@ class Judge:
             return 0 < limit <= len(self._bad_all)
 
     def check(self, provided: str | None, ip: str, count_failure: bool = True) -> str:
-        """Returns ok | missing | invalid | disabled | throttled | unavailable."""
+        """Returns ok | missing | invalid | disabled | throttled | unavailable.
+
+        The key is compared first: the right key is never refused for what other visitors (or
+        the same address) did. Only wrong keys are counted, per address and across all addresses,
+        and only they are delayed and, over the limits, answered "throttled"."""
         if not provided:
             return "missing"
         now = time.time()
         ipk = _ip_key(ip)
-        if self._throttled(ipk, now):
-            return "throttled"
         if not self.configured:
             return "unavailable"
         # Equal-length digests keep the comparison independent of the guess and the real key.
         same = hmac.compare_digest(_digest(provided[:MAX_KEY_LENGTH]), _digest(self.cfg.judge_key))
-        if not same or len(provided) > MAX_KEY_LENGTH:
-            if count_failure and self._throttled_globally(now):
-                return "throttled"  # the right key still gets in above; a wrong one is not counted
-            if count_failure:  # the status poll must not lock out a browser holding a stale key
-                self._fail(ipk, now)
-            return "invalid"
-        return "disabled" if self.disabled else "ok"
+        if same and len(provided) <= MAX_KEY_LENGTH:
+            return "disabled" if self.disabled else "ok"
+        time.sleep(max(0.0, self.cfg.wrong_secret_delay))
+        throttled = self._throttled(ipk, now) or self._throttled_globally(now)
+        if count_failure:  # the status poll must not lock out a browser holding a stale key
+            self._fail(ipk, now)
+        return "throttled" if throttled else "invalid"
 
     # ---------------------------------------------------------------- quota (its own, per key)
     def _day(self, now: datetime) -> dict:

@@ -71,8 +71,16 @@ def test_owner_reply_verification_reads_the_providers_result():
     """RT-04: the optional check needs a DKIM or SPF pass in the headers."""
     from probate.common.court_mail import verified
 
-    assert verified({"Authentication-Results": "mx; dkim=pass header.d=x.com"})
-    assert verified({"authentication-results": "spf=pass"})
-    assert not verified({"Authentication-Results": "dkim=fail"})
-    assert not verified({})
-    assert not verified(None)
+    me = "owner@x.com"
+    assert verified({"Authentication-Results": "mx; dkim=pass header.d=x.com"}, me)
+    assert verified({"authentication-results": "spf=pass smtp.mailfrom=mail.x.com"}, me)
+    assert verified({"authentication-results": "dmarc=pass header.from=x.com"}, me)
+    assert not verified({"Authentication-Results": "dkim=fail header.d=x.com"}, me)
+    assert not verified({}, me)
+    assert not verified(None, me)
+    # A pass for the attacker's own domain proves nothing about the From address.
+    assert not verified({"Authentication-Results": "mx; spf=pass smtp.mailfrom=evil.example"}, me)
+    assert not verified({"authentication-results": "dkim=pass header.d=evil.example"}, me)
+    assert not verified({"authentication-results": "dkim=pass header.d=notx.com"}, me)
+    assert not verified({"authentication-results": "spf=pass"}, me)
+    assert not verified({"Authentication-Results": "dkim=pass header.d=x.com"})

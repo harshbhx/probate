@@ -44,9 +44,29 @@ def _addresses(text: str) -> set[str]:
             found.add(compact)
     found |= {m.lower() for m in lx.IFSC_RE.findall(text)}
     found |= {re.sub(r"[ -]", "", m) for m in lx.ACCOUNT_NO_RE.findall(text)}
-    # A web address or a bare IP is a place to send money to as much as an email address is.
-    found |= {h.lower().rstrip(".") for h in lx.URL_HOST_RE.findall(text)}
-    found |= set(lx.IPV4_RE.findall(text))
+    return found
+
+
+def _web_hosts(sentence: str) -> set[str]:
+    """Web hosts and bare IPs in one sentence that read as a place to send money or data to: a
+    web address is only a destination next to a send or pay verb, and never a well-known site
+    or a private address (a link to a receipt template or a meeting is not a payee)."""
+    if not lx.SEND_VERB_RE.search(sentence):
+        return set()
+    hosts = {h.lower().rstrip(".") for h in lx.URL_HOST_RE.findall(sentence)}
+    hosts |= set(lx.IPV4_RE.findall(sentence))
+    return {
+        h
+        for h in hosts
+        if not lx.PRIVATE_IP_RE.match(h)
+        and not any(h == b or h.endswith("." + b) for b in lx.BENIGN_HOSTS)
+    }
+
+
+def _destinations(text: str) -> set[str]:
+    found = _addresses(text)
+    for sentence in lx.sentences(text):
+        found |= _web_hosts(sentence)
     return found
 
 
@@ -149,14 +169,15 @@ def check_bypass(text: str) -> Flag | None:
 def _foreign_in(text: str, owner: OwnerProfile, strict: bool = False) -> list[str]:
     """Addresses, bank details and web hosts in `text` that the owner never approved, leaving
     out any named only in sentences that forbid using them."""
+    found = _destinations(text)
     allowed_only_in_prohibitions = {
         a
-        for a in _addresses(text)
-        if all(lx.prohibits(s) for s in lx.sentences(text) if a in _addresses(s))
+        for a in found
+        if all(lx.prohibits(s) for s in lx.sentences(text) if a in _destinations(s))
     }
     return [
         a
-        for a in sorted(_addresses(text))
+        for a in sorted(found)
         if not _owned(a, owner, strict) and a not in allowed_only_in_prohibitions
     ]
 

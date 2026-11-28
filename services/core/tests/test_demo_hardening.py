@@ -51,8 +51,8 @@ def test_admin_wrong_tokens_are_throttled_per_address(tmp_path, monkeypatch):
     bad = {"X-Probate-Admin": "nope", "x-forwarded-for": "9.9.9.9"}
     codes = [c.post("/admin/pause", headers=bad).status_code for _ in range(5)]
     assert codes == [403, 403, 403, 429, 429]
-    # even the right token waits; another address is unaffected
-    assert c.post("/admin/pause", headers={**bad, "X-Probate-Admin": ADMIN}).status_code == 429
+    # the right token is never refused, whatever the address did before
+    assert c.post("/admin/pause", headers={**bad, "X-Probate-Admin": ADMIN}).status_code == 200
     other = {"X-Probate-Admin": ADMIN, "x-forwarded-for": "8.8.8.8"}
     assert c.post("/admin/pause", headers=other).status_code == 200
 
@@ -77,6 +77,7 @@ def test_ask_has_a_daily_cap(tmp_path, monkeypatch):
     m = load(tmp_path, monkeypatch, PROBATE_ASK_DAILY_CAP="2")
     calls = []
     monkeypatch.setattr(m.ancestor, "ask", lambda *a, **k: calls.append(1) or {"answer": "ok"})
+    monkeypatch.setattr(m.store, "generation", lambda g: type("G", (), {"state": "dead"})())
     c = TestClient(m.app)
     codes = []
     for i in range(4):

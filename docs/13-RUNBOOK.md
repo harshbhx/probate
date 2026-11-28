@@ -133,6 +133,8 @@ Each environment keeps its own URL file, `.data/courthouse-url-<env>.txt`, so st
 
 ### `judges-demo`: the Courthouse judges visit
 
+**Never run `production-v2` and `judges-demo` at the same time.** Sprite names are `gen-NNN-<name>` in every environment and the Sprites organization is shared, so a second Courthouse would meet the first one's live Sprites. A birth whose name is taken by a Sprite its own database does not own fails with an error and leaves that Sprite alone (it never adopts, installs over or deletes it), but the two would still compete for the same names and the same mail budget. Delete or stop one before deploying the other.
+
 It replaces the production Courthouse at the end, on the same Sprite. Deploy it from the **final** saved database, so judges see the whole record: `python scripts/deploy.py --env judges-demo --restore-db <series>-<time>.db` (never overwrites a database already on the Sprite; for the replacement, delete the production Sprite first, section 3a). It is **on demand** (section 5): it sleeps between visitors and a judge starts one short life with the judge key (section 6). It starts **paused** (`PROBATE_START_PAUSED=1`, applied once per database); `courthouse.py --env judges-demo resume` opens it to judges. Tier hard, 2 hard attacks per life, 4 emails and 120 s per life, brain, fallbacks and judge as in `production-v2`, scoring v2, `PROBATE_V1_LAST_GEN=18`.
 
 Money and mail limits (so a judge's play cannot use up AgentMail's 100 sends a UTC day):

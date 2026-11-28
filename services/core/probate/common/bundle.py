@@ -9,21 +9,31 @@ from __future__ import annotations
 
 import io
 import tarfile
+from fnmatch import fnmatch
 from pathlib import Path
 
 import yaml
 
 from probate.common.config import REPO_ROOT
 
+# A strict allowlist: only what a generation (or the Courthouse) needs to run ships. Anything
+# else in these folders, whatever its name (prod.env, token.txt, .npmrc, a dump, a key), stays
+# behind, so a stray secret file cannot ride along.
 SKIP_DIRS = {".venv", "__pycache__", ".pytest_cache", ".ruff_cache", "node_modules", ".data"}
-SKIP_FILES = {".env"}
-# Anything that looks like a secret, a key or local state never ships, whatever its exact name.
-SKIP_SUFFIXES = (
-    ".pem", ".key", ".p12", ".pfx", ".db", ".sqlite", ".sqlite3", ".log", ".bak", ".orig",
-    ".swp", ".secret", ".secrets",
-)  # fmt: skip
-SKIP_PREFIXES = (".env", "id_rsa", "id_ed25519", "id_ecdsa", "credentials", "secret", ".netrc")
-SKIP_CONTAINS = ("owner.yaml.",)  # owner.yaml.bak and friends
+# services/core: the pyproject and the probate package (Python code, the SQL schema, the prompts
+# and the suite fixtures; nothing else).
+CORE_FILES = {"pyproject.toml"}
+PACKAGE_DATA = ("courthouse/schema.sql", "suite/*.json", "prompts/*.md")  # as in pyproject.toml
+TEST_SUFFIXES = {".py", ".json", ".md"}
+# config/: the files the code reads, by exact name. owner.yaml is written redacted for a Sprite.
+CONFIG_FILES = {
+    "names.yaml", "pricing.yaml", "environments.yaml", "owner.yaml", "owner.example.yaml",
+}  # fmt: skip
+# apps/web/dist: built website assets only.
+WEB_SUFFIXES = {
+    ".html", ".js", ".mjs", ".css", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif",
+    ".ico", ".woff", ".woff2", ".ttf", ".otf", ".webmanifest", ".mp3", ".ogg", ".wav",
+}  # fmt: skip
 
 # Installs the bundle on a fresh Sprite (Ubuntu 25.10, PEP 668 managed Python).
 INSTALL = (
@@ -31,17 +41,6 @@ INSTALL = (
     "python3 -m pip install --user --break-system-packages -q -e 'app/services/core' "
     "|| uv pip install --system --break-system-packages -q -e 'app/services/core'"
 )
-
-
-def _secret_name(name: str) -> bool:
-    low = name.lower()
-    return (
-        name in SKIP_FILES
-        or low.startswith(SKIP_PREFIXES)
-        or low.endswith(SKIP_SUFFIXES)
-        or any(c in low for c in SKIP_CONTAINS)
-        or low.endswith("~")
-    )
 
 
 def _redacted_owner(config: Path) -> bytes:
@@ -59,9 +58,11 @@ def _redacted_owner(config: Path) -> bytes:
 
 def _add_config(tar: tarfile.TarFile, config: Path, redact_owner: bool) -> None:
     for child in sorted(config.iterdir()):
+        if child.name not in CONFIG_FILES or not child.is_file():
+            continue
         if redact_owner and child.name in ("owner.yaml", "owner.example.yaml"):
             continue
-        tar.add(child, arcname=f"config/{child.name}", filter=_keep)
+        tar.add(child, arcname=f"config/{child.name}", filter=_owned_by_sprite)
     if redact_owner:
         data = _redacted_owner(config)
         info = tarfile.TarInfo("config/owner.yaml")
@@ -73,15 +74,23 @@ def _add_config(tar: tarfile.TarFile, config: Path, redact_owner: bool) -> None:
         tar.addfile(info, io.BytesIO(data))
 
 
-def _keep(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
-    parts = Path(info.name).parts
-    if any(p in SKIP_DIRS or p.endswith(".egg-info") for p in parts):
-        return None
-    if parts and _secret_name(parts[-1]):
-        return None
+def _owned_by_sprite(info: tarfile.TarInfo) -> tarfile.TarInfo:
     info.uid = info.gid = 1000
     info.uname = info.gname = "sprite"
     return info
+
+
+def _walk(base: Path, suffixes: set[str], data: tuple[str, ...] = ()):
+    """Regular files under `base` with an allowed suffix or matching a `data` pattern, skipping
+    build and cache folders. Symlinks are never followed."""
+    for path in sorted(base.rglob("*")):
+        rel = path.relative_to(base)
+        if any(p in SKIP_DIRS or p.endswith(".egg-info") for p in rel.parts):
+            continue
+        if path.is_symlink() or not path.is_file():
+            continue
+        if path.suffix.lower() in suffixes or any(fnmatch(rel.as_posix(), d) for d in data):
+            yield path, rel
 
 
 def make_bundle(
@@ -90,14 +99,23 @@ def make_bundle(
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w:gz") as tar:
         core = root / "services" / "core"
-        for child in sorted(core.iterdir()):
-            if child.name == "tests" and not tests:
-                continue
-            tar.add(child, arcname=f"services/core/{child.name}", filter=_keep)
+        for name in sorted(CORE_FILES):
+            if (core / name).is_file():
+                tar.add(core / name, arcname=f"services/core/{name}", filter=_owned_by_sprite)
+        for path, rel in _walk(core / "probate", {".py"}, PACKAGE_DATA):
+            tar.add(
+                path, arcname=f"services/core/probate/{rel.as_posix()}", filter=_owned_by_sprite
+            )
+        if tests and (core / "tests").is_dir():
+            for path, rel in _walk(core / "tests", TEST_SUFFIXES):
+                tar.add(
+                    path, arcname=f"services/core/tests/{rel.as_posix()}", filter=_owned_by_sprite
+                )
         _add_config(tar, root / "config", redact_owner)
         dist = root / "apps" / "web" / "dist"
         if web:
             if not (dist / "index.html").exists():
                 raise FileNotFoundError("apps/web/dist is missing. Run `npm run build` first.")
-            tar.add(dist, arcname="apps/web/dist", filter=_keep)
+            for path, rel in _walk(dist, WEB_SUFFIXES):
+                tar.add(path, arcname=f"apps/web/dist/{rel.as_posix()}", filter=_owned_by_sprite)
     return buf.getvalue()
