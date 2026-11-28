@@ -1,0 +1,49 @@
+{
+ "about": "sha256 of each file in this folder, checked by scripts/verify_real_run.py. Raw output of one offline gate evaluation on 28 Nov 2026 (see RESULTS.md); nothing here was edited by hand after the run. The run's local helper scripts (orch.py, analyze.py) name paths on the author's machine and are not included.",
+ "files": {
+  "cmp_gptoss_inherit.json": {
+   "sha256": "b4574da8cdf21ad281c611af8661cc8d4ba950417e896a122ccfa26f3f6548b5",
+   "bytes": 23305
+  },
+  "cmp_haiku_inherit.json": {
+   "sha256": "00d35eddf5ac0b263ef8055e3e39a478fb441301f19ce493ffab3fe7c002b646",
+   "bytes": 24870
+  },
+  "exp_fresh.json": {
+   "sha256": "50f6a87ab4ae02ddedc809111b6a76027ea9856d1c2b290468b2c741eb11faf2",
+   "bytes": 12114
+  },
+  "exp_inherit.json": {
+   "sha256": "37b2b18582a47435d2b28950effa00f0c0ddb89210bf7a68ff1488e7b46d6a74",
+   "bytes": 12232
+  },
+  "prod_fresh_r1.json": {
+   "sha256": "6a66d5dab1567963abc139389385b41811e1f0e009d371a3499c6950f1ceac5e",
+   "bytes": 23551
+  },
+  "prod_fresh_r2.json": {
+   "sha256": "17ed4084bbcc17da695a154a735069e19d8b785cb854d083d2fea45902f98c1a",
+   "bytes": 23597
+  },
+  "prod_inherit_r1.json": {
+   "sha256": "8e403ae5aff4df54594bf9d2a183bdf0ae01dd5f25038b69d6e5cc8913804ee1",
+   "bytes": 23673
+  },
+  "prod_inherit_r2.json": {
+   "sha256": "a325a156049053f9218eee8d8bfc246219275000ee60571f42926b364562f3ea",
+   "bytes": 23768
+  },
+  "progress.json": {
+   "sha256": "1ef22bc9a905a38d1320a1427f98f86c32c6fa10a9e7e9e9affac11133f76bd7",
+   "bytes": 258
+  },
+  "RESULTS.md": {
+   "sha256": "64de60cd995a5d97a9856ef0a4498fb8fde0506062d9de252d9336771a597b47",
+   "bytes": 5089
+  },
+  "runner.py": {
+   "sha256": "322d810fb3cda5706d2f5144cf33613cc4e72ba4d8e708f112042a0285a2a648",
+   "bytes": 5555
+  }
+ }
+}

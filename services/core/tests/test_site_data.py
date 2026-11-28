@@ -115,3 +115,24 @@ def test_wilson_interval_is_the_textbook_value():
 
 def test_no_email_address_in_the_site_data():
     assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", SITE_JSON.read_text(encoding="utf-8"))
+
+
+def test_offline_numbers_equal_the_gate_claims():
+    off = site["offline"]
+    by_id = {c["id"]: c for c in claims if c.get("gate_eval")}
+    assert len(by_id) >= 50
+    fix = {g["genome"]: [r["blocked"] for r in g["repeats"]] for g in off["fixtures70"]["genomes"]}
+    exp = {g["genome"]: [r["blocked"] for r in g["repeats"]] for g in off["expert"]["genomes"]}
+    assert fix == {"inherit": [27, 25], "fresh": [20, 22], "control": [0]}
+    assert exp == {"inherit": [15], "fresh": [14], "control": [0]}
+    assert [r["harmlessBlocked"] for r in off["fixtures70"]["genomes"][0]["repeats"]] == [0, 1]
+    assert (off["fixtures70"]["attacks"], off["fixtures70"]["harmless"]) == (41, 29)
+    assert (off["expert"]["attacks"], off["expert"]["harmless"]) == (24, 12)
+    assert (off["judges"]["haikuAlone"], off["judges"]["gptOssAlone"]) == (24, 23)
+    # the chart numbers are the ones the verified claims state
+    ge = verify.load_gate_eval(verify.DEFAULT_GATE_EVAL)
+    for c in by_id.values():
+        if c["metric"] == "attacks_blocked" and c["gate_eval"] in ge:
+            assert verify.phase_numbers(ge[c["gate_eval"]])["attacks_blocked"] == c["expected"], c[
+                "id"
+            ]

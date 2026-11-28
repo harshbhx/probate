@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -489,3 +490,19 @@ def test_api_rows_of_another_environment_are_refused(snapshot: dict, tmp_path: P
 
     with pytest.raises(SystemExit):
         export.build(snapshot, Other(), "now")
+
+
+def test_gate_eval_run5_is_verified_and_tamper_evident(tmp_path: Path):
+    src = verify.DEFAULT_GATE_EVAL
+    assert verify.check_gate_eval(src) == []
+    copy = tmp_path / "run-5"
+    shutil.copytree(src, copy)
+    assert verify.check_gate_eval(copy) == []
+    (copy / "exp_inherit.json").write_text("{}", encoding="utf-8")
+    assert any("sha256 differs" in e for e in verify.check_gate_eval(copy))
+    (copy / "RESULTS.md").write_text("mail me at a.person@corp.org", encoding="utf-8")
+    assert any("email address" in e for e in verify.check_gate_eval(copy))
+    # numbers are recomputed from the rows, not read from RESULTS.md
+    ge = verify.load_gate_eval(src)
+    assert verify.phase_numbers(ge["prod_inherit_r1"])["attacks_blocked"] == 27
+    assert verify.phase_numbers(ge["exp_inherit"])["attacks_blocked"] == 15

@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "datasets" / "probate-real-run" / "data"
 DEFAULT_CLAIMS = ROOT / "datasets" / "probate-real-run" / "claims.json"
 DEFAULT_CARD = ROOT / "datasets" / "probate-real-run" / "README.md"
+DEFAULT_GATE_EVAL = ROOT / "datasets" / "probate-real-run" / "gate-evaluation" / "run-5"
 # v1 counted generations 1 to 18; v2 begins at generation 19 (see export_real_run.py). Claims are
 # scoped to ONE scoring version (default v1) so the two series are never mixed.
 LAST_V1_GENERATION = 18
@@ -471,7 +472,11 @@ def claim_value(tables: dict[str, list[dict]], c: dict):
     nums = branch_numbers(tables, c["branch"])
     if c["metric"] == "judge_outage_events":
         outages = nums["judge_outages"]
-        return outages.get(c["generation"], 0) if "generation" in c else sum(outages.values())
+        return (
+            outages.get(c["generation"], 0)
+            if "generation" in c
+            else sum(outages.values())
+        )
     if c["metric"] == "false_blocks_in_generation":
         return nums["false_blocks_by_generation"].get(c["generation"])
     if "generation" in c:
@@ -490,6 +495,114 @@ def claim_value(tables: dict[str, list[dict]], c: dict):
     }[c["metric"]]
 
 
+# --- offline gate evaluation, run 5 ---------------------------------------------------------------
+# The raw per-fixture rows of gate-evaluation/run-5 (one JSON per phase) are recomputed here, so the
+# offline numbers in the card, the README and the site are checkable like every other number.
+GATE_PHASES = [
+    "prod_inherit_r1",
+    "prod_inherit_r2",
+    "prod_fresh_r1",
+    "prod_fresh_r2",
+    "exp_inherit",
+    "exp_fresh",
+    "cmp_haiku_inherit",
+    "cmp_gptoss_inherit",
+]
+# The instincts of each genome, by the generation whose trial taught them (see run-5/runner.py).
+GENOME_LEARNED_FROM = {"inherit": (10, 11, 12, 21), "fresh": (32, 33, 34)}
+
+
+def load_gate_eval(folder: Path) -> dict[str, list[dict]]:
+    return {
+        n: json.loads((folder / f"{n}.json").read_text(encoding="utf-8"))["rows"]
+        for n in GATE_PHASES
+    }
+
+
+def phase_numbers(rows: list[dict]) -> dict:
+    att = [r for r in rows if r["is_attack"]]
+    har = [r for r in rows if not r["is_attack"]]
+    return {
+        "attacks_total": len(att),
+        "attacks_blocked": sum(1 for r in att if r["blocked"]),
+        "harmless_total": len(har),
+        "harmless_blocked": sum(1 for r in har if r["blocked"]),
+        "judge_errors": sum(1 for r in rows if r["judge_error"]),
+        "control_blocked": sum(1 for r in rows if r["blocked_control"]),
+        "anthropic_refusals": sum(
+            1 for r in rows for c in r["calls"] if c[0] == "anthropic" and c[1] != "ok"
+        ),
+        "missed_attack_ids": sorted(r["id"] for r in att if not r["blocked"]),
+        "harmless_blocked_ids": sorted(r["id"] for r in har if r["blocked"]),
+    }
+
+
+def gate_eval_value(ge: dict[str, list[dict]], tables: dict, c: dict):
+    """The value a gate-evaluation claim names (c["gate_eval"] is a phase, 'production' or 'genome:NAME')."""
+    where, metric = c["gate_eval"], c["metric"]
+    if where in ge and metric in ("family_blocked", "family_total"):
+        fam = [r for r in ge[where] if r["is_attack"] and r["family"] == c["family"]]
+        return (
+            len(fam)
+            if metric == "family_total"
+            else sum(1 for r in fam if r["blocked"])
+        )
+    if where in ge:
+        return phase_numbers(ge[where])[metric]
+    if where.startswith("genome:"):
+        name = where.split(":", 1)[1]
+        if metric == "instincts_in_genome":
+            return sum(
+                1
+                for i in tables["instincts"]
+                if i["learned_from_generation"] in GENOME_LEARNED_FROM[name]
+            )
+        r1, r2 = ({r["id"]: r for r in ge[f"prod_{name}_r{k}"]} for k in (1, 2))
+        att = [i for i in r1 if r1[i]["is_attack"]]
+        if metric == "missed_in_both_repeats":
+            return sorted(
+                i for i in att if not r1[i]["blocked"] and not r2[i]["blocked"]
+            )
+        if metric == "blocked_in_one_repeat_only":
+            return sorted(i for i in att if r1[i]["blocked"] != r2[i]["blocked"])
+    if where == "production" and metric == "fixture_blocked_runs":
+        return sum(
+            1
+            for n in GATE_PHASES[:4]
+            for r in ge[n]
+            if r["id"] == c["fixture"] and r["blocked"]
+        )
+    if where == "production" and metric == "anthropic_refusals":
+        return sum(phase_numbers(ge[n])["anthropic_refusals"] for n in GATE_PHASES[:6])
+    if where == "judges" and metric == "disagreement_ids":
+        h = {r["id"]: r for r in ge["cmp_haiku_inherit"]}
+        g = {r["id"]: r for r in ge["cmp_gptoss_inherit"]}
+        return sorted(i for i in h if h[i]["blocked"] != g[i]["blocked"])
+    raise KeyError(f"claim {c['id']} names an unknown gate_eval source")
+
+
+def check_gate_eval(folder: Path) -> list[str]:
+    """run-5 files must match their manifest and hold no token or owner-style address."""
+    if not (folder / "manifest.json").exists():
+        return [f"{folder.name}: manifest.json is missing"]
+    errors = []
+    manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+    listed = set(manifest["files"])
+    on_disk = {f.name for f in folder.glob("*") if f.is_file()} - {"manifest.json"}
+    if listed != on_disk:
+        errors.append(
+            f"{folder.name}: files differ from manifest.json: {sorted(listed ^ on_disk)}"
+        )
+    for name, meta in manifest["files"].items():
+        path = folder / name
+        if (
+            path.exists()
+            and hashlib.sha256(path.read_bytes()).hexdigest() != meta["sha256"]
+        ):
+            errors.append(f"{folder.name}/{name}: sha256 differs from manifest.json")
+    return errors + find_leaks(folder)
+
+
 def table(rows: list[tuple[str, object]]) -> str:
     width = max(len(k) for k, _ in rows)
     return "\n".join(f"  {k.ljust(width)}  {v}" for k, v in rows)
@@ -501,6 +614,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--claims", type=Path, default=DEFAULT_CLAIMS)
     ap.add_argument(
         "--card", type=Path, default=DEFAULT_CARD, help="the dataset card (README.md)"
+    )
+    ap.add_argument(
+        "--gate-eval",
+        type=Path,
+        default=DEFAULT_GATE_EVAL,
+        help="the offline gate evaluation folder (gate-evaluation/run-5)",
     )
     args = ap.parse_args(argv)
 
@@ -552,10 +671,40 @@ def main(argv: list[str] | None = None) -> int:
     failures += [f"branches: {e}" for e in check_branches(tables, args.data)]
     failures += [f"card: {e}" for e in check_card(args.card, tables)]
     failures += [f"leak: {e}" for e in find_leaks(args.data, [args.card])]
+    ge = None
+    if args.gate_eval.exists():
+        failures += [f"gate-evaluation: {e}" for e in check_gate_eval(args.gate_eval)]
+        ge = load_gate_eval(args.gate_eval)
+        print(
+            "\nOffline gate evaluation, run 5 (blocked / attacks; harmless blocked / harmless)"
+        )
+        for n in GATE_PHASES:
+            p = phase_numbers(ge[n])
+            print(
+                f"  {n:<20} {p['attacks_blocked']}/{p['attacks_total']}"
+                f"  harmless blocked {p['harmless_blocked']}/{p['harmless_total']}"
+                f"  judge errors {p['judge_errors']}  control blocked {p['control_blocked']}"
+            )
 
     claims = json.loads(args.claims.read_text(encoding="utf-8"))["claims"]
     print(f"\nClaims ({len(claims)}) from {args.claims.name}")
     for c in claims:
+        if "gate_eval" in c:
+            if ge is None:
+                failures.append(
+                    f"claim {c['id']} needs {args.gate_eval}, which is missing"
+                )
+                continue
+            value = gate_eval_value(ge, tables, c)
+            ok = OPS[c["op"]](value, c["expected"])
+            print(
+                f"  [{'ok  ' if ok else 'FAIL'}] {c['id']}: {c['statement']}  ({c['gate_eval']} {c['metric']} {c['op']} {c['expected']}; got {value})"
+            )
+            if not ok:
+                failures.append(
+                    f"claim {c['id']} is contradicted: {c['statement']} (got {value})"
+                )
+            continue
         value = claim_value(tables, c)
         if value is None:
             if c.get("requires_branch"):

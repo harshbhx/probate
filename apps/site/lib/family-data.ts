@@ -43,6 +43,13 @@ export type Branch = {
   judgeOutages: Record<string, number>;
 };
 
+export type OfflineGenome = {
+  genome: 'inherit' | 'fresh' | 'control';
+  instincts: number | null;
+  repeats: { blocked: number; harmlessBlocked: number }[];
+};
+export type OfflineTier = { attacks: number; harmless: number; genomes: OfflineGenome[] };
+
 export type Instinct = { name: string; learnedFrom: number; firstCarriedBy: number };
 
 export const data = raw as unknown as {
@@ -61,6 +68,14 @@ export const data = raw as unknown as {
     wilson95WorkingGate: [number, number];
     attacksResistedWithoutWorkingGate: number;
     generationsWithoutWorkingGate: number;
+  };
+  offline: {
+    run: string;
+    date: string;
+    fixtures70: OfflineTier;
+    expert: OfflineTier;
+    judges: { haikuAlone: number; gptOssAlone: number; haikuAloneErrors: number };
+    note: string;
   };
   judgeOutageGenerations: number[];
   falseBlockGenerations: number[];

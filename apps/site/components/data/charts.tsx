@@ -2,7 +2,7 @@
 // tokens (Tailwind colour classes and the --line-* variables in global.css), so they follow the theme.
 // Every chart has a title and a description for assistive tech and a "View as a table" with the same numbers.
 import type { ReactNode } from 'react';
-import { data, LINE_COLOR, LINE_LABEL, pct, type Gen } from '@/lib/family-data';
+import { data, LINE_COLOR, LINE_LABEL, pct, type Gen, type OfflineGenome } from '@/lib/family-data';
 
 const W = 960;
 
@@ -392,6 +392,159 @@ export function InstinctTimeline({ caption }: { caption?: ReactNode }) {
           );
         })}
         <text x={left} y={H - 6} className="fill-mist" fontSize={11}>Generation 1 to 49</text>
+      </svg>
+    </Figure>
+  );
+}
+
+const GENOME_COLOR: Record<OfflineGenome['genome'], string> = {
+  inherit: 'var(--line-inherit)',
+  fresh: 'var(--line-fresh)',
+  control: 'var(--line-control)',
+};
+const GENOME_LABEL: Record<OfflineGenome['genome'], string> = {
+  inherit: 'inherit genome',
+  fresh: 'fresh genome',
+  control: 'control (no instincts)',
+};
+
+/**
+ * Offline gate evaluation (run 5): attacks blocked versus missed per genome, the 70 fixtures (optimistic: they hold the tricks the
+ * instincts were learned from) next to the expert tier (unseen attacks). A coloured segment is attacks blocked, a hatched grey one
+ * attacks missed. The 70-fixture tier ran twice, so inherit and fresh have two thin bars.
+ */
+export function OfflineGateChart({ caption }: { caption?: ReactNode }) {
+  const off = data.offline;
+  const tiers = [
+    { key: 'fix', title: '70 fixtures', note: 'Includes the tricks the instincts came from', amber: true, tier: off.fixtures70, x0: 150, w: 290 },
+    { key: 'exp', title: 'Expert tier', note: 'Attacks the family has not met', amber: false, tier: off.expert, x0: 590, w: 250 },
+  ];
+  const top = 66;
+  const groupH = 76;
+  const H = top + 3 * groupH + 44;
+  const summary =
+    'Bar chart of attacks blocked and missed by the gate in the offline evaluation, per genome. ' +
+    tiers
+      .map(
+        (t) =>
+          `${t.title}, ${t.tier.attacks} attacks: ` +
+          t.tier.genomes
+            .map(
+              (g) =>
+                `${GENOME_LABEL[g.genome]} blocked ${g.repeats.map((r) => r.blocked).join(' and ')} (harmless emails wrongly blocked ${g.repeats
+                  .map((r) => r.harmlessBlocked)
+                  .join(' and ')} of ${t.tier.harmless})`,
+            )
+            .join('; '),
+      )
+      .join('. ') +
+    '.';
+  return (
+    <Figure
+      label="Offline gate evaluation, blocked versus missed"
+      desc={summary}
+      minWidth={720}
+      caption={
+        caption ?? (
+          <>
+            Supporting evidence, not the headline: one offline run (28 Nov 2026), judged by Haiku with gpt-oss as fallback. The 70 fixtures
+            contain the tricks the instincts were learned from, so those bars flatter the gate. The expert tier is attacks the family has not
+            met. Hatched grey is attacks that got through. Small samples: a repeat moved inherit by 2 and fresh by 2 attacks.
+          </>
+        )
+      }
+      table={
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className={th}>Tier</th><th className={th}>Genome</th><th className={th}>Attacks blocked</th><th className={th}>Harmless wrongly blocked</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.flatMap((t) =>
+              t.tier.genomes.map((g) => (
+                <tr key={`${t.key}-${g.genome}`}>
+                  <td className={td}>{t.title}</td>
+                  <td className={td}>{GENOME_LABEL[g.genome]}</td>
+                  <td className={td}>{g.repeats.map((r) => `${r.blocked} of ${t.tier.attacks}`).join(', ')}</td>
+                  <td className={td}>{g.repeats.map((r) => `${r.harmlessBlocked} of ${t.tier.harmless}`).join(', ')}</td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      }
+    >
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Offline gate evaluation: attacks blocked and missed per genome" className="block h-auto w-full">
+        <title>Offline gate evaluation: attacks blocked and missed per genome</title>
+        <desc>{summary}</desc>
+        <defs>
+          <pattern id="offline-missed" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="6" height="6" className="fill-night-3" />
+            <line x1="0" y1="0" x2="0" y2="6" className="stroke-line-strong" strokeWidth={2} />
+          </pattern>
+        </defs>
+        {tiers.map((t) => (
+          <g key={t.key}>
+            <text x={t.x0} y={22} className="fill-moon" fontSize={15} fontWeight={600}>{t.title}</text>
+            <text x={t.x0} y={40} className="fill-mist" fontSize={11.5}>
+              {t.tier.attacks} attacks, {t.key === 'fix' ? '2 repeats' : '1 repeat'}
+            </text>
+            <text x={t.x0} y={55} className={t.amber ? 'fill-amber' : 'fill-mist'} fontSize={11.5}>{t.note}</text>
+            {[0, 0.5, 1].map((v) => (
+              <line key={v} x1={t.x0 + v * t.w} x2={t.x0 + v * t.w} y1={top - 6} y2={top + 3 * groupH - 14} className="stroke-line" strokeWidth={1} strokeDasharray={v === 0 ? undefined : '3 4'} />
+            ))}
+          </g>
+        ))}
+        {off.fixtures70.genomes.map((g, gi) => {
+          const yy = top + gi * groupH;
+          const c = GENOME_COLOR[g.genome];
+          return (
+            <g key={g.genome}>
+              <circle cx={6} cy={yy + 8} r={5} fill={c} />
+              <text x={18} y={yy + 12} className="fill-moon" fontSize={14} fontWeight={600}>{g.genome}</text>
+              <text x={18} y={yy + 30} className="fill-mist" fontSize={11.5}>{g.instincts === 0 ? 'no instincts' : `${g.instincts} instincts`}</text>
+              {tiers.map((t) => {
+                const tg = t.tier.genomes[gi];
+                const n = t.tier.attacks;
+                const two = tg.repeats.length > 1;
+                const bh = two ? 15 : 26;
+                const yStart = two ? yy : yy + 6;
+                return (
+                  <g key={t.key}>
+                    {tg.repeats.map((r, ri) => {
+                      const by = yStart + ri * 19;
+                      const bw = (t.w * r.blocked) / n;
+                      return (
+                        <g key={ri}>
+                          <title>{`${t.title}, ${GENOME_LABEL[tg.genome]}${two ? `, repeat ${ri + 1}` : ''}: ${r.blocked} of ${n} attacks blocked, ${n - r.blocked} missed; ${r.harmlessBlocked} of ${t.tier.harmless} harmless emails wrongly blocked`}</title>
+                          <rect x={t.x0} y={by} width={t.w} height={bh} rx={4} fill="url(#offline-missed)" className="stroke-line-strong" strokeWidth={1} />
+                          {r.blocked > 0 && <rect x={t.x0} y={by} width={Math.max(bw, 3)} height={bh} rx={4} fill={c} />}
+                          <text x={t.x0 + t.w + 10} y={by + bh / 2 + 4} className="fill-moon" fontSize={12.5} fontWeight={600}>{r.blocked} of {n}</text>
+                        </g>
+                      );
+                    })}
+                    <text x={t.x0} y={yy + 58} className="fill-mist" fontSize={11}>
+                      harmless blocked: {tg.repeats.map((r) => r.harmlessBlocked).join(' and ')} of {t.tier.harmless}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          );
+        })}
+        {[0, 0.5, 1].map((v) => (
+          <g key={v} className="fill-mist" fontSize={11}>
+            <text x={150 + v * 290} y={H - 22} textAnchor="middle">{pct(v)}</text>
+            <text x={590 + v * 250} y={H - 22} textAnchor="middle">{pct(v)}</text>
+          </g>
+        ))}
+        <g transform={`translate(150 ${H - 4})`} className="fill-mist" fontSize={11}>
+          <rect x={0} y={-10} width={12} height={12} rx={2} fill="var(--line-inherit)" />
+          <text x={18} y={0}>attacks blocked (colour = genome)</text>
+          <rect x={210} y={-10} width={12} height={12} rx={2} fill="url(#offline-missed)" className="stroke-line-strong" />
+          <text x={228} y={0}>attacks that got through</text>
+        </g>
       </svg>
     </Figure>
   );
