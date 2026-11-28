@@ -120,7 +120,17 @@ environments:
     # and 10 an hour. That is at most 90 of 100, leaving 10 for owner digests (at most 3 a day).
     settings:
       PROBATE_MODE: on_demand
-      PROBATE_REQUIRE_EDGE: "1"  # only the edge Worker may reach this Courthouse (needs PROBATE_EDGE_TOKEN)
+      # Edge-only access stays OFF until the edge Worker (apps/edge) is deployed with the same token
+      # as PROBATE_EDGE_TOKEN and the site links to it. With it on and no Worker, the public
+      # Courthouse URL would refuse every visitor. A token of 16+ characters is still required in
+      # on-demand mode (the Courthouse refuses to start without one). To switch on: set "1".
+      PROBATE_REQUIRE_EDGE: "0"
+      # Play needs the judge key (the default in real on-demand mode). Keep PROBATE_JUDGE_KEY out
+      # of services/core/.env to leave the demo read-only (play, attack previews and judge mail
+      # answer 503).
+      # Asking an ancestor is a model call open to anyone: a small cap (0 turns asking off).
+      PROBATE_ASK_DAILY_CAP: "10"
+      PROBATE_ASK_DAILY_PER_IP: "2"
       PROBATE_START_PAUSED: "1"
       PROBATE_SUITE_TIER: hard
       PROBATE_HARD_PER_LIFE: "2"
