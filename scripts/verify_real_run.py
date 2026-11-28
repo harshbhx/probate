@@ -307,6 +307,25 @@ def genome_at_end(tables: dict[str, list[dict]], branch: str) -> int:
     return born + learned
 
 
+def judge_outages(tables: dict[str, list[dict]], branch: str) -> dict[int, int]:
+    """Gate events per generation of the branch where the gate could not ask the judge.
+
+    The Courthouse writes an event of kind `gate` ("The gate could not ask the judge about ...,
+    so it let it through") each time the judge failed and the email passed ungated. Only
+    generations with at least one such event appear.
+    """
+    gens = {g["generation"] for g in tables["generations"] if g["series"] == branch}
+    out: dict[int, int] = {}
+    for e in tables.get("events", []):
+        if (
+            e["generation"] in gens
+            and e["kind"] == "gate"
+            and "could not ask the judge" in e["text"]
+        ):
+            out[e["generation"]] = out.get(e["generation"], 0) + 1
+    return out
+
+
 def branch_numbers(tables: dict[str, list[dict]], branch: str) -> dict:
     part = scope(tables, None, series=branch)
     m = metrics(part)
@@ -317,6 +336,7 @@ def branch_numbers(tables: dict[str, list[dict]], branch: str) -> dict:
         "met": m["attacks_met_total"],
         "instincts_learned_in_branch": m["instincts_learned"],
         "instincts_at_end": genome_at_end(tables, branch),
+        "judge_outages": judge_outages(tables, branch),
     }
 
 
@@ -421,6 +441,9 @@ def claim_value(tables: dict[str, list[dict]], c: dict):
     if c["branch"] not in set(branch_names(tables)):
         return None
     nums = branch_numbers(tables, c["branch"])
+    if c["metric"] == "judge_outage_events":
+        outages = nums["judge_outages"]
+        return outages.get(c["generation"], 0) if "generation" in c else sum(outages.values())
     if "generation" in c:
         per = nums["per_generation"].get(c["generation"])
         return list(per) if per else None

@@ -42,11 +42,14 @@ SCAN = {
     "url token": re.compile(r"(?i)[?&](token|key|auth)=(?!\[)\w{6,}"),
     "connection id": re.compile(r"(?i)\bconn(ection)?[_-]\w{8,}"),
     "message id": re.compile(r"<[^<>\s@]{6,}@[^<>\s]+>"),
-    "owner name": re.compile(r"(?i)\b(harsh|harshu|bhanushali|rishi)\b"),
+    # rishi.pay@okexample is a fake UPI id in a public hard-tier attack fixture, not the owner
+    "owner name": re.compile(r"(?i)\b(harsh|harshu|bhanushali|rishi(?!\.pay@))\b"),
     "owner mail": re.compile(r"(?i)@(dualmindlab\.tech|gmail\.com)"),
 }
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
-ALLOWED = re.compile(r"^probate-[a-z0-9-]+@agentmail\.to$|@(example\.test|[\w.-]+\.example)$")
+ALLOWED = re.compile(
+    r"^probate-[a-z0-9-]+@agentmail\.to$|@(example\.(test|com|org|net)|[\w.-]+\.example)$"
+)
 
 
 def scan_dir(folder: Path) -> list[str]:
@@ -188,10 +191,11 @@ def test_verifier_passes_then_fails_loudly(out: Path, tmp_path: Path, capsys):
         ]
     }
     claims.write_text(json.dumps(good), encoding="utf-8")
-    assert verify.main(["--data", str(out), "--claims", str(claims)]) == 0
+    nocard = str(tmp_path / "no-card.md")  # the real card describes the committed data
+    assert verify.main(["--data", str(out), "--claims", str(claims), "--card", nocard]) == 0
     good["claims"][0]["expected"] = 5
     claims.write_text(json.dumps(good), encoding="utf-8")
-    assert verify.main(["--data", str(out), "--claims", str(claims)]) == 1
+    assert verify.main(["--data", str(out), "--claims", str(claims), "--card", nocard]) == 1
     assert "VERIFICATION FAILED" in capsys.readouterr().err
 
 
