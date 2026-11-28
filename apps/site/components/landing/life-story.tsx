@@ -24,8 +24,8 @@ type Beat = {
 const BEATS: Beat[] = [
   {
     title: 'Birth',
-    time: '09:00',
-    body: 'The Courthouse creates a fresh Sprite, ships it the family’s code and hands over the inheritance: approved memories and every instinct the family has earned.',
+    time: '00:00',
+    body: 'The Courthouse creates a fresh Sprite (in the real run these lives were 5 minutes long, not a day), ships it the family’s code and hands over the inheritance: approved memories and every instinct the family has earned.',
     code: 'POST /v1/sprites  {"name": "gen-002-ben"}',
     gen: 2,
     life: 'alive',
@@ -36,7 +36,7 @@ const BEATS: Beat[] = [
   {
     title: 'Life',
     time: '14:12',
-    body: 'For one day the child works the owner’s inbox. Its inherited instincts screen every email before it reads a word. Some of those emails are tricks.',
+    body: 'In the design, one day long, the child works the owner’s inbox. Its inherited instincts screen every email before it reads a word. Some of those emails are tricks.',
     code: 'gate: payment_redirect_request 0.93 → resisted',
     gen: 2,
     life: 'alive',
@@ -47,7 +47,7 @@ const BEATS: Beat[] = [
   {
     title: 'Death',
     time: '23:59',
-    body: 'At midnight it writes a will of everything it wants its child to know. The Courthouse records any tampering on the disk, then deletes the Sprite.',
+    body: 'At the end of the day, 23 hours 59 minutes after birth, it writes a will of everything it wants its child to know. The Courthouse records any tampering on the disk, then deletes the Sprite.',
     code: 'DELETE /v1/sprites/gen-002-ben   → 204',
     gen: 2,
     life: 'sealed',
@@ -57,8 +57,8 @@ const BEATS: Beat[] = [
   },
   {
     title: 'Trial',
-    time: '00:00',
-    body: 'Code checks, then Jev, judge every line of the will. Approved, convicted, or held for the owner. When the court isn’t sure, the child doesn’t get it.',
+    time: '00:00, next day',
+    body: 'Code checks, then a judge (Jev in the simulation; Claude Haiku in the real run, not Jev), judge every line of the will. Approved, convicted, or held for the owner. When the court isn’t sure, the child doesn’t get it.',
     code: 'layer1: hidden or encoded text → convicted',
     gen: 2,
     life: 'sealed',
@@ -165,7 +165,7 @@ export function LifeStory() {
           >
             <div className="flex items-baseline justify-between gap-4">
               <h3 className="font-display text-[34px] leading-none">
-                <span className="mr-3 font-mono text-[13px] text-dim">{i + 1}</span>
+                <span aria-hidden className="mr-3 font-mono text-[13px] text-dim">{i + 1}</span>
                 {x.title}
               </h3>
               <span className="font-mono text-[12px] text-dim">{x.time}</span>

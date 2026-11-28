@@ -48,7 +48,7 @@ function Card({ c, i }: { c: (typeof CARDS)[number]; i: number }) {
         className={`${reduce ? '' : 'sticky'} origin-top overflow-hidden rounded-2xl border ${c.ring} bg-night-2 p-6 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.9)] sm:p-9`}
       >
         <div className="flex items-start justify-between gap-4">
-          <span className="font-display text-[18px] text-gilt">{c.n}</span>
+          <span aria-hidden className="font-display text-[18px] text-gilt">{c.n}</span>
           <Verdict v={c.v} className="text-[13px]" />
         </div>
         <p className="mt-5 max-w-3xl font-display text-[27px] leading-[1.15] tracking-[-0.01em] text-moon sm:text-[40px]">“{c.line}”</p>

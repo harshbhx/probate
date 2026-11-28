@@ -8,8 +8,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
     <>
       <aside aria-label="Hacksgiving 2026" className="border-b border-line bg-night-2 text-[13px] text-mist">
         <p className="mx-auto max-w-6xl px-5 py-2.5 text-center sm:px-6">
-          <span className="hidden sm:inline">Probate is an entry in Fly.io Hacksgiving 2026.</span>
-          <span className="sm:hidden">A Hacksgiving 2026 entry.</span>{' '}
+          Probate is an entry in Fly.io Hacksgiving 2026.{' '}
           <Link href="/docs/architecture/sprites" className="text-moon underline decoration-gilt/50 underline-offset-[3px] hover:decoration-gilt">
             See how it uses Sprites
           </Link>
