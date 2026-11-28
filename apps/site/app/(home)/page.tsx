@@ -15,6 +15,7 @@ import { Quotes } from '@/components/landing/quotes';
 import { LifeStory, LineageFilm, TryCourt, VerdictStack } from '@/components/landing/deferred';
 import { LinksHub } from '@/components/landing/links-hub';
 import { AnyAgent, InTheBox, PagesOnTrial } from '@/components/landing/products';
+import { SeeItLive } from '@/components/data/see-it-live';
 import { githubUrl, liveUrl } from '@/lib/shared';
 
 // Night Court v7 landing page: one lit courtroom, then the story in order (a day, a will, a trial, a child).
@@ -232,6 +233,7 @@ function Hero() {
               )}
               <Button href="/docs">Read the docs</Button>
             </div>
+            <SeeItLive className="mt-4" />
           </div>
           <div className="relative">
             <SpotlightCard className="rounded-2xl"><Docket /></SpotlightCard>

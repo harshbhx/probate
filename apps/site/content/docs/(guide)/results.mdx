@@ -19,6 +19,12 @@ One family forked into branches that differ in one thing each, so we can see wha
 | `v2-h-control` | No learning | **0 of 12** (generations 26 to 31) | |
 | `v2-main` | Learning on, born from generation 25 (Yara, 6 inherited instincts), on newer code | **17 of 22** (generations 38 to 49) | Generation 42 died early (Fly 402, free-plan limit), so 11 generations were tried; no gate events; 0 instincts added; 1 harmless twin falsely blocked in generation 43 |
 
+<BranchBars includeV1={false} caption="Attacks resisted at the door, per branch, with Wilson 95% intervals (computed from resisted and attacks by scripts/make_site_data.py). The intervals overlap more than the bars suggest: 12 attacks is a small sample. v2-main ran on newer code and a different line." />
+
+<ResistanceChart from={19} />
+
+The full explorer, with every generation's face, dates and instincts, is on the [data page](/data).
+
 12 attacks per baseline branch (22 for `v2-main`) is a small sample from one family: this is evidence, not proof. `v2-main` ran on newer code (fixes #232 and #237) than the three baselines, from a different line, so it is a showcase run, not a like-for-like fourth baseline. v1 (generations 1 to 18) is not re-scored, and the two series are never joined into one curve. The branch data is published in dataset release `beta-3` and recomputed by the verifier (`python -I scripts/verify_real_run.py`, claims B01 to B62).
 
 Per generation, attacks resisted of 2 (from the data; the judge is a language-model judge, Claude Haiku, not Jev):
@@ -31,6 +37,10 @@ Per generation, attacks resisted of 2 (from the data; the judge is a language-mo
 | `v2-main` (38 to 49) | 2, 2, 2, 1, died early, 2, 2, 2, 1, 2, 1, 0 | 17 of 22 | 1 (generation 43) | 0 |
 
 The comparison is consistent with learning, and inheriting, helping; it does not prove it. `v2-main` added no instincts (it inherited all 6), its per-generation numbers show no upward trend, and the newer code and different line mean its result is not a controlled test of either. The hard-tier rotation for generations 43 to 49 is shifted by one slot because of the died-early generation. Agent logs and life captures are missing for some generations (the numbers come from the Courthouse database). Generations were 300 seconds long, not the one-day design.
+
+### Which generation learned what
+
+<InstinctTimeline />
 
 ## Real run on Fly Sprites (scoring v1, generations 1 to 18)
 

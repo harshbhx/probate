@@ -21,6 +21,10 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ## Unreleased
 
+### Added
+
+- The site's `/data` page, "The family, in numbers": a generation explorer for all 49 generations (face, branch, scoring version, life dates, attacks, instincts at birth, cause of death), a branch comparison with Wilson 95% intervals and the caveats, resistance per generation with judge-outage, false-block and never-born markers, an instincts timeline and a verify-it-yourself box; inline SVG charts also in the results and proof docs; `scripts/make_site_data.py` writes the trimmed JSON from the dataset (tested against the verifier's claims); `scripts/make_gifs.py` renders two README GIFs from the real data; and a "See it live on the Sprite" link to the read-only public demo on the home page, `/data` and the README.
+
 ### Fixed
 
 - Site text from the judge-path audit: the duplicated Hacksgiving banner sentence is one sentence, the home life timeline now runs 00:00 to 23:59 (matching the eulogy) and says the design is one life per day while the real run used 5-minute lives, the home page labels each section simulation or real run and names the judge in the real run as Claude Haiku, not Jev, and chart numerals are hidden from screen readers. ([#241](https://github.com/harshbhx/probate/pull/241))

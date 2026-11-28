@@ -24,6 +24,8 @@ When it dies, a court tries everything it wanted to remember. Lessons pass down.
 In our experiments the family got harder to fool as it inherited instincts (in the simulation, and in the real run's v2 branches; small samples).<br>
 The same court now guards **any AI agent's memory**: the [memory court](#the-memory-court-for-any-agent) for Claude, Cursor and every MCP client.
 
+**[See it live on the Sprite](https://probate-courthouse-bonez.sprites.app)**: a read-only public demo of the Courthouse with 49 generations (if its Sprite is asleep, it wakes in a moment).
+
 [**The problem**](#the-problem) · [**The fix**](#the-fix) · [**Try it in 60 seconds**](#try-it-in-60-seconds) · [**Results**](#results) · [**Verify our numbers**](#how-to-verify-our-numbers) · [**Limitations**](#limitations)
 
 </div>
@@ -213,6 +215,15 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 </details>
 
 ## Results
+
+**[See it live on the Sprite](https://probate-courthouse-bonez.sprites.app)** (read-only demo, 49 generations; it wakes in a moment if it is asleep). Every number below is also explorable generation by generation on the site's `/data` page ("The family, in numbers").
+
+<table>
+<tr>
+<td width="50%"><img src="docs/media/family-growing.gif" alt="The family growing: a face appears for each of the 49 generations, branch by branch, with a bar of attacks resisted that grows as each branch's lives are added. v1 9 of 18 (lives with a working gate), v2-h-inherit 10 of 12, v2-h-control 0 of 12, v2-h-fresh 5 of 12, v2-main 17 of 22."></td>
+<td width="50%"><img src="docs/media/resistance-curves.gif" alt="A resistance curve drawing itself for each v2 branch: the share of attacks resisted so far, life by life. v2-h-inherit ends at 10 of 12, v2-h-control at 0 of 12, v2-h-fresh at 5 of 12, v2-main at 17 of 22."></td>
+</tr>
+</table>
 
 <p align="center">
   <img src="docs/media/results.svg" alt="Bar chart of attacks resisted at the door. v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. v2-h-control: 0 of 12. v2-h-fresh: 5 of 12. v2-main: 17 of 22, on newer code, a showcase run." width="100%">

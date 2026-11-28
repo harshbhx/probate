@@ -7,6 +7,9 @@ export const docsImageRoute = '/og/docs';
 
 // Filled in at build time by scripts/ship.sh. Links that depend on them are hidden when empty.
 export const liveUrl = process.env.NEXT_PUBLIC_LIVE_URL ?? '';
+// The read-only public demo (judges-demo environment, 49 generations) on its own Sprite. NEXT_PUBLIC_LIVE_URL
+// (the PROBATE_LIVE_URL repository variable) wins when it is set; this address is only the fallback.
+export const demoUrl = liveUrl || 'https://probate-courthouse-bonez.sprites.app';
 const repo = process.env.NEXT_PUBLIC_GITHUB_REPO || 'harshbhx/probate'; // "owner/probate"
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001';
 
