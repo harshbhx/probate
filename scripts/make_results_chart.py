@@ -20,9 +20,9 @@ ROWS = [
     ("v2-h-inherit", "learning on, born from gen 14 Nadia", 10, 12, True, "inherit"),
     ("v2-h-control", "learning off", 0, 12, True, "control"),
     ("v2-h-fresh", "learning on, started from nothing", 5, 12, True, "fresh"),
-    ("v2-main", "12 generations", None, None, False, "main"),
+    ("v2-main", "newer code, showcase run, gen 42 died early", 17, 22, True, "main"),
 ]
-COLOURS = {"v1": "#959ca8", "inherit": "#5be3a9", "control": "#e0645c", "fresh": "#d9b46a", "main": "#d9b46a"}
+COLOURS = {"v1": "#959ca8", "inherit": "#5be3a9", "control": "#e0645c", "fresh": "#d9b46a", "main": "#7fb2ff"}
 
 W, LEFT, BAR_W, ROW_H, TOP = 880, 250, 440, 62, 92
 
@@ -38,12 +38,12 @@ def main() -> None:
         'role="img" aria-labelledby="t d" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif">',
         "<title id=\"t\">Attacks resisted at the door, by branch</title>",
         "<desc id=\"d\">v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. "
-        "v2-h-control: 0 of 12. v2-h-fresh: 5 of 12. v2-main is still running, so no result is shown.</desc>",
+        "v2-h-control: 0 of 12. v2-h-fresh: 5 of 12. v2-main: 17 of 22 (newer code, a showcase run).</desc>",
         f'<rect width="{W}" height="{h}" rx="14" fill="#0e1014"/>',
         '<text x="28" y="40" fill="#f1ece0" font-size="20" font-weight="700">'
         "Attacks resisted at the door</text>",
         '<text x="28" y="64" fill="#959ca8" font-size="13">'
-        "Small samples: evidence, not proof. Empty dashed bars are runs still in progress.</text>",
+        "Small samples: evidence, not proof. v2-main ran on newer code, so it is not a like-for-like baseline.</text>",
     ]
     for g in (0, 25, 50, 75, 100):
         x = LEFT + BAR_W * g / 100

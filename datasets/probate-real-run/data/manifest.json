@@ -1,12 +1,12 @@
 {
   "dataset": "probate-real-run",
-  "exported_at": "2026-11-27T22:43:21Z",
+  "exported_at": "2026-11-28T12:44:23Z",
   "code": {
-    "commit": "6a439c7db55ab85d39063ea62cfcee7d6f82a014",
-    "dirty": false
+    "commit": "fde611f8a07d14090ec2842935a9d2166f9834a9",
+    "dirty": true
   },
   "source": {
-    "database_snapshot": "pre-v2-main-20261128-0348.db",
+    "database_snapshot": "v2-main-20261128-1805.db",
     "api": "api"
   },
   "scoring_rules": {
@@ -34,24 +34,24 @@
   },
   "files": {
     "generations.jsonl": {
-      "rows": 37,
-      "sha256": "e58a0f8b91860f7a795e11ae9aad4c02bcb6f70c910ee0e3cf417bae585ca3ae",
-      "bytes": 56185
+      "rows": 49,
+      "sha256": "7fcd5c2464c94e36dca93e3c24c87de15cb435deff99a10a2fe87bc438807bba",
+      "bytes": 72821
     },
     "emails.jsonl": {
-      "rows": 162,
-      "sha256": "4c1356230d4a70a1649b67626596e10a0e2d68ecf58b380d0ac734942c74024c",
-      "bytes": 103869
+      "rows": 206,
+      "sha256": "e6cdac93435fcc5e73511337e749036defb28ba77bf25205b1582346ed7ed38f",
+      "bytes": 129974
     },
     "memories.jsonl": {
-      "rows": 174,
-      "sha256": "5cd2854a8482914113f76871e3a82c24699e29c44aeb3028f5126530c5fca994",
-      "bytes": 118425
+      "rows": 228,
+      "sha256": "981af5b0b8448a2f1c046f921c6693c04f6e71b0e054c0d3d3cd94704391127c",
+      "bytes": 156877
     },
     "judgements.jsonl": {
-      "rows": 174,
-      "sha256": "9e45fa568369d7844bdddb26a99296a93630e9f75f416ee539390b34b6d522a9",
-      "bytes": 150651
+      "rows": 228,
+      "sha256": "6c62f4cd0bf9b2c1493cecb28f00dbedf8eda569a4c5203e29ce29c868192096",
+      "bytes": 202087
     },
     "instincts.jsonl": {
       "rows": 10,
@@ -59,15 +59,15 @@
       "bytes": 6653
     },
     "events.jsonl": {
-      "rows": 440,
-      "sha256": "eeac61479b8d9e39186eda4fa29861883f120725eada75174fe3c64d68b698d5",
-      "bytes": 94769
+      "rows": 542,
+      "sha256": "31fb245e138b1ca2c37161bd16cde9087fb4650969a37bddaf8a5fdd7b4cfd2d",
+      "bytes": 117622
     }
   },
   "other_files": {
     "branches.json": {
-      "sha256": "78f8cfa0435f230a85008bf379ae954e6172350f5476784cf0f814dbf8c55ccb",
-      "bytes": 2784
+      "sha256": "69266988ade58c9d25a5b7854f29012b4f179903ca211ec6bd64d9f02b7a3241",
+      "bytes": 2779
     }
   },
   "series_info": {
