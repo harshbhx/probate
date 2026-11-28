@@ -51,6 +51,83 @@ def wilson(k: int, n: int, z: float = Z) -> tuple[float, float] | None:
     return round(max(0.0, centre - half), 4), round(min(1.0, centre + half), 4)
 
 
+def offline() -> dict:
+    """Offline gate evaluation (run 5), every count recomputed from the raw per-fixture rows."""
+    ge = verify.load_gate_eval(verify.DEFAULT_GATE_EVAL)
+    pn = {name: verify.phase_numbers(rows) for name, rows in ge.items()}
+
+    def repeats(phases: list[str]) -> list[dict]:
+        return [
+            {
+                "blocked": pn[p]["attacks_blocked"],
+                "harmlessBlocked": pn[p]["harmless_blocked"],
+            }
+            for p in phases
+        ]
+
+    def genome(name: str, phases: list[str], instincts: int | None) -> dict:
+        return {"genome": name, "instincts": instincts, "repeats": repeats(phases)}
+
+    t = verify.load(DATA)
+    n_inherit = sum(
+        1
+        for i in t["instincts"]
+        if i["learned_from_generation"] in verify.GENOME_LEARNED_FROM["inherit"]
+    )
+    n_fresh = sum(
+        1
+        for i in t["instincts"]
+        if i["learned_from_generation"] in verify.GENOME_LEARNED_FROM["fresh"]
+    )
+    fix, exp = pn["prod_inherit_r1"], pn["exp_inherit"]
+
+    def control(phase: str) -> dict:
+        rows = ge[phase]
+        return {
+            "blocked": sum(1 for r in rows if r["is_attack"] and r["blocked_control"]),
+            "harmlessBlocked": sum(
+                1 for r in rows if not r["is_attack"] and r["blocked_control"]
+            ),
+        }
+
+    return {
+        "run": "run-5",
+        "date": "2026-11-28",
+        "fixtures70": {
+            "attacks": fix["attacks_total"],
+            "harmless": fix["harmless_total"],
+            "genomes": [
+                genome("inherit", ["prod_inherit_r1", "prod_inherit_r2"], n_inherit),
+                genome("fresh", ["prod_fresh_r1", "prod_fresh_r2"], n_fresh),
+                {
+                    "genome": "control",
+                    "instincts": 0,
+                    "repeats": [control("prod_inherit_r1")],
+                },
+            ],
+        },
+        "expert": {
+            "attacks": exp["attacks_total"],
+            "harmless": exp["harmless_total"],
+            "genomes": [
+                genome("inherit", ["exp_inherit"], n_inherit),
+                genome("fresh", ["exp_fresh"], n_fresh),
+                {
+                    "genome": "control",
+                    "instincts": 0,
+                    "repeats": [control("exp_inherit")],
+                },
+            ],
+        },
+        "judges": {
+            "haikuAlone": pn["cmp_haiku_inherit"]["attacks_blocked"],
+            "gptOssAlone": pn["cmp_gptoss_inherit"]["attacks_blocked"],
+            "haikuAloneErrors": pn["cmp_haiku_inherit"]["judge_errors"],
+        },
+        "note": "Supporting evidence, not the headline. The 70 fixtures contain the tricks the instincts were learned from, so that score is optimistic; the expert tier is the unseen test.",
+    }
+
+
 def build() -> dict:
     t = verify.load(DATA)
     manifest = json.loads((DATA / "manifest.json").read_text(encoding="utf-8"))
@@ -178,6 +255,7 @@ def build() -> dict:
         "instincts": instincts,
         "branches": branches,
         "v1": v1_block,
+        "offline": offline(),
         "judgeOutageGenerations": sorted(outages),
         "falseBlockGenerations": [g["gen"] for g in out_gens if g["falseBlocks"]],
         "neverBornGenerations": [
