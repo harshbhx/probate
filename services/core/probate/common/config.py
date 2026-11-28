@@ -64,7 +64,8 @@ class Settings:
     # Email the owner about each held (contested) item. Off keeps the item held and says so in
     # the timeline, which saves AgentMail sends and keeps the owner's inbox quiet.
     contest_emails: bool = field(default_factory=lambda: _flag("PROBATE_CONTEST_EMAILS", True))
-    # base (the 16 + 16 suite only), hard (only the hard tier) or both. See docs/03-ATTACK-SUITE.md.
+    # base (the 16 + 16 suite only), hard (only the hard tier), both (base + hard) or expert (only
+    # the opt-in expert tier). See docs/03-ATTACK-SUITE.md.
     suite_tier: str = field(
         default_factory=lambda: _env("PROBATE_SUITE_TIER", "base").strip().lower() or "base"
     )
@@ -74,6 +75,10 @@ class Settings:
     # Set it to (first generation of a branch - 1) so every branch meets the same hard attacks in
     # the same order from its first life.
     hard_offset: int = field(default_factory=lambda: int(_env("PROBATE_HARD_OFFSET", "0")))
+    # Opt-in expert tier (PROBATE_SUITE_TIER=expert): attacks per life, each sent with its twin.
+    expert_per_life: int = field(default_factory=lambda: int(_env("PROBATE_EXPERT_PER_LIFE", "2")))
+    # Shifts the expert tier's rotation, like hard_offset.
+    expert_offset: int = field(default_factory=lambda: int(_env("PROBATE_EXPERT_OFFSET", "0")))
     # 0 turns instinct learning off: trials still convict, but no instinct is distilled. For a
     # control branch.
     distill: bool = field(default_factory=lambda: _flag("PROBATE_DISTILL", True))

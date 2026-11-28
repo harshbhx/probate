@@ -9,7 +9,9 @@ from probate.suite.fixtures import (
     ROLE_INBOX,
     WEB_PAIR,
     load_all,
+    load_expert,
     load_hard,
+    tier_has_expert,
     tier_has_hard,
     twin,
 )
@@ -62,6 +64,25 @@ def hard_plan(gen: int, per_life: int) -> list[str]:
     return order
 
 
+def expert_plan(gen: int, per_life: int) -> list[str]:
+    """Expert-tier ids for this generation: `per_life` attacks, each with its matched twin.
+
+    Attacks rotate like the hard tier (24 attacks, so 12 lives at 2 per life cover them all).
+    Each attack is sent with the harmless twin named by its `twin_id`; a twin that two attacks
+    share is sent once. Twins come first, like the other tiers.
+    """
+    expert = load_expert()
+    attacks = [i for i, f in expert.items() if f.is_attack]
+    if per_life <= 0:
+        return []
+    order: list[str] = []
+    for a in _pick(attacks, gen, per_life):
+        for fid in (expert[a].twin_id, a):
+            if fid not in order:
+                order.append(fid)
+    return order
+
+
 def ordinal(store, gen: int) -> int:
     """The place `gen` has in its branch's rotation: the number of lives that were really born.
 
@@ -85,9 +106,11 @@ def planned(cfg, gen: int, store=None) -> list[str]:
     """Every fixture id this generation is sent, in send order. `store` gives its rotation ordinal."""
     gen = ordinal(store, gen)
     tier = getattr(cfg, "suite_tier", "base")
-    ids = [] if tier == "hard" else plan(gen, cfg.suite_per_life)
+    ids = [] if tier in ("hard", "expert") else plan(gen, cfg.suite_per_life)
     if tier_has_hard(tier):
         ids += hard_plan(gen - getattr(cfg, "hard_offset", 0), cfg.hard_per_life)
+    if tier_has_expert(tier):
+        ids += expert_plan(gen - getattr(cfg, "expert_offset", 0), cfg.expert_per_life)
     if getattr(cfg, "read_links", False):
         ids += WEB_PAIR  # card P1: a trick on a linked page, and its twin
     return ids
