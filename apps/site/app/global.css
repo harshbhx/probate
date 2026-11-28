@@ -76,6 +76,15 @@
   --color-fd-muted-foreground: #c3c8d1;
 }
 
+/* One colour per family line, shared by every chart on /data and in the docs (and the README's results chart). */
+:root {
+  --line-v1: #959ca8;
+  --line-inherit: #5be3a9;
+  --line-control: #e0645c;
+  --line-fresh: #d9b46a;
+  --line-main: #7fb2ff;
+}
+
 html {
   scrollbar-gutter: stable;
   color-scheme: dark;

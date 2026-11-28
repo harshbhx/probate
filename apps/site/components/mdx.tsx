@@ -11,6 +11,8 @@ import { Verdict } from './verdict';
 import { Face, FamilyStrip } from './family';
 import { Diagram } from './diagram';
 import * as Kit from './docs-kit';
+import { BranchBars, InstinctTimeline, ResistanceChart } from './data/charts';
+import { SeeItLive } from './data/see-it-live';
 import { CourtBeams } from './landing/court-beams';
 import { PageVerdicts } from './landing/page-verdicts';
 import { MemoryTerminal } from './landing/products';
@@ -35,6 +37,10 @@ export function getMDXComponents(components?: MDXComponents) {
     Face,
     FamilyStrip,
     Diagram,
+    BranchBars,
+    InstinctTimeline,
+    ResistanceChart,
+    SeeItLive,
     CourtBeams,
     PageVerdicts,
     MemoryTerminal,

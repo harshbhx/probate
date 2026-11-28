@@ -21,6 +21,10 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ## Unreleased
 
+### Added
+
+- The site's `/data` page, "The family, in numbers": a generation explorer for all 49 generations (face, branch, scoring version, life dates, attacks, instincts at birth, cause of death), a branch comparison with Wilson 95% intervals and the caveats, resistance per generation with judge-outage, false-block and never-born markers, an instincts timeline and a verify-it-yourself box; inline SVG charts also in the results and proof docs; `scripts/make_site_data.py` writes the trimmed JSON from the dataset (tested against the verifier's claims); `scripts/make_gifs.py` renders two README GIFs from the real data; and a "See it live on the Sprite" link to the read-only public demo on the home page, `/data` and the README.
+
 ### Fixed
 
 - Demo Courthouse redeploy fixes: `deploy.py` no longer stops on a 409 when the service is not running, an ask cap of 0 (`PROBATE_ASK_DAILY_CAP`, `PROBATE_ASK_DAILY_PER_IP`) now turns `/ask` off instead of making it unlimited, and `judges-demo` ships with edge-only access off until the edge Worker is deployed, ask limits of 10 a day and 2 per address, and play off unless a judge key is set. See the runbook section "Demo Courthouse: current state".

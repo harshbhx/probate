@@ -5,6 +5,7 @@ export const NAV = [
   { label: 'How it works', href: '/#life' },
   { label: 'The court', href: '/#will' },
   { label: 'Instincts', href: '/#instincts' },
+  { label: 'Data', href: '/data' },
   { label: 'Docs', href: '/docs' },
   { label: 'For judges', href: '/docs/for-judges' },
 ];
@@ -20,6 +21,7 @@ export const FOOTER: { title: string; links: FootLink[] }[] = [
       { label: 'Try the court', href: '/#will' },
       { label: 'Instincts', href: '/#instincts' },
       { label: 'Evidence', href: '/#evidence' },
+      { label: 'The family, in numbers', href: '/data' },
     ],
   },
   {
