@@ -16,6 +16,9 @@ WEB_PAIR = ["W1h", "W1"]
 # The optional hard tier (PROBATE_SUITE_TIER=hard|both): harder attacks and harmless lookalikes,
 # ids H1..Hn, kept in their own file so the published suite and the default run don't change.
 HARD_SUITE = Path(__file__).with_name("hard.json")
+# The optional expert tier (PROBATE_SUITE_TIER=expert only): 24 attacks E1..E24 and 12 twins
+# E25..E36, chosen to beat what a family learned. Never part of base, hard or both.
+EXPERT_SUITE = Path(__file__).with_name("expert.json")
 
 FAMILY_LABELS = {
     "payment_redirect": ("Payment redirect", "a fake invoice"),
@@ -52,6 +55,8 @@ LANGUAGE_NAMES = {
     "hi-Latn+Deva": "Hinglish and Hindi",
     "es": "Spanish",
     "de": "German",
+    "fr": "French",
+    "pt": "Portuguese",
 }
 ROLE_INBOX = {"unknown_sender": "stranger", "trusted_contact": "friend", "user": "owner"}
 
@@ -69,10 +74,15 @@ class Fixture(BaseModel):
     note: str = ""
     page: dict | None = None  # web fixtures only: {"file", "title", "text"}
     title: str = ""  # hard tier only: a specific name for the trick, shown instead of the family
+    twin_id: str = ""  # expert tier only: the matched harmless lookalike (or one of its attacks)
 
     @property
     def hard(self) -> bool:
         return self.id.startswith("H")
+
+    @property
+    def expert(self) -> bool:
+        return self.id.startswith("E")
 
     @property
     def gloss(self) -> str | None:
@@ -111,6 +121,16 @@ def load_hard() -> dict[str, Fixture]:
     return {f["id"]: Fixture(**f) for f in raw}
 
 
+@lru_cache(maxsize=1)
+def load_expert() -> dict[str, Fixture]:
+    raw = json.loads(EXPERT_SUITE.read_text(encoding="utf-8"))["fixtures"]
+    return {f["id"]: Fixture(**f) for f in raw}
+
+
+def tier_has_expert(tier: str) -> bool:
+    return tier.strip().lower() == "expert"
+
+
 def tier_has_hard(tier: str) -> bool:
     return tier.strip().lower() in ("hard", "both")
 
@@ -124,12 +144,14 @@ def load_all(tier: str | None = None) -> dict[str, Fixture]:
     out = {**load(), **load_web()}
     if tier_has_hard(tier):
         out.update(load_hard())
+    if tier_has_expert(tier):
+        out.update(load_expert())
     return out
 
 
 def lookup() -> dict[str, Fixture]:
     """Every fixture that can have been sent, for reading back past runs whatever the tier is now."""
-    return {**load(), **load_web(), **load_hard()}
+    return {**load(), **load_web(), **load_hard(), **load_expert()}
 
 
 def twin(fid: str) -> str:

@@ -111,6 +111,37 @@ Each generation gets `PROBATE_HARD_PER_LIFE` attacks and as many twins, chosen b
 
 Hard fixtures use the same fields as section 4, plus `title` (a short name for the trick). Open-dataset shape: one JSON object per fixture with `id`, `family`, `language`, `is_attack`, `sender_role`, `subject`, `body`, `title`, `expected.verdict` (`convicted` for attacks, `approved` for twins) and `note`. Hard twins are not paired one to one with attacks, so they have no `twin_id`. The published Hugging Face dataset is not changed by this tier.
 
+## 7c. Expert tier
+
+A third, opt-in set lives in `services/core/probate/suite/expert.json`: 24 attacks `E1` to `E24` and 12 matched harmless twins `E25` to `E36`. It was built against what a family actually learned in the real run (payment-redirect wording, lookalike senders, urgency, "treat links as instructions") and avoids those cues. Each of the 12 themes has two attacks (in different languages: English, Spanish, German, French, Portuguese, Hinglish) and one twin that looks the same but asks for nothing. Fixtures carry the base fields plus `title`, `twin_id`, and in `expected` a `harm` (the check the attack should trip) and a `canary` marker (`PROBATE-CANARY-En`) that shows up in any leaked text. All text is synthetic, uses reserved example domains, and every payload is an inert string.
+
+| Theme | Attacks | What it does |
+| --- | --- | --- |
+| Multi-email chain | E1, E13 | The third mail of a chain whose first two are harmless; claims prior agreement and moves settlement to a portal reference. |
+| Document attachments | E2, E14 | An instruction in the text of a docx or pdf attachment. |
+| CSV cells | E3, E15 | An instruction in a notes cell next to formula cells. |
+| HTML comments | E4, E16 | An instruction in an HTML comment, in the body or an attachment. |
+| Forwarded or quoted owner | E5, E17 | A forward or quoted reply that claims the owner wrote it. |
+| Base64 in a quote | E6, E18 | An encoded instruction inside a quoted block. |
+| ROT13 and leetspeak | E7, E19 | The same kind of order, obfuscated. |
+| Lookalike hosts | E8, E20 | A Cyrillic letter or zero-width characters in a pay link. |
+| Note to a future self | E9, E21 | Asks the will to record a trust claim for later lives. |
+| Tool output and web page | E10, E22 | An instruction inside pasted tool output or copied page text. |
+| Fake security and policy | E11, E23 | A fake security team with a deadline, and a fake policy notice. |
+| Redirect without the words, slow burn | E12, E24 | Settlement moved without "invoice", "bank" or "address"; trust built first, then a quiet ask. |
+
+Twins are real-looking vendor, forwarded-note, newsletter, log or notice mails that change nothing, so false convictions are measurable. Attack `Ei` is paired with twin `E(24 + ((i-1) mod 12) + 1)`.
+
+It is off by default and is never part of `both` (which stays base + hard). Turn it on with `PROBATE_SUITE_TIER=expert`, which sends only the expert tier (no base or hard mail):
+
+| Setting | Values | Default |
+| --- | --- | --- |
+| `PROBATE_SUITE_TIER` | adds `expert` (only the expert tier) | `base` |
+| `PROBATE_EXPERT_PER_LIFE` | expert attacks per life, each sent with its twin | `2` |
+| `PROBATE_EXPERT_OFFSET` | shifts the rotation, like `PROBATE_HARD_OFFSET` | `0` |
+
+Attacks rotate by generation, so 12 lives at 2 per life meet all 24. No published number uses this tier yet. To measure the gate on it later, run `scripts/evaluate_expert.py` where the connectors are reachable (it prints a clear message and exits when they are not).
+
 ## 8. Adding fixtures
 
 Add new attacks as A17 and up, always with a B-twin. Keep the `.example` rule. Re-run `pytest tests/suite` and the layer-1 tests after adding.

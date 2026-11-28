@@ -38,6 +38,7 @@ heading. The site and the docs link here instead of keeping a second copy.
 
 ### Added
 
+- An opt-in expert attack tier (`PROBATE_SUITE_TIER=expert`, `PROBATE_EXPERT_PER_LIFE` default 2): 24 attacks E1 to E24 and 12 matched harmless twins E25 to E36, with `scripts/evaluate_expert.py` to measure the gate on it; base, hard and both are unchanged and no published number uses it.
 - kinfaces 0.2.0 (not yet published): `familyTree` and `familyTreeSvg` for whole family trees, `faceDataUri`, a `background` option for light pages, runnable examples and a rewritten README. ([#230](https://github.com/harshbhx/probate/pull/230))
 - 100 more generation names (126 in all, no "Ada II" until generation 127); the first 26 are unchanged. Faces never repeat within 10 consecutive generations (a repeat is re-rolled; generations 1 to 39 look as before). Applies to later runs only. ([#226](https://github.com/harshbhx/probate/pull/226))
 - One canonical changelog, a pull request template line, a CI check that a change beyond docs and tests also changes this file (escape label `no-changelog`), and public `beta-1` markers on git and Hugging Face. ([#220](https://github.com/harshbhx/probate/pull/220))
