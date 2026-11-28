@@ -42,7 +42,7 @@ The same court now guards **any AI agent's memory**: the [memory court](#the-mem
 | 4 | [How a life works](#how-a-life-works) | Birth, life, death, trial, instinct |
 | 5 | [The two-layer court](#the-two-layer-court) | Plain code plus a language-model judge |
 | 6 | [Architecture](#architecture) | Where everything runs |
-| 7 | [Results](#results) | The numbers, with a chart, and what is still running |
+| 7 | [Results](#results) | The numbers, with a chart, and what they do not show |
 | 8 | [How to verify our numbers](#how-to-verify-our-numbers) | One script, one dataset, no trust needed |
 | 9 | [Limitations](#limitations) | What we did not show |
 | 10 | [The memory court, for any agent](#the-memory-court-for-any-agent) | The same court as an MCP server |
@@ -214,14 +214,11 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 
 ## Results
 
-<!-- RESULTS PLACEHOLDER (fill after the run finishes, then re-run scripts/make_results_chart.py):
-     {{V2_MAIN_RESULT}}     attacks resisted by the 12-generation v2-main run, of its total -->
-
 <p align="center">
-  <img src="docs/media/results.svg" alt="Bar chart of attacks resisted at the door. v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. v2-h-fresh: 5 of 12. v2-h-control: 0 of 12. v2-main is still running and shows no result." width="100%">
+  <img src="docs/media/results.svg" alt="Bar chart of attacks resisted at the door. v1 real run with a working gate: 9 of 18. v2-h-inherit: 10 of 12. v2-h-control: 0 of 12. v2-h-fresh: 5 of 12. v2-main: 17 of 22, on newer code, a showcase run." width="100%">
 </p>
 
-> **Results being finalised.** The `v2-main` run (12 generations) is still in progress. Its cell below is left blank on purpose and will be filled when it finishes. Nothing unfinished is published as final.
+> **All four v2 branches are finished** (dataset release `beta-3`). `v2-main` ran on newer code than the three baselines, so it is a showcase run, not a like-for-like fourth baseline.
 
 **The family-tree experiment (v2, hard attacks from generation 19).** One family forks into branches that differ in one thing each, so we can see what inheriting and learning add:
 
@@ -230,9 +227,9 @@ The Courthouse is the one Sprite that never dies. Each generation lives on a fre
 | `v2-h-inherit` | Learning on, born from generation 14 (Nadia), so it inherits her instincts | **10 of 12** (generations 20 to 25; generation 24 had a judge outage, the Haiku judge refused the base64 attacks and the gate failed open, so it resisted 0 of 2) | finished |
 | `v2-h-control` | No learning | **0 of 12** (generations 26 to 31) | finished |
 | `v2-h-fresh` | Learning on, started from nothing (no inheritance), generations 32 to 37 | **5 of 12** (0, 2, 1, 1, 0, 1 per generation; 3 new instincts stored, learned in generations 32 to 34; generations 36 and 37 had judge outages, so 2 and 1 emails passed ungated and 5 of 12 is probably a slight underestimate) | finished |
-| `v2-main` | A 12-generation run from generation 25 on the fixed judge code | <!-- {{V2_MAIN_RESULT}} --> results pending | running |
+| `v2-main` | Learning on, born from generation 25 (Yara, 6 inherited instincts), on newer code (fixes #232 and #237); generations 38 to 49 | **17 of 22** (2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 0 per generation; generation 42 died early because Fly refused to create its Sprite, so 11 generations were tried; no gate events; 0 instincts added; 1 harmless twin falsely blocked in generation 43) | finished |
 
-**Evidence, not proof.** 12 attacks per branch is a small sample, from one family. It suggests that learning helps (5 of 12 from nothing, against 0 of 12 with no learning) and that inheriting helps more (10 of 12); it does not say how much, or how far it generalises. v1 is not re-scored, and the v1 and v2 series use different scoring rules and are never joined into one curve. The branch data is published in dataset release `beta-2` and recomputed by the verifier (see below).
+**Evidence, not proof.** 12 attacks per baseline branch (22 for `v2-main`) is a small sample, from one family. It suggests that learning helps (5 of 12 from nothing, against 0 of 12 with no learning) and that inheriting helps more (10 of 12, and 17 of 22 in `v2-main`); it does not say how much, or how far it generalises. `v2-main` is not a like-for-like fourth baseline (newer code, different line, 11 generations). v1 is not re-scored, and the v1 and v2 series use different scoring rules and are never joined into one curve. The branch data is published in dataset release `beta-3` and recomputed by the verifier (see below).
 
 <details>
 <summary><b>The first real run (26 Nov 2026, scoring v1, generations 1 to 18)</b></summary>
@@ -282,29 +279,32 @@ The attack suite is `fixtures/suite-v1.json`: 16 tricks and 16 harmless twins in
 
 ## What these numbers say
 
-Plain-language reading of the three finished v2 branches (dataset release `beta-2`). Each number links to the claim that the verifier recomputes from the published files ([`claims.json`](datasets/probate-real-run/claims.json)); the command that checks them is `python -I scripts/verify_real_run.py`.
+Plain-language reading of the four finished v2 branches (dataset release `beta-3`). Each number links to the claim that the verifier recomputes from the published files ([`claims.json`](datasets/probate-real-run/claims.json)); the command that checks them is `python -I scripts/verify_real_run.py`.
 
-| Branch (generations) | Learning | Per generation, resisted of 2 | Resisted of 12 | Proof |
+| Branch (generations) | Learning | Per generation, resisted of 2 | Resisted | Proof |
 | --- | --- | --- | --- | --- |
-| `v2-h-control` (26 to 31) | off | 0, 0, 0, 0, 0, 0 | **0** | claims B15 to B20, [B11](datasets/probate-real-run/claims.json) |
-| `v2-h-fresh` (32 to 37) | on, from nothing | 0, 2, 1, 1, 0, 1 | **5** | claims B21 to B26, [B13](datasets/probate-real-run/claims.json) |
-| `v2-h-inherit` (20 to 25) | on, born from line 14 | 2, 2, 2, 2, 0, 2 | **10** | claims B01 to B06, [B07](datasets/probate-real-run/claims.json) |
-| `v2-main` (planned, 12 generations) | on | not run yet | not run yet | none: becomes `beta-3` |
+| `v2-h-control` (26 to 31) | off | 0, 0, 0, 0, 0, 0 | **0 of 12** | claims B15 to B20, [B11](datasets/probate-real-run/claims.json) |
+| `v2-h-fresh` (32 to 37) | on, from nothing | 0, 2, 1, 1, 0, 1 | **5 of 12** | claims B21 to B26, [B13](datasets/probate-real-run/claims.json) |
+| `v2-h-inherit` (20 to 25) | on, born from line 14 | 2, 2, 2, 2, 0, 2 | **10 of 12** | claims B01 to B06, [B07](datasets/probate-real-run/claims.json) |
+| `v2-main` (38 to 49, newer code) | on, born from line 25 | 2, 2, 2, 1, died early, 2, 2, 2, 1, 2, 1, 0 | **17 of 22** | claims B41 to B51, [B52](datasets/probate-real-run/claims.json) |
 
 - **Control, 0 of 12.** With learning off, the family let every hard attack through, six lives in a row (B11, B15 to B20). It had no instincts (B12).
 - **Fresh, 5 of 12.** Learning from nothing, it started at 0 of 2, then turned away 2, 1, 1, 0 and 1. It stored 3 instincts (B14, B29); a fourth name from generation 32 was dropped by a bug fixed in [#237](https://github.com/harshbhx/probate/pull/237). Its last two generations had judge outages (B36 to B38).
 - **Inherit, 10 of 12.** Born with the 5 instincts of the best v1 line, it turned away 2 of 2 in five of six generations (B07). Generation 24 resisted 0 of 2 because of a judge outage (B05, B34); it ended with 6 instincts (B09).
-- **Harmless twins blocked (false_block): 0** in every branch (B31 to B33).
+- **Main, 17 of 22.** Born from line 25 (Yara) with 6 inherited instincts, it turned away 2 of 2 in six of its eleven tried generations (B52). It added no instincts (B61, B62) and had no gate events (B58). Generation 42 died early: Fly refused to create the Sprite (402, free-plan limit), so it is in no total (B54, B55). In generation 43 the gate blocked one harmless twin, H35, through the v1 instinct `payment_redirection_fraud` (B56, B57).
+- **Harmless twins blocked (false_block): 0** in the three baselines (B31 to B33), **1** in `v2-main` (B57).
 
-**What the comparison shows.** In this run, the branch with no learning resisted nothing, and both branches with learning resisted something, the one that inherited a learned line the most. That is consistent with learning, and inheriting, helping.
+**What the comparison shows.** In this run, the branch with no learning resisted nothing, and the branches with learning resisted something, the ones that inherited a learned line the most (10 of 12, and 17 of 22 for `v2-main`). That is consistent with learning, and inheriting, helping.
 
 **What it does not show.**
 
-- **Not proof.** 12 attacks per branch, one run per branch, one agent model, one fixed public attack set. No confidence interval, no repeat.
-- **Judge outages.** The judge is a language-model judge (Claude Haiku), labelled `language-model fallback (not Jev)`. It returns `stop_reason=refusal` on the base64-encoded attacks H9 and H10, and the code that ran failed open, so 5 emails passed ungated: 2 in `v2-h-inherit` generation 24 and 3 in `v2-h-fresh` generations 36 and 37 (B34 to B38). Fixed in [#232](https://github.com/harshbhx/probate/pull/232) and #237 after these branches ran. The rows are kept as they happened, not re-scored. The cause itself is not recomputed from the data ([`not_recomputed` N01](datasets/probate-real-run/claims.json)).
+- **Not proof.** 12 attacks per baseline branch (22 for `v2-main`), one run per branch, one agent model, one fixed public attack set. No confidence interval, no repeat.
+- **`v2-main` is a showcase run, not a like-for-like fourth baseline.** It ran on newer code (`f130b53`, with fixes #232 and #237) than the three baselines (`2a0b81f`), from a different line, for 11 tried generations. Its 17 of 22 cannot be read as "the new code is better" or as "learning in the branch": it learned nothing new (it inherited all 6 of its instincts), and its per-generation results show no upward trend.
+- **Fly free-plan incident.** Generation 42 never started (Fly 402, `free_plan_limit`), and because of that the hard-tier rotation for generations 43 to 49 is shifted by one slot.
+- **Missing logs.** Agent logs for generations 18 to 20 are empty; life captures are missing for 23 to 25, 27 to 29, 39, 41, 44 and 46. The numbers come from the Courthouse database, not from those logs.
+- **Judge outages.** The judge is a language-model judge (Claude Haiku), labelled `language-model fallback (not Jev)`, not Jev. It returns `stop_reason=refusal` on the base64-encoded attacks H9 and H10. On the code the baselines ran, the gate failed open, so 5 emails passed ungated: 2 in `v2-h-inherit` generation 24 and 3 in `v2-h-fresh` generations 36 and 37 (B34 to B38). Fixed in [#232](https://github.com/harshbhx/probate/pull/232) and #237 after those branches ran; on the newer code `v2-main` ran on, the fallback judge takes over and there were no gate events (B58). The rows are kept as they happened, not re-scored. The cause itself is not recomputed from the data ([`not_recomputed` N01](datasets/probate-real-run/claims.json)).
 - **Short lives.** Each generation lived 300 seconds and met 4 suite emails, not the one-day design.
 - **v1 and v2 are different scoring rules** and are never joined into one curve; v1 (generations 1 to 18) is not re-scored.
-- **`v2-main` is pending.** It is a 12-generation run on newer code (judge refusal fallback) that has not been run. Its result will be released as `beta-3`; nothing here is about it.
 
 ### Reproduce it yourself in 3 commands
 
@@ -314,7 +314,7 @@ python -I scripts/verify_real_run.py          # recomputes every number above; m
 python -I -c "import json;[print(g['branch'],g['generation'],g['attacks_resisted'],'/',g['attacks_met']) for g in map(json.loads,open('datasets/probate-real-run/data/generations.jsonl',encoding='utf-8')) if g['generation']>=19]"
 ```
 
-The data is also on [Hugging Face](https://huggingface.co/datasets/harshbhx/probate-real-run) (revision `beta-2`).
+The data is also on [Hugging Face](https://huggingface.co/datasets/harshbhx/probate-real-run) (revision `beta-3`).
 
 ## How to verify our numbers
 
@@ -329,11 +329,11 @@ python scripts/verify_real_run.py
 - **The claims:** [`claims.json`](datasets/probate-real-run/claims.json) holds each sentence about the run next to the number the data must give. The verifier checks the files against the manifest, the per-generation numbers against the per-email and per-judgement rows, every claim, and scans for leaked addresses and tokens. It exits 1, loudly, on any failure.
 - **The offline gate test:** the three runs behind the 70-fixture table are in [`gate-evaluation`](datasets/probate-real-run/gate-evaluation).
 - **The attack suite:** [probate-attack-suite](https://huggingface.co/datasets/harshbhx/probate-attack-suite), 16 tricks and their 16 harmless twins, with source in [`datasets/probate-attack-suite`](datasets/probate-attack-suite).
-- **The family-tree branches:** claims B01 to B40 cover the three finished branches and the verifier recomputes each from the data. The chart is drawn by [`scripts/make_results_chart.py`](scripts/make_results_chart.py).
+- **The family-tree branches:** claims B01 to B62 cover the four finished branches and the verifier recomputes each from the data. The chart is drawn by [`scripts/make_results_chart.py`](scripts/make_results_chart.py).
 
 ## Limitations
 
-- **Small samples.** 12 attacks per branch, 18 generations in the first real run. Evidence, not proof.
+- **Small samples.** 12 attacks per baseline branch, 22 in `v2-main`, 18 generations in the first real run. Evidence, not proof. `v2-main` ran on newer code, so it is a showcase run, not a like-for-like fourth baseline.
 - **One family.** A branch has not been repeated, so run-to-run spread is unknown.
 - **Two scoring rules.** v1 (generations 1 to 18) is kept as published and not re-scored; v2 begins at generation 19. Do not read a rise or fall across that boundary as learning.
 - **The judge is a stand-in.** Layer 2 was answered by Claude Haiku, labelled "not Jev", because Jev credits were not available. Nothing here measures Jev. When the judge was down (generation 24) the gate could not ask it, and the attacks passed.

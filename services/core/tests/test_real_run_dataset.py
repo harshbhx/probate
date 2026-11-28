@@ -42,8 +42,11 @@ SCAN = {
     "url token": re.compile(r"(?i)[?&](token|key|auth)=(?!\[)\w{6,}"),
     "connection id": re.compile(r"(?i)\bconn(ection)?[_-]\w{8,}"),
     "message id": re.compile(r"<[^<>\s@]{6,}@[^<>\s]+>"),
-    # rishi.pay@okexample is a fake UPI id in a public hard-tier attack fixture, not the owner
-    "owner name": re.compile(r"(?i)\b(harsh|harshu|bhanushali|rishi(?!\.pay@))\b"),
+    # rishi.pay@okexample, "rishi.pay at vendor-desk dot example" and pay.rishi-team.example are
+    # fake payment handles in public hard-tier attack fixtures (H14, H15), not the owner
+    "owner name": re.compile(
+        r"(?i)\b(harsh|harshu|bhanushali|rishi(?!\.pay(?:@| at )|-team\.example))\b"
+    ),
     "owner mail": re.compile(r"(?i)@(dualmindlab\.tech|gmail\.com)"),
 }
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")

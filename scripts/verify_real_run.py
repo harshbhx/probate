@@ -326,6 +326,25 @@ def judge_outages(tables: dict[str, list[dict]], branch: str) -> dict[int, int]:
     return out
 
 
+def gate_events(tables: dict[str, list[dict]], branch: str) -> int:
+    """All events of kind `gate` in the branch's generations (any gate trouble, not only outages)."""
+    gens = {g["generation"] for g in tables["generations"] if g["series"] == branch}
+    return sum(
+        1
+        for e in tables.get("events", [])
+        if e["generation"] in gens and e["kind"] == "gate"
+    )
+
+
+def genome_at_start(tables: dict[str, list[dict]], branch: str) -> int:
+    """Instincts the branch's first generation was born with (inherited from its parent line)."""
+    first = min(
+        (g for g in tables["generations"] if g["series"] == branch),
+        key=lambda g: g["generation"],
+    )
+    return first.get("genome_size_at_birth") or 0
+
+
 def branch_numbers(tables: dict[str, list[dict]], branch: str) -> dict:
     part = scope(tables, None, series=branch)
     m = metrics(part)
@@ -337,6 +356,15 @@ def branch_numbers(tables: dict[str, list[dict]], branch: str) -> dict:
         "instincts_learned_in_branch": m["instincts_learned"],
         "instincts_at_end": genome_at_end(tables, branch),
         "judge_outages": judge_outages(tables, branch),
+        "gate_events": gate_events(tables, branch),
+        "instincts_at_start": genome_at_start(tables, branch),
+        "false_blocks_by_generation": {
+            g["generation"]: g.get("false_blocks", 0) for g in part["generations"]
+        },
+        "generations_tried": m["generations_tried"],
+        "generations_died_early": sum(
+            1 for g in part["generations"] if g["state"] == "died_early"
+        ),
     }
 
 
@@ -444,6 +472,8 @@ def claim_value(tables: dict[str, list[dict]], c: dict):
     if c["metric"] == "judge_outage_events":
         outages = nums["judge_outages"]
         return outages.get(c["generation"], 0) if "generation" in c else sum(outages.values())
+    if c["metric"] == "false_blocks_in_generation":
+        return nums["false_blocks_by_generation"].get(c["generation"])
     if "generation" in c:
         per = nums["per_generation"].get(c["generation"])
         return list(per) if per else None
@@ -453,6 +483,10 @@ def claim_value(tables: dict[str, list[dict]], c: dict):
         "instincts_at_end": nums["instincts_at_end"],
         "false_blocks_total": nums["false_blocks"],
         "instincts_learned_in_branch": nums["instincts_learned_in_branch"],
+        "gate_events_total": nums["gate_events"],
+        "instincts_at_start": nums["instincts_at_start"],
+        "generations_tried": nums["generations_tried"],
+        "generations_died_early": nums["generations_died_early"],
     }[c["metric"]]
 
 

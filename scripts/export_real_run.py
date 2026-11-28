@@ -361,6 +361,7 @@ BRANCH_DESIGN = {
     "v2-h-inherit": {"parent_line": 14, "learning": True},
     "v2-h-control": {"parent_line": 0, "learning": False},
     "v2-h-fresh": {"parent_line": 0, "learning": True},
+    "v2-main": {"parent_line": 25, "learning": True},
 }
 SETTING_KEYS = (
     "tier",
@@ -384,6 +385,8 @@ def load_branch_info(path: Path | None, tables: dict, settings: dict) -> list[di
         cur["first"] = min(cur["first"], first)
         if last is not None:
             cur["last"] = last
+            if date:  # the closing line carries the date the branch ran
+                cur["date"] = date
         parts = [x.strip() for x in rest.split(",", 1)]
         if re.fullmatch(r"[0-9a-f]{7,40}(\+dirty)?", parts[0] or ""):
             cur["commit"] = parts[0]
@@ -483,7 +486,13 @@ def era_flags(g: dict, sent: int, seen: int | None, handled: int) -> dict:
         )
     if g["state"] != "tried":
         complete = None
-        notes.append("not yet tried when exported: its counts are not final")
+        if g["state"] == "died_early":
+            notes.append(
+                "died early: the generation was never born (Fly refused to create its Sprite, "
+                "402 free_plan_limit), so it met no attacks and is not counted"
+            )
+        else:
+            notes.append("not yet tried when exported: its counts are not final")
     else:
         complete = True
         if handled == 0:
