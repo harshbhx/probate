@@ -609,12 +609,14 @@ _asks: dict[str, list[float]] = defaultdict(list)
 def _take_ask_slot() -> bool:
     """Count one question against today's cap (all visitors together). False when it is used up."""
     cap = settings.ask_daily_cap
+    if cap <= 0:  # 0 means asking is switched off, not unlimited
+        return False
     today = datetime.now(UTC).date().isoformat()
     with _ask_lock:
         d = json.loads(store.get_setting("ask:day", "{}") or "{}")
         if d.get("date") != today:
             d = {"date": today, "n": 0}
-        if 0 < cap <= d["n"]:
+        if cap <= d["n"]:
             return False
         d["n"] += 1
         store.set_setting("ask:day", json.dumps(d))
@@ -627,12 +629,14 @@ _ask_ip_day: dict = {"date": "", "n": {}}
 def _take_ask_ip_slot(ip: str) -> bool:
     """Count one question against this address's cap for today. False when it is used up."""
     cap = settings.ask_daily_per_ip
+    if cap <= 0:  # 0 means asking is switched off, not unlimited
+        return False
     today = datetime.now(UTC).date().isoformat()
     with _ask_lock:
         if _ask_ip_day["date"] != today:
             _ask_ip_day.update(date=today, n={})
         counts = _ask_ip_day["n"]
-        if 0 < cap <= counts.get(ip, 0):
+        if cap <= counts.get(ip, 0):
             return False
         if len(counts) > 20_000:  # bounded memory under a flood of addresses
             counts.clear()
@@ -645,6 +649,8 @@ def api_ask(body: Ask, request: Request, gen: int = Path(ge=1, le=MAX_GEN)) -> J
     """A dead generation answers in at most 80 words, from its own will and verdicts, with a voice
     when ElevenLabs is connected. The question is treated as data: it can't give the ancestor orders.
     Returns `429` after 10 questions a minute."""
+    if settings.ask_daily_cap <= 0 or settings.ask_daily_per_ip <= 0:
+        return JSONResponse({"error": "ask_disabled"}, status_code=403)
     ip = client_ip(request)
     now = time.time()
     _asks[ip] = [t for t in _asks[ip] if now - t < 60]

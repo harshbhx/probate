@@ -154,6 +154,18 @@ Steps (the repository variable and the rebuild are described here, not run by th
 4. Set the repository variable `PROBATE_LIVE_URL` to that URL (GitHub: Settings, Secrets and variables, Variables) and rebuild and redeploy the site so it links to the Courthouse.
 5. `courthouse.py --env judges-demo resume` when you want judges in.
 
+### Demo Courthouse: current state and how to switch on judge play / edge-only
+
+State on 28 Nov 2026: `probate-courthouse` runs `judges-demo` at https://probate-courthouse-bonez.sprites.app from `main`, with the saved database untouched (generations 1 to 49, all branches). It is on demand and **paused**, and it holds no generation Sprite. The Sprites organization allows 3 Sprites: one is the evaluation agent, one is the Courthouse, and one slot stays free for an on-demand life.
+
+It is **read-only** for visitors: family tree, generations, trials, evidence, genome, ancestors and death certificates are public; `/admin/*` answers 403 without the admin token; play, attack previews and judge mail answer 503 because no judge key is set; a very large `/ask` body is refused (422) and asking is capped at 10 a day and 2 per address. It goes idle after about 4 minutes and wakes on the next request in under a second.
+
+Redeploy: build `apps/web` (`npm run build -w @probate/web`), copy `services/core/.env` and `config/owner.yaml` in, run `python scripts/deploy.py --check --env judges-demo` and then without `--check`. No `--force-replace` is needed when the Courthouse is stopped; use it only to replace a Sprite that runs another environment, and say so. Verify afterwards that `/api/summary` shows `paused: true` and `environment: judges-demo`. Never run `resume` for a read-only demo.
+
+**Switch on judge play.** Put a `PROBATE_JUDGE_KEY` (20+ characters, different from the admin token) in `services/core/.env`, redeploy, then `courthouse.py --env judges-demo resume`. Check `GET /api/live` shows `requires_key: true`.
+
+**Switch on edge-only access.** Deploy `apps/edge` with its `EDGE_TOKEN` secret equal to `PROBATE_EDGE_TOKEN`, point the site at the Worker, then set `PROBATE_REQUIRE_EDGE: "1"` in the `judges-demo` block and redeploy. Until then the Courthouse URL is open to direct visitors, which is why the ask and play limits above are tight. The Courthouse refuses to start in on-demand mode without an edge token of 16+ characters, even with edge-only access off.
+
 ### Branches, pins and control lines
 
 Each environment carries a `settings_pin` block: the brain model, the judge (`PROBATE_JEV`), suite tier, suite per life, lifespan and links per mail. A test keeps it equal to the settings that are applied, so it can be copied into a dataset record as what a branch ran with. `v1-archive` pins only what its record shows (judge `llm`); the rest is "not recorded".

@@ -329,3 +329,24 @@ def test_a_later_deploy_restarts_once_and_never_starts():
     fly = _Fly("running")
     d.start_courthouse(fly, "x", fresh=False, wait=lambda s: None)
     assert fly.calls == ["put", "restart"]
+
+
+def test_stop_tolerates_a_409_and_raises_other_errors():
+    import httpx
+
+    d = _deploy()
+
+    def failing(code):
+        class Api:
+            def service_action(self, name, service, action):
+                req = httpx.Request("POST", "https://x/stop")
+                raise httpx.HTTPStatusError(
+                    "e", request=req, response=httpx.Response(code, request=req)
+                )
+
+        return Api()
+
+    assert "409" in d.stop_service(failing(409), "x")
+    with pytest.raises(httpx.HTTPStatusError):
+        d.stop_service(failing(500), "x")
+    assert d.stop_service(_Fly("running"), "x") == "stopped"

@@ -142,6 +142,18 @@ def start_courthouse(api, name: str, fresh: bool, wait=time.sleep, tries: int = 
     return "started once"
 
 
+def stop_service(api, name: str) -> str:
+    """Stop the service before the code is replaced. A 409 means it is not running (or was never
+    registered, as on a Courthouse that was stopped for a while): nothing to stop, carry on."""
+    try:
+        api.service_action(name, "courthouse", "stop")
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 409:
+            raise
+        return "not running (409); nothing to stop"
+    return "stopped"
+
+
 def running_state(api, name: str, admin_token: str, http=httpx) -> tuple[dict | None, dict | None]:
     """The running Courthouse's /api/summary and /admin/status, or None for each that can't be read."""
     info = api.get(name) or {}
@@ -281,7 +293,7 @@ def main() -> None:
     if not fresh:
         # The old process reads prompts and suites lazily from app/: stop it before `rm -rf app`,
         # or a birth or trial that starts in that window fails on a missing file.
-        api.service_action(args.name, "courthouse", "stop")
+        stop_service(api, args.name)
     res = api.exec(
         args.name, ["bash", "-lc", f"rm -rf app && {INSTALL} && mkdir -p data"], cwd="/home/sprite"
     )

@@ -88,6 +88,16 @@ def test_ask_has_a_daily_cap(tmp_path, monkeypatch):
     assert codes == [200, 200, 429, 429] and len(calls) == 2
 
 
+@pytest.mark.parametrize("env", ["PROBATE_ASK_DAILY_CAP", "PROBATE_ASK_DAILY_PER_IP"])
+def test_an_ask_cap_of_zero_disables_asking(tmp_path, monkeypatch, env):
+    m = load(tmp_path, monkeypatch, **{env: "0"})
+    calls = []
+    monkeypatch.setattr(m.ancestor, "ask", lambda *a, **k: calls.append(1) or {"answer": "ok"})
+    monkeypatch.setattr(m.store, "generation", lambda g: type("G", (), {"state": "dead"})())
+    r = TestClient(m.app).post("/api/generations/1/ask", json={"question": "hi"})
+    assert r.status_code == 403 and r.json()["error"] == "ask_disabled" and not calls
+
+
 def test_in_memory_tables_are_bounded(tmp_path, monkeypatch):
     m = load(tmp_path, monkeypatch)
     table = {f"ip{i}": [1.0] for i in range(6000)}  # all long expired
@@ -142,12 +152,14 @@ def test_edge_not_required_by_default(tmp_path, monkeypatch):
     assert TestClient(m.app).get("/api/summary").status_code == 200
 
 
-def test_only_the_demo_environment_requires_the_edge():
+def test_edge_only_access_is_off_in_every_environment_until_the_worker_is_confirmed():
     import yaml
 
     path = Path(__file__).parents[3] / "config" / "environments.yaml"
     envs = yaml.safe_load(path.read_text(encoding="utf-8"))["environments"]
-    assert envs["judges-demo"]["settings"]["PROBATE_REQUIRE_EDGE"] == "1"
+    # judges-demo ships with "0": "1" would lock out direct visitors until apps/edge is deployed.
+    assert envs["judges-demo"]["settings"]["PROBATE_REQUIRE_EDGE"] in ("0", "1")
+    assert envs["judges-demo"]["settings"]["PROBATE_ASK_DAILY_CAP"] == "10"
     assert "PROBATE_REQUIRE_EDGE" not in envs["production-v2"]["settings"]
 
 
